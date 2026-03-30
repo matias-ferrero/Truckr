@@ -1,0 +1,4 @@
+[tools]
+gh = "latest"
+typst = "latest"
+uv = "latest"
