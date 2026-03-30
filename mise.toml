@@ -1,4 +1,6 @@
 [tools]
-gh = "latest"
-typst = "latest"
-uv = "latest"
+gh = "latest" # GitHub CLI
+typst = "latest" # markup-based typesetting system
+uv = "latest" # Python package and project manager
+prek = "latest" # Pre-commit hook manager
+typstyle = "latest" # Typst formatter
