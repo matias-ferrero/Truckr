@@ -1,4 +1,4 @@
-#import "template.typ": c-brand, c-brand-mid, conf, stroke-std
+#import "../template.typ": c-brand, c-brand-mid, conf, stroke-std
 #show: conf
 
 #set page(flipped: true, margin: (x: 1cm, y: 1.2cm))

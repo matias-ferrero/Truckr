@@ -1,4 +1,4 @@
-#import "template.typ": conf
+#import "../template.typ": conf
 #show: conf
 
 = Product Vision
