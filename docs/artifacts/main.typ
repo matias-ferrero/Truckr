@@ -88,5 +88,14 @@
 
 #pagebreak()
 
-// ── 7. Backlog — User Stories ──────────────────────────────────────────────
+// ── 7. WBS — Work Breakdown Structure ─────────────────────────────────────
+#include "wbs.typ"
+
+// Reset portrait + text after WBS landscape
+#set page(flipped: false, margin: 2cm)
+#set text(size: 10pt)
+
+#pagebreak()
+
+// ── 8. Backlog — User Stories ──────────────────────────────────────────────
 #include "backlog-us.typ"
