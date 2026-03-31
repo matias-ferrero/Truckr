@@ -1,0 +1,37 @@
+name: Build & Upload Release PDFs
+
+on:
+    release:
+        types: [published]
+
+permissions:
+    contents: write
+
+jobs:
+    build-and-upload:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: typst-community/setup-typst@v4
+
+            - uses: astral-sh/setup-uv@v6
+
+            - name: Install Python dependencies
+              run: uv sync
+
+            - name: Convert chat sessions
+              run: uv run python3 docs/scripts/chat_json2typ.py docs/raw/*-chat.json
+
+            - name: Build artifacts PDF
+              run: typst compile --root docs docs/artifacts/main.typ artifacts.pdf
+
+            - name: Build prompts PDF
+              run: typst compile --root docs docs/prompts/main.typ prompts.pdf
+
+            - name: Upload PDFs to release
+              uses: softprops/action-gh-release@v2
+              with:
+                  files: |
+                      artifacts.pdf
+                      prompts.pdf

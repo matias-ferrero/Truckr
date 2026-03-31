@@ -43,6 +43,15 @@ just lint                     # run all pre-commit hooks
 just clean                    # remove generated PDFs
 ```
 
+## Releases
+
+Automated via [release-please](https://github.com/googleapis/release-please) + GitHub Actions.
+
+- Commits follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) (`fix:`, `feat:`, `feat!:`, etc.).
+- Pushing to the `release` branch via a PR from main triggers release-please, which opens a Release PR with changelog + version bump.
+- Merging the Release PR creates a tagged GitHub Release; a second workflow builds and attaches `artifacts.pdf` and `prompts.pdf`.
+- Configuration lives in `release-please-config.json` and `.release-please-manifest.json`.
+
 ## Conventions
 
 - User stories follow "Como X quiero Y para Z" format with numbered acceptance criteria.
