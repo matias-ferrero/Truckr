@@ -6,7 +6,6 @@
 #table(
   columns: (auto, 1fr),
   align: (right, left),
-  stroke: 0.5pt,
   [*Product Vision*], [],
   [*Para*], [transportistas y clientes],
   [*quienes*], [buscan simplificar el proceso de búsqueda, pago y gestión de transportes],
