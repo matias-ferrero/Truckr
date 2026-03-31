@@ -5,7 +5,6 @@
 
 #table(
   columns: (1fr, 1fr),
-  stroke: 0.5pt,
   align: left,
   [*Es*], [*No Es*],
   [

@@ -1,15 +1,7 @@
-#import "template.typ": conf
+#import "template.typ": c-activ, c-epic, c-mvp, c-mvp-lane, c-post, c-post-lane, c-task, conf
 #show: conf
 
 #set page(flipped: true, margin: (x: 0.8cm, y: 1.2cm))
-
-#let c-epic = rgb("#154360")
-#let c-activ = rgb("#1f618d")
-#let c-task = rgb("#aed6f1")
-#let c-mvp-lane = rgb("#1e8449")
-#let c-mvp = rgb("#d5f5e3")
-#let c-post-lane = rgb("#6e2f1a")
-#let c-post = rgb("#fef5e4")
 
 = User Story Map — Productor
 
@@ -23,7 +15,6 @@
 
 #table(
   columns: (1fr,) * 9,
-  stroke: 0.5pt + luma(160),
   inset: (x: 6pt, y: 5pt),
 
   // ── Row 1: Backbone — Epics ─────────────────────────────────────────────

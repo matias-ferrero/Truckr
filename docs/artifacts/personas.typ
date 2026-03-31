@@ -1,11 +1,11 @@
-#import "template.typ": conf
+#import "template.typ": conf, stroke-std
 #show: conf
 
 #let persona-card(name: "", profile: "", behavior: "", needs: "") = block(
   width: 100%,
   inset: 10pt,
   radius: 6pt,
-  stroke: 0.5pt + luma(180),
+  stroke: stroke-std,
   fill: luma(248),
 )[
   #text(weight: "bold", size: 11pt)[#name]

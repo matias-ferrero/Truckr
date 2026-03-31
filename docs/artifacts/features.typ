@@ -9,9 +9,20 @@ _Observación:_
 
 #table(
   columns: (auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto),
-  stroke: 0.5pt,
   align: center,
-  [*Persona*], [*Registro de camión, patente y capacidades*], [*Publicado de ventanas de transporte*], [*Publicado de pedidos de transporte*], [*Búsqueda filtrada de pedidos de transporte*], [*Pasarela de pago seguro*], [*Historial de envíos*], [*Tracking de envío*], [*Reseñas*], [*Viajes compuestos por múltiples envíos*], [*Encadenado de pedidos*], [*Gestión de venta de seguros*],
+  [*Persona*],
+  [*Registro de camión, patente y capacidades*],
+  [*Publicado de ventanas de transporte*],
+  [*Publicado de pedidos de transporte*],
+  [*Búsqueda filtrada de pedidos de transporte*],
+  [*Pasarela de pago seguro*],
+  [*Historial de envíos*],
+  [*Tracking de envío*],
+  [*Reseñas*],
+  [*Viajes compuestos por múltiples envíos*],
+  [*Encadenado de pedidos*],
+  [*Gestión de venta de seguros*],
+
   [Hugo (58 años)], [4], [5], [5], [5], [2], [3], [2], [3], [5], [3], [2],
   [Martín: hijo de Hugo.], [5], [5], [5], [5], [3], [2], [2], [4], [5], [5], [2],
   [Daniela Perez (señora de 55 años)], [3], [5], [5], [3], [5], [4], [5], [5], [3], [1], [4],
