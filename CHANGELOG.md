@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.2](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.1...v0.1.2) (2026-03-31)
+
+
+### Features
+
+* add new chat session documentation for 31/03/2029 ([2473d56](https://github.com/tcorzo/fiuba-gestion-tp/commit/2473d562aeb0fae18273ac88eaea52781f3da4b9))
+
+
+### Bug Fixes
+
+* update release process to trigger on main branch instead of release ([3026d60](https://github.com/tcorzo/fiuba-gestion-tp/commit/3026d606b345aa7c15c21fb148ef11a24eab7a75))
+
 ## [0.1.1](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.0...v0.1.1) (2026-03-31)
 
 
