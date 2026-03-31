@@ -1,4 +1,4 @@
-#import "template.typ": c-activ, c-epic, c-mvp, c-mvp-lane, c-post, c-post-lane, c-task, conf
+#import "../template.typ": c-activ, c-epic, c-mvp, c-mvp-lane, c-post, c-post-lane, c-task, conf
 #show: conf
 
 #set page(flipped: true, margin: (x: 0.8cm, y: 1.2cm))

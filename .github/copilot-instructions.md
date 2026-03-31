@@ -14,22 +14,33 @@ Managed via [mise.toml](mise.toml):
 - **uv** — Python package manager
 - **gh** — GitHub CLI
 - **prek** — Pre-commit hooks
+- **just** — Task runner (see `justfile`)
 
 Install everything: `mise install`
 
 ## Document Conventions (Typst)
 
-- All `.typ` artifacts live in `docs/artifacts/` and import the shared config from [docs/artifacts/template.typ](docs/artifacts/template.typ) (`lang: "es"`, 10pt, 2cm margins, justified).
-- Import pattern: `#import "template.typ": conf` then `#show: conf`.
+- All `.typ` artifacts live in `docs/artifacts/` and import the shared config from [docs/template.typ](docs/template.typ) (`lang: "es"`, 10pt, 2cm margins, justified).
+- Chat session `.typ` files live in `docs/prompts/` and are auto-generated from JSON exports in `docs/raw/`.
+- Import pattern: `#import "../template.typ": conf` then `#show: conf`.
 - Escape special characters in data: `\"`, `\#`, `\$`, `\@`, `\\`.
 - Pre-commit auto-formats `.typ` files with typstyle — don't fight the formatter.
 
 ## Build & Compile
 
+All build tasks are managed with `just`. Run `just` to list recipes.
+
 ```sh
-typst compile docs/artifacts/<file>.typ    # one-shot PDF
-typst watch docs/artifacts/<file>.typ      # live reload
-pre-commit run --all-files                 # lint & format
+just build                    # build everything (artifacts + chat sessions)
+just build-artifacts          # compile the artifacts report
+just build-artifact <name>    # compile a single artifact (e.g. wbs)
+just build-chats              # convert chat JSON → .typ and compile
+just convert-chats            # convert chat JSON → .typ only
+just watch-artifacts          # live-reload artifacts report
+just watch-chats              # live-reload chat sessions report
+just fmt                      # format .typ files with typstyle
+just lint                     # run all pre-commit hooks
+just clean                    # remove generated PDFs
 ```
 
 ## Conventions

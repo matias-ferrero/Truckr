@@ -2,10 +2,47 @@
 
 ## Prerequisites
 
-This project uses [mise](https://mise.jdx.dev/) to manage tool versions. Install all required tools (typst, gh, uv) by running:
+This project uses [mise](https://mise.jdx.dev/) to manage tool versions. Install all required tools (typst, gh, uv, just) by running:
 
 ```sh
 mise install
+```
+
+## Building Documentation
+
+All build tasks are managed with [just](https://just.systems/). Run `just` to see available recipes.
+
+### Build everything
+
+```sh
+just build
+```
+
+This compiles the artifacts report and converts + compiles the chat session logs.
+
+### Artifacts only
+
+```sh
+just build-artifacts          # compile the full report
+just build-artifact wbs       # compile a single artifact
+just watch-artifacts          # live-reload the full report
+just watch-artifact wbs       # live-reload a single artifact
+```
+
+### Chat sessions only
+
+```sh
+just build-chats              # convert JSON exports → .typ, then compile
+just convert-chats            # convert JSON exports only (no PDF)
+just watch-chats              # live-reload the chat sessions report
+```
+
+### Utilities
+
+```sh
+just fmt                      # format .typ files with typstyle
+just lint                     # run all pre-commit hooks
+just clean                    # remove generated PDFs
 ```
 
 ## Previewing Typst files
@@ -18,17 +55,3 @@ Install the [Tinymist](https://marketplace.visualstudio.com/items?itemName=myria
 - Open the command palette (`Ctrl+Shift+P`) and run **Tinymist: Preview current file**.
 
 The preview updates live as you edit.
-
-### Command line
-
-To compile a `.typ` file to PDF:
-
-```sh
-typst compile docs/artifacts/<file>.typ
-```
-
-To watch for changes and recompile automatically:
-
-```sh
-typst watch docs/artifacts/<file>.typ
-```

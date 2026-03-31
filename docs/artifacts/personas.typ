@@ -1,4 +1,4 @@
-#import "template.typ": conf, stroke-std
+#import "../template.typ": conf, stroke-std
 #show: conf
 
 #let persona-card(name: "", profile: "", behavior: "", needs: "") = block(
