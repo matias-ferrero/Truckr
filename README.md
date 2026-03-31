@@ -51,9 +51,9 @@ This project uses [release-please](https://github.com/googleapis/release-please)
 
 ### How it works
 
-1. Push commits to the `release` branch using conventional commit messages via a PR from main.
+1. Push conventional commits to `main` (directly or via merged PRs).
 2. release-please automatically opens/updates a Release PR with a changelog and version bump.
-3. Merge the Release PR to create a GitHub Release with a semver tag (`vX.Y.Z`).
+3. Merge the Release PR into `main` to create a GitHub Release with a semver tag (`vX.Y.Z`).
 4. A CI workflow then builds `artifacts.pdf` and `prompts.pdf` and attaches them to the release.
 
 ### Commit message → version bump
