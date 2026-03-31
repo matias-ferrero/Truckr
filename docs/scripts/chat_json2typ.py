@@ -81,9 +81,7 @@ def convert(json_path: str) -> str:
     responder = data.get("responderUsername", "Assistant")
 
     lines: list[str] = [
-        '#import "../template.typ": conf',
         '#import "@preview/cmarker:0.1.8"',
-        "#show: conf",
         "",
     ]
 
@@ -139,14 +137,44 @@ def convert(json_path: str) -> str:
     return str(out_path)
 
 
+def generate_main(chat_files: list[str]):
+    """Generate a main.typ that includes all chat session files."""
+    # Sort by filename (chronological due to timestamp naming)
+    chat_files = sorted(chat_files)
+
+    lines = [
+        '#import "../template.typ": conf',
+        "#show: conf",
+        "",
+        "= Sesiones de Chat con GitHub Copilot",
+        "",
+    ]
+
+    for i, path in enumerate(chat_files):
+        name = Path(path).name
+        if i > 0:
+            lines.append("#pagebreak()")
+            lines.append("")
+        lines.append(f'#include "{name}"')
+    lines.append("")
+
+    out_path = ARTIFACTS_DIR / "main.typ"
+    out_path.write_text("\n".join(lines), encoding="utf-8")
+    print(f"  -> {out_path}")
+
+
 def main():
     if len(sys.argv) < 2:
         print(f"Usage: {sys.argv[0]} <file.json> [file2.json ...]", file=sys.stderr)
         sys.exit(1)
 
+    outputs = []
     for path in sys.argv[1:]:
         out = convert(path)
+        outputs.append(out)
         print(f"  {path} -> {out}")
+
+    generate_main(outputs)
 
 
 if __name__ == "__main__":

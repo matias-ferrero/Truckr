@@ -1,6 +1,4 @@
-#import "../template.typ": conf
 #import "@preview/cmarker:0.1.8"
-#show: conf
 
 = Sesión de chat — 30/03/2029 21:53
 

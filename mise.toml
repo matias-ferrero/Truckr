@@ -4,3 +4,4 @@ typst = "latest" # markup-based typesetting system
 uv = "latest"
 prek = "latest" # Pre-commit hook manager
 typstyle = "latest" # Typst formatter
+just = "latest"
