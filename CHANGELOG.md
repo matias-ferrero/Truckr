@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.2...v0.1.3) (2026-03-31)
+
+
+### Bug Fixes
+
+* inline build job into release-please workflow ([1d39f9b](https://github.com/tcorzo/fiuba-gestion-tp/commit/1d39f9bb2abdf37c78fb2ee93467a8882c394230))
+* inline build job into release-please workflow ([fcea8fe](https://github.com/tcorzo/fiuba-gestion-tp/commit/fcea8fe961973ae95a2bbcccc4f7b21bf0070bb0))
+
 ## [0.1.2](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.1...v0.1.2) (2026-03-31)
 
 
