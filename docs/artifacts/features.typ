@@ -3,9 +3,9 @@
 
 = Features Matrix
 
-_Observación:
-- Verde: Planificadas para el MVP
-- Rojo: Posible Mejora_
+_Observación:_
+- _ Verde: Planificadas para el MVP_
+- _ Rojo: Posible Mejora_
 
 #table(
   columns: (auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto),
