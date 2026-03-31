@@ -11,17 +11,9 @@ jobs:
     build-and-upload:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
 
-            - uses: typst-community/setup-typst@v4
-
-            - uses: astral-sh/setup-uv@v6
-
-            - name: Install Python dependencies
-              run: uv sync
-
-            - name: Convert chat sessions
-              run: uv run python3 docs/scripts/chat_json2typ.py docs/raw/*-chat.json
+            - uses: typst-community/setup-typst@v5.1.0
 
             - name: Build artifacts PDF
               run: typst compile --root docs docs/artifacts/main.typ artifacts.pdf
