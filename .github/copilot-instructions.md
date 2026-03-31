@@ -48,7 +48,7 @@ just clean                    # remove generated PDFs
 Automated via [release-please](https://github.com/googleapis/release-please) + GitHub Actions.
 
 - Commits follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) (`fix:`, `feat:`, `feat!:`, etc.).
-- Pushing to the `release` branch via a PR from main triggers release-please, which opens a Release PR with changelog + version bump.
+- Pushing to `main` triggers release-please, which opens a Release PR with changelog + version bump.
 - Merging the Release PR creates a tagged GitHub Release; a second workflow builds and attaches `artifacts.pdf` and `prompts.pdf`.
 - Configuration lives in `release-please-config.json` and `.release-please-manifest.json`.
 
