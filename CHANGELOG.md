@@ -20,7 +20,7 @@
 
 ### Features
 
-* add new chat session documentation for 31/03/2029 ([2473d56](https://github.com/tcorzo/fiuba-gestion-tp/commit/2473d562aeb0fae18273ac88eaea52781f3da4b9))
+* add new chat session documentation for 31/03/2026 ([2473d56](https://github.com/tcorzo/fiuba-gestion-tp/commit/2473d562aeb0fae18273ac88eaea52781f3da4b9))
 
 
 ### Bug Fixes

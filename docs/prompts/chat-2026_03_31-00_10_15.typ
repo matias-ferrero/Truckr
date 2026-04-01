@@ -1,6 +1,6 @@
 #import "@preview/cmarker:0.1.8"
 
-= Sesión de chat — 31/03/2029 00:10
+= Sesión de chat — 31/03/2026 00:10
 
 == Intercambio 1
 _2026-03-31 02:34 UTC — copilot/claude-opus-4.6_
