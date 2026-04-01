@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.3...v0.1.4) (2026-04-01)
+
+
+### Features
+
+* add photos to personas in documentation ([081021c](https://github.com/tcorzo/fiuba-gestion-tp/commit/081021c4480b70207a2ed9bda760ddfb480f86cd))
+
 ## [0.1.3](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.2...v0.1.3) (2026-03-31)
 
 
