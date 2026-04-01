@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.4...v0.1.5) (2026-04-01)
+
+
+### Features
+
+* update chat session documentation and rename 2029 to 2026 ([869b390](https://github.com/tcorzo/fiuba-gestion-tp/commit/869b390581c0a1167c8d7e5ec8dc8ae8ff806e62))
+
 ## [0.1.4](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.3...v0.1.4) (2026-04-01)
 
 
