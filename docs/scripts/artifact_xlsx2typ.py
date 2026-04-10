@@ -3,6 +3,7 @@ import sys
 import textwrap
 
 import pandas as pd
+from openpyxl import load_workbook
 
 XLSX_PATH = "docs/raw/Lean Artifacts.xlsx"
 ARTIFACTS_DIR = "docs/artifacts"
@@ -286,11 +287,53 @@ def gen_features():
 def _gen_usm(sheet_name: str, output_name: str):
     df = pd.read_excel(XLSX_PATH, sheet_name=sheet_name, header=None)
 
+    # Load workbook to read colors
+    wb = load_workbook(XLSX_PATH)
+    ws = wb[sheet_name]
+
     # The USM has a table structure:
     # Column 0: Release markers (Release MVP, 2do Release, etc) - IGNORE
     # Row 0: Épicos (starting from col 1)
     # Row 1: Actividades (one per column)
     # Row 2+: Tasks per column, with MVP/Post-MVP boundaries marked by "Release" rows
+
+    # Map column -> color from tasks row (row 3 in Excel, row 2 in pandas) - the lighter tones
+    col_colors = {}  # col -> hex color (e.g., "FCE5CD" without FF prefix)
+    for c in range(1, df.shape[1]):
+        cell = ws.cell(3, c + 1)  # row 3 (first tasks), column c+1 (because pandas is 0-indexed)
+        if cell.fill and cell.fill.start_color:
+            color = cell.fill.start_color.rgb
+            if color and color != "00000000":
+                # Remove FF prefix and convert to rgb
+                col_colors[c] = color[2:] if len(color) > 2 else color
+
+    # Get epic row color
+    epic_color = None
+    cell = ws.cell(1, 2)  # row 1, column 2 for first epic
+    if cell.fill and cell.fill.start_color:
+        color = cell.fill.start_color.rgb
+        if color and color != "00000000":
+            epic_color = color[2:] if len(color) > 2 else color
+
+    # Get activity row colors (for the headers)
+    activity_colors = {}  # col -> hex color
+    for c in range(1, df.shape[1]):
+        cell = ws.cell(2, c + 1)  # row 2 (activities), column c+1
+        if cell.fill and cell.fill.start_color:
+            color = cell.fill.start_color.rgb
+            if color and color != "00000000":
+                activity_colors[c] = color[2:] if len(color) > 2 else color
+
+    # Get release marker color
+    release_color = None
+    for r in range(7, df.shape[0] + 1):
+        cell = ws.cell(r, 1)
+        if cell.value and "release" in str(cell.value).lower():
+            if cell.fill and cell.fill.start_color:
+                color = cell.fill.start_color.rgb
+                if color and color != "00000000":
+                    release_color = color[2:] if len(color) > 2 else color
+            break
 
     # Scan row 0 for épicos (starting from column 1, skip column 0)
     epics = []  # (name, start_col, end_col)
@@ -351,7 +394,6 @@ def _gen_usm(sheet_name: str, output_name: str):
                     tasks_by_release[release_idx][c].append(val)
 
     # Handle post-release tasks (after last release marker)
-    # Add them to the last release, not as a new release
     if release_rows:
         last_release_idx = len(release_rows) - 1
 
@@ -381,22 +423,24 @@ def _gen_usm(sheet_name: str, output_name: str):
         "  // ── Row 1: Backbone — Epics ─────────────────────────────────────────────",
     ]
 
-    # Generate epics row with colspan
+    # Generate epics row with colspan and colors
     for ep in epics:
         col_span = ep["end"] - ep["start"] + 1
-        lines.append(f"  table.cell(colspan: {col_span}, fill: c-epic, align: center)[")
-        lines.append(f"    #text(fill: white, weight: \"bold\")[{ep['name']}]")
+        color_hex = epic_color if epic_color else "9FC5E8"
+        lines.append(f"  table.cell(colspan: {col_span}, fill: rgb(\"#{color_hex}\"), align: center)[")
+        lines.append(f"    #text(fill: black, weight: \"bold\")[{ep['name']}]")
         lines.append("  ],")
 
-    # Generate actividades row
+    # Generate actividades row with column colors
     for c in range(1, df.shape[1]):
         name = actividades.get(c, "")
+        color_hex = activity_colors.get(c, "F9CB9C")  # Default color if not found
         if name:
-            lines.append(f"  table.cell(fill: c-activ, align: center)[")
-            lines.append(f"    #text(fill: white, weight: \"bold\")[{name}]")
+            lines.append(f"  table.cell(fill: rgb(\"#{color_hex}\"), align: center)[")
+            lines.append(f"    #text(fill: black, weight: \"bold\")[{name}]")
             lines.append("  ],")
         else:
-            lines.append("  table.cell(fill: c-activ)[],")
+            lines.append(f"  table.cell(fill: rgb(\"#{color_hex}\"))[],")
 
     lines.append("")
 
@@ -405,8 +449,7 @@ def _gen_usm(sheet_name: str, output_name: str):
     for idx, release_idx in enumerate(sorted(tasks_by_release.keys())):
         release_num = release_numbers[idx] if idx < len(release_numbers) else idx + 1
         is_mvp = release_num == 1
-        fill_color = "c-mvp" if is_mvp else "c-post"
-        lane_fill = "c-mvp-lane" if is_mvp else "c-post-lane"
+        release_marker_color = release_color if release_color else "6AA84F"
 
         if is_mvp:
             release_label = f"MVP — Release {release_num}"
@@ -417,19 +460,20 @@ def _gen_usm(sheet_name: str, output_name: str):
         lines.append(f"  // ── {release_label} Stories ──────────────────────────────────────────────────────────")
         for c in range(1, df.shape[1]):
             tasks = tasks_by_release[release_idx].get(c, [])
+            color_hex = col_colors.get(c, "FCE5CD")
             if tasks:
                 items = "\n    - ".join(tasks)
-                lines.append(f"  table.cell(fill: {fill_color})[")
+                lines.append(f"  table.cell(fill: rgb(\"#{color_hex}\"))[")
                 lines.append(f"    - {items}")
                 lines.append("  ],")
             else:
-                lines.append(f"  table.cell(fill: {fill_color})[],")
+                lines.append(f"  table.cell(fill: rgb(\"#{color_hex}\"))[],")
 
         # Add release marker row after tasks
         lines.append("")
         lines.append(f"  // ── {release_label} Marker ────────────────────────────────────────────────────────")
-        lines.append(f"  table.cell(colspan: {num_cols}, fill: {lane_fill}, align: center)[")
-        lines.append(f"    #text(fill: white, weight: \"bold\")[{release_label}]")
+        lines.append(f"  table.cell(colspan: {num_cols}, fill: rgb(\"#{release_marker_color}\"), align: center)[")
+        lines.append(f"    #text(fill: black, weight: \"bold\")[{release_label}]")
         lines.append("  ],")
 
     lines.append(")")
