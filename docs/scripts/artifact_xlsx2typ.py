@@ -3,6 +3,7 @@ import sys
 import textwrap
 
 import pandas as pd
+from openpyxl import load_workbook
 
 XLSX_PATH = "docs/raw/Lean Artifacts.xlsx"
 ARTIFACTS_DIR = "docs/artifacts"
@@ -62,7 +63,7 @@ def gen_product_vision():
             rows.append((key, ""))
 
     lines = [
-        '#import "template.typ": conf',
+        '#import "../template.typ": conf',
         "#show: conf",
         "",
         "= Product Vision",
@@ -136,7 +137,7 @@ def gen_personas():
             )
 
     lines = [
-        '#import "template.typ": conf',
+        '#import "../template.typ": conf',
         "#show: conf",
         "",
         "= Personas",
@@ -182,7 +183,7 @@ def gen_es_no_es():
         return "\n".join(items)
 
     lines = [
-        '#import "template.typ": conf',
+        '#import "../template.typ": conf',
         "#show: conf",
         "",
         "= Es / No Es / Hace / No Hace",
@@ -238,7 +239,7 @@ def gen_features():
         persona_rows.append((name, scores))
 
     lines = [
-        '#import "template.typ": conf',
+        '#import "../template.typ": conf',
         "#show: conf",
         "",
         "= Features Matrix",
@@ -286,36 +287,62 @@ def gen_features():
 def _gen_usm(sheet_name: str, output_name: str):
     df = pd.read_excel(XLSX_PATH, sheet_name=sheet_name, header=None)
 
-    # The USM has a hierarchical grid structure:
-    # Row 0: Role header (e.g. "ROL: Productor")
-    # Row 1: Top-level activity groups (epic-level, span multiple columns)
-    # Row 2: Activity sub-groups
-    # Row 3: User tasks headers per column
-    # Rows 4+: Individual user stories/tasks
+    # Load workbook to read colors
+    wb = load_workbook(XLSX_PATH)
+    ws = wb[sheet_name]
 
-    # Extract role
-    role = ""
-    for c in range(df.shape[1]):
-        val = _clean(df.iloc[0, c])
-        if val.startswith("ROL:"):
-            role = val.replace("ROL:", "").strip()
+    # The USM has a table structure:
+    # Column 0: Release markers (Release MVP, 2do Release, etc) - IGNORE
+    # Row 0: Épicos (starting from col 1)
+    # Row 1: Actividades (one per column)
+    # Row 2+: Tasks per column, with MVP/Post-MVP boundaries marked by "Release" rows
+
+    # Map column -> color from tasks row (row 3 in Excel, row 2 in pandas) - the lighter tones
+    col_colors = {}  # col -> hex color (e.g., "FCE5CD" without FF prefix)
+    for c in range(1, df.shape[1]):
+        cell = ws.cell(3, c + 1)  # row 3 (first tasks), column c+1 (because pandas is 0-indexed)
+        if cell.fill and cell.fill.start_color:
+            color = cell.fill.start_color.rgb
+            if color and color != "00000000":
+                # Remove FF prefix and convert to rgb
+                col_colors[c] = color[2:] if len(color) > 2 else color
+
+    # Get epic row color
+    epic_color = None
+    cell = ws.cell(1, 2)  # row 1, column 2 for first epic
+    if cell.fill and cell.fill.start_color:
+        color = cell.fill.start_color.rgb
+        if color and color != "00000000":
+            epic_color = color[2:] if len(color) > 2 else color
+
+    # Get activity row colors (for the headers)
+    activity_colors = {}  # col -> hex color
+    for c in range(1, df.shape[1]):
+        cell = ws.cell(2, c + 1)  # row 2 (activities), column c+1
+        if cell.fill and cell.fill.start_color:
+            color = cell.fill.start_color.rgb
+            if color and color != "00000000":
+                activity_colors[c] = color[2:] if len(color) > 2 else color
+
+    # Get release marker color
+    release_color = None
+    for r in range(7, df.shape[0] + 1):
+        cell = ws.cell(r, 1)
+        if cell.value and "release" in str(cell.value).lower():
+            if cell.fill and cell.fill.start_color:
+                color = cell.fill.start_color.rgb
+                if color and color != "00000000":
+                    release_color = color[2:] if len(color) > 2 else color
             break
 
-    # Row 1: top-level activities (epics)
-    # Row 2: sub-activities
-    # Row 3: task group labels per column
-    # Rows 3+: tasks
-
-    # Build column groups by scanning rows 1-2 for non-empty cells
-    # Each non-empty cell in row 1 starts a new epic that spans until the next non-empty cell
+    # Scan row 0 for épicos (starting from column 1, skip column 0)
     epics = []  # (name, start_col, end_col)
-    activities = []  # (name, start_col, end_col)
-
-    # Scan row 1 for epic-level headers
-    for c in range(df.shape[1]):
-        val = _clean(df.iloc[1, c])
+    for c in range(1, df.shape[1]):
+        val = _clean(df.iloc[0, c])
         if val:
-            epics.append({"name": val, "start": c})
+            # Check if this epic is already in the list (same name)
+            if not epics or epics[-1]["name"] != val:
+                epics.append({"name": val, "start": c})
     # Set end columns
     for i, ep in enumerate(epics):
         if i + 1 < len(epics):
@@ -323,97 +350,149 @@ def _gen_usm(sheet_name: str, output_name: str):
         else:
             ep["end"] = df.shape[1] - 1
 
-    # Scan row 2 for activity-level headers
-    for c in range(df.shape[1]):
-        val = _clean(df.iloc[2, c])
+    # Scan row 1 for actividades (one per column, starting from column 1)
+    actividades = {}  # col -> name
+    for c in range(1, df.shape[1]):
+        val = _clean(df.iloc[1, c])
         if val:
-            activities.append({"name": val, "start": c})
-    for i, act in enumerate(activities):
-        if i + 1 < len(activities):
-            act["end"] = activities[i + 1]["start"] - 1
-        else:
-            act["end"] = df.shape[1] - 1
+            actividades[c] = val
 
-    # Scan row 3 for task-group labels (one per column)
-    task_groups = {}  # col -> label
-    for c in range(df.shape[1]):
-        val = _clean(df.iloc[3, c])
-        if val:
-            task_groups[c] = val
+    # Detect MVP/Post-MVP boundaries (from column 0)
+    # Look for rows that start with "Release" and extract the release number
+    release_rows = []
+    release_numbers = []
+    for r in range(2, df.shape[0]):
+        val = _clean(df.iloc[r, 0]).lower()
+        if val.startswith("release"):
+            release_rows.append(r)
+            # Extract release number (e.g., "Release 1" -> 1)
+            parts = _clean(df.iloc[r, 0]).split()
+            if len(parts) > 1:
+                try:
+                    release_num = int(parts[-1])
+                    release_numbers.append(release_num)
+                except ValueError:
+                    release_numbers.append(len(release_numbers) + 1)
 
-    # Detect MVP release boundary
-    mvp_row = None
-    for r in range(4, df.shape[0]):
-        for c in range(df.shape[1]):
-            val = _clean(df.iloc[r, c])
-            if val.lower().startswith("release"):
-                mvp_row = r
-                break
-        if mvp_row is not None:
-            break
+    # Group tasks by release: everything between row 2 and first release,
+    # then between releases, then after last release
+    tasks_by_release = {}  # release_index -> {col -> [tasks]}
 
-    # Collect tasks per column, split by MVP boundary
-    tasks_mvp = {}  # col -> list of tasks (above MVP line)
-    tasks_post = {}  # col -> list of tasks (below MVP line)
-    for c in range(df.shape[1]):
-        tasks_mvp[c] = []
-        tasks_post[c] = []
-        for r in range(4, df.shape[0]):
-            if r == mvp_row:
-                continue
-            val = _clean(df.iloc[r, c])
-            if val:
-                if mvp_row is not None and r > mvp_row:
-                    tasks_post[c].append(val)
-                else:
-                    tasks_mvp[c].append(val)
+    for release_idx, release_row in enumerate(release_rows):
+        tasks_by_release[release_idx] = {}
+        for c in range(1, df.shape[1]):
+            tasks_by_release[release_idx][c] = []
+
+        # Get task rows for this release
+        task_start = 2 if release_idx == 0 else (release_rows[release_idx - 1] + 1)
+        task_end = release_row
+
+        for r in range(task_start, task_end):
+            for c in range(1, df.shape[1]):
+                val = _clean(df.iloc[r, c])
+                if val and "release" not in val.lower():
+                    tasks_by_release[release_idx][c].append(val)
+
+    # Handle post-release tasks (after last release marker)
+    if release_rows:
+        last_release_idx = len(release_rows) - 1
+
+        for r in range(release_rows[-1] + 1, df.shape[0]):
+            for c in range(1, df.shape[1]):
+                val = _clean(df.iloc[r, c])
+                if val and "release" not in val.lower():
+                    tasks_by_release[last_release_idx][c].append(val)
+
+    # Count columns (excluding column 0)
+    num_cols = df.shape[1] - 1
 
     lines = [
-        '#import "template.typ": conf',
+        '#import "../template.typ": c-activ, c-epic, c-mvp, c-mvp-lane, c-post, c-post-lane, c-task, conf',
         "#show: conf",
         "",
-        f"= User Story Map — {role}",
+        "#set page(flipped: true, paper: \"a3\", margin: (x: 0.5cm, y: 0.8cm))",
         "",
+        "// ── Color definitions extracted from spreadsheet ──────────────────────────",
     ]
 
+    # Generate color variables for each column
+    for c in range(1, df.shape[1]):
+        task_color = col_colors.get(c, "FCE5CD")
+        activ_color = activity_colors.get(c, "F9CB9C")
+        lines.append(f"#let col{c}-task = rgb(\"#{task_color}\")")
+        lines.append(f"#let col{c}-activ = rgb(\"#{activ_color}\")")
+
+    lines.extend([
+        f"#let epic-color = rgb(\"#{epic_color if epic_color else '9FC5E8'}\")",
+        f"#let release-color = rgb(\"#{release_color if release_color else '6AA84F'}\")",
+        "",
+        "= User Story Map",
+        "",
+        f"#set text(size: 9pt)",
+        "",
+        "#table(",
+        f"  columns: (2fr,) * {num_cols},",
+        "  inset: (x: 4pt, y: 3pt),",
+        "",
+        "  // ── Row 1: Backbone — Epics ─────────────────────────────────────────────",
+    ])
+
+    # Generate epics row with colspan and colors
     for ep in epics:
-        lines.append(f"== {ep['name']}")
+        col_span = ep["end"] - ep["start"] + 1
+        lines.append(f"  table.cell(colspan: {col_span}, fill: epic-color, align: center)[")
+        lines.append(f"    #text(fill: black, weight: \"bold\")[{ep['name']}]")
+        lines.append("  ],")
+
+    # Generate actividades row with column colors
+    for c in range(1, df.shape[1]):
+        name = actividades.get(c, "")
+        if name:
+            lines.append(f"  table.cell(fill: col{c}-activ, align: center)[")
+            lines.append(f"    #text(fill: black, weight: \"bold\")[{name}]")
+            lines.append("  ],")
+        else:
+            lines.append(f"  table.cell(fill: col{c}-activ)[],")
+
+    lines.append("")
+
+    # Generate rows for each release
+    # Release 1 is MVP, others are Post-MVP
+    for idx, release_idx in enumerate(sorted(tasks_by_release.keys())):
+        release_num = release_numbers[idx] if idx < len(release_numbers) else idx + 1
+        is_mvp = release_num == 1
+
+        if is_mvp:
+            release_label = f"MVP — Release {release_num}"
+        else:
+            release_label = f"Post MVP — Release {release_num}"
+
+        # Generate rows for this release (tasks first)
+        lines.append(f"  // ── {release_label} Stories ──────────────────────────────────────────────────────────")
+        for c in range(1, df.shape[1]):
+            tasks = tasks_by_release[release_idx].get(c, [])
+            if tasks:
+                items = "\n    - ".join(tasks)
+                lines.append(f"  table.cell(fill: col{c}-task)[")
+                lines.append(f"    - {items}")
+                lines.append("  ],")
+            else:
+                lines.append(f"  table.cell(fill: col{c}-task)[],")
+
+        # Add release marker row after tasks
         lines.append("")
-        # Find activities under this epic
-        for act in activities:
-            if act["start"] >= ep["start"] and act["start"] <= ep["end"]:
-                lines.append(f"=== {act['name']}")
-                lines.append("")
-                # Find task groups under this activity
-                for c in range(act["start"], act["end"] + 1):
-                    label = task_groups.get(c, "")
-                    mvp_items = tasks_mvp.get(c, [])
-                    post_items = tasks_post.get(c, [])
-                    if not label and not mvp_items and not post_items:
-                        continue
-                    if label:
-                        lines.append(f"==== {label}")
-                        lines.append("")
-                    if mvp_items:
-                        lines.append("*MVP:*")
-                        for t in mvp_items:
-                            lines.append(f"- {t}")
-                        lines.append("")
-                    if post_items:
-                        lines.append("*Post-MVP:*")
-                        for t in post_items:
-                            lines.append(f"- {t}")
-                        lines.append("")
+        lines.append(f"  // ── {release_label} Marker ────────────────────────────────────────────────────────")
+        lines.append(f"  table.cell(colspan: {num_cols}, fill: release-color, align: center)[")
+        lines.append(f"    #text(fill: black, weight: \"bold\")[{release_label}]")
+        lines.append("  ],")
+
+    lines.append(")")
 
     _write(output_name, "\n".join(lines))
 
 
-def gen_usm_productor():
-    _gen_usm("USM (Productor)", "usm-productor.typ")
-
-
-def gen_usm_transportista():
-    _gen_usm("USM (Transportista)", "usm-transportista.typ")
+def gen_usm():
+    _gen_usm("USM", "usm.typ")
 
 
 # ---------------------------------------------------------------------------
@@ -476,7 +555,7 @@ def gen_backlog_us():
             r += 1
 
     lines = [
-        '#import "template.typ": conf',
+        '#import "../template.typ": conf',
         "#show: conf",
         "",
         "= Backlog — User Stories",
@@ -524,8 +603,7 @@ def cmd_generate(which: str = "all"):
         "personas": gen_personas,
         "es-no-es": gen_es_no_es,
         "features": gen_features,
-        "usm-productor": gen_usm_productor,
-        "usm-transportista": gen_usm_transportista,
+        "usm": gen_usm,
         "backlog-us": gen_backlog_us,
     }
     if which == "all":

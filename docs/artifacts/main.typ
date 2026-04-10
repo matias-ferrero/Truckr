@@ -69,9 +69,9 @@
 
 #pagebreak()
 
-// ── 5. User Story Map — Productor ─────────────────────────────────────────
-// (usm-productor.typ sets its own landscape + text size internally)
-#include "usm-productor.typ"
+// ── 5. User Story Map ─────────────────────────────────────────────────────────
+// (usm.typ sets its own landscape + text size internally)
+#include "usm.typ"
 
 // Reset portrait + text after USM landscape
 #set page(flipped: false, margin: 2cm)
@@ -79,16 +79,7 @@
 
 #pagebreak()
 
-// ── 6. User Story Map — Transportista ─────────────────────────────────────
-#include "usm-transportista.typ"
-
-// Reset portrait + text after USM landscape
-#set page(flipped: false, margin: 2cm)
-#set text(size: 10pt)
-
-#pagebreak()
-
-// ── 7. WBS — Work Breakdown Structure ─────────────────────────────────────
+// ── 6. WBS — Work Breakdown Structure ─────────────────────────────────────
 #include "wbs.typ"
 
 // Reset portrait + text after WBS landscape
@@ -97,5 +88,5 @@
 
 #pagebreak()
 
-// ── 8. Backlog — User Stories ──────────────────────────────────────────────
+// ── 7. Backlog — User Stories ──────────────────────────────────────────────
 #include "backlog-us.typ"
