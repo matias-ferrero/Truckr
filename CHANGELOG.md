@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.5...v0.1.6) (2026-04-10)
+
+
+### Features
+
+* add color support to USM artifact from Google Sheets ([ab0fcfb](https://github.com/tcorzo/fiuba-gestion-tp/commit/ab0fcfb61454806733b353e48dd806fecbaa06dc))
+
 ## [0.1.5](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.4...v0.1.5) (2026-04-01)
 
 
