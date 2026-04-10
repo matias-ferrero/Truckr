@@ -1,7 +1,7 @@
 #import "../template.typ": c-activ, c-epic, c-mvp, c-mvp-lane, c-post, c-post-lane, c-task, conf
 #show: conf
 
-#set page(flipped: true, margin: (x: 0.8cm, y: 1.2cm))
+#set page(flipped: true, paper: "a3", margin: (x: 0.5cm, y: 0.8cm))
 
 // ── Color definitions extracted from spreadsheet ──────────────────────────
 #let col1-task = rgb("#FCE5CD")
@@ -39,11 +39,11 @@
 
 = User Story Map
 
-#set text(size: 7.5pt)
+#set text(size: 9pt)
 
 #table(
-  columns: (1fr,) * 15,
-  inset: (x: 6pt, y: 5pt),
+  columns: (2fr,) * 15,
+  inset: (x: 4pt, y: 3pt),
 
   // ── Row 1: Backbone — Epics ─────────────────────────────────────────────
   table.cell(colspan: 3, fill: epic-color, align: center)[

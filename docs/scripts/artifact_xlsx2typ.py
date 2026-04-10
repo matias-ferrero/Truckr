@@ -410,7 +410,7 @@ def _gen_usm(sheet_name: str, output_name: str):
         '#import "../template.typ": c-activ, c-epic, c-mvp, c-mvp-lane, c-post, c-post-lane, c-task, conf',
         "#show: conf",
         "",
-        "#set page(flipped: true, margin: (x: 0.8cm, y: 1.2cm))",
+        "#set page(flipped: true, paper: \"a3\", margin: (x: 0.5cm, y: 0.8cm))",
         "",
         "// ── Color definitions extracted from spreadsheet ──────────────────────────",
     ]
@@ -428,11 +428,11 @@ def _gen_usm(sheet_name: str, output_name: str):
         "",
         "= User Story Map",
         "",
-        f"#set text(size: 7.5pt)",
+        f"#set text(size: 9pt)",
         "",
         "#table(",
-        f"  columns: (1fr,) * {num_cols},",
-        "  inset: (x: 6pt, y: 5pt),",
+        f"  columns: (2fr,) * {num_cols},",
+        "  inset: (x: 4pt, y: 3pt),",
         "",
         "  // ── Row 1: Backbone — Epics ─────────────────────────────────────────────",
     ])
