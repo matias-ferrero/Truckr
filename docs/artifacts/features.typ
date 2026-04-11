@@ -12,8 +12,6 @@ _Observación: - Verde: Planificadas para el MVP - Rojo: Posible Mejora_
 #let personas-font-color = rgb("#000000")
 #let data-color = rgb("#FFFFFF")
 #let data-font-color = rgb("#FBBC04")
-
-// Header colors
 #let col1-color = rgb("#93C47D")
 #let col1-font-color = rgb("#FBBC04")
 #let col2-color = rgb("#93C47D")
@@ -39,23 +37,23 @@ _Observación: - Verde: Planificadas para el MVP - Rojo: Posible Mejora_
 #let col12-color = rgb("#93C47D")
 #let col12-font-color = rgb("#FBBC04")
 
-// Average row color scale (2.67-5.00): smooth gradient strong red -> green
-#let avg-color-min = rgb("#C5221F")     // Strong red (2.67)
-#let avg-color-1 = rgb("#D32F2F")       // Dark red
-#let avg-color-2 = rgb("#E53935")       // Red
-#let avg-color-3 = rgb("#E06666")       // Light red
-#let avg-color-4 = rgb("#E8725E")       // Red-orange
-#let avg-color-5 = rgb("#ED9A56")       // Orange
-#let avg-color-6 = rgb("#EFAD4E")       // Light orange
-#let avg-color-7 = rgb("#E8B953")       // Orange-green
-#let avg-color-8 = rgb("#D4B871")       // Green-orange
-#let avg-color-9 = rgb("#B8B779")       // Light green-yellow
-#let avg-color-10 = rgb("#A2B681")      // Green-yellow
-#let avg-color-11 = rgb("#8CB589")      // Green
-#let avg-color-12 = rgb("#78B491")      // Light green
-#let avg-color-13 = rgb("#6BB199")      // Green 2
-#let avg-color-max = rgb("#5FA76F")     // Dark green (5.00)
-#let avg-font-color = rgb("#000000")    // Black text
+// Average row color scale (smooth gradient red -> green)
+#let avg-color-0 = rgb("#C5221F")
+#let avg-color-1 = rgb("#D32F2F")
+#let avg-color-2 = rgb("#E53935")
+#let avg-color-3 = rgb("#E06666")
+#let avg-color-4 = rgb("#E8725E")
+#let avg-color-5 = rgb("#ED9A56")
+#let avg-color-6 = rgb("#F1C232")
+#let avg-color-7 = rgb("#B8D89F")
+#let avg-color-8 = rgb("#A8D08E")
+#let avg-color-9 = rgb("#98C87D")
+#let avg-color-10 = rgb("#88C06C")
+#let avg-color-11 = rgb("#78B85B")
+#let avg-color-12 = rgb("#68B04A")
+#let avg-color-13 = rgb("#5A9F44")
+#let avg-color-14 = rgb("#4C8E3E")
+#let avg-font-color = rgb("#000000")
 
 #table(
   columns: (1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
@@ -204,16 +202,17 @@ _Observación: - Verde: Planificadas para el MVP - Rojo: Posible Mejora_
   table.cell(fill: data-color)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: data-font-color)[★☆☆☆☆]]],
 
   table.cell(fill: personas-color)[Average],
-  table.cell(fill: avg-color-8)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[3.83]]],
-  table.cell(fill: avg-color-max)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[5.00]]],
-  table.cell(fill: avg-color-13)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[4.83]]],
-  table.cell(fill: avg-color-10)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[4.00]]],
-  table.cell(fill: avg-color-7)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[3.67]]],
-  table.cell(fill: avg-color-6)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[3.50]]],
-  table.cell(fill: avg-color-8)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[3.83]]],
-  table.cell(fill: avg-color-10)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[4.00]]],
-  table.cell(fill: avg-color-7)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[3.67]]],
-  table.cell(fill: avg-color-min)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[2.67]]],
-  table.cell(fill: avg-color-4)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[3.33]]],
-  table.cell(fill: avg-color-2)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[3.00]]],
+  table.cell(fill: avg-color-6)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[3.83]]],
+  table.cell(fill: avg-color-14)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[5.00]]],
+  table.cell(fill: avg-color-12)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[4.83]]],
+  table.cell(fill: avg-color-7)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[4.00]]],
+  table.cell(fill: avg-color-6)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[3.67]]],
+  table.cell(fill: avg-color-4)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[3.50]]],
+  table.cell(fill: avg-color-6)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[3.83]]],
+  table.cell(fill: avg-color-7)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[4.00]]],
+  table.cell(fill: avg-color-6)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[3.67]]],
+  table.cell(fill: avg-color-0)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[2.67]]],
+  table.cell(fill: avg-color-3)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[3.33]]],
+  table.cell(fill: avg-color-1)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[3.00]]],
+
 )
