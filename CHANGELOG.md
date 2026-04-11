@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.7](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.6...v0.1.7) (2026-04-11)
+
+
+### Features
+
+* add smooth color gradient scale to average row ([7a647ce](https://github.com/tcorzo/fiuba-gestion-tp/commit/7a647cefc546f1656f0823970fddd211a70523dd))
+
+
+### Bug Fixes
+
+* align features matrix colors and styling with spreadsheet ([256411d](https://github.com/tcorzo/fiuba-gestion-tp/commit/256411d9315fc44e0fb8d964b3386c9027f29503))
+* make features matrix generation dynamic from spreadsheet ([dd300c7](https://github.com/tcorzo/fiuba-gestion-tp/commit/dd300c700e6899f17216f5a17802610a857b40b8))
+
 ## [0.1.6](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.5...v0.1.6) (2026-04-10)
 
 
