@@ -210,31 +210,98 @@ def gen_es_no_es():
 def gen_features():
     df = pd.read_excel(XLSX_PATH, sheet_name="Features", header=None)
 
+    # Load workbook to read colors
+    wb = load_workbook(XLSX_PATH)
+    ws = wb["Features"]
+
     # Row 0: headers  — col 0 is "Features\n---\nPersonas", cols 1..N are feature names
     # Rows 1..M-1: persona rows — col 0 is persona name, cols 1..N are scores
-    # Last row: averages
+    # Last row: averages or observation
     header_cell = _clean(df.iloc[0, 0])  # noqa: F841
-    observation = _clean(df.iloc[0, df.shape[1] - 1])  # last col has observation
-    feature_names = [_clean(df.iloc[0, c]) for c in range(1, df.shape[1] - 1)]
+    # Extract ALL columns as features (cols 1 to end)
+    feature_names = [_clean(df.iloc[0, c]) for c in range(1, df.shape[1])]
     # Filter out empty feature names
     feature_names = [f for f in feature_names if f]
     num_features = len(feature_names)
 
+    # Extract colors from header row (row 1 in Excel, row 0 in pandas)
+    col_colors = {}  # col -> hex color (background)
+    col_font_colors = {}  # col -> hex color (font/text)
+    for c in range(1, df.shape[1]):
+        cell = ws.cell(1, c+1)  # row 1 (headers), column c+1 (skip personas column)
+        if cell.fill and cell.fill.start_color:
+            color = cell.fill.start_color.rgb
+            if color and color != "00000000":
+                # Remove FF prefix and convert to rgb
+                col_colors[c] = color[2:] if len(color) > 2 else color
+
+        # Also check font color from data row
+        data_cell = ws.cell(2, c+1)  # row 2 (first data row), column c+1
+        try:
+            if data_cell.font and data_cell.font.color:
+                if hasattr(data_cell.font.color, 'rgb'):
+                    font_color = data_cell.font.color.rgb
+                    if isinstance(font_color, str) and font_color and font_color != "00000000":
+                        col_font_colors[c] = font_color[2:] if len(font_color) > 2 else font_color
+        except:
+            pass
+
+    # Column 0 (Personas) color
+    personas_color = None
+    personas_font_color = None
+    cell = ws.cell(1, 1)
+    if cell.fill and cell.fill.start_color:
+        color = cell.fill.start_color.rgb
+        if color and color != "00000000":
+            personas_color = color[2:] if len(color) > 2 else color
+
+    # Check personas font color from first data row
+    try:
+        data_cell = ws.cell(2, 1)
+        if data_cell.font and data_cell.font.color:
+            if hasattr(data_cell.font.color, 'rgb'):
+                font_color = data_cell.font.color.rgb
+                if isinstance(font_color, str) and font_color and font_color != "00000000":
+                    personas_font_color = font_color[2:] if len(font_color) > 2 else font_color
+    except:
+        pass
+
     persona_rows = []
     avg_row = None
+    observation = None
     for r in range(1, df.shape[0]):
         name = _clean(df.iloc[r, 0])
+        # Check if this is an observation row
+        if name.lower().startswith("observación"):
+            observation = name
+            continue
         scores = []
+        is_avg_row = not name or name.lower() == "average"
         for c in range(1, 1 + num_features):
             val = df.iloc[r, c]
             if pd.isna(val):
-                scores.append("")
+                scores.append(("", ""))
             else:
-                scores.append(str(val))
+                try:
+                    if is_avg_row:
+                        # For average row, keep decimal values
+                        num_val = float(val)
+                        scores.append((num_val, str(num_val)))
+                    else:
+                        # For persona rows, convert to stars
+                        num = int(float(val))
+                        filled = "★" * num
+                        empty = "☆" * (5 - num)
+                        stars = filled + empty
+                        scores.append((num, stars))
+                except (ValueError, TypeError):
+                    scores.append(("", str(val)))
+        if is_avg_row:
+            # Row with average values
+            avg_row = scores
+            continue
         if not name:
-            # Row with no name but with scores is the averages row
-            if any(s for s in scores):
-                avg_row = scores
+            # Empty row name but not average row - skip
             continue
         persona_rows.append((name, scores))
 
@@ -242,37 +309,154 @@ def gen_features():
         '#import "../template.typ": conf',
         "#show: conf",
         "",
+        "#set page(flipped: true, paper: \"a3\", margin: (x: 0.5cm, y: 0.8cm))",
+        "",
         "= Features Matrix",
         "",
     ]
     if observation:
-        lines.append(f"_{observation}_")
+        # Clean observation text for Typst
+        obs_clean = observation.replace("\n", " ")
+        lines.append(f"_{obs_clean}_")
         lines.append("")
+
+    # Generate color variables
+    lines.append("// ── Color definitions extracted from spreadsheet ──────────────────────────")
+    if personas_color:
+        lines.append(f"#let personas-color = rgb(\"#{personas_color}\")")
+    else:
+        lines.append(f"#let personas-color = rgb(\"#C9DAF8\")")
+
+    if personas_font_color:
+        lines.append(f"#let personas-font-color = rgb(\"#{personas_font_color}\")")
+    else:
+        lines.append(f"#let personas-font-color = rgb(\"#000000\")")
+
+    # Data cell colors (for persona rows)
+    lines.append(f"#let data-color = rgb(\"#FFFFFF\")")
+    lines.append(f"#let data-font-color = rgb(\"#FBBC04\")")
+
+    # Header colors
+    for c in range(1, df.shape[1]):
+        bg_color = col_colors.get(c, "FFFFFF")  # Default to white if no color
+        font_color = col_font_colors.get(c, "000000")  # Default to black
+        lines.append(f"#let col{c}-color = rgb(\"#{bg_color}\")")
+        lines.append(f"#let col{c}-font-color = rgb(\"#{font_color}\")")
+
+    # Generate gradient colors for average row (if there's an average row)
+    if avg_row:
+        # Extract numeric values from average row
+        avg_values = []
+        for score_tuple in avg_row:
+            if isinstance(score_tuple, tuple) and isinstance(score_tuple[0], (int, float)):
+                avg_values.append(float(score_tuple[0]))
+            else:
+                avg_values.append(0.0)
+
+        if avg_values:
+            min_val = min(avg_values)
+            max_val = max(avg_values)
+
+            # Define gradient colors from strong red to medium green
+            # Single yellow, better green tones
+            gradient_colors = [
+                "C5221F",  # Strong red
+                "D32F2F",  # Dark red
+                "E53935",  # Red
+                "E06666",  # Light red
+                "E8725E",  # Red-orange
+                "ED9A56",  # Orange
+                "F1C232",  # Yellow
+                "B8D89F",  # Light green
+                "A8D08E",  # Light green
+                "98C87D",  # Medium-light green
+                "88C06C",  # Medium green
+                "78B85B",  # Medium green
+                "68B04A",  # Medium-dark green
+                "5A9F44",  # Dark green
+                "4C8E3E",  # Dark green
+            ]
+
+            lines.append("")
+            lines.append("// Average row color scale (smooth gradient red -> green)")
+            for i, color in enumerate(gradient_colors):
+                lines.append(f"#let avg-color-{i} = rgb(\"#{color}\")")
+            lines.append(f"#let avg-font-color = rgb(\"#000000\")")
+
+    lines.append("")
 
     # Build table
     ncols = num_features + 1
-    col_spec = ", ".join(["auto"] * ncols)
+    col_spec = ", ".join(["1fr"] * ncols)
     lines.append(f"#table(")
     lines.append(f"  columns: ({col_spec}),")
-    lines.append(f"  stroke: 0.5pt,")
+    lines.append(f"  stroke: 1.5pt,")
     lines.append(f"  align: center,")
-    # Header row
-    header_cells = "[*Persona*]"
-    for fn in feature_names:
-        header_cells += f", [*{fn}*]"
-    lines.append(f"  {header_cells},")
+    lines.append(f"  inset: (x: 4pt, y: 15pt),")
+    # Header row with centered and justified text and colors
+    # First cell: "Features / Personas" with personas color
+    lines.append(f"  table.cell(fill: personas-color, align: center + horizon)[")
+    lines.append(f"    #set par(justify: true)")
+    lines.append(f"    *Features*")
+    lines.append(f"    #v(0.2em)")
+    lines.append(f"    #line(length: 80%, stroke: 0.5pt)")
+    lines.append(f"    #v(0.2em)")
+    lines.append(f"    *Personas*")
+    lines.append("  ],")
+    # Feature name cells with their colors
+    for i, fn in enumerate(feature_names):
+        c = i + 1
+        lines.append(f"  table.cell(fill: col{c}-color, align: center + horizon)[")
+        lines.append(f"    #set par(justify: true)")
+        lines.append(f"    *{fn}*")
+        lines.append("  ],")
+    lines.append("")
     # Data rows
     for name, scores in persona_rows:
-        cells = f"[{name}]"
-        for s in scores:
-            cells += f", [{s}]"
-        lines.append(f"  {cells},")
+        # First cell: persona name with personas color
+        lines.append(f"  table.cell(fill: personas-color)[{name}],")
+        for i, score_tuple in enumerate(scores):
+            c = i + 1
+            if isinstance(score_tuple, tuple):
+                num, stars_str = score_tuple
+                # Use white background for data cells with yellow stars
+                lines.append(f"  table.cell(fill: data-color)[#align(center)[#text(size: 17pt, font: \"DejaVu Sans\", fill: data-font-color)[{stars_str}]]],")
+            else:
+                lines.append(f"  table.cell(fill: data-color)[#align(center)[#text(size: 17pt, fill: data-font-color)[{score_tuple}]]],")
+        lines.append("")
     # Averages row
     if avg_row:
-        cells = "[*Average*]"
-        for s in avg_row:
-            cells += f", [*{s}*]"
-        lines.append(f"  {cells},")
+        # Extract numeric values to calculate color indices
+        avg_values = []
+        for score_tuple in avg_row:
+            if isinstance(score_tuple, tuple) and isinstance(score_tuple[0], (int, float)):
+                avg_values.append(float(score_tuple[0]))
+            else:
+                avg_values.append(0.0)
+
+        if avg_values:
+            min_val = min(avg_values)
+            max_val = max(avg_values)
+            value_range = max_val - min_val if max_val > min_val else 1
+
+        # First cell: "Average" with personas color
+        lines.append(f"  table.cell(fill: personas-color)[Average],")
+        for i, score_tuple in enumerate(avg_row):
+            c = i + 1
+            if isinstance(score_tuple, tuple):
+                num, stars_str = score_tuple
+                # Calculate color index based on value position in min-max range
+                # Map to 0-14 range (15 colors total)
+                if isinstance(num, (int, float)):
+                    normalized = (float(num) - min_val) / value_range if value_range > 0 else 0
+                    color_idx = int(normalized * 14)  # 0-14 range
+                    color_idx = min(14, max(0, color_idx))  # Clamp to 0-14
+                    lines.append(f"  table.cell(fill: avg-color-{color_idx})[#align(center)[#text(size: 17pt, font: \"DejaVu Sans\", fill: avg-font-color)[{num:.2f}]]],")
+                else:
+                    lines.append(f"  table.cell(fill: data-color)[#align(center)[#text(size: 17pt, fill: data-font-color)[{stars_str}]]],")
+            else:
+                lines.append(f"  table.cell(fill: data-color)[#align(center)[#text(size: 17pt, fill: data-font-color)[{score_tuple}]]],")
+        lines.append("")
     lines.append(")")
     lines.append("")
 
