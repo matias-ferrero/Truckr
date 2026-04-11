@@ -233,12 +233,21 @@ def gen_features():
         for c in range(1, 1 + num_features):
             val = df.iloc[r, c]
             if pd.isna(val):
-                scores.append("")
+                scores.append(("", ""))
             else:
-                scores.append(str(val))
+                # Convert number to stars out of 5 (e.g., 3 -> ★★★☆☆)
+                try:
+                    num = int(float(val))
+                    filled = "★" * num
+                    empty = "☆" * (5 - num)
+                    stars = filled + empty
+                    # Return as tuple (number, stars_visual)
+                    scores.append((num, stars))
+                except (ValueError, TypeError):
+                    scores.append(("", str(val)))
         if not name:
             # Row with no name but with scores is the averages row
-            if any(s for s in scores):
+            if any(s[0] for s in scores):
                 avg_row = scores
             continue
         persona_rows.append((name, scores))
@@ -286,14 +295,25 @@ def gen_features():
     # Data rows
     for name, scores in persona_rows:
         cells = f"[{name}]"
-        for s in scores:
-            cells += f", [{s}]"
+        for score_tuple in scores:
+            if isinstance(score_tuple, tuple):
+                num, stars_str = score_tuple
+                # Use monospace-like representation with consistent sizing
+                # Create string with filled and empty stars
+                cells += f", [#align(center)[#text(size: 17pt, font: \"DejaVu Sans\")[{stars_str}]]]"
+            else:
+                cells += f", [#align(center)[#text(size: 17pt)[{score_tuple}]]]"
         lines.append(f"  {cells},")
     # Averages row
     if avg_row:
         cells = "[*Average*]"
-        for s in avg_row:
-            cells += f", [*{s}*]"
+        for score_tuple in avg_row:
+            if isinstance(score_tuple, tuple):
+                num, stars_str = score_tuple
+                # For averages, round to nearest and show stars/5
+                cells += f", [#align(center)[#text(size: 17pt, font: \"DejaVu Sans\")[*{stars_str}*]]]"
+            else:
+                cells += f", [#align(center)[#text(size: 17pt)[*{score_tuple}*]]]"
         lines.append(f"  {cells},")
     lines.append(")")
     lines.append("")
