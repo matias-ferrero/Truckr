@@ -3,6 +3,8 @@
 
 = Features Matrix
 
+_Observación: - Verde: Planificadas para el MVP - Rojo: Posible Mejora_
+
 #table(
   columns: (auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto),
   stroke: 0.5pt,
@@ -15,7 +17,4 @@
   [AgroTransport], [5], [5], [5], [5], [4], [5], [5], [4], [5], [5], [3], [5],
   [Campos Giménez], [3], [5], [4], [3], [3], [3], [4], [3], [1], [1], [5], [1],
   [Average], [3.83], [5], [4.83], [4], [3.67], [3.5], [3.83], [4], [3.67], [2.67], [3.33], [3],
-  [Observación:
-- Verde: Planificadas para el MVP
-- Rojo: Posible Mejora], [], [], [], [], [], [], [], [], [], [], [], [],
 )

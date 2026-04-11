@@ -212,7 +212,7 @@ def gen_features():
 
     # Row 0: headers  — col 0 is "Features\n---\nPersonas", cols 1..N are feature names
     # Rows 1..M-1: persona rows — col 0 is persona name, cols 1..N are scores
-    # Last row: averages (or observation)
+    # Last row: averages or observation
     header_cell = _clean(df.iloc[0, 0])  # noqa: F841
     # Extract ALL columns as features (cols 1 to end)
     feature_names = [_clean(df.iloc[0, c]) for c in range(1, df.shape[1])]
@@ -222,8 +222,13 @@ def gen_features():
 
     persona_rows = []
     avg_row = None
+    observation = None
     for r in range(1, df.shape[0]):
         name = _clean(df.iloc[r, 0])
+        # Check if this is an observation row
+        if name.lower().startswith("observación"):
+            observation = name
+            continue
         scores = []
         for c in range(1, 1 + num_features):
             val = df.iloc[r, c]
@@ -245,6 +250,11 @@ def gen_features():
         "= Features Matrix",
         "",
     ]
+    if observation:
+        # Clean observation text for Typst
+        obs_clean = observation.replace("\n", " ")
+        lines.append(f"_{obs_clean}_")
+        lines.append("")
 
     # Build table
     ncols = num_features + 1
