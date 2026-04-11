@@ -247,6 +247,8 @@ def gen_features():
         '#import "../template.typ": conf',
         "#show: conf",
         "",
+        "#set page(flipped: true, paper: \"a3\", margin: (x: 0.5cm, y: 0.8cm))",
+        "",
         "= Features Matrix",
         "",
     ]
@@ -258,16 +260,25 @@ def gen_features():
 
     # Build table
     ncols = num_features + 1
-    col_spec = ", ".join(["auto"] * ncols)
+    col_spec = ", ".join(["1fr"] * ncols)
     lines.append(f"#table(")
     lines.append(f"  columns: ({col_spec}),")
     lines.append(f"  stroke: 0.5pt,")
     lines.append(f"  align: center,")
-    # Header row
-    header_cells = "[*Persona*]"
+    lines.append(f"  inset: (x: 4pt, y: 15pt),")
+    # Header row with centered and justified text
+    # First cell: "Persona"
+    lines.append(f"  table.cell(align: center + horizon)[")
+    lines.append(f"    #set par(justify: true)")
+    lines.append(f"    *Persona*")
+    lines.append("  ],")
+    # Feature name cells
     for fn in feature_names:
-        header_cells += f", [*{fn}*]"
-    lines.append(f"  {header_cells},")
+        lines.append(f"  table.cell(align: center + horizon)[")
+        lines.append(f"    #set par(justify: true)")
+        lines.append(f"    *{fn}*")
+        lines.append("  ],")
+    lines.append("")
     # Data rows
     for name, scores in persona_rows:
         cells = f"[{name}]"
