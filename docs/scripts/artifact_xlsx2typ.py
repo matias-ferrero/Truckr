@@ -267,10 +267,14 @@ def gen_features():
     lines.append(f"  align: center,")
     lines.append(f"  inset: (x: 4pt, y: 15pt),")
     # Header row with centered and justified text
-    # First cell: "Persona"
+    # First cell: "Features" on top, "Personas" on bottom with separator line
     lines.append(f"  table.cell(align: center + horizon)[")
     lines.append(f"    #set par(justify: true)")
-    lines.append(f"    *Persona*")
+    lines.append(f"    *Features*")
+    lines.append(f"    #v(0.2em)")
+    lines.append(f"    #line(length: 80%, stroke: 0.5pt)")
+    lines.append(f"    #v(0.2em)")
+    lines.append(f"    *Personas*")
     lines.append("  ],")
     # Feature name cells
     for fn in feature_names:

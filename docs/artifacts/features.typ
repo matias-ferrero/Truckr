@@ -14,7 +14,11 @@ _Observación: - Verde: Planificadas para el MVP - Rojo: Posible Mejora_
   inset: (x: 4pt, y: 15pt),
   table.cell(align: center + horizon)[
     #set par(justify: true)
-    *Persona*
+    *Features*
+    #v(0.2em)
+    #line(length: 80%, stroke: 0.5pt)
+    #v(0.2em)
+    *Personas*
   ],
   table.cell(align: center + horizon)[
     #set par(justify: true)
