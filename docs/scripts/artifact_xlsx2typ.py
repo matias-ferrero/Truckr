@@ -137,24 +137,80 @@ def gen_personas():
             )
 
     lines = [
-        '#import "../template.typ": conf',
+        '#import "../template.typ": conf, stroke-std',
         "#show: conf",
+        "",
+        "#let persona-card(name: \"\", photo: none, profile: \"\", behavior: \"\", needs: \"\") = block(",
+        "  width: 100%,",
+        "  inset: 10pt,",
+        "  radius: 6pt,",
+        "  stroke: stroke-std,",
+        "  fill: luma(248),",
+        "  breakable: false,",
+        ")[",
+        "  #text(weight: \"bold\", size: 11pt)[#name]",
+        "  #v(6pt)",
+        "  #if photo != none {",
+        "    image(photo, width: 100%)",
+        "  } else {",
+        "    rect(width: 60pt, height: 60pt, stroke: stroke-std, fill: luma(220))[",
+        "      #align(center + horizon)[#text(size: 8pt, fill: luma(120))[foto]]",
+        "    ]",
+        "  }",
+        "  #v(6pt)",
+        "  #grid(",
+        "    columns: (auto, 1fr),",
+        "    column-gutter: 4pt,",
+        "    row-gutter: 4pt,",
+        "    [*Perfil:*], [#profile],",
+        "    [*Comportamiento:*], [#behavior],",
+        "    [*Necesidades:*], [#needs],",
+        "  )",
+        "]",
         "",
         "= Personas",
         "",
+        "#grid(",
+        "  columns: (1fr, 1fr),",
+        "  column-gutter: 12pt,",
+        "  row-gutter: 12pt,",
+        "",
     ]
+
     for p in personas:
-        lines.append(f"== {p['name']}")
+        # Escape quotes in text
+        profile_escaped = p["profile"].replace('"', '\\"')
+        behavior_escaped = p["behavior"].replace('"', '\\"')
+        needs_escaped = p["needs"].replace('"', '\\"')
+
+        # Generate photo path from persona name
+        # Extract the main name part (before age in parentheses)
+        name_part = p["name"].lower().split("(")[0].strip()
+
+        # Handle special cases with two-word names
+        if name_part == "campos giménez":
+            persona_name_clean = "campos-gimenez"
+        elif name_part == "juan martinez":
+            persona_name_clean = "juan_martinez"
+        elif name_part == "carolina souza":
+            persona_name_clean = "carolina_souza"
+        else:
+            # For others, take first word and remove accents
+            persona_name_clean = name_part.split()[0].replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u")
+
+        photo_path = f"images/personas/{persona_name_clean}.png"
+
+        lines.append(f"  persona-card(")
+        lines.append(f"    name: \"{p['name']}\",")
+        lines.append(f"    photo: \"{photo_path}\",")
+        lines.append(f"    profile: \"{profile_escaped}\",")
+        lines.append(f"    behavior: \"{behavior_escaped}\",")
+        lines.append(f"    needs: \"{needs_escaped}\",")
+        lines.append(f"  ),")
         lines.append("")
-        if p["profile"]:
-            lines.append(f"*Profile:* {p['profile']}")
-            lines.append("")
-        if p["behavior"]:
-            lines.append(f"*Behavior:* {p['behavior']}")
-            lines.append("")
-        if p["needs"]:
-            lines.append(f"*Needs:* {p['needs']}")
-            lines.append("")
+
+    lines.append(")")
+    lines.append("")
 
     _write("personas.typ", "\n".join(lines))
 
