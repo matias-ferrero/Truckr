@@ -39,7 +39,7 @@
   persona-card(
     name: "Hugo Fernandez (64 años)",
     photo: "images/personas/hugo.png",
-    profile: "Transportista independiente desde hace 20 años, trabaja con su hijo (Martín) y tienen 2 camiones.",
+    profile: "Transportista independiente desde hace 30 años, trabaja con su hijo (Martín) y tienen 2 camiones.",
     behavior: "Dado que vive en un pueblo con su familia, quiere mantener ese lugar como su base, y tener más viajes pero siempre volviendo a Cochicó.",
     needs: "Quiere expandir su clientela más allá de los productores que ya lo conocen.",
   ),
@@ -47,7 +47,7 @@
   persona-card(
     name: "Martín Fernandez (32 años)",
     photo: "images/personas/martin.png",
-    profile: "Trabaja como transportista con su padre (Hugo) desde hace 7 años.",
+    profile: "Trabaja como transportista con su padre (Hugo) desde hace 10 años.",
     behavior: "Dado que sus clientes son siempre los mismos, está aburrido de su trabajo.",
     needs: "Quiere tener viajes que lo lleven más lejos, o que un viaje lo lleve a un lugar desde donde pueda conseguir otro trabajo que lo lleve a otro lado, y así ir recorriendo toda la Argentina (el mejor país del mundo) mientras trabaja.",
   ),
@@ -113,6 +113,15 @@ Su carga no es común, así que necesita clientes confiables a largo plazo.",
     behavior: "Distribuye alimentos controlados con cumplimiento regulatorio (ANMAT, SENASA, etc.) desde puertos/aduanas hasta distribuidores locales. Trabaja bajo los protocolos impuestos y no son modificables (cadena de frío, trazabilidad, etc.)",
     needs: "Transportistas confiables y certificados, con documentación apropiada, capaciados para hacer las entregas.
 También necesita tener la trazabilidad completa del envío, y un seguro especializado sobre los productos.",
+  ),
+
+  persona-card(
+    name: "Sofía Carrasco (24 años)",
+    photo: "images/personas/sofia.png",
+    profile: "Mujer soltera, vive en BSAS, es estudiante en FIUBA, y trabaja part time en Mercado Libre hace 2 años.",
+    behavior: "Quiere mudarse a CABA para estar más cerca de la Facultad y de la oficina, de esa forma puede reducir distancias y ahorrar tiempo.
+No tiene problemas con la tecnología, pero no tiene contactos de alguien que le pueda hacer la mudanza.",
+    needs: "Servicio barato, accesible y rápido para un flete ocasional de sus cosas a su nuevo departamento.",
   ),
 
 )
