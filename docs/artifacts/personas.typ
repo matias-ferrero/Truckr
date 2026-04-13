@@ -37,7 +37,7 @@
   row-gutter: 12pt,
 
   persona-card(
-    name: "Hugo Fernandez (58 años)",
+    name: "Hugo Fernandez (64 años)",
     photo: "images/personas/hugo.png",
     profile: "Transportista independiente desde hace 20 años, trabaja con su hijo (Martín) y tienen 2 camiones.",
     behavior: "Dado que vive en un pueblo con su familia, quiere mantener ese lugar como su base, y tener más viajes pero siempre volviendo a Cochicó.",
@@ -86,7 +86,7 @@
 
   persona-card(
     name: "Juan Martinez (41 años)",
-    photo: "images/personas/juan_martinez.png",
+    photo: "images/personas/juan.png",
     profile: "Hombre casado con 3 hijos, vive en CABA, y es dueño de un negocio de entregas hace 8 años.
 Además de ser el dueño, también es transportista en el negocio.",
     behavior: "Realiza múltiples entregas a corta distancia por día (entre 10 y 20) de paquetes de volumen reducido. Opera en CABA y alrededores principalmente.
@@ -98,12 +98,21 @@ Necesita una interfaz simple, que cuente con filtros por ubicación para hacer e
 
   persona-card(
     name: "Carolina Souza (35 años)",
-    photo: "images/personas/carolina_souza.png",
+    photo: "images/personas/carolina.png",
     profile: "Mujer divorciada con 2 hijos, vive en Buenos Aires. Hace transporte especializado refrigerado desde hace 5 años.",
     behavior: "Hace transporte refrigerado, lleva carga especial y/o sensible. Tiene capacitación para cuidar la carga.
 Planifica viajes a corta y mediana distancia (ocasionalmente larga distancia), y cuida la ruta elegida por la carga que lleva.",
     needs: "Necesita hacer viajes planificados con tiempo, así como también tener detalle de la carga que lleva.
 Su carga no es común, así que necesita clientes confiables a largo plazo.",
+  ),
+
+  persona-card(
+    name: "Manuel Ramos (52 años)",
+    photo: "images/personas/manuel.png",
+    profile: "Hombre casado, vive en Córdoba, y es dueño de una empresa de distribución de alimentos que lleva 20 años en el rubro.",
+    behavior: "Distribuye alimentos controlados con cumplimiento regulatorio (ANMAT, SENASA, etc.) desde puertos/aduanas hasta distribuidores locales. Trabaja bajo los protocolos impuestos y no son modificables (cadena de frío, trazabilidad, etc.)",
+    needs: "Transportistas confiables y certificados, con documentación apropiada, capaciados para hacer las entregas.
+También necesita tener la trazabilidad completa del envío, y un seguro especializado sobre los productos.",
   ),
 
 )

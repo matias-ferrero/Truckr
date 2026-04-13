@@ -187,16 +187,13 @@ def gen_personas():
         # Extract the main name part (before age in parentheses)
         name_part = p["name"].lower().split("(")[0].strip()
 
-        # Handle special cases with two-word names
+        # Handle special cases with two-word names that have hyphens in filenames
         if name_part == "campos giménez":
             persona_name_clean = "campos-gimenez"
-        elif name_part == "juan martinez":
-            persona_name_clean = "juan_martinez"
-        elif name_part == "carolina souza":
-            persona_name_clean = "carolina_souza"
         else:
-            # For others, take first word and remove accents
-            persona_name_clean = name_part.split()[0].replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u")
+            # For all others, take first word and remove accents
+            first_word = name_part.split()[0]
+            persona_name_clean = first_word.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u")
 
         photo_path = f"images/personas/{persona_name_clean}.png"
 
