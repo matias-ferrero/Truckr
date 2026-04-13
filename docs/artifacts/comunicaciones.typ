@@ -110,7 +110,7 @@ El Plan de Comunicaciones establece los canales, frecuencias y objetivos de cada
   [*Demo Final*],
   [Formal],
   [Una vez (final del proyecto)],
-  [Mostar resultados al cliente y entregar el MVP completado],
+  [Mostrar resultados al cliente y entregar el MVP completado],
   [Equipo],
   [PO + Clientes],
 )
