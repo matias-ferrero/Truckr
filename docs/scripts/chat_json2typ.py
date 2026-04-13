@@ -137,11 +137,8 @@ def convert(json_path: str) -> str:
     return str(out_path)
 
 
-def generate_main(chat_files: list[str]):
-    """Generate a main.typ that includes all chat session files."""
-    # Sort by filename (chronological due to timestamp naming)
-    chat_files = sorted(chat_files)
-
+def _create_main(chat_files: list[str], out_path: Path):
+    """Create main.typ from scratch with the given chat session files."""
     lines = [
         '#import "../template.typ": conf',
         "#show: conf",
@@ -149,7 +146,6 @@ def generate_main(chat_files: list[str]):
         "= Sesiones de Chat con GitHub Copilot",
         "",
     ]
-
     for i, path in enumerate(chat_files):
         name = Path(path).name
         if i > 0:
@@ -157,9 +153,38 @@ def generate_main(chat_files: list[str]):
             lines.append("")
         lines.append(f'#include "{name}"')
     lines.append("")
-
-    out_path = ARTIFACTS_DIR / "main.typ"
     out_path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _append_main(chat_files: list[str], out_path: Path):
+    """Append new chat session files to an existing main.typ."""
+    existing = out_path.read_text(encoding="utf-8")
+    already_included = set(re.findall(r'#include "([^"]+)"', existing))
+    new_files = [p for p in chat_files if Path(p).name not in already_included]
+    if new_files:
+        append_lines: list[str] = []
+        for path in new_files:
+            name = Path(path).name
+            append_lines.append("#pagebreak()")
+            append_lines.append("")
+            append_lines.append(f'#include "{name}"')
+        append_lines.append("")
+        out_path.write_text(
+            existing.rstrip("\n") + "\n" + "\n".join(append_lines),
+            encoding="utf-8",
+        )
+
+
+def generate_main(chat_files: list[str]):
+    """Generate or update main.typ with chat session files."""
+    chat_files = sorted(chat_files)
+    out_path = ARTIFACTS_DIR / "main.typ"
+
+    if not out_path.exists():
+        _create_main(chat_files, out_path)
+    else:
+        _append_main(chat_files, out_path)
+
     print(f"  -> {out_path}")
 
 
