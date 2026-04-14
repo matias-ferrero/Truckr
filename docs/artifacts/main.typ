@@ -95,3 +95,6 @@
 
 // ── 8. Plan de Comunicaciones ──────────────────────────────────────────────
 #include "comunicaciones.typ"
+
+// ── 9. Informe de Costos T&M ──────────────────────────────────────────────
+#include "cost-report.typ"
