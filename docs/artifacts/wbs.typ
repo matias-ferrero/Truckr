@@ -217,7 +217,7 @@
     node(plataforma-transportista, hw, hh, [2.2 Plataforma \ Transportista])
 
     let plataforma-transportista-branch-x = branch-x(plataforma-transportista.at(0))
-    
+
     let disponibilidad = (plataforma-transportista-branch-x, -34.2)
     node(disponibilidad, hw, hh, [2.2.1 Publicación de \ Disponibilidad])
 
