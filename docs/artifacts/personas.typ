@@ -3,7 +3,7 @@
 
 #let persona-card(name: "", role: "", photo: none, profile: "", behavior: "", needs: "") = {
   let photo-content = if photo != none {
-    image(photo, width: 100%)
+    image(photo, width: 180pt)
   } else {
     rect(width: 60pt, height: 60pt, stroke: stroke-std, fill: luma(220))[
       #align(center + horizon)[#text(size: 8pt, fill: luma(120))[foto]]
@@ -52,7 +52,7 @@
 = Personas
 
 #grid(
-  columns: (1fr, 1fr),
+  columns: (1fr),
   column-gutter: 12pt,
   row-gutter: 12pt,
 
