@@ -45,6 +45,28 @@ just lint                     # run all pre-commit hooks
 just clean                    # remove generated PDFs
 ```
 
+## Pre-commit Hooks
+
+This project uses [prek](https://github.com/jdx/prek) to manage pre-commit hooks. Hooks run automatically on `git commit` and enforce formatting and linting.
+
+### Setup
+
+Install the hooks into your local repo after running `mise install`:
+
+```sh
+prek install
+```
+
+### Running manually
+
+```sh
+just lint        # run all pre-commit hooks
+prek run         # run hooks directly via prek
+```
+
+Hooks currently configured:
+- **typstyle** — formats all `.typ` files
+
 ## Releases
 
 This project uses [release-please](https://github.com/googleapis/release-please) for automated versioning and releases based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
