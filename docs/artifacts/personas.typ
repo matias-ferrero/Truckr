@@ -39,17 +39,21 @@
   persona-card(
     name: "Hugo Fernandez (64 años)",
     photo: "images/personas/hugo.png",
-    profile: "Transportista independiente desde hace 30 años, trabaja con su hijo (Martín) y tienen 2 camiones.",
-    behavior: "Dado que vive en un pueblo con su familia, quiere mantener ese lugar como su base, y tener más viajes pero siempre volviendo a Cochicó.",
-    needs: "Quiere expandir su clientela más allá de los productores que ya lo conocen.",
+    profile: "Es un transportista independiente desde hace 30 años que vive en BSAS, trabaja con su hijo (Martín) y tienen 2 camiones.",
+    behavior: "Tiene una vida estable con su familia, y quiere mantener ese lugar como su base, y tener más viajes pero siempre volviendo a su casa.
+No es bueno con la técnología, pero quiere expandirse facilmente manteniendo su estilo de vida.",
+    needs: "Expandir su clientela más allá de los productores que ya lo conocen.
+Necesita una interfaz simple y accesible que no le de tantos problemas, incluida una plataforma simple y confiable de pagos.
+Además, necesita llevar siempre carga llena o encadenar varios viajes en uno, para maximizar las ganancias y volver rápido a su casa.",
   ),
 
   persona-card(
     name: "Martín Fernandez (32 años)",
     photo: "images/personas/martin.png",
     profile: "Trabaja como transportista con su padre (Hugo) desde hace 10 años.",
-    behavior: "Dado que sus clientes son siempre los mismos, está aburrido de su trabajo.",
-    needs: "Quiere tener viajes que lo lleven más lejos, o que un viaje lo lleve a un lugar desde donde pueda conseguir otro trabajo que lo lleve a otro lado, y así ir recorriendo toda la Argentina (el mejor país del mundo) mientras trabaja.",
+    behavior: "Dado que sus clientes son siempre los mismos, está aburrido de su trabajo. Quiere aprovechar los transportes que hace para viajar y conocer diferentes lugares, a corta, mediana o larga distancia.",
+    needs: "Necesita expandir su clientela para tener distintos tipos de viajes, y no le importa sin son recurrentes u ocasionales. Estos viajes pueden ser a cualquier distancia, pero necesita encadenar viajes para que lo lleven a un lugar desde donde pueda conseguir otro, y así sucesivamente, haciendo viajes mientras trabaja.
+No conoce los lugares a donde va, así que necesita integración con gps para saber su recorrido.",
   ),
 
   persona-card(
