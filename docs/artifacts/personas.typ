@@ -1,7 +1,7 @@
 #import "../template.typ": conf, stroke-std
 #show: conf
 
-#let persona-card(name: "", role: "", photo: none, profile: "", behavior: "", needs: "") = {
+#let persona-card(name: "", role: "", photo: none, profile: "", behavior: "", needs: "", number: none) = {
   let photo-content = if photo != none {
     image(photo, width: 180pt)
   } else {
@@ -25,6 +25,12 @@
     []
   }
 
+  let title-content = if number != none {
+    [#number. #name]
+  } else {
+    [#name]
+  }
+
   block(
     width: 100%,
     inset: 10pt,
@@ -33,7 +39,7 @@
     fill: luma(248),
     breakable: false,
   )[
-    #text(weight: "bold", size: 11pt)[#name]
+    #text(weight: "bold", size: 11pt)[#title-content]
     #role-section
     #v(6pt)
     #photo-content
@@ -58,6 +64,7 @@
 
   // TRANSPORTISTAS
   persona-card(
+    number: 1,
     name: "Hugo Fernandez (64 años)",
     role: "TRANSPORTISTA",
     photo: "images/personas/hugo.png",
@@ -70,6 +77,7 @@ Además, necesita llevar siempre carga llena o encadenar varios viajes en uno, p
   ),
 
   persona-card(
+    number: 2,
     name: "Martín Fernandez (32 años)",
     role: "TRANSPORTISTA",
     photo: "images/personas/martin.png",
@@ -80,6 +88,7 @@ No conoce los lugares a donde va, así que necesita integración con gps para sa
   ),
 
   persona-card(
+    number: 3,
     name: "AgroTransport",
     role: "TRANSPORTISTA",
     photo: "images/personas/agrotransport.png",
@@ -90,6 +99,7 @@ Quieren aprovechar mejor sus camiones, pues muchas veces tienen a algunos sin us
   ),
 
   persona-card(
+    number: 4,
     name: "Juan Martinez (41 años)",
     role: "TRANSPORTISTA",
     photo: "images/personas/juan.png",
@@ -103,6 +113,7 @@ Necesita una interfaz simple, que cuente con filtros por ubicación para hacer e
   ),
 
   persona-card(
+    number: 5,
     name: "Carolina Souza (35 años)",
     role: "TRANSPORTISTA",
     photo: "images/personas/carolina.png",
@@ -114,6 +125,7 @@ Su carga no es común, así que necesita clientes confiables a largo plazo.",
   ),
 
   persona-card(
+    number: 6,
     name: "Manuel Ramos (52 años)",
     role: "TRANSPORTISTA",
     photo: "images/personas/manuel.png",
@@ -125,6 +137,7 @@ También necesita tener la trazabilidad completa del envío, y un seguro especia
 
   // PRODUCTORES / CLIENTES
   persona-card(
+    number: 7,
     name: "Daniela Perez (señora de 55 años)",
     role: "PRODUCTOR / CLIENTE",
     photo: "images/personas/daniela.png",
@@ -136,6 +149,7 @@ No es mala con la técnología, puede aprender, pero sería más fácil con una 
   ),
 
   persona-card(
+    number: 8,
     name: "Florencia Scazzola (mujer de 40 años).",
     role: "PRODUCTOR / CLIENTE",
     photo: "images/personas/florencia.png",
@@ -145,6 +159,7 @@ No es mala con la técnología, puede aprender, pero sería más fácil con una 
   ),
 
   persona-card(
+    number: 9,
     name: "Campos Giménez",
     role: "PRODUCTOR / CLIENTE",
     photo: "images/personas/campos-gimenez.png",
@@ -154,6 +169,7 @@ No es mala con la técnología, puede aprender, pero sería más fácil con una 
   ),
 
   persona-card(
+    number: 10,
     name: "Sofía Carrasco (24 años)",
     role: "PRODUCTOR / CLIENTE",
     photo: "images/personas/sofia.png",
