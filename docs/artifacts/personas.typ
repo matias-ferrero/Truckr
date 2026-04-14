@@ -59,9 +59,11 @@ No conoce los lugares a donde va, así que necesita integración con gps para sa
   persona-card(
     name: "Daniela Perez (señora de 55 años)",
     photo: "images/personas/daniela.png",
-    profile: "Mujer recientemente divorciada que busca mudarse",
-    behavior: "Es diseñadora de interiores, por ende, le fascina la decoración y tener sus propias decisiones sobre como quiere tener su nuevo departamento",
-    needs: "Busca comprar muebles y electrodomésticos a un precio razonable para su nueva vida",
+    profile: "Mujer recientemente divorciada, es diseñadora de interiores y trabaja en el rubro hace años.",
+    behavior: "Muchos clientes de ella necesitan amueblado, refacciones, y/o productos para hacer remodelaciones.
+Si bien ocasionalmente necesita hacer y/o recibe estos envíos para su trabajo, se le complica hacerlos por su cuenta, aunque tampoco puede permitirse hacer grandes erogaciones de dinero en envíos para no sufrir tantas pérdidas.",
+    needs: "Busca hacer y recibir envíos baratos ocasionalmente de forma fácil. Necesita asegurar algunos productos de sus clientes para protegerse de posibles daños.
+No es mala con la técnología, puede aprender, pero sería más fácil con una interfaz simple para evitar una curva de aprendizaje empinada.",
   ),
 
   persona-card(
