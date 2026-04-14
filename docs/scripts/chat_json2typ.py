@@ -17,17 +17,6 @@ from pathlib import Path
 
 ARTIFACTS_DIR = Path("docs/prompts")
 
-# Response item kinds that are NOT visible text content
-_SKIP_KINDS = {
-    "thinking",
-    "toolInvocationSerialized",
-    "textEditGroup",
-    "codeblockUri",
-    "mcpServersStarting",
-    "undoStop",
-    "inlineReference",
-}
-
 
 def _typst_raw_block(text: str) -> str:
     """Wrap text in a Typst raw text block with a safe backtick fence."""
@@ -54,15 +43,10 @@ def _extract_response_text(response: list) -> str:
     for item in response:
         if not isinstance(item, dict):
             continue
-        kind = item.get("kind")
-        if kind in _SKIP_KINDS:
-            continue
-        # Items without 'kind' (or with an unknown kind) that carry a 'value'
-        # string are the assistant's markdown prose.
-        value = item.get("value")
+        value = item.get("response")
         if isinstance(value, str) and value.strip():
             parts.append(value)
-    return "".join(parts).strip()
+    return "\n\n".join(parts).strip()
 
 
 def _format_timestamp(ts_ms: int | None) -> str:
@@ -98,7 +82,9 @@ def convert(json_path: str) -> str:
 
     for i, req in enumerate(requests):
         prompt = _extract_user_prompt(req)
-        response_items = req.get("response", [])
+        response_items = (
+            req.get("result", {}).get("metadata", {}).get("toolCallRounds", [])
+        )
         if not isinstance(response_items, list):
             response_items = []
         response = _extract_response_text(response_items)
