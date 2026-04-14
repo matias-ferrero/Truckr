@@ -5,14 +5,13 @@
   let photo-content = if photo != none {
     image(photo, width: 180pt)
   } else {
-    rect(width: 60pt, height: 60pt, stroke: stroke-std, fill: luma(220))[
+    rect(width: 180pt, height: 180pt, stroke: stroke-std, fill: luma(220))[
       #align(center + horizon)[#text(size: 8pt, fill: luma(120))[foto]]
     ]
   }
 
   let role-section = if role != "" {
     [
-      #v(3pt)
       #box(
         inset: (x: 6pt, y: 2pt),
         radius: 3pt,
@@ -39,11 +38,23 @@
     fill: luma(248),
     breakable: false,
   )[
-    #text(weight: "bold", size: 11pt)[#title-content]
-    #role-section
-    #v(6pt)
-    #photo-content
-    #v(6pt)
+    #grid(
+      columns: (1fr, auto),
+      column-gutter: 10pt,
+      row-gutter: 6pt,
+
+      // Left side: title and role
+      [
+        #text(weight: "bold", size: 11pt)[#title-content]
+        #v(3pt)
+        #role-section
+      ],
+
+      // Right side: photo
+      [#align(top + right)[#photo-content]],
+    )
+
+    #v(8pt)
     #grid(
       columns: (auto, 1fr),
       column-gutter: 4pt,
