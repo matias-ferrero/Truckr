@@ -28,9 +28,10 @@
   [Equipo], [6 Desarrolladores Semi-Senior],
   [Burn rate mensual (equipo)], [USD 26.400],
   [Burn rate por sprint (1 sem.)], [USD 1440],
-  [Tooling IA mensual], [USD 1.350 – 3.100],
+  [Tooling IA mensual], [USD 120],
+  [Infraestructura AWS mensual (prototipo)], [USD 68],
   [Ventana inicial de compromiso], [3 sprints semanales],
-  [Costo total ventana inicial], [USD 83.300 – 97.800 (equipo + tooling)],
+  [Costo total ventana inicial], [USD 4.752 (equipo + tooling + AWS)],
   [Período de calibración], [Sprints 1–3 (pronósticos de baja confianza)],
 )
 
@@ -192,22 +193,13 @@ Estos no son costos vinculados a reducir horas en tareas específicas — son *i
     )[Costo mensual (USD)]],
   ),
   [Asistente de código IA (Cursor / Copilot / Claude Code)],
-  [\$20–\$50/seat],
+  [\$20/seat],
   [6 seats],
-  [\$120 – \$300],
-  [Consumo de API LLM (workflows agénticos)],
-  [Variable],
-  [—],
-  [\$500 – \$2.500],
-  [Revisión de código IA (CodeRabbit o similar)],
-  [\$30/seat],
-  [6 seats],
-  [\$180],
-  [Escaneo de seguridad (Snyk / Semgrep)], [\$50/mes], [1 org], [\$50],
+  [\$120],
   table.cell(fill: luma(240), colspan: 3)[#align(
     right,
   )[*Total mensual tooling IA*]],
-  table.cell(fill: luma(240))[*\$850 – \$3.030*],
+  table.cell(fill: luma(240))[*\$120*],
 )
 
 #v(0.8em)
@@ -219,7 +211,104 @@ Estos no son costos vinculados a reducir horas en tareas específicas — son *i
   fill: rgb("#eaf2f8"),
   stroke: 0.5pt + c-brand,
 )[
-  *Justificación:* Las herramientas de coding con IA ahorran en promedio \~3.6 horas/semana/desarrollador. En un modelo \#NoEstimates, esto se traduce directamente en *más ítems entregados por sprint*, no en menos horas facturadas. El escaneo de seguridad es crítico dado que \~48\% del código generado por IA contiene vulnerabilidades de seguridad.
+  *Justificación:* Las herramientas de coding con IA ahorran en promedio \~3.6 horas/semana/desarrollador. En un modelo \#NoEstimates, esto se traduce directamente en *más ítems entregados por sprint*, no en menos horas facturadas.
+]
+
+#v(1em)
+
+=== Infraestructura Cloud — AWS (Prototipo)
+
+Los recursos están dimensionados para un entorno de prototipo con carga baja (\~50 usuarios concurrentes). Se prioriza costo sobre disponibilidad; sin Multi-AZ ni redundancia hasta validar el producto.
+
+#table(
+  columns: (1fr, auto, auto, auto, auto),
+  align: (left, left, center, center, center),
+  table.header(
+    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Servicio]],
+    table.cell(fill: c-brand)[#text(
+      fill: white,
+      weight: "bold",
+    )[Tipo / Instancia]],
+    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Cant.]],
+    table.cell(fill: c-brand)[#text(
+      fill: white,
+      weight: "bold",
+    )[Precio unitario]],
+    table.cell(fill: c-brand)[#text(
+      fill: white,
+      weight: "bold",
+    )[Costo mensual (USD)]],
+  ),
+  [EC2 — Servidor de aplicación (API \+ backend)],
+  [t3.small (2 vCPU, 2 GB RAM)],
+  [1],
+  [\$15,18/mes],
+  [\$15,18],
+
+  [EC2 — Servidor de workers / tareas asíncronas],
+  [t3.micro (2 vCPU, 1 GB RAM)],
+  [1],
+  [\$7,59/mes],
+  [\$7,59],
+
+  [RDS — Base de datos relacional (PostgreSQL 16)],
+  [db.t3.micro (2 vCPU, 1 GB RAM, 20 GB SSD, Single-AZ)],
+  [1],
+  [\$14,93/mes],
+  [\$14,93],
+
+  [ElastiCache — Caché y sesiones (Redis 7)],
+  [cache.t3.micro (1 vCPU, 0,5 GB RAM)],
+  [1],
+  [\$11,52/mes],
+  [\$11,52],
+
+  [S3 — Almacenamiento (imágenes, docs, backups)],
+  [Standard — 50 GB \+ 10 GB transferencia],
+  [1],
+  [≈ \$1,15/mes],
+  [\$1,15],
+
+  [Application Load Balancer],
+  [ALB (1 regla, \~10 LCU estimadas)],
+  [1],
+  [\$16,20/mes],
+  [\$16,20],
+
+  [Route 53 — DNS],
+  [Hosted Zone \+ consultas estándar],
+  [1],
+  [\$0,50/mes],
+  [\$0,50],
+
+  [CloudFront — CDN (assets estáticos)],
+  [10 GB transferencia, 1M requests],
+  [1],
+  [≈ \$1,00/mes],
+  [\$1,00],
+
+  [Elastic IP],
+  [IPv4 — asociada a EC2],
+  [1],
+  [\$0,00/mes],
+  [\$0,00],
+
+  table.cell(fill: luma(240), colspan: 4)[#align(
+    right,
+  )[*Total mensual infraestructura AWS*]],
+  table.cell(fill: luma(240))[*\~\$68,07*],
+)
+
+#v(0.8em)
+
+#block(
+  width: 100%,
+  inset: 10pt,
+  radius: 4pt,
+  fill: rgb("#fef9e7"),
+  stroke: 0.5pt + rgb("#f0b429"),
+)[
+  *Supuestos del sizing:* precios us-east-1 (Virginia), sin reserva (on-demand). Las instancias `t3` tienen créditos de CPU burst, adecuadas para cargas variables de prototipo. Para producción, se recomienda evaluar Reserved Instances (ahorro \~30–40\%) y habilitar Multi-AZ en RDS.
 ]
 
 #pagebreak()
@@ -507,15 +596,3 @@ Aun sin estimaciones, el cliente necesita seguridad financiera.
     El alcance es la variable de ajuste. Las restricciones fijas son tiempo (cadencia de sprints) y personas (composición del equipo).
   ],
 )
-
-#v(1em)
-
-#block(
-  width: 100%,
-  inset: 12pt,
-  radius: 4pt,
-  fill: rgb("#eaf2f8"),
-  stroke: 0.5pt + c-brand,
-)[
-  *En síntesis:* No se compran X funcionalidades por Y dólares. Se contrata un equipo a una tarifa conocida, guiado por valor, con transparencia total sobre el throughput. El cliente decide en cada punto de control si continuar invirtiendo.
-]
