@@ -40,11 +40,11 @@
     name: "Hugo Fernandez (64 años)",
     photo: "images/personas/hugo.png",
     profile: "Es un transportista independiente desde hace 30 años que vive en BSAS, trabaja con su hijo (Martín) y tienen 2 camiones.",
-    behavior: "Tiene una vida estable con su familia, y quiere mantener ese lugar como su base, y tener más viajes pero siempre volviendo a su casa.
+    behavior: "Tiene una vida estable con su familia, y quiere mantener ese lugar como su base, y tener más viajes pero siempre volviendo a su casa. Está cerca de jubilarse, así que hace viajes ocasionalmente y no es tan constante.
 No es bueno con la técnología, pero quiere expandirse facilmente manteniendo su estilo de vida.",
-    needs: "Expandir su clientela más allá de los productores que ya lo conocen.
+    needs: "Trabajar con una clientela estable que necesite trabajo ocasional/estacional.
 Necesita una interfaz simple y accesible que no le de tantos problemas, incluida una plataforma simple y confiable de pagos.
-Además, necesita llevar siempre carga llena o encadenar varios viajes en uno, para maximizar las ganancias y volver rápido a su casa.",
+Además, necesita llevar siempre carga llena o encadenar varios viajes en uno, para aprovechar cada viaje que haga.",
   ),
 
   persona-card(
@@ -77,16 +77,17 @@ No es mala con la técnología, puede aprender, pero sería más fácil con una 
   persona-card(
     name: "AgroTransport",
     photo: "images/personas/agrotransport.png",
-    profile: "Una empresa que tiene una flota de 10 camiones con transportistas contratados a tiempo completo.",
-    behavior: "Tienen empleados que hacen viajes en simultáneo.",
-    needs: "Quieren aprovechar mejor sus camiones, pues muchas veces tienen a algunos sin usar por varias semanas, y no quieren seguir desperdiciando esos recursos. Además, cuando ocurre eso, aún así les están pagando a sus empleados por más que no estén haciendo viajes activamente. Quieren hacer un seguimiento de la calidad del servicio que ofrece cada uno de sus empleados.",
+    profile: "Una empresa con base en BSAS que tiene una flota de 10 camiones con transportistas contratados a tiempo completo, que está en el rubro hace 2 años.",
+    behavior: "Tienen empleados que hacen viajes en simultáneo, la empresa los controla desde la base. Reciben peticiones de transporte y despachan un camión a hacer el encargo. Pueden despachar a corta, media o larga distancia, pero siempre buscan planificar sus transportes.
+Quieren aprovechar mejor sus camiones, pues muchas veces tienen a algunos sin usar por varias semanas, y no quieren seguir desperdiciando esos recursos.",
+    needs: "Necesitan expandir su clientela facilmente para mejorar su ganancia. Para ello también necesitan por hacer seguimiento de los envíos que hacen e hicieron (historial de viajes, características de los productos, etc.). Además, para mejorar su planificación, necesitan hacer un trackeo vía GPS de sus camiones, así como también poder hacer varíos envíos en un solo viaje si es posible, y asegurarlos en caso de daños.",
   ),
 
   persona-card(
     name: "Campos Giménez",
     photo: "images/personas/campos-gimenez.png",
-    profile: "Una empresa dueña de 300ha de campo",
-    behavior: "Trabajan y cosechan múltiples cultivos a lo largo del año.",
+    profile: "Una empresa dueña de 300ha de campo a las afueras de Rosario.",
+    behavior: "Trabajan y cosechan múltiples cultivos a lo largo del año, quieren mejorar la planificación de los envíos de su cosecha, y abaratar los costos de los envíos.",
     needs: "Transportar la cosecha a plantas de procesamiento y demás destinos estacionalmente.",
   ),
 
