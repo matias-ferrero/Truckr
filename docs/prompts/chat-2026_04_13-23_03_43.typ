@@ -7,29 +7,41 @@ _2026-04-13 23:03 UTC — copilot/claude-sonnet-4.6_
 
 === Prompt
 
-#cmarker.render(```
-Call `generate_main` only if `main.typ` doesn't exist, otherwise append the files at the end of `main.typ`
-```, h1-level: 4)
+#cmarker.render(
+  ```
+  Call `generate_main` only if `main.typ` doesn't exist, otherwise append the files at the end of `main.typ`
+  ```,
+  h1-level: 4,
+)
 
 === Respuesta (GitHub Copilot)
 
-#cmarker.render(```
-Done. Now `generate_main`:
-- **Creates** `main.typ` from scratch if it doesn't exist (original behavior)
-- **Appends** only new `#include` entries (with a preceding `#pagebreak()`) when `main.typ` already exists, skipping any files already referenced in it
-```, h1-level: 4)
+#cmarker.render(
+  ```
+  Done. Now `generate_main`:
+  - **Creates** `main.typ` from scratch if it doesn't exist (original behavior)
+  - **Appends** only new `#include` entries (with a preceding `#pagebreak()`) when `main.typ` already exists, skipping any files already referenced in it
+  ```,
+  h1-level: 4,
+)
 
 == Intercambio 2
 _2026-04-13 23:05 UTC — copilot/claude-sonnet-4.6_
 
 === Prompt
 
-#cmarker.render(```
-Separate generate and append into two different functions
-```, h1-level: 4)
+#cmarker.render(
+  ```
+  Separate generate and append into two different functions
+  ```,
+  h1-level: 4,
+)
 
 === Respuesta (GitHub Copilot)
 
-#cmarker.render(```
-Split into `_create_main` (builds from scratch) and `_append_main` (adds only new includes to existing file). `generate_main` now just decides which to call.
-```, h1-level: 4)
+#cmarker.render(
+  ```
+  Split into `_create_main` (builds from scratch) and `_append_main` (adds only new includes to existing file). `generate_main` now just decides which to call.
+  ```,
+  h1-level: 4,
+)
