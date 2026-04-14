@@ -1,7 +1,13 @@
 #import "../template.typ": conf, stroke-std
 #show: conf
 
-#let persona-card(name: "", photo: none, profile: "", behavior: "", needs: "") = block(
+#let persona-card(
+  name: "",
+  photo: none,
+  profile: "",
+  behavior: "",
+  needs: "",
+) = block(
   width: 100%,
   inset: 10pt,
   radius: 6pt,
