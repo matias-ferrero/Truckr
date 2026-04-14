@@ -1,5 +1,6 @@
 import os
 import sys
+import textwrap
 
 import pandas as pd
 from openpyxl import load_workbook
@@ -135,25 +136,146 @@ def gen_personas():
                 }
             )
 
+    # Define persona roles and order
+    persona_roles = {
+        "Hugo Fernandez (64 años)": "TRANSPORTISTA",
+        "Martín Fernandez (32 años)": "TRANSPORTISTA",
+        "AgroTransport": "TRANSPORTISTA",
+        "Juan Martinez (41 años)": "TRANSPORTISTA",
+        "Carolina Souza (35 años)": "TRANSPORTISTA",
+        "Manuel Ramos (52 años)": "TRANSPORTISTA",
+        "Daniela Perez (señora de 55 años)": "PRODUCTOR / CLIENTE",
+        "Florencia Scazzola (mujer de 40 años).": "PRODUCTOR / CLIENTE",
+        "Campos Giménez": "PRODUCTOR / CLIENTE",
+        "Sofía Carrasco (24 años)": "PRODUCTOR / CLIENTE",
+    }
+
+    # Add role to each persona and separate by role
+    for p in personas:
+        p["role"] = persona_roles.get(p["name"], "")
+
+    # Sort personas: TRANSPORTISTA first, then PRODUCTOR / CLIENTE
+    transportistas = [p for p in personas if p["role"] == "TRANSPORTISTA"]
+    clientes = [p for p in personas if p["role"] == "PRODUCTOR / CLIENTE"]
+    personas_sorted = transportistas + clientes
+
     lines = [
-        '#import "../template.typ": conf',
+        '#import "../template.typ": conf, stroke-std',
         "#show: conf",
+        "",
+        '#let persona-card(name: "", role: "", photo: none, profile: "", behavior: "", needs: "", number: none) = {',
+        "  let photo-content = if photo != none {",
+        "    image(photo, width: 200pt)",
+        "  } else {",
+        "    rect(width: 200pt, height: 200pt, stroke: stroke-std, fill: luma(220))[",
+        "      #align(center + horizon)[#text(size: 8pt, fill: luma(120))[foto]]",
+        "    ]",
+        "  }",
+        "",
+        '  let role-section = if role != "" {',
+        "    [",
+        "      #box(",
+        "        inset: (x: 6pt, y: 2pt),",
+        "        radius: 3pt,",
+        '        fill: rgb("#E8F0FE"),',
+        '        stroke: rgb("#4285F4") + 0.5pt,',
+        '        text(size: 8pt, fill: rgb("#1F70C5"), weight: "bold")[#role]',
+        "      )",
+        "    ]",
+        "  } else {",
+        "    []",
+        "  }",
+        "",
+        "  let title-content = if number != none {",
+        "    [#number. #name]",
+        "  } else {",
+        "    [#name]",
+        "  }",
+        "",
+        "  block(",
+        "    width: 100%,",
+        "    inset: 10pt,",
+        "    radius: 6pt,",
+        "    stroke: stroke-std,",
+        "    fill: luma(248),",
+        "    breakable: false,",
+        "  )[",
+        "    #grid(",
+        "      columns: (1fr, auto),",
+        "      column-gutter: 10pt,",
+        "      row-gutter: 6pt,",
+        "",
+        "      // Left side: title and role",
+        "      [",
+        '        #text(weight: "bold", size: 11pt)[#title-content]',
+        "        #v(3pt)",
+        "        #role-section",
+        "      ],",
+        "",
+        "      // Right side: photo",
+        "      [#align(top + right)[#photo-content]],",
+        "    )",
+        "",
+        "    #v(8pt)",
+        "    #grid(",
+        "      columns: (auto, 1fr),",
+        "      column-gutter: 4pt,",
+        "      row-gutter: 4pt,",
+        "      [*Perfil:*], [#profile],",
+        "      [*Comportamiento:*], [#behavior],",
+        "      [*Necesidades:*], [#needs],",
+        "    )",
+        "  ]",
+        "}",
         "",
         "= Personas",
         "",
+        "#grid(",
+        "  columns: (1fr),",
+        "  column-gutter: 12pt,",
+        "  row-gutter: 12pt,",
+        "",
     ]
-    for p in personas:
-        lines.append(f"== {p['name']}")
+
+    for i, p in enumerate(personas_sorted, 1):
+        # Escape quotes in text
+        profile_escaped = p["profile"].replace('"', '\\"')
+        behavior_escaped = p["behavior"].replace('"', '\\"')
+        needs_escaped = p["needs"].replace('"', '\\"')
+
+        # Generate photo path from persona name
+        # Extract the main name part (before age in parentheses)
+        name_part = p["name"].lower().split("(")[0].strip()
+
+        # Handle special cases with two-word names that have hyphens in filenames
+        if name_part == "campos giménez":
+            persona_name_clean = "campos-gimenez"
+        else:
+            # For all others, take first word and remove accents
+            first_word = name_part.split()[0]
+            persona_name_clean = (
+                first_word.replace("á", "a")
+                .replace("é", "e")
+                .replace("í", "i")
+                .replace("ó", "o")
+                .replace("ú", "u")
+            )
+
+        photo_path = f"images/personas/{persona_name_clean}.png"
+
+        lines.append(f"  persona-card(")
+        lines.append(f"    number: {i},")
+        lines.append(f"    name: \"{p['name']}\",")
+        lines.append(f"    role: \"{p['role']}\",")
+        lines.append(f'    photo: "{photo_path}",')
+        lines.append(f'    profile: "{profile_escaped}",')
+        lines.append(f'    behavior: "{behavior_escaped}",')
+        lines.append(f'    needs: "{needs_escaped}",')
+        lines.append(f"  ),")
         lines.append("")
-        if p["profile"]:
-            lines.append(f"*Profile:* {p['profile']}")
-            lines.append("")
-        if p["behavior"]:
-            lines.append(f"*Behavior:* {p['behavior']}")
-            lines.append("")
-        if p["needs"]:
-            lines.append(f"*Needs:* {p['needs']}")
-            lines.append("")
+
+    lines.append(")")
+    lines.append("")
 
     _write("personas.typ", "\n".join(lines))
 
@@ -338,16 +460,16 @@ def gen_features():
     if personas_color:
         lines.append(f'#let personas-color = rgb("#{personas_color}")')
     else:
-        lines.append('#let personas-color = rgb("#C9DAF8")')
+        lines.append(f'#let personas-color = rgb("#C9DAF8")')
 
     if personas_font_color:
         lines.append(f'#let personas-font-color = rgb("#{personas_font_color}")')
     else:
-        lines.append('#let personas-font-color = rgb("#000000")')
+        lines.append(f'#let personas-font-color = rgb("#000000")')
 
     # Data cell colors (for persona rows)
-    lines.append('#let data-color = rgb("#FFFFFF")')
-    lines.append('#let data-font-color = rgb("#FBBC04")')
+    lines.append(f'#let data-color = rgb("#FFFFFF")')
+    lines.append(f'#let data-font-color = rgb("#FBBC04")')
 
     # Header colors
     for c in range(1, df.shape[1]):
@@ -373,7 +495,7 @@ def gen_features():
             max_val = max(avg_values)
 
             # Define gradient colors from strong red to medium green
-            # Single yellow, better green tones
+            # 15 steps for lower granularity
             gradient_colors = [
                 "C5221F",  # Strong red
                 "D32F2F",  # Dark red
@@ -396,33 +518,33 @@ def gen_features():
             lines.append("// Average row color scale (smooth gradient red -> green)")
             for i, color in enumerate(gradient_colors):
                 lines.append(f'#let avg-color-{i} = rgb("#{color}")')
-            lines.append('#let avg-font-color = rgb("#000000")')
+            lines.append(f'#let avg-font-color = rgb("#000000")')
 
     lines.append("")
 
     # Build table
     ncols = num_features + 1
     col_spec = ", ".join(["1fr"] * ncols)
-    lines.append("#table(")
+    lines.append(f"#table(")
     lines.append(f"  columns: ({col_spec}),")
-    lines.append("  stroke: 1.5pt,")
-    lines.append("  align: center,")
-    lines.append("  inset: (x: 4pt, y: 15pt),")
+    lines.append(f"  stroke: 1.5pt,")
+    lines.append(f"  align: center,")
+    lines.append(f"  inset: (x: 4pt, y: 15pt),")
     # Header row with centered and justified text and colors
     # First cell: "Features / Personas" with personas color
-    lines.append("  table.cell(fill: personas-color, align: center + horizon)[")
-    lines.append("    #set par(justify: true)")
-    lines.append("    *Features*")
-    lines.append("    #v(0.2em)")
-    lines.append("    #line(length: 80%, stroke: 0.5pt)")
-    lines.append("    #v(0.2em)")
-    lines.append("    *Personas*")
+    lines.append(f"  table.cell(fill: personas-color, align: center + horizon)[")
+    lines.append(f"    #set par(justify: true)")
+    lines.append(f"    *Features*")
+    lines.append(f"    #v(0.2em)")
+    lines.append(f"    #line(length: 80%, stroke: 0.5pt)")
+    lines.append(f"    #v(0.2em)")
+    lines.append(f"    *Personas*")
     lines.append("  ],")
     # Feature name cells with their colors
     for i, fn in enumerate(feature_names):
         c = i + 1
         lines.append(f"  table.cell(fill: col{c}-color, align: center + horizon)[")
-        lines.append("    #set par(justify: true)")
+        lines.append(f"    #set par(justify: true)")
         lines.append(f"    *{fn}*")
         lines.append("  ],")
     lines.append("")
@@ -456,12 +578,12 @@ def gen_features():
                 avg_values.append(0.0)
 
         if avg_values:
-            min_val = min(avg_values)
-            max_val = max(avg_values)
-            value_range = max_val - min_val if max_val > min_val else 1
+            min_val = 1.0
+            max_val = 5.0
+            value_range = max_val - min_val
 
         # First cell: "Average" with personas color
-        lines.append("  table.cell(fill: personas-color)[Average],")
+        lines.append(f"  table.cell(fill: personas-color)[Average],")
         for i, score_tuple in enumerate(avg_row):
             c = i + 1
             if isinstance(score_tuple, tuple):
@@ -639,12 +761,12 @@ def _gen_usm(sheet_name: str, output_name: str):
 
     lines.extend(
         [
-            f'#let epic-color = rgb("#{epic_color if epic_color else "9FC5E8"}")',
-            f'#let release-color = rgb("#{release_color if release_color else "6AA84F"}")',
+            f"#let epic-color = rgb(\"#{epic_color if epic_color else '9FC5E8'}\")",
+            f"#let release-color = rgb(\"#{release_color if release_color else '6AA84F'}\")",
             "",
             "= User Story Map",
             "",
-            "#set text(size: 9pt)",
+            f"#set text(size: 9pt)",
             "",
             "#table(",
             f"  columns: (2fr,) * {num_cols},",
@@ -660,7 +782,7 @@ def _gen_usm(sheet_name: str, output_name: str):
         lines.append(
             f"  table.cell(colspan: {col_span}, fill: epic-color, align: center)["
         )
-        lines.append(f'    #text(fill: black, weight: "bold")[{ep["name"]}]')
+        lines.append(f"    #text(fill: black, weight: \"bold\")[{ep['name']}]")
         lines.append("  ],")
 
     # Generate actividades row with column colors
@@ -796,12 +918,12 @@ def gen_backlog_us():
             lines.append(f"*Estimation:* {s['estimation']}")
             lines.append("")
         if s["description"]:
-            lines.append("*Description:*")
+            lines.append(f"*Description:*")
             # Parse "Como X quiero Y para Z" format
             lines.append(f"{s['description']}")
             lines.append("")
         if s["criteria"]:
-            lines.append("*Acceptance Criteria:*")
+            lines.append(f"*Acceptance Criteria:*")
             for crit_line in s["criteria"].split("\n"):
                 crit_line = crit_line.strip()
                 if not crit_line:
