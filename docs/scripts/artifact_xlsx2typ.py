@@ -495,7 +495,7 @@ def gen_features():
             max_val = max(avg_values)
 
             # Define gradient colors from strong red to medium green
-            # Single yellow, better green tones
+            # 15 steps for lower granularity
             gradient_colors = [
                 "C5221F",  # Strong red
                 "D32F2F",  # Dark red
@@ -578,9 +578,9 @@ def gen_features():
                 avg_values.append(0.0)
 
         if avg_values:
-            min_val = min(avg_values)
-            max_val = max(avg_values)
-            value_range = max_val - min_val if max_val > min_val else 1
+            min_val = 1.0
+            max_val = 5.0
+            value_range = max_val - min_val
 
         # First cell: "Average" with personas color
         lines.append(f"  table.cell(fill: personas-color)[Average],")
