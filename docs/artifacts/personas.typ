@@ -1,7 +1,15 @@
 #import "../template.typ": conf, stroke-std
 #show: conf
 
-#let persona-card(name: "", role: "", photo: none, profile: "", behavior: "", needs: "", number: none) = {
+#let persona-card(
+  name: "",
+  role: "",
+  photo: none,
+  profile: "",
+  behavior: "",
+  needs: "",
+  number: none,
+) = {
   let photo-content = if photo != none {
     image(photo, width: 200pt)
   } else {
@@ -17,7 +25,7 @@
         radius: 3pt,
         fill: rgb("#E8F0FE"),
         stroke: rgb("#4285F4") + 0.5pt,
-        text(size: 8pt, fill: rgb("#1F70C5"), weight: "bold")[#role]
+        text(size: 8pt, fill: rgb("#1F70C5"), weight: "bold")[#role],
       )
     ]
   } else {
@@ -69,7 +77,7 @@
 = Personas
 
 #grid(
-  columns: (1fr),
+  columns: 1fr,
   column-gutter: 12pt,
   row-gutter: 12pt,
 
@@ -192,5 +200,4 @@ No tiene problemas con la tecnología, pero no tiene contactos de alguien que le
     needs: "Servicio barato, accesible y rápido para un flete ocasional de sus cosas a su nuevo departamento.
 No tiene experiencia en el tema, así que necesita reseñas para buscar un transportista confiable.",
   ),
-
 )
