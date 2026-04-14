@@ -17,17 +17,6 @@ from pathlib import Path
 
 ARTIFACTS_DIR = Path("docs/prompts")
 
-# Response item kinds that are NOT visible text content
-_SKIP_KINDS = {
-    "thinking",
-    "toolInvocationSerialized",
-    "textEditGroup",
-    "codeblockUri",
-    "mcpServersStarting",
-    "undoStop",
-    "inlineReference",
-}
-
 
 def _typst_raw_block(text: str) -> str:
     """Wrap text in a Typst raw text block with a safe backtick fence."""
@@ -54,15 +43,10 @@ def _extract_response_text(response: list) -> str:
     for item in response:
         if not isinstance(item, dict):
             continue
-        kind = item.get("kind")
-        if kind in _SKIP_KINDS:
-            continue
-        # Items without 'kind' (or with an unknown kind) that carry a 'value'
-        # string are the assistant's markdown prose.
-        value = item.get("value")
+        value = item.get("response")
         if isinstance(value, str) and value.strip():
             parts.append(value)
-    return "".join(parts).strip()
+    return "\n\n".join(parts).strip()
 
 
 def _format_timestamp(ts_ms: int | None) -> str:
@@ -98,7 +82,9 @@ def convert(json_path: str) -> str:
 
     for i, req in enumerate(requests):
         prompt = _extract_user_prompt(req)
-        response_items = req.get("response", [])
+        response_items = (
+            req.get("result", {}).get("metadata", {}).get("toolCallRounds", [])
+        )
         if not isinstance(response_items, list):
             response_items = []
         response = _extract_response_text(response_items)
@@ -137,11 +123,8 @@ def convert(json_path: str) -> str:
     return str(out_path)
 
 
-def generate_main(chat_files: list[str]):
-    """Generate a main.typ that includes all chat session files."""
-    # Sort by filename (chronological due to timestamp naming)
-    chat_files = sorted(chat_files)
-
+def _create_main(chat_files: list[str], out_path: Path):
+    """Create main.typ from scratch with the given chat session files."""
     lines = [
         '#import "../template.typ": conf',
         "#show: conf",
@@ -149,7 +132,6 @@ def generate_main(chat_files: list[str]):
         "= Sesiones de Chat con GitHub Copilot",
         "",
     ]
-
     for i, path in enumerate(chat_files):
         name = Path(path).name
         if i > 0:
@@ -157,9 +139,48 @@ def generate_main(chat_files: list[str]):
             lines.append("")
         lines.append(f'#include "{name}"')
     lines.append("")
-
-    out_path = ARTIFACTS_DIR / "main.typ"
     out_path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _update_main(chat_files: list[str], out_path: Path):
+    """Insert new chat session files into an existing main.typ, sorted by filename."""
+    existing = out_path.read_text(encoding="utf-8")
+    already_included = set(re.findall(r'#include "([^"]+)"', existing))
+    new_names = {Path(p).name for p in chat_files} - already_included
+    if not new_names:
+        return
+
+    all_names = sorted(already_included | new_names)
+
+    # Preserve the header (everything before the first #include line)
+    first_include = re.search(r'^#include "', existing, re.MULTILINE)
+    header = (
+        existing[: first_include.start()]
+        if first_include
+        else existing.rstrip("\n") + "\n"
+    )
+
+    include_lines: list[str] = []
+    for i, name in enumerate(all_names):
+        if i > 0:
+            include_lines.append("#pagebreak()")
+            include_lines.append("")
+        include_lines.append(f'#include "{name}"')
+    include_lines.append("")
+
+    out_path.write_text(header + "\n".join(include_lines), encoding="utf-8")
+
+
+def generate_main(chat_files: list[str]):
+    """Generate or update main.typ with chat session files."""
+    chat_files = sorted(chat_files)
+    out_path = ARTIFACTS_DIR / "main.typ"
+
+    if not out_path.exists():
+        _create_main(chat_files, out_path)
+    else:
+        _update_main(chat_files, out_path)
+
     print(f"  -> {out_path}")
 
 
