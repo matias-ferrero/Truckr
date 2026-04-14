@@ -27,4 +27,10 @@
 #include "chat-2026_04_01-13_44_12.typ"
 #pagebreak()
 
+#include "chat-2026_04_12-17_36_23.typ"
+#pagebreak()
+
+#include "chat-2026_04_13-00_28_33.typ"
+#pagebreak()
+
 #include "chat-2026_04_13-23_03_43.typ"
