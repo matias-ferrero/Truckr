@@ -30,7 +30,11 @@
     radius: 4pt,
     fill: c-brand,
   )[
-    #align(center)[#text(fill: white, weight: "bold", size: 10pt)[Truckr® — Plataforma de Transporte]]
+    #align(center)[#text(
+      fill: white,
+      weight: "bold",
+      size: 10pt,
+    )[Truckr® — Plataforma de Transporte]]
   ]
 ]
 
@@ -163,7 +167,12 @@
   ],
 
   // ── Nivel 2 (continuación) ──────────────────────────────────────────────
-  [], wbs-l2[2.4 Oferta de Retiro], wbs-l2[3.4 Realización del Viaje], [], [], wbs-l2[6.4 Verificación de Cuenta],
+  [],
+  wbs-l2[2.4 Oferta de Retiro],
+  wbs-l2[3.4 Realización del Viaje],
+  [],
+  [],
+  wbs-l2[6.4 Verificación de Cuenta],
 
   // ── Nivel 3 ─────────────────────────────────────────────────────────────
   [],

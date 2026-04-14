@@ -90,3 +90,8 @@
 
 // ── 7. Backlog — User Stories ──────────────────────────────────────────────
 #include "backlog-us.typ"
+
+#pagebreak()
+
+// ── 8. Plan de Comunicaciones ──────────────────────────────────────────────
+#include "comunicaciones.typ"

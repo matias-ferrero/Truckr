@@ -14,7 +14,11 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 #line(length: 100%, stroke: 1.5pt + rgb("#6AA84F"))
-#align(center)[#text(weight: "bold", size: 12pt, fill: rgb("#6AA84F"))[MVP — Release 1]]
+#align(center)[#text(
+  weight: "bold",
+  size: 12pt,
+  fill: rgb("#6AA84F"),
+)[MVP — Release 1]]
 #line(length: 100%, stroke: 1.5pt + rgb("#6AA84F"))
 
 // ── Cuenta ────────────────────────────────────────────────────────────────
@@ -305,7 +309,11 @@ para cobrar por mi servicio de forma segura y en tiempo.
 // ═══════════════════════════════════════════════════════════════════════════
 
 #line(length: 100%, stroke: 1.5pt + rgb("#6AA84F"))
-#align(center)[#text(weight: "bold", size: 12pt, fill: rgb("#6AA84F"))[Post MVP — Release 2]]
+#align(center)[#text(
+  weight: "bold",
+  size: 12pt,
+  fill: rgb("#6AA84F"),
+)[Post MVP — Release 2]]
 #line(length: 100%, stroke: 1.5pt + rgb("#6AA84F"))
 
 == US16: Cambiar Contraseña
@@ -420,7 +428,11 @@ para saber dónde está mi producto y cuándo llegará.
 // ═══════════════════════════════════════════════════════════════════════════
 
 #line(length: 100%, stroke: 1.5pt + rgb("#6AA84F"))
-#align(center)[#text(weight: "bold", size: 12pt, fill: rgb("#6AA84F"))[Post MVP — Release 3]]
+#align(center)[#text(
+  weight: "bold",
+  size: 12pt,
+  fill: rgb("#6AA84F"),
+)[Post MVP — Release 3]]
 #line(length: 100%, stroke: 1.5pt + rgb("#6AA84F"))
 
 == US22: Verificación de Cuenta por Email
