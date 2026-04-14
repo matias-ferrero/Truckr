@@ -155,7 +155,7 @@ También necesita tener la trazabilidad completa del envío, y un seguro especia
 
   persona-card(
     number: 7,
-    name: "Daniela Perez (señora de 55 años)",
+    name: "Daniela Perez (55 años)",
     role: "PRODUCTOR / CLIENTE",
     photo: "images/personas/daniela.png",
     profile: "Mujer recientemente divorciada, es diseñadora de interiores y trabaja en el rubro hace años.",
@@ -167,7 +167,7 @@ No es mala con la técnología, puede aprender, pero sería más fácil con una 
 
   persona-card(
     number: 8,
-    name: "Florencia Scazzola (mujer de 40 años).",
+    name: "Florencia Scazzola (40 años).",
     role: "PRODUCTOR / CLIENTE",
     photo: "images/personas/florencia.png",
     profile: "Mujer emprendedora que tiene su propio centro de estética",
