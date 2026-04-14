@@ -3,9 +3,9 @@
 
 #let persona-card(name: "", role: "", photo: none, profile: "", behavior: "", needs: "", number: none) = {
   let photo-content = if photo != none {
-    image(photo, width: 180pt)
+    image(photo, width: 200pt)
   } else {
-    rect(width: 180pt, height: 180pt, stroke: stroke-std, fill: luma(220))[
+    rect(width: 200pt, height: 200pt, stroke: stroke-std, fill: luma(220))[
       #align(center + horizon)[#text(size: 8pt, fill: luma(120))[foto]]
     ]
   }
@@ -73,7 +73,6 @@
   column-gutter: 12pt,
   row-gutter: 12pt,
 
-  // TRANSPORTISTAS
   persona-card(
     number: 1,
     name: "Hugo Fernandez (64 años)",
@@ -146,7 +145,6 @@ Su carga no es común, así que necesita clientes confiables a largo plazo.",
 También necesita tener la trazabilidad completa del envío, y un seguro especializado sobre los productos.",
   ),
 
-  // PRODUCTORES / CLIENTES
   persona-card(
     number: 7,
     name: "Daniela Perez (señora de 55 años)",
@@ -165,8 +163,10 @@ No es mala con la técnología, puede aprender, pero sería más fácil con una 
     role: "PRODUCTOR / CLIENTE",
     photo: "images/personas/florencia.png",
     profile: "Mujer emprendedora que tiene su propio centro de estética",
-    behavior: "Le encanta el maquillaje, el skincare y el cuidado personal. Muy interesada en la cultura coreana.",
-    needs: "Conseguir productos (skincare, maquillaje, etc) para su nuevo emprendimiento, a un precio mucho menor al que lo conseguiría en el mercado local.",
+    behavior: "Le encanta el maquillaje, el skincare y el cuidado personal. Muy interesada en la cultura coreana.
+Busca conseguir productos para su nuevo emprendimiento, a un precio mucho menor al que lo conseguiría en el mercado local.",
+    needs: "Recibir entregas de productores locales, y eventualmente hacer entregas de sus ventas, con un servicio barato.
+Además necesita leer reseñas de buenos transportias que cuiden bien sus productos para evitar problemas.",
   ),
 
   persona-card(
@@ -175,8 +175,10 @@ No es mala con la técnología, puede aprender, pero sería más fácil con una 
     role: "PRODUCTOR / CLIENTE",
     photo: "images/personas/campos-gimenez.png",
     profile: "Una empresa dueña de 300ha de campo a las afueras de Rosario.",
-    behavior: "Trabajan y cosechan múltiples cultivos a lo largo del año, quieren mejorar la planificación de los envíos de su cosecha, y abaratar los costos de los envíos.",
-    needs: "Transportar la cosecha a plantas de procesamiento y demás destinos estacionalmente.",
+    behavior: "Trabajan y cosechan múltiples cultivos a lo largo del año, quieren mejorar la planificación de los envíos de su cosecha, y abaratar los costos de los envíos.
+Como las ganancias del año dependen de la cosecha, su negocio es sensible a la pérdida de la misma.",
+    needs: "Transportar la cosecha a plantas de procesamiento y demás destinos estacionalmente.
+Necesitan asegurar su producto para protegerse en caso de un problema.",
   ),
 
   persona-card(
@@ -187,7 +189,8 @@ No es mala con la técnología, puede aprender, pero sería más fácil con una 
     profile: "Mujer soltera, vive en BSAS, es estudiante en FIUBA, y trabaja part time en Mercado Libre hace 2 años.",
     behavior: "Quiere mudarse a CABA para estar más cerca de la Facultad y de la oficina, de esa forma puede reducir distancias y ahorrar tiempo.
 No tiene problemas con la tecnología, pero no tiene contactos de alguien que le pueda hacer la mudanza.",
-    needs: "Servicio barato, accesible y rápido para un flete ocasional de sus cosas a su nuevo departamento.",
+    needs: "Servicio barato, accesible y rápido para un flete ocasional de sus cosas a su nuevo departamento.
+No tiene experiencia en el tema, así que necesita reseñas para buscar un transportista confiable.",
   ),
 
 )

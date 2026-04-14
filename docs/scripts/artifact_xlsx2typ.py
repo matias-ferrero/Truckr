@@ -136,48 +136,108 @@ def gen_personas():
                 }
             )
 
+    # Define persona roles and order
+    persona_roles = {
+        "Hugo Fernandez (64 años)": "TRANSPORTISTA",
+        "Martín Fernandez (32 años)": "TRANSPORTISTA",
+        "AgroTransport": "TRANSPORTISTA",
+        "Juan Martinez (41 años)": "TRANSPORTISTA",
+        "Carolina Souza (35 años)": "TRANSPORTISTA",
+        "Manuel Ramos (52 años)": "TRANSPORTISTA",
+        "Daniela Perez (señora de 55 años)": "PRODUCTOR / CLIENTE",
+        "Florencia Scazzola (mujer de 40 años).": "PRODUCTOR / CLIENTE",
+        "Campos Giménez": "PRODUCTOR / CLIENTE",
+        "Sofía Carrasco (24 años)": "PRODUCTOR / CLIENTE",
+    }
+
+    # Add role to each persona and separate by role
+    for p in personas:
+        p["role"] = persona_roles.get(p["name"], "")
+
+    # Sort personas: TRANSPORTISTA first, then PRODUCTOR / CLIENTE
+    transportistas = [p for p in personas if p["role"] == "TRANSPORTISTA"]
+    clientes = [p for p in personas if p["role"] == "PRODUCTOR / CLIENTE"]
+    personas_sorted = transportistas + clientes
+
     lines = [
         '#import "../template.typ": conf, stroke-std',
         "#show: conf",
         "",
-        "#let persona-card(name: \"\", photo: none, profile: \"\", behavior: \"\", needs: \"\") = block(",
-        "  width: 100%,",
-        "  inset: 10pt,",
-        "  radius: 6pt,",
-        "  stroke: stroke-std,",
-        "  fill: luma(248),",
-        "  breakable: false,",
-        ")[",
-        "  #text(weight: \"bold\", size: 11pt)[#name]",
-        "  #v(6pt)",
-        "  #if photo != none {",
-        "    image(photo, width: 100%)",
+        '#let persona-card(name: "", role: "", photo: none, profile: "", behavior: "", needs: "", number: none) = {',
+        "  let photo-content = if photo != none {",
+        "    image(photo, width: 200pt)",
         "  } else {",
-        "    rect(width: 60pt, height: 60pt, stroke: stroke-std, fill: luma(220))[",
+        "    rect(width: 200pt, height: 200pt, stroke: stroke-std, fill: luma(220))[",
         "      #align(center + horizon)[#text(size: 8pt, fill: luma(120))[foto]]",
         "    ]",
         "  }",
-        "  #v(6pt)",
-        "  #grid(",
-        "    columns: (auto, 1fr),",
-        "    column-gutter: 4pt,",
-        "    row-gutter: 4pt,",
-        "    [*Perfil:*], [#profile],",
-        "    [*Comportamiento:*], [#behavior],",
-        "    [*Necesidades:*], [#needs],",
-        "  )",
-        "]",
+        "",
+        '  let role-section = if role != "" {',
+        "    [",
+        "      #box(",
+        "        inset: (x: 6pt, y: 2pt),",
+        "        radius: 3pt,",
+        '        fill: rgb("#E8F0FE"),',
+        '        stroke: rgb("#4285F4") + 0.5pt,',
+        '        text(size: 8pt, fill: rgb("#1F70C5"), weight: "bold")[#role]',
+        "      )",
+        "    ]",
+        "  } else {",
+        "    []",
+        "  }",
+        "",
+        "  let title-content = if number != none {",
+        "    [#number. #name]",
+        "  } else {",
+        "    [#name]",
+        "  }",
+        "",
+        "  block(",
+        "    width: 100%,",
+        "    inset: 10pt,",
+        "    radius: 6pt,",
+        "    stroke: stroke-std,",
+        "    fill: luma(248),",
+        "    breakable: false,",
+        "  )[",
+        "    #grid(",
+        "      columns: (1fr, auto),",
+        "      column-gutter: 10pt,",
+        "      row-gutter: 6pt,",
+        "",
+        "      // Left side: title and role",
+        "      [",
+        '        #text(weight: "bold", size: 11pt)[#title-content]',
+        "        #v(3pt)",
+        "        #role-section",
+        "      ],",
+        "",
+        "      // Right side: photo",
+        "      [#align(top + right)[#photo-content]],",
+        "    )",
+        "",
+        "    #v(8pt)",
+        "    #grid(",
+        "      columns: (auto, 1fr),",
+        "      column-gutter: 4pt,",
+        "      row-gutter: 4pt,",
+        "      [*Perfil:*], [#profile],",
+        "      [*Comportamiento:*], [#behavior],",
+        "      [*Necesidades:*], [#needs],",
+        "    )",
+        "  ]",
+        "}",
         "",
         "= Personas",
         "",
         "#grid(",
-        "  columns: (1fr, 1fr),",
+        "  columns: (1fr),",
         "  column-gutter: 12pt,",
         "  row-gutter: 12pt,",
         "",
     ]
 
-    for p in personas:
+    for i, p in enumerate(personas_sorted, 1):
         # Escape quotes in text
         profile_escaped = p["profile"].replace('"', '\\"')
         behavior_escaped = p["behavior"].replace('"', '\\"')
@@ -193,16 +253,24 @@ def gen_personas():
         else:
             # For all others, take first word and remove accents
             first_word = name_part.split()[0]
-            persona_name_clean = first_word.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u")
+            persona_name_clean = (
+                first_word.replace("á", "a")
+                .replace("é", "e")
+                .replace("í", "i")
+                .replace("ó", "o")
+                .replace("ú", "u")
+            )
 
         photo_path = f"images/personas/{persona_name_clean}.png"
 
         lines.append(f"  persona-card(")
+        lines.append(f"    number: {i},")
         lines.append(f"    name: \"{p['name']}\",")
-        lines.append(f"    photo: \"{photo_path}\",")
-        lines.append(f"    profile: \"{profile_escaped}\",")
-        lines.append(f"    behavior: \"{behavior_escaped}\",")
-        lines.append(f"    needs: \"{needs_escaped}\",")
+        lines.append(f"    role: \"{p['role']}\",")
+        lines.append(f'    photo: "{photo_path}",')
+        lines.append(f'    profile: "{profile_escaped}",')
+        lines.append(f'    behavior: "{behavior_escaped}",')
+        lines.append(f'    needs: "{needs_escaped}",')
         lines.append(f"  ),")
         lines.append("")
 
@@ -281,7 +349,7 @@ def gen_features():
     col_colors = {}  # col -> hex color (background)
     col_font_colors = {}  # col -> hex color (font/text)
     for c in range(1, df.shape[1]):
-        cell = ws.cell(1, c+1)  # row 1 (headers), column c+1 (skip personas column)
+        cell = ws.cell(1, c + 1)  # row 1 (headers), column c+1 (skip personas column)
         if cell.fill and cell.fill.start_color:
             color = cell.fill.start_color.rgb
             if color and color != "00000000":
@@ -289,13 +357,19 @@ def gen_features():
                 col_colors[c] = color[2:] if len(color) > 2 else color
 
         # Also check font color from data row
-        data_cell = ws.cell(2, c+1)  # row 2 (first data row), column c+1
+        data_cell = ws.cell(2, c + 1)  # row 2 (first data row), column c+1
         try:
             if data_cell.font and data_cell.font.color:
-                if hasattr(data_cell.font.color, 'rgb'):
+                if hasattr(data_cell.font.color, "rgb"):
                     font_color = data_cell.font.color.rgb
-                    if isinstance(font_color, str) and font_color and font_color != "00000000":
-                        col_font_colors[c] = font_color[2:] if len(font_color) > 2 else font_color
+                    if (
+                        isinstance(font_color, str)
+                        and font_color
+                        and font_color != "00000000"
+                    ):
+                        col_font_colors[c] = (
+                            font_color[2:] if len(font_color) > 2 else font_color
+                        )
         except:
             pass
 
@@ -312,10 +386,16 @@ def gen_features():
     try:
         data_cell = ws.cell(2, 1)
         if data_cell.font and data_cell.font.color:
-            if hasattr(data_cell.font.color, 'rgb'):
+            if hasattr(data_cell.font.color, "rgb"):
                 font_color = data_cell.font.color.rgb
-                if isinstance(font_color, str) and font_color and font_color != "00000000":
-                    personas_font_color = font_color[2:] if len(font_color) > 2 else font_color
+                if (
+                    isinstance(font_color, str)
+                    and font_color
+                    and font_color != "00000000"
+                ):
+                    personas_font_color = (
+                        font_color[2:] if len(font_color) > 2 else font_color
+                    )
     except:
         pass
 
@@ -362,7 +442,7 @@ def gen_features():
         '#import "../template.typ": conf',
         "#show: conf",
         "",
-        "#set page(flipped: true, paper: \"a3\", margin: (x: 0.5cm, y: 0.8cm))",
+        '#set page(flipped: true, paper: "a3", margin: (x: 0.5cm, y: 0.8cm))',
         "",
         "= Features Matrix",
         "",
@@ -374,34 +454,38 @@ def gen_features():
         lines.append("")
 
     # Generate color variables
-    lines.append("// ── Color definitions extracted from spreadsheet ──────────────────────────")
+    lines.append(
+        "// ── Color definitions extracted from spreadsheet ──────────────────────────"
+    )
     if personas_color:
-        lines.append(f"#let personas-color = rgb(\"#{personas_color}\")")
+        lines.append(f'#let personas-color = rgb("#{personas_color}")')
     else:
-        lines.append(f"#let personas-color = rgb(\"#C9DAF8\")")
+        lines.append(f'#let personas-color = rgb("#C9DAF8")')
 
     if personas_font_color:
-        lines.append(f"#let personas-font-color = rgb(\"#{personas_font_color}\")")
+        lines.append(f'#let personas-font-color = rgb("#{personas_font_color}")')
     else:
-        lines.append(f"#let personas-font-color = rgb(\"#000000\")")
+        lines.append(f'#let personas-font-color = rgb("#000000")')
 
     # Data cell colors (for persona rows)
-    lines.append(f"#let data-color = rgb(\"#FFFFFF\")")
-    lines.append(f"#let data-font-color = rgb(\"#FBBC04\")")
+    lines.append(f'#let data-color = rgb("#FFFFFF")')
+    lines.append(f'#let data-font-color = rgb("#FBBC04")')
 
     # Header colors
     for c in range(1, df.shape[1]):
         bg_color = col_colors.get(c, "FFFFFF")  # Default to white if no color
         font_color = col_font_colors.get(c, "000000")  # Default to black
-        lines.append(f"#let col{c}-color = rgb(\"#{bg_color}\")")
-        lines.append(f"#let col{c}-font-color = rgb(\"#{font_color}\")")
+        lines.append(f'#let col{c}-color = rgb("#{bg_color}")')
+        lines.append(f'#let col{c}-font-color = rgb("#{font_color}")')
 
     # Generate gradient colors for average row (if there's an average row)
     if avg_row:
         # Extract numeric values from average row
         avg_values = []
         for score_tuple in avg_row:
-            if isinstance(score_tuple, tuple) and isinstance(score_tuple[0], (int, float)):
+            if isinstance(score_tuple, tuple) and isinstance(
+                score_tuple[0], (int, float)
+            ):
                 avg_values.append(float(score_tuple[0]))
             else:
                 avg_values.append(0.0)
@@ -433,8 +517,8 @@ def gen_features():
             lines.append("")
             lines.append("// Average row color scale (smooth gradient red -> green)")
             for i, color in enumerate(gradient_colors):
-                lines.append(f"#let avg-color-{i} = rgb(\"#{color}\")")
-            lines.append(f"#let avg-font-color = rgb(\"#000000\")")
+                lines.append(f'#let avg-color-{i} = rgb("#{color}")')
+            lines.append(f'#let avg-font-color = rgb("#000000")')
 
     lines.append("")
 
@@ -473,16 +557,22 @@ def gen_features():
             if isinstance(score_tuple, tuple):
                 num, stars_str = score_tuple
                 # Use white background for data cells with yellow stars
-                lines.append(f"  table.cell(fill: data-color)[#align(center)[#text(size: 17pt, font: \"DejaVu Sans\", fill: data-font-color)[{stars_str}]]],")
+                lines.append(
+                    f'  table.cell(fill: data-color)[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: data-font-color)[{stars_str}]]],'
+                )
             else:
-                lines.append(f"  table.cell(fill: data-color)[#align(center)[#text(size: 17pt, fill: data-font-color)[{score_tuple}]]],")
+                lines.append(
+                    f"  table.cell(fill: data-color)[#align(center)[#text(size: 17pt, fill: data-font-color)[{score_tuple}]]],"
+                )
         lines.append("")
     # Averages row
     if avg_row:
         # Extract numeric values to calculate color indices
         avg_values = []
         for score_tuple in avg_row:
-            if isinstance(score_tuple, tuple) and isinstance(score_tuple[0], (int, float)):
+            if isinstance(score_tuple, tuple) and isinstance(
+                score_tuple[0], (int, float)
+            ):
                 avg_values.append(float(score_tuple[0]))
             else:
                 avg_values.append(0.0)
@@ -501,14 +591,22 @@ def gen_features():
                 # Calculate color index based on value position in min-max range
                 # Map to 0-14 range (15 colors total)
                 if isinstance(num, (int, float)):
-                    normalized = (float(num) - min_val) / value_range if value_range > 0 else 0
+                    normalized = (
+                        (float(num) - min_val) / value_range if value_range > 0 else 0
+                    )
                     color_idx = int(normalized * 14)  # 0-14 range
                     color_idx = min(14, max(0, color_idx))  # Clamp to 0-14
-                    lines.append(f"  table.cell(fill: avg-color-{color_idx})[#align(center)[#text(size: 17pt, font: \"DejaVu Sans\", fill: avg-font-color)[{num:.2f}]]],")
+                    lines.append(
+                        f'  table.cell(fill: avg-color-{color_idx})[#align(center)[#text(size: 17pt, font: "DejaVu Sans", fill: avg-font-color)[{num:.2f}]]],'
+                    )
                 else:
-                    lines.append(f"  table.cell(fill: data-color)[#align(center)[#text(size: 17pt, fill: data-font-color)[{stars_str}]]],")
+                    lines.append(
+                        f"  table.cell(fill: data-color)[#align(center)[#text(size: 17pt, fill: data-font-color)[{stars_str}]]],"
+                    )
             else:
-                lines.append(f"  table.cell(fill: data-color)[#align(center)[#text(size: 17pt, fill: data-font-color)[{score_tuple}]]],")
+                lines.append(
+                    f"  table.cell(fill: data-color)[#align(center)[#text(size: 17pt, fill: data-font-color)[{score_tuple}]]],"
+                )
         lines.append("")
     lines.append(")")
     lines.append("")
@@ -537,7 +635,9 @@ def _gen_usm(sheet_name: str, output_name: str):
     # Map column -> color from tasks row (row 3 in Excel, row 2 in pandas) - the lighter tones
     col_colors = {}  # col -> hex color (e.g., "FCE5CD" without FF prefix)
     for c in range(1, df.shape[1]):
-        cell = ws.cell(3, c + 1)  # row 3 (first tasks), column c+1 (because pandas is 0-indexed)
+        cell = ws.cell(
+            3, c + 1
+        )  # row 3 (first tasks), column c+1 (because pandas is 0-indexed)
         if cell.fill and cell.fill.start_color:
             color = cell.fill.start_color.rgb
             if color and color != "00000000":
@@ -647,7 +747,7 @@ def _gen_usm(sheet_name: str, output_name: str):
         '#import "../template.typ": c-activ, c-epic, c-mvp, c-mvp-lane, c-post, c-post-lane, c-task, conf',
         "#show: conf",
         "",
-        "#set page(flipped: true, paper: \"a3\", margin: (x: 0.5cm, y: 0.8cm))",
+        '#set page(flipped: true, paper: "a3", margin: (x: 0.5cm, y: 0.8cm))',
         "",
         "// ── Color definitions extracted from spreadsheet ──────────────────────────",
     ]
@@ -656,28 +756,32 @@ def _gen_usm(sheet_name: str, output_name: str):
     for c in range(1, df.shape[1]):
         task_color = col_colors.get(c, "FCE5CD")
         activ_color = activity_colors.get(c, "F9CB9C")
-        lines.append(f"#let col{c}-task = rgb(\"#{task_color}\")")
-        lines.append(f"#let col{c}-activ = rgb(\"#{activ_color}\")")
+        lines.append(f'#let col{c}-task = rgb("#{task_color}")')
+        lines.append(f'#let col{c}-activ = rgb("#{activ_color}")')
 
-    lines.extend([
-        f"#let epic-color = rgb(\"#{epic_color if epic_color else '9FC5E8'}\")",
-        f"#let release-color = rgb(\"#{release_color if release_color else '6AA84F'}\")",
-        "",
-        "= User Story Map",
-        "",
-        f"#set text(size: 9pt)",
-        "",
-        "#table(",
-        f"  columns: (2fr,) * {num_cols},",
-        "  inset: (x: 4pt, y: 3pt),",
-        "",
-        "  // ── Row 1: Backbone — Epics ─────────────────────────────────────────────",
-    ])
+    lines.extend(
+        [
+            f"#let epic-color = rgb(\"#{epic_color if epic_color else '9FC5E8'}\")",
+            f"#let release-color = rgb(\"#{release_color if release_color else '6AA84F'}\")",
+            "",
+            "= User Story Map",
+            "",
+            f"#set text(size: 9pt)",
+            "",
+            "#table(",
+            f"  columns: (2fr,) * {num_cols},",
+            "  inset: (x: 4pt, y: 3pt),",
+            "",
+            "  // ── Row 1: Backbone — Epics ─────────────────────────────────────────────",
+        ]
+    )
 
     # Generate epics row with colspan and colors
     for ep in epics:
         col_span = ep["end"] - ep["start"] + 1
-        lines.append(f"  table.cell(colspan: {col_span}, fill: epic-color, align: center)[")
+        lines.append(
+            f"  table.cell(colspan: {col_span}, fill: epic-color, align: center)["
+        )
         lines.append(f"    #text(fill: black, weight: \"bold\")[{ep['name']}]")
         lines.append("  ],")
 
@@ -686,7 +790,7 @@ def _gen_usm(sheet_name: str, output_name: str):
         name = actividades.get(c, "")
         if name:
             lines.append(f"  table.cell(fill: col{c}-activ, align: center)[")
-            lines.append(f"    #text(fill: black, weight: \"bold\")[{name}]")
+            lines.append(f'    #text(fill: black, weight: "bold")[{name}]')
             lines.append("  ],")
         else:
             lines.append(f"  table.cell(fill: col{c}-activ)[],")
@@ -705,7 +809,9 @@ def _gen_usm(sheet_name: str, output_name: str):
             release_label = f"Post MVP — Release {release_num}"
 
         # Generate rows for this release (tasks first)
-        lines.append(f"  // ── {release_label} Stories ──────────────────────────────────────────────────────────")
+        lines.append(
+            f"  // ── {release_label} Stories ──────────────────────────────────────────────────────────"
+        )
         for c in range(1, df.shape[1]):
             tasks = tasks_by_release[release_idx].get(c, [])
             if tasks:
@@ -718,9 +824,13 @@ def _gen_usm(sheet_name: str, output_name: str):
 
         # Add release marker row after tasks
         lines.append("")
-        lines.append(f"  // ── {release_label} Marker ────────────────────────────────────────────────────────")
-        lines.append(f"  table.cell(colspan: {num_cols}, fill: release-color, align: center)[")
-        lines.append(f"    #text(fill: black, weight: \"bold\")[{release_label}]")
+        lines.append(
+            f"  // ── {release_label} Marker ────────────────────────────────────────────────────────"
+        )
+        lines.append(
+            f"  table.cell(colspan: {num_cols}, fill: release-color, align: center)["
+        )
+        lines.append(f'    #text(fill: black, weight: "bold")[{release_label}]')
         lines.append("  ],")
 
     lines.append(")")
