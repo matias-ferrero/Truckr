@@ -56,6 +56,7 @@
   column-gutter: 12pt,
   row-gutter: 12pt,
 
+  // TRANSPORTISTAS
   persona-card(
     name: "Hugo Fernandez (64 años)",
     role: "TRANSPORTISTA",
@@ -79,26 +80,6 @@ No conoce los lugares a donde va, así que necesita integración con gps para sa
   ),
 
   persona-card(
-    name: "Daniela Perez (señora de 55 años)",
-    role: "PRODUCTOR / CLIENTE",
-    photo: "images/personas/daniela.png",
-    profile: "Mujer recientemente divorciada, es diseñadora de interiores y trabaja en el rubro hace años.",
-    behavior: "Muchos clientes de ella necesitan amueblado, refacciones, y/o productos para hacer remodelaciones.
-Si bien ocasionalmente necesita hacer y/o recibe estos envíos para su trabajo, se le complica hacerlos por su cuenta, aunque tampoco puede permitirse hacer grandes erogaciones de dinero en envíos para no sufrir tantas pérdidas.",
-    needs: "Busca hacer y recibir envíos baratos ocasionalmente de forma fácil. Necesita asegurar algunos productos de sus clientes para protegerse de posibles daños.
-No es mala con la técnología, puede aprender, pero sería más fácil con una interfaz simple para evitar una curva de aprendizaje empinada.",
-  ),
-
-  persona-card(
-    name: "Florencia Scazzola (mujer de 40 años).",
-    role: "PRODUCTOR / CLIENTE",
-    photo: "images/personas/florencia.png",
-    profile: "Mujer emprendedora que tiene su propio centro de estética",
-    behavior: "Le encanta el maquillaje, el skincare y el cuidado personal. Muy interesada en la cultura coreana.",
-    needs: "Conseguir productos (skincare, maquillaje, etc) para su nuevo emprendimiento, a un precio mucho menor al que lo conseguiría en el mercado local.",
-  ),
-
-  persona-card(
     name: "AgroTransport",
     role: "TRANSPORTISTA",
     photo: "images/personas/agrotransport.png",
@@ -106,15 +87,6 @@ No es mala con la técnología, puede aprender, pero sería más fácil con una 
     behavior: "Tienen empleados que hacen viajes en simultáneo, la empresa los controla desde la base. Reciben peticiones de transporte y despachan un camión a hacer el encargo. Pueden despachar a corta, media o larga distancia, pero siempre buscan planificar sus transportes.
 Quieren aprovechar mejor sus camiones, pues muchas veces tienen a algunos sin usar por varias semanas, y no quieren seguir desperdiciando esos recursos.",
     needs: "Necesitan expandir su clientela facilmente para mejorar su ganancia. Para ello también necesitan por hacer seguimiento de los envíos que hacen e hicieron (historial de viajes, características de los productos, etc.). Además, para mejorar su planificación, necesitan hacer un trackeo vía GPS de sus camiones, así como también poder hacer varíos envíos en un solo viaje si es posible, y asegurarlos en caso de daños.",
-  ),
-
-  persona-card(
-    name: "Campos Giménez",
-    role: "PRODUCTOR / CLIENTE",
-    photo: "images/personas/campos-gimenez.png",
-    profile: "Una empresa dueña de 300ha de campo a las afueras de Rosario.",
-    behavior: "Trabajan y cosechan múltiples cultivos a lo largo del año, quieren mejorar la planificación de los envíos de su cosecha, y abaratar los costos de los envíos.",
-    needs: "Transportar la cosecha a plantas de procesamiento y demás destinos estacionalmente.",
   ),
 
   persona-card(
@@ -149,6 +121,36 @@ Su carga no es común, así que necesita clientes confiables a largo plazo.",
     behavior: "Distribuye alimentos controlados con cumplimiento regulatorio (ANMAT, SENASA, etc.) desde puertos/aduanas hasta distribuidores locales. Trabaja bajo los protocolos impuestos y no son modificables (cadena de frío, trazabilidad, etc.)",
     needs: "Transportistas confiables y certificados, con documentación apropiada, capaciados para hacer las entregas.
 También necesita tener la trazabilidad completa del envío, y un seguro especializado sobre los productos.",
+  ),
+
+  // PRODUCTORES / CLIENTES
+  persona-card(
+    name: "Daniela Perez (señora de 55 años)",
+    role: "PRODUCTOR / CLIENTE",
+    photo: "images/personas/daniela.png",
+    profile: "Mujer recientemente divorciada, es diseñadora de interiores y trabaja en el rubro hace años.",
+    behavior: "Muchos clientes de ella necesitan amueblado, refacciones, y/o productos para hacer remodelaciones.
+Si bien ocasionalmente necesita hacer y/o recibe estos envíos para su trabajo, se le complica hacerlos por su cuenta, aunque tampoco puede permitirse hacer grandes erogaciones de dinero en envíos para no sufrir tantas pérdidas.",
+    needs: "Busca hacer y recibir envíos baratos ocasionalmente de forma fácil. Necesita asegurar algunos productos de sus clientes para protegerse de posibles daños.
+No es mala con la técnología, puede aprender, pero sería más fácil con una interfaz simple para evitar una curva de aprendizaje empinada.",
+  ),
+
+  persona-card(
+    name: "Florencia Scazzola (mujer de 40 años).",
+    role: "PRODUCTOR / CLIENTE",
+    photo: "images/personas/florencia.png",
+    profile: "Mujer emprendedora que tiene su propio centro de estética",
+    behavior: "Le encanta el maquillaje, el skincare y el cuidado personal. Muy interesada en la cultura coreana.",
+    needs: "Conseguir productos (skincare, maquillaje, etc) para su nuevo emprendimiento, a un precio mucho menor al que lo conseguiría en el mercado local.",
+  ),
+
+  persona-card(
+    name: "Campos Giménez",
+    role: "PRODUCTOR / CLIENTE",
+    photo: "images/personas/campos-gimenez.png",
+    profile: "Una empresa dueña de 300ha de campo a las afueras de Rosario.",
+    behavior: "Trabajan y cosechan múltiples cultivos a lo largo del año, quieren mejorar la planificación de los envíos de su cosecha, y abaratar los costos de los envíos.",
+    needs: "Transportar la cosecha a plantas de procesamiento y demás destinos estacionalmente.",
   ),
 
   persona-card(
