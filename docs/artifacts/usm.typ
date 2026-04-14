@@ -1,4 +1,6 @@
-#import "../template.typ": c-activ, c-epic, c-mvp, c-mvp-lane, c-post, c-post-lane, c-task, conf
+#import "../template.typ": (
+  c-activ, c-epic, c-mvp, c-mvp-lane, c-post, c-post-lane, c-task, conf,
+)
 #show: conf
 
 #set page(flipped: true, paper: "a3", margin: (x: 0.5cm, y: 0.8cm))
@@ -83,7 +85,10 @@
     #text(fill: black, weight: "bold")[Detalles del Transportista]
   ],
   table.cell(fill: col7-activ, align: center)[
-    #text(fill: black, weight: "bold")[Publicación de Disponibilidad de Transporte]
+    #text(
+      fill: black,
+      weight: "bold",
+    )[Publicación de Disponibilidad de Transporte]
   ],
   table.cell(fill: col8-activ, align: center)[
     #text(fill: black, weight: "bold")[Ofertas de Viaje]
