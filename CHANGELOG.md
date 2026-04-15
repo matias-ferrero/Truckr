@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.1.8](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.7...v0.1.8) (2026-04-15)
+
+
+### Features
+
+* add AWS infrastructure section to cost report ([9066880](https://github.com/tcorzo/fiuba-gestion-tp/commit/90668801a3b95375963e3a314b34c3cd8cda4486))
+* add cost report section to main document ([687475d](https://github.com/tcorzo/fiuba-gestion-tp/commit/687475dec64110f03cc6bdb692401ff8ac134d3c))
+* add Manuel Ramos persona and fix image path generation ([86e4dca](https://github.com/tcorzo/fiuba-gestion-tp/commit/86e4dca62cfc5880873e0f409feac2cc2802428e))
+* add new personas - Carolina Souza (specialized transport) and Juan Martinez (last-mile urban delivery) ([7ad616c](https://github.com/tcorzo/fiuba-gestion-tp/commit/7ad616caaf13cba49caebc5c0fd7f191bc0f8e4f))
+* add role labels to all persona cards ([19af47b](https://github.com/tcorzo/fiuba-gestion-tp/commit/19af47b184ae33dfee3ba5d4004f2475c22556d9))
+* add Sofia persona - young occasional user/student ([4211271](https://github.com/tcorzo/fiuba-gestion-tp/commit/4211271f05b0967f8de38b6e86faa38a79bb7141))
+* enumerate persona cards for improved readability ([a18949b](https://github.com/tcorzo/fiuba-gestion-tp/commit/a18949b5a6b8a10555a25a556d2c376cd5a4c2ab))
+* overhaul backlog — 26 user stories with US{NNN} numbering and release structure ([ee1bca5](https://github.com/tcorzo/fiuba-gestion-tp/commit/ee1bca5c772428b7f420b090676d6fb698dab48f))
+* redefine personas with improved diversity and edge case coverage ([399a458](https://github.com/tcorzo/fiuba-gestion-tp/commit/399a458ae54428fe2a02002415530b37e40da2ca))
+
+
+### Bug Fixes
+
+* remake Work Breakdown Structure (WBS) diagram implementation ([fda3473](https://github.com/tcorzo/fiuba-gestion-tp/commit/fda347344894477070a905001536a63e99338491))
+* remove unnecessary blank line in WBS structure ([c8c59c9](https://github.com/tcorzo/fiuba-gestion-tp/commit/c8c59c989b985457cdea5e19602b3a9dad8734e5))
+* update cost estimates and clarify AWS infrastructure details in cost report ([139e4d1](https://github.com/tcorzo/fiuba-gestion-tp/commit/139e4d1efc54c5de8e2596c56d9ef2a15faf0508))
+
 ## [0.1.7](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.6...v0.1.7) (2026-04-11)
 
 
