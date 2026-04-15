@@ -239,13 +239,13 @@ Los recursos están dimensionados para un entorno de prototipo con carga baja (\
       weight: "bold",
     )[Costo mensual (USD)]],
   ),
-  [EC2 — Servidor de aplicación (API \+ backend)],
+  [ECS — Servidor de aplicación (API \+ backend)],
   [t3.small (2 vCPU, 2 GB RAM)],
   [1],
   [\$15,18/mes],
   [\$15,18],
 
-  [EC2 — Servidor de workers / tareas asíncronas],
+  [ECS — Servidor de workers / tareas asíncronas],
   [t3.micro (2 vCPU, 1 GB RAM)],
   [1],
   [\$7,59/mes],
@@ -281,14 +281,14 @@ Los recursos están dimensionados para un entorno de prototipo con carga baja (\
   [\$0,50/mes],
   [\$0,50],
 
-  [CloudFront — CDN (assets estáticos)],
-  [10 GB transferencia, 1M requests],
+  [Amplify Hosting — Frontend (assets estáticos)],
+  [10 GB servidos, 1 GB almacenamiento],
   [1],
-  [≈ \$1,00/mes],
-  [\$1,00],
+  [≈ \$1,52/mes],
+  [\$1,52],
 
   [Elastic IP],
-  [IPv4 — asociada a EC2],
+  [IPv4 — asociada a ECS],
   [1],
   [\$0,00/mes],
   [\$0,00],
@@ -296,7 +296,7 @@ Los recursos están dimensionados para un entorno de prototipo con carga baja (\
   table.cell(fill: luma(240), colspan: 4)[#align(
     right,
   )[*Total mensual infraestructura AWS*]],
-  table.cell(fill: luma(240))[*\~\$68,07*],
+  table.cell(fill: luma(240))[*\~\$68,59*],
 )
 
 #v(0.8em)
