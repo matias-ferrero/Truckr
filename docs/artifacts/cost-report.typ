@@ -221,7 +221,7 @@ Estos no son costos vinculados a reducir horas en tareas específicas — son *i
 Los recursos están dimensionados para un entorno de prototipo con carga baja (\~50 usuarios concurrentes). Se prioriza costo sobre disponibilidad; sin Multi-AZ ni redundancia hasta validar el producto.
 
 #table(
-  columns: (1fr, auto, auto, auto, auto),
+  columns: (auto, auto, auto, auto, auto),
   align: (left, left, center, center, center),
   table.header(
     table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Servicio]],
