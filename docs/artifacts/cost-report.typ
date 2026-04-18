@@ -26,12 +26,12 @@
   ),
   [Modelo de engagement], [T\&M con cadencia ágil (sprints de 1 semanas)],
   [Equipo], [6 Desarrolladores Semi-Senior],
-  [Burn rate mensual (equipo)], [USD 26.400],
+  [Burn rate mensual (equipo)], [USD 5.760],
   [Burn rate por sprint (1 sem.)], [USD 1440],
   [Tooling IA mensual], [USD 120],
   [Infraestructura AWS mensual (prototipo)], [USD 68],
   [Ventana inicial de compromiso], [3 sprints semanales],
-  [Costo total ventana inicial], [USD 4.752 (equipo + tooling + AWS)],
+  [Costo total ventana inicial], [USD 4.461 (equipo + tooling + AWS)],
   [Período de calibración], [Sprints 1–3 (pronósticos de baja confianza)],
 )
 
@@ -166,7 +166,7 @@ Las tarifas son multiplicadas contra *time boxes* (sprints, meses), no contra es
   ),
   [1 sprint (1 semana)], [\$1.440],
   [1 mes (4 sprints)], [\$5.760],
-  [Ventana inicial — 3 sprints], [\$5.760],
+  [Ventana inicial — 3 sprints], [\$4.320],
 )
 
 #pagebreak()
@@ -239,19 +239,19 @@ Los recursos están dimensionados para un entorno de prototipo con carga baja (\
       weight: "bold",
     )[Costo mensual (USD)]],
   ),
-  [EC2 — Servidor de aplicación (API \+ backend)],
+  [ECS — Servidor de aplicación (API \+ backend)],
   [t3.small (2 vCPU, 2 GB RAM)],
   [1],
   [\$15,18/mes],
   [\$15,18],
 
-  [EC2 — Servidor de workers / tareas asíncronas],
+  [ECS — Servidor de workers / tareas asíncronas],
   [t3.micro (2 vCPU, 1 GB RAM)],
   [1],
   [\$7,59/mes],
   [\$7,59],
 
-  [RDS — Base de datos relacional (PostgreSQL 16)],
+  [RDS — Base de datos relacional (PostgreSQL 18)],
   [db.t3.micro (2 vCPU, 1 GB RAM, 20 GB SSD, Single-AZ)],
   [1],
   [\$14,93/mes],
@@ -281,14 +281,14 @@ Los recursos están dimensionados para un entorno de prototipo con carga baja (\
   [\$0,50/mes],
   [\$0,50],
 
-  [CloudFront — CDN (assets estáticos)],
-  [10 GB transferencia, 1M requests],
+  [Amplify Hosting — Frontend (assets estáticos)],
+  [10 GB servidos, 1 GB almacenamiento],
   [1],
-  [≈ \$1,00/mes],
-  [\$1,00],
+  [≈ \$1,52/mes],
+  [\$1,52],
 
   [Elastic IP],
-  [IPv4 — asociada a EC2],
+  [IPv4 — asociada a ECS],
   [1],
   [\$0,00/mes],
   [\$0,00],
@@ -296,7 +296,7 @@ Los recursos están dimensionados para un entorno de prototipo con carga baja (\
   table.cell(fill: luma(240), colspan: 4)[#align(
     right,
   )[*Total mensual infraestructura AWS*]],
-  table.cell(fill: luma(240))[*\~\$68,07*],
+  table.cell(fill: luma(240))[*\~\$68,59*],
 )
 
 #v(0.8em)
@@ -486,16 +486,16 @@ Aun sin estimaciones, el cliente necesita seguridad financiera.
     table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Detalle]],
   ),
   [Ventana de compromiso],
-  [3 meses iniciales (6 sprints). Renovable por períodos de 1–3 meses.],
+  [3 sprints iniciales (3 semanas). Al cierre de esta ventana, el cliente evalúa si el valor entregado justifica continuar la inversión.],
 
   [Tope de gasto por sprint],
-  [\$19.200 de equipo + hasta \$1.515 de tooling = máximo \$20.715/sprint. El burn rate es predecible porque la composición del equipo es fija.],
+  [\$1.440 de equipo + \$30 de tooling IA + \~\$17 de AWS = máximo \~\$1.487/sprint. El burn rate es predecible porque la composición del equipo es fija.],
 
   [Value checkpoints],
   [
-    Al final del Sprint 3 (fin de calibración) y Sprint 6 (fin de ventana inicial).\
+    Al final del Sprint 3 (fin de calibración y de ventana inicial).\
     El cliente evalúa si el valor entregado justifica continuar la inversión.\
-    *Ejemplo:* si al Sprint 6 el equipo entregó features que cubren el 80\% del valor proyectado, el cliente puede decidir frenar — y eso es un éxito, no un fracaso.
+    *Ejemplo:* si al Sprint 3 el equipo entregó features que cubren el 80\% del valor proyectado, el cliente puede decidir frenar — y eso es un éxito, no un fracaso.
   ],
 
   [Rampas de salida (off-ramps)],
