@@ -560,39 +560,3 @@ Aun sin estimaciones, el cliente necesita seguridad financiera.
   ],
 )
 
-#pagebreak()
-
-== 10. Qué No Incluye Este Informe (y por qué)
-
-#table(
-  columns: (1fr, 1fr),
-  align: (left, left),
-  table.header(
-    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Excluido]],
-    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Razón]],
-  ),
-  [Estimaciones de costo por feature],
-  [
-    Los delays en un sistema complejo son impredecibles. El trabajo pasa considerablemente más tiempo idle y bloqueado por restricciones del sistema que avanzando activamente.
-  ],
-
-  [Diagramas de Gantt con fechas por feature],
-  [
-    Reemplazados por pronósticos probabilísticos (Monte Carlo) que reflejan la realidad con mayor precisión.
-  ],
-
-  [Story points o compromisos de velocity],
-  [
-    Reemplazados por throughput (ítems/sprint): una métrica observable y no inflable.
-  ],
-
-  [Costo total del proyecto],
-  [
-    Reemplazado por *costo por time-box* + *cantidad proyectada de time-boxes para alcanzar el umbral de valor*. El costo total emerge de los datos, no de una estimación a priori.
-  ],
-
-  [Alcance fijo],
-  [
-    El alcance es la variable de ajuste. Las restricciones fijas son tiempo (cadencia de sprints) y personas (composición del equipo).
-  ],
-)
