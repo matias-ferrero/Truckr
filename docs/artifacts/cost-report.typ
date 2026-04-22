@@ -226,39 +226,24 @@ Los recursos están dimensionados para un entorno de prototipo con carga baja (\
   table.cell(fill: luma(240), colspan: 4)[#align(
     right,
   )[*Total mensual infraestructura AWS*]],
-  table.cell(fill: luma(240))[*\~\$68,59*],
+  table.cell(fill: luma(240))[*\$68,59*],
 )
 
 #pagebreak()
 
 == 4. Resumen Ejecutivo
 
-#block(
-  width: 100%,
-  inset: 12pt,
-  radius: 4pt,
-  fill: rgb("#eaf2f8"),
-  stroke: 0.5pt + c-brand,
-)[
-  *Modelo de contratación:* Time \& Materials (T\&M)
-]
-
-#v(0.8em)
-
 #table(
-  columns: (1fr, 1fr),
-  align: (left, left),
+  columns: (1fr, auto, auto, auto),
+  align: (left, center, center, center),
   table.header(
     table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Concepto]],
-    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Detalle]],
+    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Por Sprint (USD)]],
+    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Ventana Inicial — 3 Sprints (USD)]],
+    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Proyecto — 7 Sprints (USD)]],
   ),
-  [Modelo de engagement], [T\&M con cadencia ágil (sprints de 1 semanas)],
-  [Equipo], [6 Desarrolladores Semi-Senior],
-  [Burn rate mensual (equipo)], [USD 5.760],
-  [Burn rate por sprint (1 sem.)], [USD 1440],
-  [Tooling IA mensual], [USD 120],
-  [Infraestructura AWS mensual (prototipo)], [USD 68],
-  [Ventana inicial de compromiso], [3 sprints semanales],
-  [Costo total ventana inicial], [USD 4.461 (equipo + tooling + AWS)],
-  [Período de calibración], [Sprints 1–3 (pronósticos de baja confianza)],
+  [Equipo (5 Dev + 1 PM)], [\$1.072], [\$3.216], [\$7.504],
+  [Tooling IA], [\$30], [\$90], [\$210],
+  [Infraestructura AWS], [\$68,59], [\$68,59], [\$137,18],
+  table.cell(fill: luma(240), colspan: 1)[#align(right)[*Total*]], table.cell(fill: luma(240))[*\$1.170,59*], table.cell(fill: luma(240))[*\$3.374,59*], table.cell(fill: luma(240))[*\$7.851,18*],
 )
