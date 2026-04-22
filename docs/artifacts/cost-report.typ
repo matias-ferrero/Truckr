@@ -146,18 +146,6 @@ Estos no son costos vinculados a reducir horas en tareas específicas — son *i
 
 #v(0.8em)
 
-#block(
-  width: 100%,
-  inset: 10pt,
-  radius: 4pt,
-  fill: rgb("#eaf2f8"),
-  stroke: 0.5pt + c-brand,
-)[
-  *Justificación:* Las herramientas de coding con IA ahorran en promedio \~3.6 horas/semana/desarrollador. En un modelo \#NoEstimates, esto se traduce directamente en *más ítems entregados por sprint*, no en menos horas facturadas.
-]
-
-#v(1em)
-
 === Infraestructura Cloud — AWS (Prototipo)
 
 Los recursos están dimensionados para un entorno de prototipo con carga baja (\~50 usuarios concurrentes). Se prioriza costo sobre disponibilidad; sin Multi-AZ ni redundancia hasta validar el producto.
@@ -240,18 +228,6 @@ Los recursos están dimensionados para un entorno de prototipo con carga baja (\
   )[*Total mensual infraestructura AWS*]],
   table.cell(fill: luma(240))[*\~\$68,59*],
 )
-
-#v(0.8em)
-
-#block(
-  width: 100%,
-  inset: 10pt,
-  radius: 4pt,
-  fill: rgb("#fef9e7"),
-  stroke: 0.5pt + rgb("#f0b429"),
-)[
-  *Supuestos del sizing:* precios us-east-1 (Virginia), sin reserva (on-demand). Las instancias `t3` tienen créditos de CPU burst, adecuadas para cargas variables de prototipo. Para producción, se recomienda evaluar Reserved Instances (ahorro \~30–40\%) y habilitar Multi-AZ en RDS.
-]
 
 #pagebreak()
 
