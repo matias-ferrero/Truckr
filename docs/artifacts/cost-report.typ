@@ -37,93 +37,7 @@
 
 #pagebreak()
 
-== 2. Marco de Valor (Value Framework)
-
-En lugar de una estructura de desglose de trabajo con estimaciones horarias, se presenta un *Backlog de Valor*: una lista priorizada de capacidades ordenadas por impacto de negocio.
-
-=== Mapa de Valor — Truckr®
-
-#table(
-  columns: (auto, 1fr, auto, 1fr),
-  align: (center, left, center, left),
-  table.header(
-    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Prio.]],
-    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Capacidad]],
-    table.cell(fill: c-brand)[#text(
-      fill: white,
-      weight: "bold",
-    )[Tipo de Valor]],
-    table.cell(fill: c-brand)[#text(
-      fill: white,
-      weight: "bold",
-    )[Resultado de Negocio]],
-  ),
-  [1],
-  [Registro e inicio de sesión],
-  [Adquisición de usuarios],
-  [Base de usuarios habilitada; sin esto no hay plataforma],
-
-  [2],
-  [Publicación de disponibilidad (transportista)],
-  [Generación de oferta],
-  [Inventario de transportes disponibles para matchear con demanda],
-
-  [3],
-  [Búsqueda y filtrado de transportistas],
-  [Adquisición de clientes],
-  [Los clientes pueden encontrar el transporte que necesitan],
-
-  [4],
-  [Oferta y aceptación de viaje],
-  [Ingresos directos],
-  [Transacción core del marketplace; habilita el flujo de dinero],
-
-  [5],
-  [Pasarela de pagos],
-  [Ingresos directos],
-  [Monetización: comisiones por transacción],
-
-  [6],
-  [Tracking de estado del viaje],
-  [Retención de usuarios],
-  [Confianza y transparencia; reduce disputas],
-
-  [7],
-  [Modificación de perfil],
-  [Retención de usuarios],
-  [Personalización; datos completos mejoran el matching],
-
-  [8],
-  [Sistema de reseñas],
-  [Efecto de red],
-  [Confianza entre pares; diferenciador vs. transporte tradicional],
-
-  [9],
-  [Detalles del transportista],
-  [Conversión],
-  [Información para decidir; reduce fricción en la contratación],
-
-  [10],
-  [Viajes compuestos],
-  [Expansión de mercado],
-  [Abre segmento de cargas parciales; mayor utilización de flota],
-)
-
-#v(0.8em)
-
-#block(
-  width: 100%,
-  inset: 10pt,
-  radius: 4pt,
-  fill: rgb("#fef9e7"),
-  stroke: 0.5pt + rgb("#f0b429"),
-)[
-  *Modelo mental para el cliente:* las restricciones más duras (tiempo y personas) son fijas. La incertidumbre se gestiona a través del alcance variable. El tamaño del equipo y las tarifas están fijados; lo que flexiona es *qué se construye*, guiado por valor.
-]
-
-#pagebreak()
-
-== 3. Composición del Equipo y Tarifa (Rate Card)
+== 2. Composición del Equipo y Tarifa (Rate Card)
 
 Las tarifas son multiplicadas contra *time boxes* (sprints, meses), no contra estimaciones por tarea.
 
@@ -171,7 +85,7 @@ Las tarifas son multiplicadas contra *time boxes* (sprints, meses), no contra es
 
 #pagebreak()
 
-== 4. Presupuesto de Tooling IA y Materiales
+== 3. Presupuesto de Tooling IA y Materiales
 
 Estos no son costos vinculados a reducir horas en tareas específicas — son *inversiones en infraestructura que incrementan el throughput*.
 
@@ -313,7 +227,7 @@ Los recursos están dimensionados para un entorno de prototipo con carga baja (\
 
 #pagebreak()
 
-== 5. Modelo de Proyección (Throughput-Based Forecasting)
+== 4. Modelo de Proyección (Throughput-Based Forecasting)
 
 El progreso se mide contando ítems entregados y comparándolos con el backlog pendiente. No se usan estimaciones horarias ni story points.
 
