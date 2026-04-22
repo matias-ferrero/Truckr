@@ -85,11 +85,12 @@ Las tarifas son multiplicadas contra *time boxes* (sprints, meses), no contra es
       weight: "bold",
     )[Costo/sprint (USD)]],
   ),
-  [Desarrollador Semi-Senior], [6], [\$30], [8], [\$1.440],
+  [Desarrollador Semi-Senior], [5], [\$22], [8], [\$880],
+  [Project Manager], [1], [\$24], [8], [\$192],
   table.cell(fill: luma(240), colspan: 4)[#align(
     right,
   )[*Total por sprint (1 semana)*]],
-  table.cell(fill: luma(240))[*\$1.440*],
+  table.cell(fill: luma(240))[*\$1.072*],
 )
 
 #v(0.5em)
@@ -104,9 +105,10 @@ Las tarifas son multiplicadas contra *time boxes* (sprints, meses), no contra es
       weight: "bold",
     )[Costo Equipo (USD)]],
   ),
-  [1 sprint (1 semana)], [\$1.440],
-  [1 mes (4 sprints)], [\$5.760],
-  [Ventana inicial — 3 sprints], [\$4.320],
+  [1 sprint (1 semana)], [\$1.072],
+  [3 sprints (ventana inicial)], [\$3.216],
+  [4 sprints (1 mes)], [\$4.288],
+  [7 sprints (máximo proyecto)], [\$7.504],
 )
 
 #pagebreak()
