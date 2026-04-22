@@ -3,37 +3,63 @@
 
 = Informe de Costos T&M
 
-== 1. Resumen Ejecutivo
+== 1. Modelo de Proyección (Throughput-Based Forecasting)
+
+El progreso se mide contando ítems entregados y comparándolos con el backlog pendiente. No se usan estimaciones horarias ni story points.
+
+=== Disciplina de Slicing de Stories
+
+Cada historia de usuario debe ser *independiente y pequeña*: idealmente, no más de 1 día de desarrollo. El objetivo es entregar entre 6 y 12 stories por sprint de 1 semana.
+
+=== Medición de Throughput
+
+Después de 3–5 iteraciones, se dispone de datos suficientes para medir ítems/sprint y proyectar hacia adelante.
+
+#table(
+  columns: (auto, auto, auto, auto),
+  align: (center, center, center, center),
+  table.header(
+    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Sprint]],
+    table.cell(fill: c-brand)[#text(
+      fill: white,
+      weight: "bold",
+    )[Ítems entregados]],
+    table.cell(fill: c-brand)[#text(
+      fill: white,
+      weight: "bold",
+    )[Throughput acum.]],
+    table.cell(fill: c-brand)[#text(
+      fill: white,
+      weight: "bold",
+    )[Confianza del pronóstico]],
+  ),
+  [Sprint 1], [? (calibración)], [—], [Muy baja],
+  [Sprint 2], [? (calibración)], [—], [Baja],
+  [Sprint 3], [? (calibración)], [Promedio 3 sprints], [Media],
+  [Sprint 4], [Medido], [Promedio 4 sprints], [Media-Alta],
+  [Sprint 5], [Medido], [Promedio 5 sprints], [Alta],
+  [Sprint 6+], [Medido], [Media móvil], [Alta],
+)
+
+=== Simulación Monte Carlo
+
+Las proyecciones son *probabilísticas*, no determinísticas. Se utiliza referencia de clase (reference class forecasting) basada en datos reales de rendimiento pasado.
 
 #block(
   width: 100%,
-  inset: 12pt,
+  inset: 10pt,
   radius: 4pt,
   fill: rgb("#eaf2f8"),
   stroke: 0.5pt + c-brand,
 )[
-  *Modelo de contratación:* Time \& Materials (T\&M)
+  *Ejemplo de pronóstico (post-calibración):*\
+  - Backlog MVP restante: 45 ítems\
+  - Throughput promedio: 9 ítems/sprint (±2)\
+  - Pronóstico Monte Carlo:\
+    - 50\% de probabilidad: 5 sprints\
+    - 85\% de probabilidad: 6 sprints\
+    - 95\% de probabilidad: 7 sprints
 ]
-
-#v(0.8em)
-
-#table(
-  columns: (1fr, 1fr),
-  align: (left, left),
-  table.header(
-    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Concepto]],
-    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Detalle]],
-  ),
-  [Modelo de engagement], [T\&M con cadencia ágil (sprints de 1 semanas)],
-  [Equipo], [6 Desarrolladores Semi-Senior],
-  [Burn rate mensual (equipo)], [USD 5.760],
-  [Burn rate por sprint (1 sem.)], [USD 1440],
-  [Tooling IA mensual], [USD 120],
-  [Infraestructura AWS mensual (prototipo)], [USD 68],
-  [Ventana inicial de compromiso], [3 sprints semanales],
-  [Costo total ventana inicial], [USD 4.461 (equipo + tooling + AWS)],
-  [Período de calibración], [Sprints 1–3 (pronósticos de baja confianza)],
-)
 
 #pagebreak()
 
@@ -227,62 +253,34 @@ Los recursos están dimensionados para un entorno de prototipo con carga baja (\
 
 #pagebreak()
 
-== 4. Modelo de Proyección (Throughput-Based Forecasting)
-
-El progreso se mide contando ítems entregados y comparándolos con el backlog pendiente. No se usan estimaciones horarias ni story points.
-
-=== Disciplina de Slicing de Stories
-
-Cada historia de usuario debe ser *independiente y pequeña*: idealmente, no más de 1 día de desarrollo. El objetivo es entregar entre 6 y 12 stories por sprint de 1 semana.
-
-=== Medición de Throughput
-
-Después de 3–5 iteraciones, se dispone de datos suficientes para medir ítems/sprint y proyectar hacia adelante.
-
-#table(
-  columns: (auto, auto, auto, auto),
-  align: (center, center, center, center),
-  table.header(
-    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Sprint]],
-    table.cell(fill: c-brand)[#text(
-      fill: white,
-      weight: "bold",
-    )[Ítems entregados]],
-    table.cell(fill: c-brand)[#text(
-      fill: white,
-      weight: "bold",
-    )[Throughput acum.]],
-    table.cell(fill: c-brand)[#text(
-      fill: white,
-      weight: "bold",
-    )[Confianza del pronóstico]],
-  ),
-  [Sprint 1], [? (calibración)], [—], [Muy baja],
-  [Sprint 2], [? (calibración)], [—], [Baja],
-  [Sprint 3], [? (calibración)], [Promedio 3 sprints], [Media],
-  [Sprint 4], [Medido], [Promedio 4 sprints], [Media-Alta],
-  [Sprint 5], [Medido], [Promedio 5 sprints], [Alta],
-  [Sprint 6+], [Medido], [Media móvil], [Alta],
-)
-
-=== Simulación Monte Carlo
-
-Las proyecciones son *probabilísticas*, no determinísticas. Se utiliza referencia de clase (reference class forecasting) basada en datos reales de rendimiento pasado.
+== 4. Resumen Ejecutivo
 
 #block(
   width: 100%,
-  inset: 10pt,
+  inset: 12pt,
   radius: 4pt,
   fill: rgb("#eaf2f8"),
   stroke: 0.5pt + c-brand,
 )[
-  *Ejemplo de pronóstico (post-calibración):*\
-  - Backlog MVP restante: 45 ítems\
-  - Throughput promedio: 9 ítems/sprint (±2)\
-  - Pronóstico Monte Carlo:\
-    - 50\% de probabilidad: 5 sprints\
-    - 85\% de probabilidad: 6 sprints\
-    - 95\% de probabilidad: 7 sprints
+  *Modelo de contratación:* Time \& Materials (T\&M)
 ]
 
+#v(0.8em)
 
+#table(
+  columns: (1fr, 1fr),
+  align: (left, left),
+  table.header(
+    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Concepto]],
+    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Detalle]],
+  ),
+  [Modelo de engagement], [T\&M con cadencia ágil (sprints de 1 semanas)],
+  [Equipo], [6 Desarrolladores Semi-Senior],
+  [Burn rate mensual (equipo)], [USD 5.760],
+  [Burn rate por sprint (1 sem.)], [USD 1440],
+  [Tooling IA mensual], [USD 120],
+  [Infraestructura AWS mensual (prototipo)], [USD 68],
+  [Ventana inicial de compromiso], [3 sprints semanales],
+  [Costo total ventana inicial], [USD 4.461 (equipo + tooling + AWS)],
+  [Período de calibración], [Sprints 1–3 (pronósticos de baja confianza)],
+)
