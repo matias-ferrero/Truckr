@@ -1,6 +1,4 @@
-#import "../template.typ": (
-  c-activ, c-epic, c-mvp, c-mvp-lane, c-post, c-post-lane, c-task, conf,
-)
+#import "../template.typ": c-activ, c-epic, c-mvp, c-mvp-lane, c-post, c-post-lane, c-task, conf
 #show: conf
 
 #set page(flipped: true, paper: "a3", margin: (x: 0.5cm, y: 0.8cm))
@@ -28,13 +26,13 @@
 #let col10-activ = rgb("#C27BA0")
 #let col11-task = rgb("#EAD1DC")
 #let col11-activ = rgb("#C27BA0")
-#let col12-task = rgb("#D9D2E9")
-#let col12-activ = rgb("#8E7CC3")
+#let col12-task = rgb("#EAD1DC")
+#let col12-activ = rgb("#C27BA0")
 #let col13-task = rgb("#D9D2E9")
 #let col13-activ = rgb("#8E7CC3")
-#let col14-task = rgb("#FFF2CC")
-#let col14-activ = rgb("#FFE599")
-#let col15-task = rgb("#FCE5CD")
+#let col14-task = rgb("#D9D2E9")
+#let col14-activ = rgb("#8E7CC3")
+#let col15-task = rgb("#FFF2CC")
 #let col15-activ = rgb("#FFE599")
 #let epic-color = rgb("#9FC5E8")
 #let release-color = rgb("#6AA84F")
@@ -57,14 +55,14 @@
   table.cell(colspan: 3, fill: epic-color, align: center)[
     #text(fill: black, weight: "bold")[Gestión de Viajes]
   ],
-  table.cell(colspan: 2, fill: epic-color, align: center)[
+  table.cell(colspan: 3, fill: epic-color, align: center)[
     #text(fill: black, weight: "bold")[Reservar Transportista]
   ],
   table.cell(colspan: 2, fill: epic-color, align: center)[
     #text(fill: black, weight: "bold")[Aceptar Viaje]
   ],
-  table.cell(colspan: 2, fill: epic-color, align: center)[
-    #text(fill: black, weight: "bold")[Después del viaje]
+  table.cell(colspan: 1, fill: epic-color, align: center)[
+    #text(fill: black, weight: "bold")[Despues del viaje]
   ],
   table.cell(fill: col1-activ, align: center)[
     #text(fill: black, weight: "bold")[Crear]
@@ -85,10 +83,7 @@
     #text(fill: black, weight: "bold")[Detalles del Transportista]
   ],
   table.cell(fill: col7-activ, align: center)[
-    #text(
-      fill: black,
-      weight: "bold",
-    )[Publicación de Disponibilidad de Transporte]
+    #text(fill: black, weight: "bold")[Publicación de Disponibilidad de Transporte]
   ],
   table.cell(fill: col8-activ, align: center)[
     #text(fill: black, weight: "bold")[Ofertas de Viaje]
@@ -103,13 +98,13 @@
     #text(fill: black, weight: "bold")[Pagos]
   ],
   table.cell(fill: col12-activ, align: center)[
-    #text(fill: black, weight: "bold")[Aceptación de Viaje]
+    #text(fill: black, weight: "bold")[Seguros]
   ],
   table.cell(fill: col13-activ, align: center)[
-    #text(fill: black, weight: "bold")[Realizar Viaje]
+    #text(fill: black, weight: "bold")[Aceptación de Viaje]
   ],
   table.cell(fill: col14-activ, align: center)[
-    #text(fill: black, weight: "bold")[Pago]
+    #text(fill: black, weight: "bold")[Realizar Viaje]
   ],
   table.cell(fill: col15-activ, align: center)[
     #text(fill: black, weight: "bold")[Reseñas]
@@ -150,6 +145,8 @@
   ],
   table.cell(fill: col8-task)[
     - Observar Listado de Ofertas
+    - Entrar a Detalles del Viaje
+    - Entrar a Detalles del Cliente
   ],
   table.cell(fill: col9-task)[
     - Filtrar por Ubicación Origen
@@ -163,24 +160,27 @@
     - Ingresar Dirección completa de Entrega del producto
   ],
   table.cell(fill: col11-task)[
-    - Realizar el pago seguro integrado
+    - Realizar el pago
     - Reserva instantánea
     - Brindar Datos de contacto del Transportista
   ],
   table.cell(fill: col12-task)[
-    - Aceptar viaje
+    - Ofrecer venta de seguros
+    - Aceptar compra de un seguro
+    - Enviar documentación del seguro
   ],
   table.cell(fill: col13-task)[
-    - Integración con Google Maps
-    - Ver siguiente Destino (Ubicacion completa)
-    - Ver recorrido por GPS
+    - Aceptar viaje
   ],
   table.cell(fill: col14-task)[
-    - Integración con Mercado Pago
-    - Recibir pago de la app por los viajes concretados
-    - Efectuar pago al transportista
+    - Confirmar retiro de determinado producto
+    - Confirmar entrega de determinado producto
   ],
-  table.cell(fill: col15-task)[],
+  table.cell(fill: col15-task)[
+    - Hacer reseña al transportista
+    - Leer Reseñas
+    - Editar o eliminar una reseña hecha previamente
+  ],
 
   // ── MVP — Release 1 Marker ────────────────────────────────────────────────────────
   table.cell(colspan: 15, fill: release-color, align: center)[
@@ -198,35 +198,27 @@
     - Paginado
     - Sort By
   ],
-  table.cell(fill: col5-task)[
-    - Filtrar por Distancia
-  ],
+  table.cell(fill: col5-task)[],
   table.cell(fill: col6-task)[
-    - Ver su historial de viajes
+    - Ver historial de viajes del transportista
   ],
-  table.cell(fill: col7-task)[
-    - Poner un límite de kilometros
-  ],
+  table.cell(fill: col7-task)[],
   table.cell(fill: col8-task)[
-    - Entrar a Detalles del Viaje
     - Paginado
     - Sort By
+    - Ver historial de viajes del consumidor
   ],
   table.cell(fill: col9-task)[
     - Filtrar por Ubicación Destino
   ],
   table.cell(fill: col10-task)[],
   table.cell(fill: col11-task)[],
-  table.cell(fill: col12-task)[],
-  table.cell(fill: col13-task)[
-    - Confirmar retiro de determinado producto
-    - Confirmar entrega de determinado producto
+  table.cell(fill: col12-task)[
+    - Filtrar entre seguros
   ],
+  table.cell(fill: col13-task)[],
   table.cell(fill: col14-task)[],
-  table.cell(fill: col15-task)[
-    - Hacer reseña al transportista
-    - Leer Reseñas
-  ],
+  table.cell(fill: col15-task)[],
 
   // ── Post MVP — Release 2 Marker ────────────────────────────────────────────────────────
   table.cell(colspan: 15, fill: release-color, align: center)[
@@ -239,29 +231,36 @@
   table.cell(fill: col2-task)[],
   table.cell(fill: col3-task)[],
   table.cell(fill: col4-task)[
-    - Ingresar datos extras
     - Guardado de búsquedas
   ],
   table.cell(fill: col5-task)[
-    - Filtrar si Es Contenedor
+    - Filtrar por Distancia
   ],
   table.cell(fill: col6-task)[],
-  table.cell(fill: col7-task)[],
-  table.cell(fill: col8-task)[
-    - Entrar a Detalles del Cliente
-    - Ver su historial de viajes
+  table.cell(fill: col7-task)[
+    - Poner un límite de kilometros
   ],
+  table.cell(fill: col8-task)[],
   table.cell(fill: col9-task)[
     - Estimar una fecha de entrega según los viajes aceptados
   ],
   table.cell(fill: col10-task)[],
-  table.cell(fill: col11-task)[],
-  table.cell(fill: col12-task)[],
-  table.cell(fill: col13-task)[],
-  table.cell(fill: col14-task)[],
-  table.cell(fill: col15-task)[
-    - Editar o eliminar una reseña hecha previamente
+  table.cell(fill: col11-task)[
+    - Integración con Mercado Pago
+    - Recibir pago de la app por los viajes concretados
+    - Efectuar pago al transportista
   ],
+  table.cell(fill: col12-task)[
+    - Recibir pago por el servicio del seguro
+    - Hacer pago al seguro
+  ],
+  table.cell(fill: col13-task)[],
+  table.cell(fill: col14-task)[
+    - Integración con Google Maps
+    - Ver siguiente Destino (Ubicacion completa)
+    - Ver recorrido por GPS
+  ],
+  table.cell(fill: col15-task)[],
 
   // ── Post MVP — Release 3 Marker ────────────────────────────────────────────────────────
   table.cell(colspan: 15, fill: release-color, align: center)[
