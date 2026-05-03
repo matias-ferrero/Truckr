@@ -2,7 +2,7 @@
 tag: INF-BE-00003
 title: Agregar ActiveAdmin al backend
 priority: P2
-status: ready
+status: in_review
 plan: docs/features/INF/INF-BE-00003/INF-BE-00003-add-activeadmin.plan.md
 created: '2026-05-03'
 source: manual
