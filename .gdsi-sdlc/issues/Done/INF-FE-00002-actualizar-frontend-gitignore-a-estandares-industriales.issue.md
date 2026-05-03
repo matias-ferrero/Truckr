@@ -2,7 +2,7 @@
 tag: INF-FE-00002
 title: Actualizar frontend/.gitignore a estándares industriales (incluir .vite/ y env files)
 priority: P2
-status: in_review
+status: done
 created: '2026-05-03'
 source: manual
 author: Claude Code
