@@ -9,8 +9,8 @@
 | `docs/artifacts/` (USM, WBS, personas, backlog, …) | Complete enough for course delivery; refinements ongoing. |
 | `docs/01-` … `docs/05-` (tech docs) | Generated 2026-04-17; updated 2026-05-03 to cover bootstrap + AI harness. |
 | `docs/onboarding/` | New (2026-05-03). |
-| `backend/` | Rails 8 scaffolded. One controller (`Api::LandingPagesController`). 0 models, 0 migrations. RSpec wired (`backend/spec/`); only a smoke spec so far. |
-| `frontend/` | React + Vite scaffolded. Single-file landing page (`App.tsx`). Vitest (unit/component) + Playwright (E2E) wired; see `frontend/TESTING.md`. One smoke spec per layer. |
+| `backend/` | Rails 8 scaffolded. No `/api/*` controllers yet — only `/up` health check + ActiveAdmin. 0 domain models, 0 migrations. RSpec wired (`backend/spec/`); only a smoke spec so far. |
+| `frontend/` | React + Vite scaffolded. Static single-file landing page (`App.tsx`) reading from `landingContent.ts`. No backend calls yet. Vitest (unit/component) + Playwright (E2E) wired; see `frontend/TESTING.md`. One smoke spec per layer. |
 | AI harness | In place — `CLAUDE.md`, `.agents/skills/` (3), `frontend/.agents/skills/` (15), `.gdsi-sdlc/` Kanban. |
 | CI | Only `release-please.yml` runs. No test workflow. |
 | Deploy | Kamal config present (`backend/config/deploy.yml`) but no production target wired. |
@@ -19,7 +19,7 @@
 
 | Surface | Today | Planned (priority order) |
 |---------|-------|--------------------------|
-| Landing page API | Hardcoded hash → JSON | DB-backed `LandingPage` model |
+| Landing page | Static React page (`App.tsx` + `landingContent.ts`) | Stays static — no backend involvement planned |
 | Quote-request form | Frontend-only state | POST → `Api::QuoteRequestsController` |
 | Auth | None | `has_secure_password` + JWT/session, Pundit policies (`transportista`, `cliente`, `admin`) |
 | Identity domain | None | First migrations land here: `User`, `Transportista`, `Cliente`, `Vehicle` |
@@ -67,7 +67,7 @@ Recorded as "Decisions Deferred" in `01-technical-vision/`:
 
 ## Known Technical Debt
 
-- Backend returns hardcoded landing-page data; no model, no migration, no test.
+- No domain models, migrations, or domain endpoints yet — only `/up` and ActiveAdmin live in the backend.
 - Frontend quote form is local-state-only.
 - CORS allow-list is dev-permissive (`localhost:5173`, all methods, all headers).
 - Pre-commit only covers Typst formatting; Ruby and TypeScript are ungated.

@@ -35,7 +35,7 @@ If the product graduates past the academic deliverable, each component can be ex
 
 ## Inter-component Contracts
 
-- **frontend → backend**: HTTP/JSON, `VITE_API_BASE_URL` env var, default `http://localhost:3000`. Schema validated at the boundary by hand-written TS type guards (`isLandingData`). No codegen today.
+- **frontend → backend**: HTTP/JSON, `VITE_API_BASE_URL` env var (in `frontend/src/api.ts`), default `http://localhost:3000`. No live calls today — the landing page is fully static (`frontend/src/landingContent.ts`). When calls land, schema is to be validated at the boundary by hand-written TS type guards. No codegen.
 - **docs ↔ code**: one-way. Docs reference product decisions; code does not depend on docs at runtime. Typst PDFs are built from `.typ` sources in CI.
 - **release pipeline**: `release-please` watches `main`, derives bumps from Conventional Commits, opens a Release PR. Merging the Release PR tags a version and triggers `typst compile` in GitHub Actions to attach the PDFs.
 

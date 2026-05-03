@@ -5,11 +5,12 @@ title Component Diagram — Backend API (current + planned)
 
 Container_Boundary(api, "Backend API (Rails)") {
 
-  Component(routes, "Routes", "config/routes.rb", "Dispatches /api/* to namespaced controllers; exposes /up health check.")
-  Component(app_controller, "ApplicationController", "ActionController::API", "API-only base class. Future home for rescue_from error envelope and auth before_action.")
+  Component(routes, "Routes", "config/routes.rb", "Dispatches /api/* to namespaced controllers; exposes /up health check and ActiveAdmin.")
+  Component(app_controller, "ApplicationController", "ActionController::API", "API-only base class. Future home for rescue_from error envelope and auth before_action. No /api/* subclasses yet.")
 
-  Component(landing_c, "Api::LandingPagesController", "Rails controller", "CURRENT: returns hardcoded landing-page payload (hero, features, stats, palette).")
+  Component(active_admin, "ActiveAdmin engine", "mounted", "CURRENT: Devise-protected admin UI at /admin. No public domain endpoints yet.")
 
+  Component(quote_c, "Api::QuoteRequestsController", "planned (next slice)", "POST /api/quote_requests — wires the static frontend form to a real backend; establishes the error envelope pattern.")
   Component(auth_c, "Api::SessionsController", "planned", "Sign-in, sign-out, JWT issuance.")
   Component(users_c, "Api::UsersController", "planned", "Registration, profile updates.")
   Component(windows_c, "Api::TransportWindowsController", "planned", "CRUD for transportista availability.")
@@ -28,7 +29,8 @@ ContainerDb(db, "SQLite primary DB")
 System_Ext(ext, "External services\n(payments, ARCA, maps, insurance)")
 
 Rel(routes, app_controller, "dispatches to")
-Rel(app_controller, landing_c, "extends")
+Rel(routes, active_admin, "mounts /admin")
+Rel(app_controller, quote_c, "extends (planned)")
 Rel(app_controller, auth_c, "extends (planned)")
 Rel(app_controller, users_c, "extends (planned)")
 Rel(app_controller, windows_c, "extends (planned)")

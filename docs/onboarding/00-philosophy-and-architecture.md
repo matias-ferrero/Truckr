@@ -73,7 +73,7 @@ Shipment lifecycle: `draft → quoted → accepted → in_transit → delivered 
 
 | Surface | Today | Planned |
 |---------|-------|---------|
-| `GET /api/landing_pages` | Hardcoded hash | Move to DB-backed `LandingPage` model |
+| Public landing page | Static React (`App.tsx` + `landingContent.ts`), no backend call | Stays static |
 | Frontend "Solicitar cotización" form | Local state only | POST to `/api/quote_requests` |
 | Auth | None | bcrypt + Pundit policies (`transportista`, `cliente`, `admin`) |
 | Background jobs | None | TrackingIngest, PaymentSettlement, InvoiceEmission, NotificationEmail, MatchExpiry |

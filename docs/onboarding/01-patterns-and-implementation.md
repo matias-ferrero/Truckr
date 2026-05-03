@@ -11,7 +11,7 @@ The 10 patterns the codebase is built on. Anchored in `02-high-level-design/high
 ## 2. Resource-based routing
 
 - **Purpose**: predictable REST URLs.
-- **Where**: `resources :landing_pages, only: [:index]` inside the `:api` namespace.
+- **Where**: no `/api/*` resources are mounted yet. When the first one lands (e.g. `Api::QuoteRequestsController`), declare it as `resources :quote_requests, only: [:create]` inside the `:api` namespace.
 - **Rule**: restrict verbs explicitly with `only:` / `except:`. Never expose all seven actions unless intended.
 
 ## 3. Health check at `/up`
@@ -34,13 +34,13 @@ The 10 patterns the codebase is built on. Anchored in `02-high-level-design/high
 ## 6. Client-side data-fetching with schema validation
 
 - **Purpose**: defend the UI from backend shape drift without code-generated clients.
-- **Where**: `isLandingData()` type guard in `frontend/src/App.tsx` validates JSON before `setData()`.
-- **Rule**: every `fetch()` must (a) check `response.ok`, (b) parse as `unknown`, (c) narrow via a type guard.
+- **Where**: no live `fetch()` yet — `App.tsx` reads from local `landingContent.ts`. `frontend/src/api.ts` exports the `API_BASE_URL` constant for when calls land.
+- **Rule**: when a `fetch()` is introduced, it must (a) check `response.ok`, (b) parse as `unknown`, (c) narrow via a type guard before assigning to typed state.
 
 ## 7. Theme via CSS variables
 
-- **Purpose**: brand palette comes from the API (`color_palette` key), so non-technical editing is possible.
-- **Where**: `themeVars` memo in `App.tsx` writes `--brand-*` custom properties on the root.
+- **Purpose**: brand palette is centralized so non-technical editing is one file change.
+- **Where**: `landingContent.color_palette` (in `frontend/src/landingContent.ts`) feeds the `themeVars` memo in `App.tsx`, which writes `--brand-*` custom properties on the root.
 - **Rule**: components read `var(--brand-primary)` etc. Never hardcode palette hexes in component CSS.
 
 ## 8. Document-as-code

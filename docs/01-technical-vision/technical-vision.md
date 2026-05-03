@@ -35,7 +35,7 @@ Derived from `docs/artifacts/es-no-es-hace-no-hace.typ`:
 
 ## Architectural Decisions
 
-The project is transitioning from the **planning phase** (product artifacts, USM, WBS, personas in `docs/artifacts/`) into the **implementation phase**. The backend (`backend/`) and frontend (`frontend/`) have been scaffolded and a vertical slice (public landing page) is live. The decisions below are the ones committed to in code or roadmap.
+The project is transitioning from the **planning phase** (product artifacts, USM, WBS, personas in `docs/artifacts/`) into the **implementation phase**. The backend (`backend/`) and frontend (`frontend/`) have been scaffolded; the frontend ships a static public landing page and the backend has ActiveAdmin mounted plus the `/up` health check, but no domain `/api/*` endpoints yet. The decisions below are the ones committed to in code or roadmap.
 
 ### ADR-001 — Split backend and frontend repositories inside a single monorepo
 
@@ -128,7 +128,7 @@ The project is transitioning from the **planning phase** (product artifacts, USM
 
 ### Performance
 
-- **Latency target (prototype)**: p95 < 300 ms for the landing-page endpoint.
+- **Latency target (prototype)**: p95 < 300 ms for the first domain endpoint when it lands; the static frontend bundle ships with no server round-trip on initial render.
 - Thruster fronts Puma in production to offload static assets and compression.
 - `jemalloc` preloaded in the production Docker image to reduce Ruby memory fragmentation.
 - Frontend is a static Vite build — cached at CDN once deployed.
@@ -159,7 +159,7 @@ The project is transitioning from the **planning phase** (product artifacts, USM
 
 ### Known Technical Debt
 
-- Backend returns **hardcoded** landing-page data; no `Model`, no migrations, no tests yet.
+- Backend has no domain controllers, models, or migrations yet — only `/up` and ActiveAdmin are mounted.
 - Frontend form ("Solicitar cotización") currently only updates local state — no POST endpoint exists.
 - CORS is permissive across all methods and headers — acceptable for dev, must be narrowed for prod.
 - Pre-commit hooks only cover Typst formatting; Ruby and TypeScript lint/test steps are not enforced.

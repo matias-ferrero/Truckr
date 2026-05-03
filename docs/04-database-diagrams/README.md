@@ -1,6 +1,6 @@
 # Database Diagrams
 
-**Status**: the backend currently has **no migrations and no domain tables**. `backend/db/` contains only a placeholder `seeds.rb`; there is no `schema.rb` or `structure.sql` yet. The landing-page response is built from a hardcoded Ruby hash.
+**Status**: the backend currently has **no domain migrations and no domain tables** — only ActiveAdmin/Devise tables exist. `backend/db/` holds the ActiveAdmin schema plus a placeholder `seeds.rb`. The landing page is purely a static frontend page (`frontend/src/landingContent.ts`); no backend record is involved.
 
 The ERDs in this folder therefore describe the **planned** data model, derived from the product artifacts under `docs/artifacts/` (product vision, personas, USM, backlog). Treat them as a design target; they will be refined once the first migrations land.
 

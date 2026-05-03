@@ -25,11 +25,11 @@
 
 | Surface | Convention | Example |
 |---------|------------|---------|
-| Ruby files | snake_case | `landing_pages_controller.rb` |
-| Ruby classes / modules | CamelCase | `Api::LandingPagesController` |
-| Rails routes | plural snake_case | `landing_pages`, `transport_windows` |
-| API JSON keys | snake_case | `cta_primary`, `color_palette` |
-| TypeScript files | camelCase or PascalCase (components) | `App.tsx`, `landingPage.ts` |
+| Ruby files | snake_case | `quote_requests_controller.rb` |
+| Ruby classes / modules | CamelCase | `Api::QuoteRequestsController` |
+| Rails routes | plural snake_case | `quote_requests`, `transport_windows` |
+| API JSON keys | snake_case | `origen`, `peso_kg` |
+| TypeScript files | camelCase or PascalCase (components) | `App.tsx`, `landingContent.ts` |
 | TypeScript types / components | PascalCase | `LandingPage`, `QuoteDraft` |
 | TypeScript variables / fns | camelCase | `themeVars`, `validateQuote` |
 | CSS custom properties | `--brand-*` for palette, kebab-case otherwise | `--brand-primary` |

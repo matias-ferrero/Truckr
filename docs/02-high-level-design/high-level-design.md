@@ -2,11 +2,11 @@
 
 ## System Architecture
 
-Truckr® is structured as a **client / API / docs** triad, packaged as a **single monorepo** with three independently buildable components. Today the system is a thin vertical slice (public landing page) over a Rails 8 API, but the architectural boundaries are set up for the full marketplace described in the product vision.
+Truckr® is structured as a **client / API / docs** triad, packaged as a **single monorepo** with three independently buildable components. Today the runtime is two independent slices: a **static React SPA** (a public landing page) and a **Rails 8 API** that exposes ActiveAdmin and a `/up` health check but no domain `/api/*` endpoints yet. The architectural boundaries are set up for the full marketplace described in the product vision.
 
 ### Style
 
-- **Architecture style**: client-server. The frontend is a **static single-page application** that calls a **stateless REST API**. There is no BFF layer, no aggregator, no microservice split.
+- **Architecture style**: client-server. The frontend is a **static single-page application**; once domain endpoints land it will call a **stateless REST API**. Today there are no `/api/*` calls — the SPA is fully self-contained. There is no BFF layer, no aggregator, no microservice split.
 - **Deployment style**: the API is a single containerised Rails process (Puma + Thruster). The SPA is a static bundle that can be served from any CDN or from the same container.
 - **Persistence style**: Rails multi-database setup — separate SQLite files for the app domain, Solid Cache, Solid Queue and Solid Cable. All in-process, no external brokers.
 
@@ -15,7 +15,7 @@ Truckr® is structured as a **client / API / docs** triad, packaged as a **singl
 | Component | Path | Role |
 |-----------|------|------|
 | **Backend API** | `backend/` | Rails 8 API-only; owns data, business logic, and background jobs. |
-| **Frontend SPA** | `frontend/` | React + Vite single-page app; consumes JSON from the API. |
+| **Frontend SPA** | `frontend/` | React + Vite single-page app; static landing today, will consume JSON from the API as domain features land. |
 | **Documentation** | `docs/` | Typst report (academic deliverable) + chat-session logs. Not runtime-coupled to the app. |
 
 ### Layered View of the Backend
@@ -37,7 +37,9 @@ backend/app/
 ```
 frontend/src/
 ├── main.tsx             # React entry point — mounts <LandingPage />
-├── App.tsx              # Single page; data-fetching, quote form, layout
+├── App.tsx              # Single page; reads landingContent.ts, hosts the quote form
+├── landingContent.ts    # Static landing copy + brand color_palette
+├── api.ts               # API_BASE_URL constant (placeholder, no call yet)
 └── styles/              # Co-located CSS
 ```
 
@@ -59,8 +61,8 @@ The patterns below are either already present in code or load-bearing for the ro
 ### 2. Resource-based routing
 
 - **Purpose**: predictable REST URLs, one resource per controller.
-- **Implementation**: `resources :landing_pages, only: [:index]` under a namespaced `:api` block.
-- **Example**: `GET /api/landing_pages` → `Api::LandingPagesController#index`.
+- **Implementation**: no `/api/*` resources are mounted yet. The first will likely be `resources :quote_requests, only: [:create]` under a namespaced `:api` block.
+- **Example (planned)**: `POST /api/quote_requests` → `Api::QuoteRequestsController#create`.
 - **Rule**: restrict verbs explicitly with `only:` / `except:` — do not expose all seven actions unless intended.
 
 ### 3. Health check endpoint
@@ -84,13 +86,13 @@ The patterns below are either already present in code or load-bearing for the ro
 ### 6. Client-side data-fetching with schema validation
 
 - **Purpose**: defend the UI from backend shape drift without a code-generated client.
-- **Implementation**: `isLandingData()` type guard in `frontend/src/App.tsx` validates the JSON shape before `setData()`.
-- **Rule**: every `fetch()` must (a) check `response.ok`, (b) parse as `unknown`, (c) narrow via a type guard. This keeps the TypeScript types honest at the boundary.
+- **Implementation**: no live `fetch()` yet — `App.tsx` reads the static `landingContent.ts` module. `frontend/src/api.ts` exports the `API_BASE_URL` constant for when calls land.
+- **Rule**: when a `fetch()` is introduced, it must (a) check `response.ok`, (b) parse as `unknown`, (c) narrow via a type guard before assigning to typed state. This keeps the TypeScript types honest at the boundary.
 
 ### 7. Theme-via-CSS-variables
 
-- **Purpose**: brand palette comes from the API (`color_palette` in the landing-page payload) so non-technical editing is possible.
-- **Implementation**: `themeVars` memo in `App.tsx` maps the palette to `--brand-*` CSS custom properties on the root element.
+- **Purpose**: brand palette is centralized in one module so non-technical editing is a one-file change.
+- **Implementation**: `landingContent.color_palette` (in `frontend/src/landingContent.ts`) feeds the `themeVars` memo in `App.tsx`, which writes `--brand-*` CSS custom properties on the root element.
 - **Rule**: component styles read `var(--brand-primary)` etc. — never hardcode palette hexes.
 
 ### 8. Document-as-code
@@ -175,7 +177,7 @@ Each transition emits `TrackingEvent` rows; `settled` triggers payment release a
 
 ### Style
 
-**REST / JSON.** No GraphQL, no gRPC. The only live endpoint today is `GET /api/landing_pages`. Future endpoints will be designed as plural, namespaced resources under `/api/...`.
+**REST / JSON.** No GraphQL, no gRPC. No domain endpoints are live yet — only `/up` (Rails health check) and `/admin` (ActiveAdmin). Future domain endpoints will be designed as plural, namespaced resources under `/api/...`.
 
 ### Versioning Strategy
 
@@ -198,8 +200,8 @@ Not yet in place. When a mobile client or third-party integration lands, the rec
 
 ### Conventions
 
-- Routes: plural, snake_case (`landing_pages`, `transport_windows`, `cargo_offers`).
-- Controller responses: top-level object, camelCase **not** used — keys match Ruby style (`cta_primary`, not `ctaPrimary`). The frontend reads snake_case keys directly.
+- Routes: plural, snake_case (`quote_requests`, `transport_windows`, `cargo_offers`).
+- Controller responses: top-level object, camelCase **not** used — keys match Ruby style (e.g. `peso_kg`, not `pesoKg`). The frontend reads snake_case keys directly.
 - Dates/times: ISO-8601 UTC when added.
 
 ---
@@ -209,23 +211,20 @@ Not yet in place. When a mobile client or third-party integration lands, the rec
 ### Current Flow — Landing Page Render
 
 ```
-Browser                 Vite dev server            Rails API
-   │                         │                         │
-   │ GET /                   │                         │
-   ├────────────────────────▶│                         │
-   │ index.html + JS bundle  │                         │
-   │◀────────────────────────┤                         │
-   │                                                   │
-   │ fetch(GET /api/landing_pages)                     │
-   ├──────────────────────────────────────────────────▶│
-   │                                                   │ LandingPagesController#index
-   │                                                   │  (hardcoded hash)
-   │ 200 JSON { hero, features, stats, color_palette } │
-   │◀──────────────────────────────────────────────────┤
-   │                                                   │
-   │ isLandingData(json) ? setData : setError          │
-   │ theme-from-palette applied                        │
+Browser                 Vite dev server / static host
+   │                         │
+   │ GET /                   │
+   ├────────────────────────▶│
+   │ index.html + JS bundle  │
+   │◀────────────────────────┤
+   │
+   │ <LandingPage /> mounts and reads landingContent.ts (bundled)
+   │ themeVars writes --brand-* CSS custom properties from
+   │   landingContent.color_palette
+   │ Hero / features / stats / quote form render — no network call
 ```
+
+The Rails API is not in the landing-page critical path. It comes online when the first domain endpoint (likely `Api::QuoteRequestsController#create`) lands.
 
 ### Frontend Form Flow — "Solicitar Cotización" (current)
 
@@ -237,7 +236,7 @@ Browser                 Vite dev server            Rails API
 
 | Pattern | Status | Where |
 |---------|--------|-------|
-| Synchronous REST calls | Active | Frontend → Rails `/api/*` |
+| Synchronous REST calls | Planned | Frontend → Rails `/api/*` (no calls today) |
 | Async background jobs | Scaffolded | `app/jobs/` via `solid_queue` — no jobs defined yet |
 | WebSocket (Action Cable) | Scaffolded | `solid_cable` configured — no channels yet |
 | Event-driven | Not planned for v1 | — |

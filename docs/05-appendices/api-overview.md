@@ -1,6 +1,6 @@
 # API Overview
 
-The backend exposes a single JSON endpoint today. This appendix documents the current shape and records the conventions every future endpoint is expected to follow.
+The backend exposes **no domain JSON endpoints yet** — only the Rails health check and the ActiveAdmin admin UI. The landing page is a static React module (`frontend/src/landingContent.ts`) and never hits the API. This appendix records the conventions every future endpoint is expected to follow.
 
 ## Base URL
 
@@ -20,55 +20,19 @@ The backend exposes a single JSON endpoint today. This appendix documents the cu
 - Versioning: none yet. When the first breaking change ships, move to `/api/v1/...`.
 - Auth: none yet. All endpoints are public.
 
-## Endpoints
-
-### `GET /api/landing_pages`
-
-Returns the content of the public landing page. The response is built in-process from a hardcoded hash — there is no database row backing it today.
-
-**Request**
-
-```
-GET /api/landing_pages
-Accept: application/json
-```
-
-**Response 200**
-
-```json
-{
-  "hero": {
-    "title": "Truckr®",
-    "subtitle": "Conectando transportistas independientes con clientes",
-    "description": "La plataforma de servicios de transporte que une oferta y demanda",
-    "cta_primary": "Comenzar",
-    "cta_secondary": "Más información"
-  },
-  "features": [
-    { "id": 1, "title": "Para Transportistas", "description": "...", "icon": "truck" },
-    { "id": 2, "title": "Para Clientes",       "description": "...", "icon": "package" },
-    { "id": 3, "title": "Seguro y Confiable",  "description": "...", "icon": "shield" }
-  ],
-  "color_palette": {
-    "primary":   "#bee4fa",
-    "secondary": "#f1e3aa",
-    "tertiary":  "#b4b4b4",
-    "error":     "#ff9999",
-    "neutral":   "#ffffff"
-  },
-  "stats": [
-    { "label": "Transportistas Activos", "value": "500+" },
-    { "label": "Clientes Satisfechos",   "value": "1000+" },
-    { "label": "Envíos Completados",     "value": "5000+" }
-  ]
-}
-```
-
-**Known constraint**: `features[*].icon` is validated by the frontend to one of `"truck" | "package" | "shield"`; unknown values render a fallback glyph. Keep this enum in sync when extending.
+## Live Routes
 
 ### `GET /up`
 
 Rails health check — returns `200` when the app boots cleanly. Reserved for load-balancer probes; do not add business logic.
+
+### `/admin/*`
+
+ActiveAdmin admin UI (Devise-protected). Not part of the public API surface; intended for internal/back-office use.
+
+## Landing Page (frontend-only)
+
+The public landing page is a static React module: `frontend/src/App.tsx` reads from `frontend/src/landingContent.ts` (hero copy, features, stats, brand `color_palette`). There is no `GET /api/landing_pages` endpoint and none is planned — content edits go directly into `landingContent.ts`.
 
 ## Planned Endpoints
 

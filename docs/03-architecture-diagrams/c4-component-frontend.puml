@@ -6,11 +6,11 @@ title Component Diagram — Frontend SPA
 Container_Boundary(spa, "Frontend SPA (React + Vite)") {
 
   Component(entry, "main.tsx", "React 18 entry", "Mounts <LandingPage /> into #root.")
-  Component(landing, "LandingPage (App.tsx)", "React component", "Single-file landing: data fetching, theme, quote form, section rendering.")
+  Component(landing, "LandingPage (App.tsx)", "React component", "Single-file landing: theme, quote form, section rendering.")
 
-  Component(fetcher, "fetchLandingData()", "async fn inside LandingPage", "Calls GET /api/landing_pages; parses and validates response.")
-  Component(guard, "isLandingData()", "type guard", "Validates JSON shape at boundary before setState.")
-  Component(theme, "themeVars memo", "useMemo", "Maps color_palette → CSS custom properties (--brand-*).")
+  Component(content, "landingContent.ts", "TS module", "Static landing copy (hero, features, stats) + brand color_palette. Bundled at build time; no runtime fetch.")
+  Component(api_const, "api.ts", "TS module", "Exports API_BASE_URL constant. Placeholder — no caller yet.")
+  Component(theme, "themeVars memo", "useMemo", "Maps landingContent.color_palette → CSS custom properties (--brand-*).")
   Component(quote_state, "quote / quoteErrors state", "React state", "Local-only quote form; no network POST yet.")
   Component(validator, "validateQuote()", "sync fn", "Checks required fields, sets inline errors.")
 
@@ -20,13 +20,12 @@ Container_Boundary(spa, "Frontend SPA (React + Vite)") {
 Container(api, "Backend API")
 
 Rel(entry, landing, "renders")
-Rel(landing, fetcher, "calls on mount")
-Rel(fetcher, guard, "narrows type via")
-Rel(fetcher, api, "GET /api/landing_pages", "HTTPS / JSON")
+Rel(landing, content, "imports")
 Rel(landing, theme, "derives CSS vars via")
 Rel(landing, quote_state, "reads / writes")
 Rel(landing, validator, "calls on submit")
 Rel(landing, icon_map, "uses for feature icons")
+Rel_D(api_const, api, "will target (no calls today)", "HTTPS / JSON")
 
 SHOW_LEGEND()
 @enduml

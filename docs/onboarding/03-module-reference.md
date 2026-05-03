@@ -27,9 +27,8 @@ fiuba-gestion-tp/
 backend/
 ├── app/
 │   ├── controllers/
-│   │   ├── application_controller.rb     # < ActionController::API
-│   │   └── api/                          # All JSON endpoints
-│   │       └── landing_pages_controller.rb
+│   │   └── application_controller.rb     # < ActionController::API
+│   │                                      # No api/ controllers yet — only /up + ActiveAdmin live
 │   ├── models/                           # ApplicationRecord only — no domain models yet
 │   ├── jobs/                             # solid_queue jobs (none defined yet)
 │   ├── mailers/                          # ActionMailer (unused)
