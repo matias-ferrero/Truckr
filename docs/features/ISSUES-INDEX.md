@@ -13,6 +13,7 @@ This file tracks all issues managed by gdsi-sdlc.
 | INF-FE-00002 | Actualizar frontend/.gitignore a estándares industriales (incluir .vite/ y env files) | DONE | FE | 2026-05-03 | PR #66 |
 | REQ-BE-00005 | Diseñar modelo de dominio inicial (Identity bounded context primero) | RDY | BE | 2026-05-03 | [plan](REQ/REQ-BE-00005/REQ-BE-00005-disenar-modelo-de-dominio-inicial.plan.md) |
 | REQ-DOC-00002 | Crear artefacto de riesgos con metodología, registro y cobertura por categorías | RDY | DOC | 2026-04-18 | [plan](REQ/REQ-DOC-00002/REQ-DOC-00002-crear-artefacto-de-riesgos.plan.md) |
+| INF-GEN-00001 | Sin estimaciones: Proyecciones basadas en Throughput | RDY | GEN | 2026-04-18 | [plan](INF/INF-GEN-00001/INF-GEN-00001-team-performance-script.plan.md) |
 
 ## Legend
 
