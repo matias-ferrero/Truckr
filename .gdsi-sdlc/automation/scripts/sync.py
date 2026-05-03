@@ -372,7 +372,7 @@ class SyncEngine:
                 p, s, n = IssueParser.parse_tag(tag)
                 if p == prefix and s == scope:
                     existing_numbers.add(int(n))
-            except ValueError, TypeError:
+            except (ValueError, TypeError):
                 pass
 
         next_number = 1
