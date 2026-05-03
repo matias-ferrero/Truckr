@@ -5,3 +5,5 @@ uv = "latest"       # Python package and project manager
 prek = "latest"     # Pre-commit hook manager
 typstyle = "latest" # Typst formatter
 just = "latest"     # command runner, similar to Make
+deno = "latest"
+ruby = "3.4"

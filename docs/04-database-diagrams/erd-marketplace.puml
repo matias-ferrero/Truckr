@@ -1,0 +1,47 @@
+@startuml erd-marketplace
+title Entity Relationships — Marketplace (planned)
+
+entity "transport_windows" as tw {
+  * id : bigint <<PK>>
+  --
+  * transportista_id : bigint <<FK>>
+  * vehicle_id : bigint <<FK>>
+  * origin_city : string
+  * destination_city : string
+  * start_at : datetime
+  * end_at : datetime
+  available_capacity_kg : integer
+  price_reference : decimal
+  status : enum [open, matched, expired, cancelled]
+}
+
+entity "cargo_offers" as co {
+  * id : bigint <<PK>>
+  --
+  * cliente_id : bigint <<FK>>
+  * origin_address : string
+  * destination_address : string
+  * pickup_at : datetime
+  * weight_kg : integer
+  goods_description : text
+  special_handling : string
+  max_price : decimal
+  status : enum [open, quoted, accepted, cancelled]
+}
+
+entity "quotes" as q {
+  * id : bigint <<PK>>
+  --
+  * cargo_offer_id : bigint <<FK>>
+  * transport_window_id : bigint <<FK>>
+  * transportista_id : bigint <<FK>>
+  * price : decimal
+  message : text
+  status : enum [pending, accepted, rejected, expired]
+  accepted_at : datetime
+}
+
+tw }o--o{ q : "referenced by"
+co ||--o{ q : "receives"
+
+@enduml

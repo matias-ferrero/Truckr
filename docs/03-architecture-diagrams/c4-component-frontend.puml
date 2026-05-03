@@ -1,0 +1,32 @@
+@startuml c4-component-frontend
+!include <C4/C4_Component>
+
+title Component Diagram — Frontend SPA
+
+Container_Boundary(spa, "Frontend SPA (React + Vite)") {
+
+  Component(entry, "main.tsx", "React 18 entry", "Mounts <LandingPage /> into #root.")
+  Component(landing, "LandingPage (App.tsx)", "React component", "Single-file landing: data fetching, theme, quote form, section rendering.")
+
+  Component(fetcher, "fetchLandingData()", "async fn inside LandingPage", "Calls GET /api/landing_pages; parses and validates response.")
+  Component(guard, "isLandingData()", "type guard", "Validates JSON shape at boundary before setState.")
+  Component(theme, "themeVars memo", "useMemo", "Maps color_palette → CSS custom properties (--brand-*).")
+  Component(quote_state, "quote / quoteErrors state", "React state", "Local-only quote form; no network POST yet.")
+  Component(validator, "validateQuote()", "sync fn", "Checks required fields, sets inline errors.")
+
+  Component(icon_map, "iconFor()", "pure fn", "Maps 'truck' | 'package' | 'shield' to emoji.")
+}
+
+Container(api, "Backend API")
+
+Rel(entry, landing, "renders")
+Rel(landing, fetcher, "calls on mount")
+Rel(fetcher, guard, "narrows type via")
+Rel(fetcher, api, "GET /api/landing_pages", "HTTPS / JSON")
+Rel(landing, theme, "derives CSS vars via")
+Rel(landing, quote_state, "reads / writes")
+Rel(landing, validator, "calls on submit")
+Rel(landing, icon_map, "uses for feature icons")
+
+SHOW_LEGEND()
+@enduml

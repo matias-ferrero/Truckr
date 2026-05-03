@@ -1,0 +1,41 @@
+@startuml erd-fulfilment
+title Entity Relationships — Fulfilment (planned)
+
+entity "shipments" as s {
+  * id : bigint <<PK>>
+  --
+  * quote_id : bigint <<FK, unique>>
+  * transportista_id : bigint <<FK>>
+  * cliente_id : bigint <<FK>>
+  * vehicle_id : bigint <<FK>>
+  status : enum [draft, accepted, in_transit, delivered, cancelled, settled]
+  pickup_at : datetime
+  delivered_at : datetime
+  settled_at : datetime
+}
+
+entity "tracking_events" as te {
+  * id : bigint <<PK>>
+  --
+  * shipment_id : bigint <<FK>>
+  * event_type : enum [picked_up, waypoint, position, delay, delivered, exception]
+  * occurred_at : datetime
+  lat : decimal
+  lng : decimal
+  note : text
+}
+
+entity "routes" as r {
+  * id : bigint <<PK>>
+  --
+  * shipment_id : bigint <<FK, unique>>
+  polyline : text
+  waypoints_json : text
+  eta : datetime
+  provider : enum [google, here, osrm]
+}
+
+s ||--o{ te : "emits"
+s ||--o| r : "has planned route"
+
+@enduml

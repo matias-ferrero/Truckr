@@ -1,0 +1,53 @@
+@startuml c4-component-core
+!include <C4/C4_Component>
+
+title Component Diagram — Backend API (current + planned)
+
+Container_Boundary(api, "Backend API (Rails)") {
+
+  Component(routes, "Routes", "config/routes.rb", "Dispatches /api/* to namespaced controllers; exposes /up health check.")
+  Component(app_controller, "ApplicationController", "ActionController::API", "API-only base class. Future home for rescue_from error envelope and auth before_action.")
+
+  Component(landing_c, "Api::LandingPagesController", "Rails controller", "CURRENT: returns hardcoded landing-page payload (hero, features, stats, palette).")
+
+  Component(auth_c, "Api::SessionsController", "planned", "Sign-in, sign-out, JWT issuance.")
+  Component(users_c, "Api::UsersController", "planned", "Registration, profile updates.")
+  Component(windows_c, "Api::TransportWindowsController", "planned", "CRUD for transportista availability.")
+  Component(offers_c, "Api::CargoOffersController", "planned", "CRUD for cliente cargo publications.")
+  Component(shipments_c, "Api::ShipmentsController", "planned", "Lifecycle transitions; nested tracking_events.")
+  Component(payments_c, "Api::PaymentsController", "planned", "Charge initiation, webhook handling.")
+
+  Component(health_c, "Rails::HealthController", "rails/health", "Liveness endpoint at /up.")
+
+  Component(models, "Domain models", "ActiveRecord", "User, Transportista, Cliente, Vehicle, TransportWindow, CargoOffer, Shipment, TrackingEvent, Payment, InsurancePolicy (planned).")
+  Component(jobs, "Background jobs", "ApplicationJob → solid_queue", "TrackingIngestJob, InvoiceEmissionJob, PaymentSettlementJob (planned).")
+  Component(cors, "Rack::Cors middleware", "rack-cors", "Allow-list for dev origins (localhost:5173).")
+}
+
+ContainerDb(db, "SQLite primary DB")
+System_Ext(ext, "External services\n(payments, ARCA, maps, insurance)")
+
+Rel(routes, app_controller, "dispatches to")
+Rel(app_controller, landing_c, "extends")
+Rel(app_controller, auth_c, "extends (planned)")
+Rel(app_controller, users_c, "extends (planned)")
+Rel(app_controller, windows_c, "extends (planned)")
+Rel(app_controller, offers_c, "extends (planned)")
+Rel(app_controller, shipments_c, "extends (planned)")
+Rel(app_controller, payments_c, "extends (planned)")
+Rel(routes, health_c, "dispatches /up to")
+
+Rel(users_c, models, "reads / writes")
+Rel(windows_c, models, "reads / writes")
+Rel(offers_c, models, "reads / writes")
+Rel(shipments_c, models, "reads / writes")
+Rel(payments_c, models, "reads / writes")
+Rel(payments_c, jobs, "enqueues")
+Rel(shipments_c, jobs, "enqueues")
+
+Rel(models, db, "persists via Active Record")
+Rel(jobs, ext, "calls HTTPS (planned)")
+Rel(cors, routes, "wraps")
+
+SHOW_LEGEND()
+@enduml

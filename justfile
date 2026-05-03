@@ -44,6 +44,62 @@ convert-chats:
 watch-chats:
     typst watch --root {{ root }} {{ root }}/prompts/main.typ
 
+# ── Frontend (React + Vite + Deno) ──────────────────────────────────────────
+
+# Install frontend dependencies (uses Deno's npm interop)
+frontend-install:
+    cd frontend && deno install
+
+# Run the frontend dev server (Vite, defaults to http://localhost:5173)
+frontend-dev:
+    cd frontend && deno task dev
+
+# Build the frontend for production (outputs to frontend/dist)
+frontend-build:
+    cd frontend && deno task build
+
+# Preview the production build locally
+frontend-preview:
+    cd frontend && deno task preview
+
+# Run frontend unit/component tests (Vitest, single run)
+frontend-test:
+    cd frontend && deno task test:run
+
+# Run frontend tests with coverage
+frontend-test-coverage:
+    cd frontend && deno task test:coverage
+
+# Run frontend E2E tests (Playwright, chromium only)
+frontend-test-e2e:
+    cd frontend && deno task test:e2e
+
+# Install Playwright browsers (run once before frontend-test-e2e)
+frontend-test-e2e-install:
+    cd frontend && deno task test:e2e:install
+
+# ── Backend (Rails 8 API) ───────────────────────────────────────────────────
+
+# Install backend gems
+backend-install:
+    cd backend && bundle install
+
+# Run the backend dev server (Puma on http://localhost:3000)
+backend-dev:
+    cd backend && bin/rails server
+
+# Open the Rails console
+backend-console:
+    cd backend && bin/rails console
+
+# Run database migrations
+backend-migrate:
+    cd backend && bin/rails db:migrate
+
+# Run the backend test suite (RSpec)
+backend-test:
+    cd backend && bundle exec rspec
+
 # ── Utilities ───────────────────────────────────────────────────────────────
 
 # Format all .typ files with typstyle

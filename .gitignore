@@ -215,3 +215,9 @@ pyrightconfig.json
 docs/prompts/raw/*
 docs/**/*.pdf
 docs/raw/*
+
+# gdsi-sdlc automation state (local only)
+.gdsi-sdlc/automation/state.json
+.gdsi-sdlc/automation/.sync-state.json
+.gdsi-sdlc/automation/queue/
+.gdsi-sdlc/automation/processed/

@@ -1,0 +1,45 @@
+@startuml deployment-diagram
+!include <C4/C4_Deployment>
+
+title Deployment Diagram — Truckr® (target topology)
+
+Deployment_Node(dev, "Developer workstation", "macOS / Linux") {
+  Deployment_Node(mise, "mise-managed toolchain", "") {
+    Container(vite_dev, "Vite dev server", "Deno 2 + Vite 5", "deno task dev → http://localhost:5173")
+    Container(rails_dev, "Rails dev server", "Ruby 3.4 + Puma", "bin/rails server → http://localhost:3000")
+    ContainerDb(sqlite_dev, "SQLite", "storage/development.sqlite3")
+  }
+}
+
+Deployment_Node(cdn, "CDN / static host", "e.g. GitHub Pages, Cloudflare, Netlify") {
+  Container(spa_prod, "Frontend bundle", "Static HTML + JS + CSS", "Output of `deno task build` (dist/).")
+}
+
+Deployment_Node(host, "Application host", "Single VM or container host (Kamal target)") {
+  Deployment_Node(docker, "Docker runtime", "") {
+    Deployment_Node(app_container, "Truckr API container", "ruby:3.4-slim + jemalloc") {
+      Container(thruster, "Thruster", "HTTP front-cache + X-Sendfile", "Listens on :80")
+      Container(puma, "Puma", "Rails app server", "Runs Rails app via bin/thrust bin/rails server")
+      Container(worker_prod, "solid_queue worker", "separate process", "Runs Active Job tasks")
+    }
+    ContainerDb(sqlite_prod, "SQLite databases", "mounted volume", "production.sqlite3 + cache + queue + cable")
+  }
+}
+
+Deployment_Node(github_infra, "GitHub", "SaaS") {
+  Container(actions, "GitHub Actions", "release-please workflow", "On push to main: release PR; on merge: tag + attach PDFs.")
+  Container(releases, "GitHub Releases", "artifact store", "artifacts.pdf, prompts.pdf.")
+}
+
+Rel(vite_dev, rails_dev, "HTTP / CORS", "fetch /api/*")
+Rel(rails_dev, sqlite_dev, "Active Record")
+
+Rel(spa_prod, thruster, "HTTPS / JSON", "fetch /api/*")
+Rel(thruster, puma, "proxy")
+Rel(puma, sqlite_prod, "Active Record")
+Rel(worker_prod, sqlite_prod, "Active Job polling")
+
+Rel(actions, releases, "uploads PDFs")
+
+SHOW_LEGEND()
+@enduml

@@ -1,0 +1,49 @@
+@startuml erd-identity
+title Entity Relationships — Identity (planned)
+
+entity "users" as user {
+  * id : bigint <<PK>>
+  --
+  * email : string <<unique>>
+  * password_digest : string
+  * role : enum [transportista, cliente, admin]
+  full_name : string
+  phone : string
+  dni_or_cuit : string
+  verified_at : datetime
+}
+
+entity "transportistas" as t {
+  * id : bigint <<PK>>
+  --
+  * user_id : bigint <<FK>>
+  legal_name : string
+  base_city : string
+  rating_avg : decimal
+  completed_shipments : integer
+}
+
+entity "clientes" as c {
+  * id : bigint <<PK>>
+  --
+  * user_id : bigint <<FK>>
+  company_name : string
+  tax_id : string
+  billing_address : string
+}
+
+entity "vehicles" as v {
+  * id : bigint <<PK>>
+  --
+  * transportista_id : bigint <<FK>>
+  * plate : string <<unique>>
+  * capacity_kg : integer
+  type : enum [van, truck_small, truck_large, semi_trailer]
+  gps_enabled : boolean
+}
+
+user ||--o| t : "(if role=transportista)"
+user ||--o| c : "(if role=cliente)"
+t ||--o{ v : "owns"
+
+@enduml

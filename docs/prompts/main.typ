@@ -84,4 +84,10 @@
 #include "chat-2026_04_13-23_03_43.typ"
 #pagebreak()
 
+#include "chat-2026_04_13-16_20_43.typ"
+#pagebreak()
+
+#include "chat-2026_04_14-16_46_31.typ"
+#pagebreak()
+
 #include "chat-2026_04_15-11_07_31.typ"

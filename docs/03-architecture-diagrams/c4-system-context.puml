@@ -1,0 +1,29 @@
+@startuml c4-system-context
+!include <C4/C4_Context>
+
+title System Context — Truckr®
+
+Person(transportista, "Transportista", "Independent trucker: publishes availability, accepts cargo offers, fulfils shipments.")
+Person(cliente, "Cliente / Productor", "Shipper: publishes cargo, selects a transportista, pays, tracks delivery.")
+Person(admin, "Platform operator", "FIUBA-GDSI team member: monitors releases and platform health.")
+
+System(truckr, "Truckr® Platform", "Two-sided marketplace connecting transportistas with clientes for overland freight.")
+
+System_Ext(payments, "Payment gateway", "Processes payments, holds escrow, releases on delivery. (Planned)")
+System_Ext(insurance, "Insurance provider", "Brokered per-shipment coverage. (Planned)")
+System_Ext(arca, "ARCA", "Argentine tax authority — fiscal invoicing integration. (Planned)")
+System_Ext(maps, "Maps / GPS provider", "Route planning, geocoding, live tracking. (Planned)")
+System_Ext(github, "GitHub", "Source of truth, release automation, PDF artifacts.")
+
+Rel(transportista, truckr, "Publishes transport windows, accepts offers, updates shipment status", "HTTPS")
+Rel(cliente, truckr, "Publishes cargo, selects transportista, pays, tracks", "HTTPS")
+Rel(admin, truckr, "Deploys releases, reviews health checks", "HTTPS / CLI")
+
+Rel(truckr, payments, "Initiates charges & releases escrow", "HTTPS")
+Rel(truckr, insurance, "Requests policy quotes, binds coverage", "HTTPS")
+Rel(truckr, arca, "Emits electronic invoices on shipment settlement", "HTTPS")
+Rel(truckr, maps, "Requests routes, geocodes addresses, streams vehicle positions", "HTTPS")
+Rel(admin, github, "Pushes commits; release-please tags versions and attaches PDFs", "Git")
+
+SHOW_LEGEND()
+@enduml

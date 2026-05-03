@@ -1,0 +1,42 @@
+@startuml platform-overview
+title Platform Overview — Truckr® Monorepo
+
+package "fiuba-gestion-tp (Git monorepo)" {
+
+  package "backend/" as be {
+    [Rails 8 API] as rails
+    [SQLite (Solid stack)] as db
+    rails --> db : Active Record
+  }
+
+  package "frontend/" as fe {
+    [React + Vite SPA] as spa
+  }
+
+  package "docs/" as dc {
+    [Typst sources\n(artifacts, prompts)] as typ
+    [Python scripts\n(xlsx2typ, chat2typ)] as py
+    [Lean Artifacts.xlsx] as xlsx
+    py --> typ : generates
+    xlsx --> py : input
+  }
+
+  package "Top-level" as top {
+    [mise.toml] as mise
+    [justfile] as just
+    [.github/workflows/release-please.yml] as wf
+  }
+}
+
+cloud "GitHub" as gh {
+  [Releases\n(artifacts.pdf, prompts.pdf)] as rel
+}
+
+spa ..> rails : fetch /api/*\n(HTTPS/JSON)
+just --> typ : build-artifacts / build-chats
+wf --> rel : on release_created,\nattach compiled PDFs
+mise .. be : pins Ruby tools
+mise .. fe : pins Deno / Node tools
+mise .. dc : pins Typst / uv / just
+
+@enduml

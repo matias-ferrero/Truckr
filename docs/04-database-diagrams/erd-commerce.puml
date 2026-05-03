@@ -1,0 +1,44 @@
+@startuml erd-commerce
+title Entity Relationships — Commerce (planned)
+
+entity "payments" as p {
+  * id : bigint <<PK>>
+  --
+  * shipment_id : bigint <<FK>>
+  * cliente_id : bigint <<FK>>
+  * amount : decimal
+  * currency : string  // ARS default
+  provider : enum [mercadopago, stripe, other]
+  provider_reference : string
+  status : enum [pending, held, released, refunded, failed]
+  held_at : datetime
+  released_at : datetime
+}
+
+entity "insurance_policies" as ip {
+  * id : bigint <<PK>>
+  --
+  * shipment_id : bigint <<FK, unique>>
+  provider : string
+  policy_number : string
+  coverage_amount : decimal
+  premium : decimal
+  status : enum [quoted, active, expired, claimed]
+}
+
+entity "arca_invoices" as inv {
+  * id : bigint <<PK>>
+  --
+  * shipment_id : bigint <<FK>>
+  * issuer_user_id : bigint <<FK>>
+  cae : string       // ARCA authorisation code
+  document_type : enum [factura_a, factura_b, factura_c]
+  total_ars : decimal
+  emitted_at : datetime
+  status : enum [pending, emitted, rejected]
+}
+
+p }o--|| inv : "triggers invoice"
+ip ||--|| inv : "(optional) premium invoiced"
+
+@enduml

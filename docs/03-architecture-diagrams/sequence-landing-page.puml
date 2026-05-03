@@ -1,0 +1,25 @@
+@startuml sequence-landing-page
+title Sequence — Landing Page Initial Render (current)
+
+actor User as u
+participant "Browser\n(SPA)" as b
+participant "Rails API\n/api/landing_pages" as api
+
+u -> b: Navigate to site
+b -> b: Bootstrap React, render <LandingPage />
+b -> b: useEffect → fetchLandingData()
+b -> api: GET /api/landing_pages
+activate api
+api -> api: Api::LandingPagesController#index\n(builds hardcoded hash)
+api --> b: 200 JSON\n{ hero, features, stats, color_palette }
+deactivate api
+b -> b: isLandingData(json)?
+alt valid
+  b -> b: setData(json)
+  b -> b: themeVars memo → --brand-* CSS vars applied
+  b -> u: Render hero, features, stats, quote form
+else invalid or fetch failed
+  b -> b: setError(...)
+  b -> u: Render error placeholder
+end
+@enduml

@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "github": {
+    "owner": "tcorzo",
+    "repo": "fiuba-gestion-tp",
+    "project_number": 7,
+    "owner_type": "user"
+  },
+  "paths": {
+    "issues_base": ".gdsi-sdlc/issues",
+    "features": "docs/features",
+    "automation": ".gdsi-sdlc/automation"
+  },
+  "issues": {
+    "prefixes": ["REQ", "FIX", "DOC", "TST", "REF", "INF", "REL"],
+    "scopes": ["DOC", "BE", "FE", "INFRA", "GEN"],
+    "default_scope": "GEN",
+    "default_prefix": "REQ",
+    "default_priority": "P2"
+  },
+  "sync": {
+    "direction": "bidirectional",
+    "conflict_strategy": "flag",
+    "rate_limit": {
+      "batch_size": 50,
+      "delay_ms": 1000
+    }
+  },
+  "automation": {
+    "enabled": false,
+    "cooldowns": {
+      "plan_minutes": 60,
+      "implement_minutes": 120,
+      "troubleshoot_minutes": 30,
+      "review_minutes": 60
+    },
+    "max_concurrent": 3
+  },
+  "status_mapping": {
+    "Backlog": "Backlog",
+    "Ready": "Ready",
+    "In progress": "InProgress",
+    "In review": "InReview",
+    "Done": "Done"
+  },
+  "folder_to_status": {
+    "Backlog": "Backlog",
+    "Ready": "Ready",
+    "InProgress": "In progress",
+    "InReview": "In review",
+    "Done": "Done"
+  },
+  "documentation": {
+    "docs_path": "docs",
+    "tech_docs": true,
+    "oe_assessment": false,
+    "onboarding": false,
+    "last_generated": "2026-04-17"
+  }
+}
