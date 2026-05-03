@@ -9,7 +9,7 @@ source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/55
 author: ''
 github_issue: 55
 github_repo: tcorzo/fiuba-gestion-tp
-last_synced: 2026-05-03T12:54:04.036890+00:00Z
+last_synced: 2026-05-03T15:34:14.817383+00:00Z
 labels:
 - next step
 - INF
@@ -24,11 +24,11 @@ labels:
 ## Artifacts a Cerrar
 - [X] Personas (ya está bien)
 - [X] Features (ya está bien)
-- [ ] USM (unificado, con Seguros, GPS y Pagos maquetados)
+- [x] USM (unificado, con Seguros, GPS y Pagos maquetados)
 - [ ] WBS (reestructurado por funcionalidades, uniforme)
 - [X] Backlog US (ya bien, mantenemos)
 - [X] Plan de Comunicación (ya está bien)
-- [ ] Costos (simplificado a UNA tabla)
+- [x] Costos (simplificado a UNA tabla)
 - [ ] Cronograma (creado)
 - [ ] Riesgos (2-3 bien hechos)
 

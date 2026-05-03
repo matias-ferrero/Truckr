@@ -2,14 +2,14 @@
 tag: REQ-DOC-00001
 title: Pagos y GPS
 priority: P2
-status: backlog
+status: done
 created: '2026-04-21'
 source: github
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/58
 author: ''
 github_issue: 58
 github_repo: tcorzo/fiuba-gestion-tp
-last_synced: 2026-05-03T12:59:26.311802+00:00Z
+last_synced: 2026-05-03T15:34:14.819592+00:00Z
 labels:
 - documentation
 - enhancement
@@ -29,5 +29,5 @@ assignees:
 - Pagos: Maquetación visual (prototipo visual, no funcional) - permitir ingreso de datos, pero NO enviar a ningún lado, con UI/UX hecho, pero SIN enviar datos
 
 ## Tareas
-- [ ] Hacer maqueta del **GPS**
-- [ ] Hacer maqueta de **Pagos**
+- [x] Hacer maqueta del **GPS**
+- [x] Hacer maqueta de **Pagos**

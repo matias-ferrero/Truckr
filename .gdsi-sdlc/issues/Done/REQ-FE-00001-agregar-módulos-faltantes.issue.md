@@ -9,7 +9,7 @@ source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/57
 author: ''
 github_issue: 57
 github_repo: tcorzo/fiuba-gestion-tp
-last_synced: 2026-05-03T12:59:28.204044+00:00Z
+last_synced: 2026-05-03T15:34:14.820916+00:00Z
 labels:
 - correction
 - artifact

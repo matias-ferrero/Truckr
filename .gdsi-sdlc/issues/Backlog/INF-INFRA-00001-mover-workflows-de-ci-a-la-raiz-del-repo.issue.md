@@ -5,7 +5,12 @@ priority: P2
 status: backlog
 created: '2026-05-03'
 source: manual
+source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/70
 author: Claude Code
+github_issue: 70
+github_project_item: PVTI_lAHOAm1mPc4BWhiVzgrrFqQ
+github_repo: tcorzo/fiuba-gestion-tp
+last_synced: 2026-05-03T14:46:07.399970+00:00Z
 labels:
 - INF
 - INFRA

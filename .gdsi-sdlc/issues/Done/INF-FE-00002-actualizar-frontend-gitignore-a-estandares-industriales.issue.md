@@ -1,17 +1,19 @@
 ---
 tag: INF-FE-00002
-title: Actualizar frontend/.gitignore a estándares industriales (incluir .vite/ y env files)
+title: Actualizar frontend/.gitignore a estándares industriales (incluir .vite/ y
+  env files)
 priority: P2
 status: done
 created: '2026-05-03'
 source: manual
+source_url: ''
 author: Claude Code
-plan: docs/features/INF/INF-FE-00002/INF-FE-00002-actualizar-frontend-gitignore.plan.md
+last_synced: 2026-05-03T15:34:14.818166+00:00Z
 labels:
+- correction
 - INF
 - FE
-- hygiene
-- gitignore
+plan: docs/features/INF/INF-FE-00002/INF-FE-00002-actualizar-frontend-gitignore.plan.md
 ---
 
 ## Summary

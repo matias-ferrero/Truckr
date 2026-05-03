@@ -2,7 +2,7 @@
 tag: REQ-DOC-00003
 title: Modificar USM, agregar seguros, y maquetear GPS + Pagos
 priority: P2
-status: backlog
+status: done
 created: '2026-04-18'
 source: github
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/49

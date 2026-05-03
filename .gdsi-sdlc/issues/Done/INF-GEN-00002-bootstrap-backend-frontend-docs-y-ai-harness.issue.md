@@ -5,10 +5,12 @@ priority: P1
 status: done
 created: '2026-05-03'
 source: manual
-source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/62
+source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/69
 author: Claude Code
-github_issue: 62
+github_issue: 69
+github_project_item: PVTI_lAHOAm1mPc4BWhiVzgrrFoA
 github_repo: tcorzo/fiuba-gestion-tp
+last_synced: 2026-05-03T14:45:58.130435+00:00Z
 labels:
 - INF
 - GEN
