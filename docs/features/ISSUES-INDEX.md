@@ -6,7 +6,7 @@ This file tracks all issues managed by gdsi-sdlc.
 
 | TAG | Title | S | Scope | Created | Plan |
 |-----|-------|---|-------|---------|------|
-| INF-GEN-00002 | Bootstrap backend, frontend, docs y AI harness | NEW | GEN | 2026-05-03 | - |
+| INF-GEN-00002 | Bootstrap backend, frontend, docs y AI harness | DONE | GEN | 2026-05-03 | PR #63 |
 | INF-BE-00003 | Agregar ActiveAdmin al backend | NEW | BE | 2026-05-03 | - |
 
 ## Legend

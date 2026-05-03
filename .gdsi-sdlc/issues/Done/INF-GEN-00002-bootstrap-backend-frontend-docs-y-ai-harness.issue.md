@@ -2,7 +2,7 @@
 tag: INF-GEN-00002
 title: Bootstrap backend, frontend, docs y AI harness
 priority: P1
-status: backlog
+status: done
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/62
