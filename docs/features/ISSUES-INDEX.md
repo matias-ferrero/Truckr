@@ -12,6 +12,7 @@ This file tracks all issues managed by gdsi-sdlc.
 | INF-INFRA-00002 | Agregar workflow de Frontend CI (Vitest + vite build + Playwright) | NEW | INFRA | 2026-05-03 | - |
 | INF-FE-00002 | Actualizar frontend/.gitignore a estándares industriales (incluir .vite/ y env files) | DONE | FE | 2026-05-03 | PR #66 |
 | REQ-BE-00005 | Diseñar modelo de dominio inicial (Identity bounded context primero) | RDY | BE | 2026-05-03 | [plan](REQ/REQ-BE-00005/REQ-BE-00005-disenar-modelo-de-dominio-inicial.plan.md) |
+| REQ-DOC-00002 | Crear artefacto de riesgos con metodología, registro y cobertura por categorías | RDY | DOC | 2026-04-18 | [plan](REQ/REQ-DOC-00002/REQ-DOC-00002-crear-artefacto-de-riesgos.plan.md) |
 
 ## Legend
 
