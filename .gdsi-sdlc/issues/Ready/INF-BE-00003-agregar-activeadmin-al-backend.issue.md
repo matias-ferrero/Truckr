@@ -2,10 +2,16 @@
 tag: INF-BE-00003
 title: Agregar ActiveAdmin al backend
 priority: P2
-status: backlog
+status: ready
+plan: docs/features/INF/INF-BE-00003/INF-BE-00003-add-activeadmin.plan.md
 created: '2026-05-03'
 source: manual
+source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/68
 author: Claude Code
+github_issue: 68
+github_project_item: PVTI_lAHOAm1mPc4BWhiVzgrrFmk
+github_repo: tcorzo/fiuba-gestion-tp
+last_synced: 2026-05-03T14:45:47.976659+00:00Z
 labels:
 - INF
 - BE
