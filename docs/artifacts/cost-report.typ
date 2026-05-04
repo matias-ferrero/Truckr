@@ -238,12 +238,24 @@ Los recursos están dimensionados para un entorno de prototipo con carga baja (\
   align: (left, center, center, center),
   table.header(
     table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Concepto]],
-    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Por Sprint (USD)]],
-    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Ventana Inicial — 3 Sprints (USD)]],
-    table.cell(fill: c-brand)[#text(fill: white, weight: "bold")[Proyecto — 7 Sprints (USD)]],
+    table.cell(fill: c-brand)[#text(
+      fill: white,
+      weight: "bold",
+    )[Por Sprint (USD)]],
+    table.cell(fill: c-brand)[#text(
+      fill: white,
+      weight: "bold",
+    )[Ventana Inicial — 3 Sprints (USD)]],
+    table.cell(fill: c-brand)[#text(
+      fill: white,
+      weight: "bold",
+    )[Proyecto — 7 Sprints (USD)]],
   ),
   [Equipo (5 Dev + 1 PM)], [\$1.072], [\$3.216], [\$7.504],
   [Tooling IA], [\$30], [\$90], [\$210],
   [Infraestructura AWS], [\$68,59], [\$68,59], [\$137,18],
-  table.cell(fill: luma(240), colspan: 1)[#align(right)[*Total*]], table.cell(fill: luma(240))[*\$1.170,59*], table.cell(fill: luma(240))[*\$3.374,59*], table.cell(fill: luma(240))[*\$7.851,18*],
+  table.cell(fill: luma(240), colspan: 1)[#align(right)[*Total*]],
+  table.cell(fill: luma(240))[*\$1.170,59*],
+  table.cell(fill: luma(240))[*\$3.374,59*],
+  table.cell(fill: luma(240))[*\$7.851,18*],
 )

@@ -32,6 +32,34 @@ def _wrap_cmarker(text: str) -> str:
     return f"#cmarker.render({raw}, h1-level: 4)"
 
 
+def _sanitize_markdown(text: str) -> str:
+    """Sanitize markdown that breaks Typst/cmarker rendering.
+
+    - Convert HTML <img ...> tags into plain links.
+    - Convert remote markdown images ![alt](https://...) into plain links.
+    """
+
+    def repl_html_img(match: re.Match[str]) -> str:
+        tag = match.group(0)
+        src_match = re.search(r'src\s*=\s*"([^"]+)"', tag, flags=re.IGNORECASE)
+        alt_match = re.search(r'alt\s*=\s*"([^"]*)"', tag, flags=re.IGNORECASE)
+        src = src_match.group(1).strip() if src_match else ""
+        alt = alt_match.group(1).strip() if alt_match else "Imagen"
+        if src:
+            return f"[{alt}]({src})"
+        return alt
+
+    sanitized = re.sub(r"<img\b[^>]*>", repl_html_img, text, flags=re.IGNORECASE)
+
+    sanitized = re.sub(
+        r"!\[([^\]]*)\]\((https?://[^)\s]+)\)",
+        lambda m: f"[{m.group(1).strip() or 'Imagen'}]({m.group(2).strip()})",
+        sanitized,
+    )
+
+    return sanitized
+
+
 def _extract_user_prompt(request: dict) -> str:
     """Return the plain-text user message."""
     return request.get("message", {}).get("text", "").strip()
@@ -105,6 +133,7 @@ def convert(json_path: str) -> str:
 
         # User prompt
         if prompt:
+            prompt = _sanitize_markdown(prompt)
             lines.append("=== Prompt")
             lines.append("")
             lines.append(_wrap_cmarker(prompt))
@@ -112,6 +141,7 @@ def convert(json_path: str) -> str:
 
         # Assistant response
         if response:
+            response = _sanitize_markdown(response)
             lines.append(f"=== Respuesta ({responder})")
             lines.append("")
             lines.append(_wrap_cmarker(response))

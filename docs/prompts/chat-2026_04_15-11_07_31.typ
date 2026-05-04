@@ -84,6 +84,3 @@ _2026-04-08 11:24 UTC — copilot/claude-haiku-4.5_
   ```,
   h1-level: 4,
 )
-
-
-

@@ -88,13 +88,18 @@
 
 #pagebreak()
 
-// ── 7. Backlog — User Stories ──────────────────────────────────────────────
+// ── 7. Cronograma ───────────────────────────────────────────────────────────
+#include "cronograma.typ"
+
+#pagebreak()
+
+// ── 8. Backlog — User Stories ──────────────────────────────────────────────
 #include "backlog-us.typ"
 
 #pagebreak()
 
-// ── 8. Plan de Comunicaciones ──────────────────────────────────────────────
+// ── 9. Plan de Comunicaciones ──────────────────────────────────────────────
 #include "comunicaciones.typ"
 
-// ── 9. Informe de Costos T&M ──────────────────────────────────────────────
+// ── 10. Informe de Costos T&M ──────────────────────────────────────────────
 #include "cost-report.typ"
