@@ -9,7 +9,7 @@
   inset: 8pt,
   [#align(center + horizon)[*Es*]], [#align(center + horizon)[*No Es*]],
   [#align(left + horizon)[
-    - Una plataforma de conexión entre transportistas y productores/clientes
+    - Una plataforma de conexión entre transportistas y expedidores
     - Un sitio web y potencialmente una app mobile
   ]],
   [#align(left + horizon)[

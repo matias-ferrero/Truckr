@@ -1,0 +1,60 @@
+@startuml erd-overview
+title Truckr® — Bounded Contexts Overview (Draft v1)
+
+package "Identity" {
+  entity "users" as user
+  entity "carriers" as carrier
+  entity "shippers" as shipper
+  entity "vehicles" as vehicle
+}
+
+package "Marketplace" {
+  entity "transport_windows" as tw
+  entity "cargo_offers" as co
+  entity "quotes" as quote
+}
+
+package "Fulfilment" {
+  entity "shipments" as shipment
+  entity "tracking_events" as te
+  entity "routes" as route
+}
+
+package "Commerce" {
+  entity "payments" as payment
+  entity "insurance_policies" as ins
+  entity "arca_invoices" as inv
+}
+
+user ||--o| carrier
+user ||--o| shipper
+carrier ||--o{ vehicle
+carrier ||--o{ tw
+vehicle ||--o{ tw
+shipper ||--o{ co
+co ||--o{ quote
+carrier ||--o{ quote
+vehicle ||--o{ quote
+quote ||--o| shipment
+vehicle ||--o{ shipment
+shipment ||--o{ te
+shipment ||--|| route
+shipment ||--|| payment
+shipment ||--o| ins
+shipment ||--o| inv
+
+note bottom
+  Soft-deleted entities (ADR-009): shipments, payments, arca_invoices.
+  Lat / lng stored as DECIMAL(9,6) columns Phase 0/1 (ADR-010).
+
+  Cross-context Vehicle linkage: a Vehicle is committed at quote time
+  (quotes.vehicle_id, NOT NULL) and frozen at acceptance into
+  shipments.vehicle_id. Vehicle reassignment after acceptance is NOT
+  supported in Phase 0/1 — cancel + re-quote. See domain-model.md
+  §§ 2.4 / 3.3 / 4.1.
+
+  User has no denormalised role flags — Carrier / Shipper presence is
+  derived from the relation rows (ADR-008).
+end note
+
+@enduml

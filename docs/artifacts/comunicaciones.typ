@@ -107,9 +107,8 @@ El Plan de Comunicaciones establece los canales, frecuencias y objetivos de cada
   [Equipo de Desarrollo],
 
   // ── Demo Final ─────────────────────────────────────────
-  [*Demo Final*],
-  [Formal],
-  [Una vez (final del proyecto)],
+  [*Demo Final*], [Formal], [Una vez (final del proyecto)],
+  // "cliente" / "Clientes" aquí refiere al stakeholder académico (cátedra GDSI / PO), NO a la persona del producto Truckr® (que es Expedidor); ver docs/05-appendices/glossary.md.
   [Mostrar resultados al cliente y entregar el MVP completado],
   [Equipo],
   [PO + Clientes],

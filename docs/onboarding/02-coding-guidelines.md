@@ -13,6 +13,7 @@
 
 - **Spanish (es-AR)** — product artifacts under `docs/artifacts/`, user/job stories, prompts under `docs/prompts/` and `docs/raw/`, issue titles, `frontend/.impeccable.md` content where it relates to UX copy.
 - **English** — code identifiers, comments (when warranted), commit messages, branch names, this onboarding folder, all `.md` under `docs/00-` … `docs/05-` and `docs/onboarding/`.
+- **Term registry** — [`docs/05-appendices/glossary.md`](../05-appendices/glossary.md) is the **single source of truth** for term ↔ identifier mappings. Add a term there first; only then propagate to artifacts, code, UI copy. Identifiers in models / tables / columns are **always English** with no exception (e.g. `Transportista` → `Carrier`, `Expedidor` → `Shipper`).
 
 ## Commits
 

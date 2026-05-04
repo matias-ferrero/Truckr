@@ -11,7 +11,7 @@ This file tracks all issues managed by gdsi-sdlc.
 | INF-INFRA-00001 | Mover workflows de CI a la raíz del repo con filtros por paths | NEW | INFRA | 2026-05-03 | - |
 | INF-INFRA-00002 | Agregar workflow de Frontend CI (Vitest + vite build + Playwright) | NEW | INFRA | 2026-05-03 | - |
 | INF-FE-00002 | Actualizar frontend/.gitignore a estándares industriales (incluir .vite/ y env files) | DONE | FE | 2026-05-03 | PR #66 |
-| REQ-BE-00005 | Diseñar modelo de dominio inicial (Identity bounded context primero) | RDY | BE | 2026-05-03 | [plan](REQ/REQ-BE-00005/REQ-BE-00005-disenar-modelo-de-dominio-inicial.plan.md) |
+| REQ-BE-00005 | Diseñar modelo de dominio inicial (Identity bounded context primero) | IR | BE | 2026-05-03 | [plan](REQ/REQ-BE-00005/REQ-BE-00005-disenar-modelo-de-dominio-inicial.plan.md) |
 | REQ-DOC-00002 | Crear artefacto de riesgos con metodología, registro y cobertura por categorías | IR | DOC | 2026-04-18 | PR #77 |
 | INF-GEN-00001 | Sin estimaciones: Proyecciones basadas en Throughput | RDY | GEN | 2026-04-18 | [plan](INF/INF-GEN-00001/INF-GEN-00001-team-performance-script.plan.md) |
 

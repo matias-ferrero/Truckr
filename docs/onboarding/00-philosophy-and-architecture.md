@@ -2,7 +2,7 @@
 
 ## What Truckr® Is
 
-Truckr® is a two-sided **transportation marketplace** for Argentina that connects independent truck owners ("transportistas") with shippers ("clientes" / "productores"). Built as the GDSI capstone at FIUBA. The repository is in transition from **planning** (Typst artifacts: USM, WBS, personas) to **implementation** — backend and frontend are scaffolded; only a public landing page is live.
+Truckr® is a two-sided **transportation marketplace** for Argentina that connects independent truck owners ("transportistas") with shippers ("expedidores"). Built as the GDSI capstone at FIUBA. The repository is in transition from **planning** (Typst artifacts: USM, WBS, personas) to **implementation** — backend and frontend are scaffolded; only a public landing page is live.
 
 ## Architecture at a Glance
 
@@ -49,16 +49,18 @@ Persisted models do **not** exist yet — `backend/app/models/` only has `Applic
 Identity         Marketplace        Fulfilment        Commerce
 ─────────        ───────────        ──────────        ────────
 User             TransportWindow    Shipment          Payment / Escrow
-Transportista    CargoOffer         TrackingEvent     InsurancePolicy
-Cliente          Match / Quote      Route             ArcaInvoice
+Carrier          CargoOffer         TrackingEvent     InsurancePolicy
+Shipper          Quote              Route             ArcaInvoice
 Vehicle
 ```
+
+Personas (es-AR) ↔ models (en): `Transportista` ↔ `Carrier`, `Expedidor` ↔ `Shipper`. Detailed entity spec lives in [`docs/02-high-level-design/domain-model.md`](../02-high-level-design/domain-model.md); ADR-007 to ADR-010 in `01-technical-vision/technical-vision.md` cover PK strategy, identity profile shape, soft-delete policy and geo storage.
 
 Shipment lifecycle: `draft → quoted → accepted → in_transit → delivered → settled` (with `cancelled` branch). Each transition emits a `TrackingEvent`; `settled` triggers payment release + ARCA invoice emission.
 
 ## Must-Know Rules
 
-1. **Spanish for content, English for code.** Product artifacts, user stories, prompts, issue titles in es-AR. Identifiers, code, commit messages, branch names in English.
+1. **Spanish for content, English for code.** Product artifacts, user stories, prompts, issue titles in es-AR. Identifiers, code, commit messages, branch names in English. The **single source of truth** for term mapping is [`docs/05-appendices/glossary.md`](../05-appendices/glossary.md) — update it first, propagate everywhere else.
 2. **Conventional Commits.** `fix:`, `feat:`, `feat!:`, `docs:`, `chore:`, `ci:`. Drift = silently dropped from release.
 3. **API endpoints live under `/api/`.** snake_case JSON keys (no camelCase serializer). `/up` is the Rails health check — never put business logic there.
 4. **CORS is dev-permissive.** Allow-list in `backend/config/initializers/cors.rb` includes `localhost:5173`. Never widen to `"*"` in production.
@@ -75,7 +77,7 @@ Shipment lifecycle: `draft → quoted → accepted → in_transit → delivered 
 |---------|-------|---------|
 | Public landing page | Static React (`App.tsx` + `landingContent.ts`), no backend call | Stays static |
 | Frontend "Solicitar cotización" form | Local state only | POST to `/api/quote_requests` |
-| Auth | None | bcrypt + Pundit policies (`transportista`, `cliente`, `admin`) |
+| Auth | None | bcrypt + Pundit policies scoped via `User#carrier?` / `User#shipper?` predicates (relation-derived; no denormalised columns — see ADR-008); ActiveAdmin has its own isolated `AdminUser` table |
 | Background jobs | None | TrackingIngest, PaymentSettlement, InvoiceEmission, NotificationEmail, MatchExpiry |
 | CI tests | None (only release-please) | Rails + frontend test suites in GitHub Actions |
 | Migrations | None | First migrations land = Identity bounded context first |

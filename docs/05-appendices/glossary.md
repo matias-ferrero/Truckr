@@ -1,21 +1,41 @@
 # Glossary
 
+**Source of truth.** This file is the authoritative term registry for the Truckr® project. Whenever a term is introduced, renamed, or deprecated:
+
+1. Update this file FIRST.
+2. Propagate to product artifacts (`docs/artifacts/*.typ`), tech docs, code identifiers, and UI copy.
+3. Drift between this file and any other doc counts as a defect — fix on sight.
+
 Spanish ↔ English terms used across the Truckr® codebase, product artifacts and this documentation set.
 
 ## Domain Terms
 
-| Term | Language | Definition |
-|------|----------|------------|
-| **Transportista** | es | Independent truck owner/driver who publishes availability and fulfils cargo. |
-| **Cliente** | es | Any shipper — used generically in API copy. |
-| **Productor** | es | Specific kind of cliente: a producer (often agricultural or industrial) shipping their own goods. Used as a persona in `docs/artifacts/personas.typ`. |
-| **Ventana de transporte** | es | "Transport window" — a block of availability published by a transportista (origin, destination, time range, vehicle). Maps to the planned `TransportWindow` model. |
-| **Carga** | es | "Cargo / load" — goods to be transported; maps to `CargoOffer`. |
-| **Envío** | es | "Shipment" — an active or completed transport contract between a transportista and a cliente. |
-| **Cotización** | es | "Quote" — a price offer from a transportista for a specific cargo offer. The frontend's "Solicitar cotización" form captures a request but does not yet POST to the API. |
-| **Pasarela de pagos** | es | Payment gateway with escrow capability. |
-| **Tracking** | en/es | Live position and status updates for an in-transit shipment. |
-| **Seguro** | es | Insurance policy brokered per shipment. |
+The `English model / table` column lists the canonical Rails identifier for each term that is (or will be) persisted. Identifiers are **always English** — Spanish stays in product artifacts, issue titles, UI copy and narrative prose. See `docs/02-high-level-design/domain-model.md` for the persona ↔ model mapping derived from this table.
+
+| Term (es-AR) | English model / table | Definition |
+|--------------|-----------------------|------------|
+| **Transportista** | `Carrier` / `carriers` | Independent truck owner / driver who publishes availability and fulfils cargo. Persona in `docs/artifacts/personas.typ`. |
+| **Expedidor** | `Shipper` / `shippers` | Party who needs to ship cargo — covers SMB clients and producers (agricultural / industrial) shipping their own goods. Persona in `docs/artifacts/personas.typ`. Replaces the older terms "Cliente" and "Productor" (deprecated 2026-05-03). |
+| **Usuario (cuenta de auth)** | `User` / `users` | Base account record (email, password digest, common profile fields). A single `User` may have a `Carrier` profile, a `Shipper` profile, or both — role state is derived from the relation rows via `User.carriers` / `User.shippers` scopes and `user.carrier?` / `user.shipper?` predicates (no denormalised flags; see ADR-008). |
+| **Camión / Vehículo** | `Vehicle` / `vehicles` | Truck registered by a Transportista. Plate, capacity, type, GPS-capable flag. |
+| **Ventana de transporte** | `TransportWindow` / `transport_windows` | Block of availability published by a Transportista (origin, destination, time range, vehicle). |
+| **Carga (oferta)** | `CargoOffer` / `cargo_offers` | "Cargo offer / load" — goods published by an Expedidor for transport. |
+| **Cotización** | `Quote` / `quotes` | Price offer from a Transportista against a specific `CargoOffer`. The frontend's "Solicitar cotización" form captures a request locally but does not yet POST to the API. |
+| **Envío** | `Shipment` / `shipments` | Active or completed transport contract between a Transportista and an Expedidor. State machine: `draft → quoted → accepted → in_transit → delivered → settled` (+ `cancelled`). Soft-deleted (audit). |
+| **Evento de tracking** | `TrackingEvent` / `tracking_events` | Append-only log entry for a Shipment: position, status change. |
+| **Ruta** | `Route` / `routes` | Planned polyline + waypoints for a Shipment. |
+| **Pago / Escrow** | `Payment` / `payments` | Held funds released on delivery. Soft-deleted (audit). |
+| **Seguro** | `InsurancePolicy` / `insurance_policies` | Insurance policy brokered per Shipment, optional. |
+| **Factura ARCA** | `ArcaInvoice` / `arca_invoices` | Fiscal document emitted against a settled Shipment. Soft-deleted (audit). |
+| **Pasarela de pagos** | — (external) | Third-party payment gateway with escrow capability. Not a model — integration target. |
+| **Tracking** | — (concept) | Live position and status updates for an in-transit shipment. The model is `TrackingEvent`. |
+
+### Deprecated synonyms (kept for traceability — do not introduce in new content)
+
+| Term | Status | Notes |
+|------|--------|-------|
+| **Cliente** | deprecated 2026-05-03 — folded into `Expedidor` | The word "cliente" remains valid in two narrow contexts: (a) **cliente fiscal** when referring to the ARCA invoice counter-party (`ArcaInvoice` references the `Shipper` as the fiscal customer); (b) **clientes externos** as a generic word for "external customers" of the platform (rare; prefer "usuarios" or "expedidores" when possible). Any other use is a defect. |
+| **Productor** | deprecated 2026-05-03 — folded into `Expedidor` | Was a sub-persona of Cliente (agricultural / industrial producer). Modelled as `Shipper` with no specialised subtype in Phase 0/1. |
 
 ## AI Harness Terms
 

@@ -2,7 +2,7 @@
 tag: REQ-BE-00005
 title: Diseñar modelo de dominio inicial (Identity bounded context primero)
 priority: P1
-status: ready
+status: in_review
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/72

@@ -28,7 +28,7 @@ export interface LandingData {
 export const landingContent: LandingData = {
     hero: {
         title: "Truckr®",
-        subtitle: "Conectando transportistas independientes con clientes",
+        subtitle: "Conectando transportistas independientes con expedidores",
         description: "La plataforma de servicios de transporte que une oferta y demanda",
         cta_primary: "Comenzar",
         cta_secondary: "Más información",
@@ -37,12 +37,12 @@ export const landingContent: LandingData = {
         {
             id: 1,
             title: "Para Transportistas",
-            description: "Expande tu negocio encontrando nuevos clientes de forma sencilla",
+            description: "Expande tu negocio encontrando nuevos expedidores de forma sencilla",
             icon: "truck",
         },
         {
             id: 2,
-            title: "Para Clientes",
+            title: "Para Expedidores",
             description: "Solicita servicios de transporte confiables al mejor precio",
             icon: "package",
         },
@@ -55,7 +55,7 @@ export const landingContent: LandingData = {
     ],
     stats: [
         { label: "Transportistas Activos", value: "500+" },
-        { label: "Clientes Satisfechos", value: "1000+" },
+        { label: "Expedidores Satisfechos", value: "1000+" },
         { label: "Envíos Completados", value: "5000+" },
     ],
     color_palette: {

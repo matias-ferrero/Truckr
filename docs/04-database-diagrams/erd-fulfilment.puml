@@ -1,41 +1,62 @@
 @startuml erd-fulfilment
-title Entity Relationships — Fulfilment (planned)
+title Entity Relationships — Fulfilment (Draft v1)
 
 entity "shipments" as s {
   * id : bigint <<PK>>
   --
-  * quote_id : bigint <<FK, unique>>
-  * transportista_id : bigint <<FK>>
-  * cliente_id : bigint <<FK>>
+  * quote_id : bigint <<FK,unique>>
+  * carrier_id : bigint <<FK>>
+  * shipper_id : bigint <<FK>>
   * vehicle_id : bigint <<FK>>
-  status : enum [draft, accepted, in_transit, delivered, cancelled, settled]
+  * status : string [draft, quoted, accepted, in_transit, delivered, settled, cancelled]
   pickup_at : datetime
   delivered_at : datetime
   settled_at : datetime
+  cancelled_at : datetime
+  deleted_at : datetime
+  * created_at : datetime
+  * updated_at : datetime
 }
 
 entity "tracking_events" as te {
   * id : bigint <<PK>>
   --
   * shipment_id : bigint <<FK>>
-  * event_type : enum [picked_up, waypoint, position, delay, delivered, exception]
+  * event_type : string [quoted, accepted, picked_up, waypoint, position, delay, delivered, settled, cancelled, exception]
   * occurred_at : datetime
-  lat : decimal
-  lng : decimal
+  lat : decimal(9,6)
+  lng : decimal(9,6)
   note : text
+  * created_at : datetime
+  * updated_at : datetime
 }
 
 entity "routes" as r {
   * id : bigint <<PK>>
   --
-  * shipment_id : bigint <<FK, unique>>
+  * shipment_id : bigint <<FK,unique>>
   polyline : text
   waypoints_json : text
   eta : datetime
-  provider : enum [google, here, osrm]
+  provider : string [google, here, osrm]
+  * created_at : datetime
+  * updated_at : datetime
 }
 
 s ||--o{ te : "emits"
 s ||--o| r : "has planned route"
+
+note bottom
+  Soft-delete on shipments (deleted_at; ADR-009). Lat / lng on
+  tracking_events stored as DECIMAL(9,6) (ADR-010); no spatial index
+  Phase 0/1. FSM transitions documented in
+  docs/02-high-level-design/domain-model.md § 4.1.
+
+  Cross-context FK: shipments.vehicle_id → vehicles.id (Identity). The
+  vehicle is copied from the accepted Quote at the quoted→accepted
+  transition and frozen for the rest of the Shipment lifecycle —
+  reassignment is not supported in Phase 0/1 (cancel + re-quote instead).
+  See erd-overview.puml for the cross-context wiring.
+end note
 
 @enduml

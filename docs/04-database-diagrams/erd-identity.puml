@@ -1,49 +1,70 @@
 @startuml erd-identity
-title Entity Relationships — Identity (planned)
+title Entity Relationships — Identity (Draft v1, ready-to-migrate)
 
 entity "users" as user {
   * id : bigint <<PK>>
   --
   * email : string <<unique>>
   * password_digest : string
-  * role : enum [transportista, cliente, admin]
   full_name : string
   phone : string
-  dni_or_cuit : string
+  dni_or_cuit : string <<unique when present>>
   verified_at : datetime
+  * created_at : datetime
+  * updated_at : datetime
 }
 
-entity "transportistas" as t {
+entity "carriers" as carrier {
   * id : bigint <<PK>>
   --
-  * user_id : bigint <<FK>>
+  * user_id : bigint <<FK,unique>>
   legal_name : string
   base_city : string
-  rating_avg : decimal
-  completed_shipments : integer
+  province : string
+  rating_avg : decimal(3,2) = 0.0
+  completed_shipments : integer = 0
+  * created_at : datetime
+  * updated_at : datetime
 }
 
-entity "clientes" as c {
+entity "shippers" as shipper {
   * id : bigint <<PK>>
   --
-  * user_id : bigint <<FK>>
+  * user_id : bigint <<FK,unique>>
   company_name : string
-  tax_id : string
+  tax_id : string <<unique when present>>
   billing_address : string
+  * created_at : datetime
+  * updated_at : datetime
 }
 
-entity "vehicles" as v {
+entity "vehicles" as vehicle {
   * id : bigint <<PK>>
   --
-  * transportista_id : bigint <<FK>>
+  * carrier_id : bigint <<FK>>
   * plate : string <<unique>>
   * capacity_kg : integer
-  type : enum [van, truck_small, truck_large, semi_trailer]
-  gps_enabled : boolean
+  * vehicle_type : string [van, truck_small, truck_large, semi_trailer]
+  gps_enabled : boolean = false
+  * created_at : datetime
+  * updated_at : datetime
 }
 
-user ||--o| t : "(if role=transportista)"
-user ||--o| c : "(if role=cliente)"
-t ||--o{ v : "owns"
+user ||--o| carrier : "0..1 — present iff carrier profile exists"
+user ||--o| shipper : "0..1 — present iff shipper profile exists"
+carrier ||--o{ vehicle : "owns"
+
+note bottom
+  Role state is derived from the carriers / shippers relation rows — there
+  are NO denormalised boolean flags on `users`. Convenience access via
+  scopes (User.carriers, User.shippers) and predicates (user.carrier?,
+  user.shipper?). See ADR-008 and docs/02-high-level-design/domain-model.md
+  § 2.1.
+
+  AdminUser (ActiveAdmin / Devise — see INF-BE-00003) lives in a SEPARATE
+  table (admin_users). Domain users have no 'admin' role; admin staff
+  do not have Carrier or Shipper profiles. See ADR-008 and
+  docs/02-high-level-design/domain-model.md § 2.5.
+end note
 
 @enduml

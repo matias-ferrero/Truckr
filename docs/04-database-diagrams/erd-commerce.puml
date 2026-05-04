@@ -1,44 +1,62 @@
 @startuml erd-commerce
-title Entity Relationships — Commerce (planned)
+title Entity Relationships — Commerce (Draft v1)
 
 entity "payments" as p {
   * id : bigint <<PK>>
   --
   * shipment_id : bigint <<FK>>
-  * cliente_id : bigint <<FK>>
-  * amount : decimal
-  * currency : string  // ARS default
-  provider : enum [mercadopago, stripe, other]
+  * shipper_id : bigint <<FK>>
+  * carrier_id : bigint <<FK>>
+  * amount_cents : integer
+  * currency : string = 'ARS'
+  provider : string [mercadopago, stripe, other]
   provider_reference : string
-  status : enum [pending, held, released, refunded, failed]
-  held_at : datetime
+  status : string [pending, escrowed, released, refunded, disputed, failed]
+  escrowed_at : datetime
   released_at : datetime
+  deleted_at : datetime
+  * created_at : datetime
+  * updated_at : datetime
 }
 
 entity "insurance_policies" as ip {
   * id : bigint <<PK>>
   --
-  * shipment_id : bigint <<FK, unique>>
+  * shipment_id : bigint <<FK,unique>>
   provider : string
   policy_number : string
-  coverage_amount : decimal
-  premium : decimal
-  status : enum [quoted, active, expired, claimed]
+  coverage_amount_cents : integer
+  premium_cents : integer
+  status : string [quoted, active, expired, claimed]
+  * created_at : datetime
+  * updated_at : datetime
 }
 
 entity "arca_invoices" as inv {
   * id : bigint <<PK>>
   --
   * shipment_id : bigint <<FK>>
-  * issuer_user_id : bigint <<FK>>
-  cae : string       // ARCA authorisation code
-  document_type : enum [factura_a, factura_b, factura_c]
-  total_ars : decimal
+  * shipper_id : bigint <<FK>>
+  cae : string
+  document_type : string [factura_a, factura_b, factura_c]
+  total_cents : integer
+  currency : string = 'ARS'
   emitted_at : datetime
-  status : enum [pending, emitted, rejected]
+  status : string [pending, emitted, rejected]
+  deleted_at : datetime
+  * created_at : datetime
+  * updated_at : datetime
 }
 
 p }o--|| inv : "triggers invoice"
 ip ||--|| inv : "(optional) premium invoiced"
+
+note bottom
+  Soft-delete on payments and arca_invoices (deleted_at; ADR-009).
+  Insurance policies are hard-deleted; expired policies remain queryable
+  via status. Currency stored as ISO 4217 string, default 'ARS'.
+  shipper_id on arca_invoices is the fiscal counter-party (the only
+  in-domain use of the deprecated 'cliente' term — see glossary).
+end note
 
 @enduml

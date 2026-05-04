@@ -76,6 +76,11 @@
 
 = Personas
 
+// Nota terminológica: el rol del producto Truckr® para la parte que pide envíos es "EXPEDIDOR" (modelo `Shipper`).
+// Los términos "clientes" / "productores" que aparecen dentro del texto descriptivo de cada persona refieren
+// a la red de relaciones propia de esa persona (sus clientes en su negocio, productores locales que les
+// proveen, etc.) — NO al rol del producto Truckr®. Ver docs/05-appendices/glossary.md (source of truth).
+
 #grid(
   columns: 1fr,
   column-gutter: 12pt,
@@ -156,7 +161,7 @@ También necesita tener la trazabilidad completa del envío, y un seguro especia
   persona-card(
     number: 7,
     name: "Daniela Perez (55 años)",
-    role: "PRODUCTOR / CLIENTE",
+    role: "EXPEDIDOR",
     photo: "images/personas/daniela.png",
     profile: "Mujer recientemente divorciada, es diseñadora de interiores y trabaja en el rubro hace años.",
     behavior: "Muchos clientes de ella necesitan amueblado, refacciones, y/o productos para hacer remodelaciones.
@@ -168,7 +173,7 @@ No es mala con la técnología, puede aprender, pero sería más fácil con una 
   persona-card(
     number: 8,
     name: "Florencia Scazzola (40 años).",
-    role: "PRODUCTOR / CLIENTE",
+    role: "EXPEDIDOR",
     photo: "images/personas/florencia.png",
     profile: "Mujer emprendedora que tiene su propio centro de estética",
     behavior: "Le encanta el maquillaje, el skincare y el cuidado personal. Muy interesada en la cultura coreana.
@@ -180,7 +185,7 @@ Además necesita leer reseñas de buenos transportias que cuiden bien sus produc
   persona-card(
     number: 9,
     name: "Campos Giménez",
-    role: "PRODUCTOR / CLIENTE",
+    role: "EXPEDIDOR",
     photo: "images/personas/campos-gimenez.png",
     profile: "Una empresa dueña de 300ha de campo a las afueras de Rosario.",
     behavior: "Trabajan y cosechan múltiples cultivos a lo largo del año, quieren mejorar la planificación de los envíos de su cosecha, y abaratar los costos de los envíos.
@@ -192,7 +197,7 @@ Necesitan asegurar su producto para protegerse en caso de un problema.",
   persona-card(
     number: 10,
     name: "Sofía Carrasco (24 años)",
-    role: "PRODUCTOR / CLIENTE",
+    role: "EXPEDIDOR",
     photo: "images/personas/sofia.png",
     profile: "Mujer soltera, vive en BSAS, es estudiante en FIUBA, y trabaja part time en Mercado Libre hace 2 años.",
     behavior: "Quiere mudarse a CABA para estar más cerca de la Facultad y de la oficina, de esa forma puede reducir distancias y ahorrar tiempo.

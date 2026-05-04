@@ -30,7 +30,7 @@
 *Épica:* Cuenta
 
 *Descripción:*
-Como usuario (cliente o transportista),
+Como usuario (expedidor o transportista),
 quiero poder registrarme en la plataforma,
 para acceder a los servicios de Truckr y satisfacer mis necesidades de transporte.
 
@@ -52,14 +52,14 @@ para acceder a los servicios de Truckr y satisfacer mis necesidades de transport
 *Épica:* Cuenta
 
 *Descripción:*
-Como usuario (cliente o transportista),
+Como usuario (expedidor o transportista),
 quiero poder iniciar sesión en la plataforma,
 para participar en ella con mi perfil y acceder a las funcionalidades.
 
 *Criterios de Aceptación:*
 + El usuario puede loguearse correctamente ingresando email (o nombre de usuario) y contraseña válidos.
 + Si las credenciales son incorrectas, se muestra un mensaje de error genérico que no revela si el email existe o no.
-+ Al loguearse exitosamente, el usuario es redirigido a la pantalla principal correspondiente a su rol (cliente o transportista).
++ Al loguearse exitosamente, el usuario es redirigido a la pantalla principal correspondiente a su rol (expedidor o transportista).
 + La sesión se mantiene activa mientras el usuario navega por la plataforma.
 + El usuario puede cerrar sesión desde cualquier pantalla mediante un botón visible.
 
@@ -70,7 +70,7 @@ para participar en ella con mi perfil y acceder a las funcionalidades.
 *Épica:* Cuenta
 
 *Descripción:*
-Como usuario (cliente o transportista),
+Como usuario (expedidor o transportista),
 quiero poder modificar mi perfil,
 para completar y mantener actualizados mis datos personales.
 
@@ -78,10 +78,10 @@ para completar y mantener actualizados mis datos personales.
 + Los campos de datos personales (y del camión, si es transportista) se pueden llenar y persisten en el formulario hasta que se guarden o descarten los cambios.
 + Al presionar "Guardar Cambios", los datos se impactan en el perfil del usuario y se muestra una confirmación.
 + Al presionar "Descartar Cambios" o navegar a otra página sin guardar, los datos escritos no se impactan en el perfil.
-+ Los datos del perfil son visibles para otros usuarios en las secciones correspondientes (detalles de transportista, detalles de cliente).
++ Los datos del perfil son visibles para otros usuarios en las secciones correspondientes (detalles de transportista, detalles de expedidor).
 + Se validan los campos obligatorios antes de permitir guardar (por ejemplo, datos del camión para transportistas).
 
-// ── Plataforma del Cliente ────────────────────────────────────────────────
+// ── Plataforma del Expedidor ────────────────────────────────────────────────
 
 == US4: Búsqueda de Transportistas
 
@@ -90,7 +90,7 @@ para completar y mantener actualizados mis datos personales.
 *Épica:* Ver Transportistas Disponibles
 
 *Descripción:*
-Como cliente,
+Como expedidor,
 quiero buscar transportistas disponibles,
 para decidir a cuál pedirle el servicio de un viaje.
 
@@ -109,7 +109,7 @@ para decidir a cuál pedirle el servicio de un viaje.
 *Épica:* Ver Transportistas Disponibles
 
 *Descripción:*
-Como cliente,
+Como expedidor,
 quiero filtrar los transportistas disponibles,
 para encontrar más rápido al que mejor se ajuste a mi necesidad.
 
@@ -128,7 +128,7 @@ para encontrar más rápido al que mejor se ajuste a mi necesidad.
 *Épica:* Ver Transportistas Disponibles
 
 *Descripción:*
-Como cliente,
+Como expedidor,
 quiero entrar a los detalles de un transportista,
 para decidir si es el indicado para realizar mi viaje.
 
@@ -145,7 +145,7 @@ para decidir si es el indicado para realizar mi viaje.
 *Épica:* Reservar Transportista
 
 *Descripción:*
-Como cliente,
+Como expedidor,
 quiero ofertar un retiro de un producto a un transportista,
 para que realice el viaje y me lo entregue en destino.
 
@@ -157,14 +157,14 @@ para que realice el viaje y me lo entregue en destino.
 + Al confirmar, la oferta aparece en el listado de ofertas del transportista correspondiente.
 + Se validan los campos obligatorios antes de permitir confirmar.
 
-== US8: Realizar Pago (Cliente)
+== US8: Realizar Pago (Expedidor)
 
 *Release:* MVP \
 *Prioridad:* Alta \
 *Épica:* Reservar Transportista
 
 *Descripción:*
-Como cliente,
+Como expedidor,
 quiero poder pagar de forma segura una vez que el transportista aceptó mi viaje,
 para reservar el servicio y cumplir con mi parte del trato.
 
@@ -187,14 +187,14 @@ para reservar el servicio y cumplir con mi parte del trato.
 *Descripción:*
 Como transportista,
 quiero poder publicar mi disponibilidad en la plataforma,
-para que los clientes me encuentren y me ofrezcan viajes.
+para que los expedidors me encuentren y me ofrezcan viajes.
 
 *Criterios de Aceptación:*
 + Se puede indicar la zona desde donde el transportista está dispuesto a partir (zona origen).
 + Se puede indicar un precio por kilómetro para el servicio.
 + Se puede indicar un límite de kilómetros máximo a recorrer.
 + Una vez completados los datos necesarios, se puede confirmar la publicación de disponibilidad.
-+ La publicación aparece en los resultados de búsqueda de los clientes que busquen en esa zona.
++ La publicación aparece en los resultados de búsqueda de los expedidors que busquen en esa zona.
 + Se puede editar o despublicar la disponibilidad en cualquier momento.
 
 == US10: Observar Ofertas de Viaje
@@ -209,7 +209,7 @@ quiero poder observar un listado de ofertas de viaje recibidas,
 para evaluar y aceptar las que considere convenientes.
 
 *Criterios de Aceptación:*
-+ Una vez publicada la disponibilidad, se muestra un listado de ofertas realizadas por clientes.
++ Una vez publicada la disponibilidad, se muestra un listado de ofertas realizadas por expedidors.
 + Se puede entrar a los detalles de cada viaje para observar sus características (distancia, ubicación, volumen, peso, etc.).
 + El listado se actualiza cuando llegan nuevas ofertas.
 + Se muestra información resumida de cada oferta (origen, destino, fecha, precio) en el listado.
@@ -246,8 +246,8 @@ para comprometerme a realizarlo y generar ingresos.
 
 *Criterios de Aceptación:*
 + Una vez seleccionado un viaje, se puede aceptar mediante un botón claramente visible.
-+ Al aceptar el viaje, se notifica al cliente que su oferta fue aceptada.
-+ Al aceptar el viaje, se actualiza la estimación de fecha de entrega para el cliente.
++ Al aceptar el viaje, se notifica al expedidor que su oferta fue aceptada.
++ Al aceptar el viaje, se actualiza la estimación de fecha de entrega para el expedidor.
 + El viaje aceptado aparece en una sección de "viajes activos" del transportista.
 
 == US13: Realizar Viaje (Navegación GPS)
@@ -277,14 +277,14 @@ para seguir la ruta óptima y completar el viaje de forma eficiente.
 *Descripción:*
 Como transportista,
 quiero poder registrar mi camión con su patente y capacidades,
-para que los clientes conozcan las características de mi vehículo al buscarme.
+para que los expedidors conozcan las características de mi vehículo al buscarme.
 
 *Criterios de Aceptación:*
 + Se puede ingresar la patente del camión.
 + Se pueden ingresar las dimensiones del camión (largo, ancho, alto del espacio de carga).
 + Se puede ingresar la capacidad de carga máxima en kilogramos.
 + Se pueden subir fotos del camión.
-+ Los datos del vehículo se muestran en el perfil del transportista y en los detalles visibles al cliente.
++ Los datos del vehículo se muestran en el perfil del transportista y en los detalles visibles al expedidor.
 + Se puede registrar más de un vehículo si el transportista tiene una flota.
 
 == US15: Pago al Transportista
@@ -323,7 +323,7 @@ para cobrar por mi servicio de forma segura y en tiempo.
 *Épica:* Cuenta
 
 *Descripción:*
-Como usuario (cliente o transportista),
+Como usuario (expedidor o transportista),
 quiero poder cambiar mi contraseña,
 para mantener la seguridad de mi cuenta.
 
@@ -341,16 +341,16 @@ para mantener la seguridad de mi cuenta.
 *Épica:* Cuenta
 
 *Descripción:*
-Como usuario (cliente o transportista),
+Como usuario (expedidor o transportista),
 quiero poder ver mi historial de viajes realizados,
 para tener un registro de toda mi actividad en la plataforma.
 
 *Criterios de Aceptación:*
-+ El cliente puede ver un listado de todos los envíos que contrató, con su estado (completado, en curso, cancelado).
++ El expedidor puede ver un listado de todos los envíos que contrató, con su estado (completado, en curso, cancelado).
 + El transportista puede ver un listado de todos los viajes que realizó, con su estado.
 + Cada entrada del historial muestra información resumida: origen, destino, fecha, precio.
 + Se puede acceder al detalle de cada viaje desde el historial.
-+ El historial de viajes del transportista es visible para los clientes que consultan sus detalles.
++ El historial de viajes del transportista es visible para los expedidors que consultan sus detalles.
 
 == US18: Actualización de Viaje — Producto Retirado
 
@@ -361,11 +361,11 @@ para tener un registro de toda mi actividad en la plataforma.
 *Descripción:*
 Como transportista,
 quiero poder marcar un producto como retirado,
-para que el cliente sepa que ya recogí su producto y el viaje está en curso.
+para que el expedidor sepa que ya recogí su producto y el viaje está en curso.
 
 *Criterios de Aceptación:*
 + Al retirar el producto, el transportista puede marcarlo como "retirado" con un botón.
-+ Al cliente se le muestra que el transportista ya recogió su producto en el estado del viaje.
++ Al expedidor se le muestra que el transportista ya recogió su producto en el estado del viaje.
 + La fecha y hora del retiro quedan registradas en el sistema.
 + No se puede marcar como retirado un viaje que aún no fue aceptado y pagado.
 
@@ -378,11 +378,11 @@ para que el cliente sepa que ya recogí su producto y el viaje está en curso.
 *Descripción:*
 Como transportista,
 quiero poder marcar un producto como entregado,
-para que el cliente lo sepa y se concrete el pago del servicio.
+para que el expedidor lo sepa y se concrete el pago del servicio.
 
 *Criterios de Aceptación:*
 + Al entregar el producto, el transportista puede marcarlo como "entregado" con un botón.
-+ Al cliente se le muestra el estado del viaje como completado.
++ Al expedidor se le muestra el estado del viaje como completado.
 + La confirmación de entrega dispara el proceso de transferencia de pago al transportista.
 + La fecha y hora de entrega quedan registradas en el sistema.
 + No se puede marcar como entregado un viaje que no fue previamente marcado como retirado.
@@ -394,16 +394,16 @@ para que el cliente lo sepa y se concrete el pago del servicio.
 *Épica:* Después del Viaje
 
 *Descripción:*
-Como cliente,
+Como expedidor,
 quiero poder escribir y leer reseñas sobre los transportistas,
 para compartir mi experiencia y consultar las de otros antes de contratar un servicio.
 
 *Criterios de Aceptación:*
-+ Un cliente puede escribir una reseña sobre un transportista una vez que el viaje se completó.
++ Un expedidor puede escribir una reseña sobre un transportista una vez que el viaje se completó.
 + La reseña incluye una puntuación (por ejemplo, 1 a 5 estrellas) y un comentario de texto.
 + Las reseñas de un transportista son visibles en su perfil para todos los usuarios.
 + Se muestra el promedio de puntuación del transportista junto a las reseñas individuales.
-+ Un cliente solo puede dejar una reseña por viaje completado.
++ Un expedidor solo puede dejar una reseña por viaje completado.
 
 == US21: Tracking de Envío
 
@@ -412,7 +412,7 @@ para compartir mi experiencia y consultar las de otros antes de contratar un ser
 *Épica:* Gestión de Viajes
 
 *Descripción:*
-Como cliente,
+Como expedidor,
 quiero poder hacer seguimiento de mi envío en tiempo real,
 para saber dónde está mi producto y cuándo llegará.
 
@@ -421,7 +421,7 @@ para saber dónde está mi producto y cuándo llegará.
 + Se muestra el estado actual del envío (pendiente de retiro, en tránsito, entregado).
 + Se muestra una estimación del tiempo restante de llegada.
 + El tracking solo está disponible para viajes que fueron aceptados y pagados.
-+ La información se actualiza periódicamente sin que el cliente deba refrescar la página.
++ La información se actualiza periódicamente sin que el expedidor deba refrescar la página.
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Post MVP — Release 3
@@ -442,7 +442,7 @@ para saber dónde está mi producto y cuándo llegará.
 *Épica:* Cuenta
 
 *Descripción:*
-Como usuario (cliente o transportista),
+Como usuario (expedidor o transportista),
 quiero verificar mi cuenta mediante un email de confirmación,
 para asegurar que mi email es válido y aumentar la confianza en la plataforma.
 
@@ -467,7 +467,7 @@ para optimizar la carga y maximizar los ingresos por recorrido.
 *Criterios de Aceptación:*
 + El transportista puede aceptar múltiples ofertas de viaje y agruparlas en un viaje compuesto.
 + Se muestra la ruta optimizada que contempla todos los puntos de retiro y entrega.
-+ Cada cliente puede ver el estado de su envío individual dentro del viaje compuesto.
++ Cada expedidor puede ver el estado de su envío individual dentro del viaje compuesto.
 + Se valida que la capacidad del vehículo no sea excedida por la suma de los envíos agrupados.
 + El transportista puede ver un resumen con todos los envíos del viaje, sus estados y destinos.
 
@@ -487,7 +487,7 @@ para realizar viajes largos recogiendo y entregando productos a lo largo del cam
 + Se muestra la ruta completa con todos los puntos de retiro y entrega en orden.
 + Se estima la fecha de entrega de cada producto según la posición en la cadena.
 + El sistema sugiere pedidos compatibles con la ruta actual del transportista.
-+ Cada cliente es notificado de la fecha estimada de entrega según la cadena planificada.
++ Cada expedidor es notificado de la fecha estimada de entrega según la cadena planificada.
 
 == US25: Gestión de Seguros
 
@@ -496,7 +496,7 @@ para realizar viajes largos recogiendo y entregando productos a lo largo del cam
 *Épica:* Reservar Transportista
 
 *Descripción:*
-Como cliente,
+Como expedidor,
 quiero poder contratar un seguro para mi envío al momento de reservar el transporte,
 para proteger mi producto en caso de daño o pérdida durante el viaje.
 
@@ -504,7 +504,7 @@ para proteger mi producto en caso de daño o pérdida durante el viaje.
 + Al confirmar una oferta de retiro, se ofrece la opción de contratar un seguro para el envío.
 + Se muestran las opciones de seguro disponibles con su cobertura y precio.
 + El costo del seguro se suma al total del pago.
-+ En caso de siniestro, el cliente puede iniciar un reclamo desde la plataforma.
++ En caso de siniestro, el expedidor puede iniciar un reclamo desde la plataforma.
 + El detalle del seguro contratado es visible en el historial del viaje.
 
 == US26: Editar o Eliminar Reseña
@@ -514,13 +514,13 @@ para proteger mi producto en caso de daño o pérdida durante el viaje.
 *Épica:* Después del Viaje
 
 *Descripción:*
-Como cliente,
+Como expedidor,
 quiero poder editar o eliminar una reseña que hice previamente,
 para corregir mi opinión si cambié de parecer o cometí un error.
 
 *Criterios de Aceptación:*
-+ El cliente puede editar el texto y la puntuación de una reseña que realizó.
-+ El cliente puede eliminar una reseña que realizó.
++ El expedidor puede editar el texto y la puntuación de una reseña que realizó.
++ El expedidor puede eliminar una reseña que realizó.
 + Al editar una reseña, se indica visualmente que fue modificada (por ejemplo, "editada").
 + Al eliminar una reseña, se recalcula el promedio de puntuación del transportista.
 + Se pide confirmación antes de eliminar una reseña.

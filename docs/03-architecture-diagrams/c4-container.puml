@@ -4,7 +4,7 @@
 title Container Diagram — Truckr®
 
 Person(transportista, "Transportista")
-Person(cliente, "Cliente / Productor")
+Person(expedidor, "Expedidor")
 
 System_Boundary(truckr, "Truckr® Platform") {
   Container(spa, "Frontend SPA", "React 18 + TypeScript + Vite", "Static bundle served to browsers. Renders the landing page from local landingContent.ts (no backend call today). Will host marketplace UI and call the API.")
@@ -27,7 +27,7 @@ System_Ext(arca, "ARCA")
 System_Ext(maps, "Maps / GPS provider")
 
 Rel(transportista, spa, "Uses", "HTTPS")
-Rel(cliente, spa, "Uses", "HTTPS")
+Rel(expedidor, spa, "Uses", "HTTPS")
 
 Rel(spa, api, "Will call JSON endpoints (no calls today)", "HTTPS / JSON")
 

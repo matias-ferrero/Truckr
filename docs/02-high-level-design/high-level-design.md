@@ -117,59 +117,11 @@ The patterns below are either already present in code or load-bearing for the ro
 
 ## Domain Model
 
-The code has no persisted domain model yet (`backend/app/models/` contains only the base class). The entities below come from the product artifacts (`docs/artifacts/*.typ`) and describe the **target** domain the backend will grow into.
+The code has no persisted domain model yet (`backend/app/models/` contains only the base class). The target domain is split into four bounded contexts: **Identity** (`User`, `Carrier`, `Shipper`, `Vehicle`), **Marketplace** (`TransportWindow`, `CargoOffer`, `Quote`), **Fulfilment** (`Shipment` + FSM, `TrackingEvent`, `Route`), and **Commerce** (`Payment` escrow, `InsurancePolicy`, `ArcaInvoice`).
 
-### Bounded Contexts
+The full entity spec — column types, indexes, FK rules, invariants, the `Shipment` finite-state machine, and the persona ↔ model mapping — lives in [`domain-model.md`](./domain-model.md). The overview-level diagram is rendered from [`docs/04-database-diagrams/erd-overview.puml`](../04-database-diagrams/erd-overview.puml); the per-context ERDs sit alongside it. Cross-cutting decisions (PK strategy, identity profile shape, soft-delete policy, geo storage) are recorded as ADR-007 to ADR-010 in [`docs/01-technical-vision/technical-vision.md`](../01-technical-vision/technical-vision.md).
 
-```
-┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│   Identity      │  │   Marketplace   │  │   Fulfilment    │
-│                 │  │                 │  │                 │
-│ User            │  │ TransportWindow │  │ Shipment        │
-│ Transportista   │  │ CargoOffer      │  │ TrackingEvent   │
-│ Cliente         │  │ Match / Quote   │  │ Route           │
-│ Vehicle         │  │                 │  │                 │
-└─────────────────┘  └─────────────────┘  └─────────────────┘
-        ▲                    ▲                    ▲
-        │                    │                    │
-        └────────────────────┼────────────────────┘
-                             │
-                  ┌──────────┴──────────┐
-                  │     Commerce        │
-                  │                     │
-                  │ Payment / Escrow    │
-                  │ InsurancePolicy     │
-                  │ ARCAInvoice         │
-                  └─────────────────────┘
-```
-
-### Core Entities (planned)
-
-| Entity | Context | Purpose |
-|--------|---------|---------|
-| User | Identity | Base account, email/password. |
-| Transportista | Identity | Independent trucker profile; references one or many Vehicles. |
-| Cliente / Productor | Identity | Shipper profile; may be an SMB or individual. |
-| Vehicle | Identity | Truck with capacity, plate, GPS capability. |
-| TransportWindow | Marketplace | Published availability (origin/destination/time/vehicle). |
-| CargoOffer | Marketplace | Published load (origin/destination/weight/goods). |
-| Match / Quote | Marketplace | A transportista's offer to fulfil a cargo, or a client's booking of a window. |
-| Shipment | Fulfilment | Active transport in progress; lifecycle states. |
-| TrackingEvent | Fulfilment | Append-only log (position, status change). |
-| Route | Fulfilment | Planned polyline + waypoints. |
-| Payment / Escrow | Commerce | Held funds released on delivery. |
-| InsurancePolicy | Commerce | Optional insurance per shipment. |
-| ARCAInvoice | Commerce | Fiscal document emitted against a completed shipment. |
-
-### Entity Lifecycle — Shipment (planned)
-
-```
-draft ──▶ quoted ──▶ accepted ──▶ in_transit ──▶ delivered ──▶ settled
-                │                     │
-                └── cancelled ◀───────┘
-```
-
-Each transition emits `TrackingEvent` rows; `settled` triggers payment release and ARCA invoicing.
+> Persona ↔ model mapping: `Transportista` ↔ `Carrier`, `Expedidor` ↔ `Shipper`. Identifiers are always English; the canonical term registry is [`docs/05-appendices/glossary.md`](../05-appendices/glossary.md).
 
 ---
 
@@ -191,7 +143,7 @@ Not yet in place. When a mobile client or third-party integration lands, the rec
 **Not implemented.** The project will likely adopt:
 
 - **AuthN**: `has_secure_password` (bcrypt) for user accounts; JWT or Rails session cookies depending on mobile needs.
-- **AuthZ**: Pundit policies per resource, scoped by role (`transportista`, `cliente`, `admin`).
+- **AuthZ**: Pundit policies per resource, scoped via the `User#carrier?` / `User#shipper?` predicates (which read the `has_one :carrier` / `has_one :shipper` relations — see ADR-008; no denormalised role columns on `users`). Admin users live in a separate `AdminUser` table (ActiveAdmin, see `INF-BE-00003`) with their own auth.
 
 ### Error Handling
 

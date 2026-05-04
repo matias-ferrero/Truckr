@@ -7,14 +7,14 @@
   columns: (auto, 1fr),
   align: (right, left),
   [*Product Vision*], [],
-  [*Para*], [transportistas y clientes],
+  [*Para*], [transportistas y expedidores],
   [*quienes*],
   [buscan simplificar el proceso de búsqueda, pago y gestión de transportes],
 
   [*el*], [Truckr ®],
   [*es un*], [un sitio web de contratado de servicios de transporte de bienes],
   [*que*],
-  [permite a transportistas y clientes publicar y unir sus disponibilidades y necesidades],
+  [permite a transportistas y expedidores publicar y unir sus disponibilidades y necesidades],
 
   [*diferente a*], [las empresas de transporte],
   [*nuestro producto*],

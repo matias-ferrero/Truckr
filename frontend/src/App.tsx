@@ -290,13 +290,13 @@ export default function LandingPage() {
                     <div className="container">
                         <h2 className="sectionTitle">Una plataforma, dos lados</h2>
                         <p className="sectionLead">
-                            Clientes y transportistas comparten el mismo objetivo: que el envío llegue bien, en tiempo y con
+                            Expedidores y transportistas comparten el mismo objetivo: que el envío llegue bien, en tiempo y con
                             condiciones claras.
                         </p>
 
                         <div className="split">
                             <article className="splitCard">
-                                <h3>Para clientes</h3>
+                                <h3>Para expedidores</h3>
                                 <p>
                                     Pedís cotización en minutos, comparás opciones y coordinás sin vueltas. Te ayudamos a
                                     anticipar tiempos y requisitos.
@@ -350,7 +350,7 @@ export default function LandingPage() {
                     <div className="container">
                         <div className="footerInner">
                             <div>
-                                <strong>Truckr®</strong> — Conectando transportistas con clientes en Argentina.
+                                <strong>Truckr®</strong> — Conectando transportistas con expedidores en Argentina.
                             </div>
                             <div className="legal">© 2026 Truckr®. Todos los derechos reservados.</div>
                         </div>

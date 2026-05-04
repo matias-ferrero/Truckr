@@ -4,10 +4,10 @@
 title System Context — Truckr®
 
 Person(transportista, "Transportista", "Independent trucker: publishes availability, accepts cargo offers, fulfils shipments.")
-Person(cliente, "Cliente / Productor", "Shipper: publishes cargo, selects a transportista, pays, tracks delivery.")
+Person(expedidor, "Expedidor", "Shipper: publishes cargo, selects a transportista, pays, tracks delivery. (Persona ↔ model: Expedidor → Shipper. Replaces deprecated Cliente / Productor.)")
 Person(admin, "Platform operator", "FIUBA-GDSI team member: monitors releases and platform health.")
 
-System(truckr, "Truckr® Platform", "Two-sided marketplace connecting transportistas with clientes for overland freight.")
+System(truckr, "Truckr® Platform", "Two-sided marketplace connecting transportistas with expedidores for overland freight.")
 
 System_Ext(payments, "Payment gateway", "Processes payments, holds escrow, releases on delivery. (Planned)")
 System_Ext(insurance, "Insurance provider", "Brokered per-shipment coverage. (Planned)")
@@ -16,7 +16,7 @@ System_Ext(maps, "Maps / GPS provider", "Route planning, geocoding, live trackin
 System_Ext(github, "GitHub", "Source of truth, release automation, PDF artifacts.")
 
 Rel(transportista, truckr, "Publishes transport windows, accepts offers, updates shipment status", "HTTPS")
-Rel(cliente, truckr, "Publishes cargo, selects transportista, pays, tracks", "HTTPS")
+Rel(expedidor, truckr, "Publishes cargo, selects transportista, pays, tracks", "HTTPS")
 Rel(admin, truckr, "Deploys releases, reviews health checks", "HTTPS / CLI")
 
 Rel(truckr, payments, "Initiates charges & releases escrow", "HTTPS")

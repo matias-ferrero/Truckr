@@ -63,4 +63,4 @@ frontend/
 - Server-side data integration with Rails API
 - Interactive hover effects
 - Stats showcase
-- Feature highlights for both transportistas and clientes
+- Feature highlights for both transportistas and expedidores

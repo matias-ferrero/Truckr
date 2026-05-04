@@ -21,8 +21,8 @@
 |---------|-------|--------------------------|
 | Landing page | Static React page (`App.tsx` + `landingContent.ts`) | Stays static — no backend involvement planned |
 | Quote-request form | Frontend-only state | POST → `Api::QuoteRequestsController` |
-| Auth | None | `has_secure_password` + JWT/session, Pundit policies (`transportista`, `cliente`, `admin`) |
-| Identity domain | None | First migrations land here: `User`, `Transportista`, `Cliente`, `Vehicle` |
+| Auth | None | `has_secure_password` + JWT/session, Pundit policies scoped via `User#carrier?` / `User#shipper?` predicates (relation-derived; no boolean columns — see ADR-008). ActiveAdmin owns its isolated `AdminUser` table. |
+| Identity domain | None | First migrations land here: `User`, `Carrier`, `Shipper`, `Vehicle` (spec in `02-high-level-design/domain-model.md`). |
 | Marketplace domain | None | `TransportWindow`, `CargoOffer`, `Quote` |
 | Fulfilment domain | None | `Shipment` (state machine), `TrackingEvent`, `Route` |
 | Commerce domain | None | `Payment` (escrow), `InsurancePolicy`, `ArcaInvoice` |
@@ -40,11 +40,12 @@ See `docs/features/ISSUES-INDEX.md` for the live index. Current backlog highligh
 
 ## Priority Work (next slices)
 
-1. **First domain model** — Identity bounded context. `User` + `Transportista` + `Cliente` + `Vehicle` with migrations and minimal tests. Rebases the `04-database-diagrams/erd-identity.puml` diagram against reality.
-2. **First real endpoint** — `Api::QuoteRequestsController#create` so the frontend form actually POSTs. Establishes the error envelope pattern.
-3. **CI test workflow** — `.github/workflows/test.yml`. Closes the testing gap before more code lands.
-4. **Backend skills folder** — once 2-3 real Rails patterns exist, extract them into `backend/.agents/skills/{rails-controller, rails-model, rspec-test, solid-queue-job, migration}/`.
-5. **Auth** — `has_secure_password` for users, then Pundit. Unblocks every persona-aware feature.
+1. **First domain model draft** — DONE in `REQ-BE-00005`. Spec lives at [`docs/02-high-level-design/domain-model.md`](../02-high-level-design/domain-model.md); ADR-007 to ADR-010 in [`01-technical-vision/technical-vision.md`](../01-technical-vision/technical-vision.md); Identity ERD refactored to `carriers` / `shippers` in [`04-database-diagrams/erd-identity.puml`](../04-database-diagrams/erd-identity.puml). Glossary promoted to [single source of truth](../05-appendices/glossary.md).
+2. **First Identity migrations** — `User` + `Carrier` + `Shipper` + `Vehicle` migrations + AR models + minimal RSpec specs. Implements the spec from item 1. Issue: TBD (next).
+3. **First real endpoint** — `Api::QuoteRequestsController#create` so the frontend form actually POSTs. Establishes the error envelope pattern.
+4. **CI test workflow** — `.github/workflows/test.yml`. Closes the testing gap before more code lands.
+5. **Backend skills folder** — once 2-3 real Rails patterns exist, extract them into `backend/.agents/skills/{rails-controller, rails-model, rspec-test, solid-queue-job, migration}/`.
+6. **Auth** — `has_secure_password` for users, then Pundit. Unblocks every persona-aware feature.
 
 ## Architecture Decisions Pending
 

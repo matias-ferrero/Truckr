@@ -16,7 +16,7 @@ Integrations the platform uses today, and the ones on the roadmap. Each row note
 ### Payment gateway (planned)
 
 - **Candidates**: Mercado Pago (primary — local market fit), Stripe (fallback).
-- **Purpose**: charge clientes, hold funds in escrow, release to transportista on delivery.
+- **Purpose**: charge expedidores, hold funds in escrow, release to transportista on delivery.
 - **Integration style**: server-initiated charges via REST + webhook callbacks for status updates.
 - **Where it will live**: `Api::PaymentsController` + `PaymentSettlementJob` (solid_queue).
 

@@ -42,13 +42,13 @@ Drawn from the product backlog (`docs/artifacts/backlog-us.typ`). Names are indi
 |--------|------|---------|
 | POST | `/api/sessions` | Sign in, issue token / session. |
 | DELETE | `/api/sessions` | Sign out. |
-| POST | `/api/users` | Register a new transportista or cliente. |
+| POST | `/api/users` | Register a new transportista or expedidor. |
 | GET | `/api/users/me` | Current user profile. |
 | GET, POST | `/api/transport_windows` | List/create transportista availability. |
 | GET, PATCH, DELETE | `/api/transport_windows/:id` | Show/update/cancel. |
-| GET, POST | `/api/cargo_offers` | List/create cliente cargo. |
+| GET, POST | `/api/cargo_offers` | List/create expedidor cargo. |
 | GET, POST | `/api/quotes` | List/send quotes. |
-| POST | `/api/quotes/:id/accept` | Cliente accepts a quote → creates a Shipment. |
+| POST | `/api/quotes/:id/accept` | Expedidor accepts a quote → creates a Shipment. |
 | GET, POST | `/api/shipments` | List/show active shipments. |
 | POST | `/api/shipments/:id/tracking_events` | Append tracking event (transportista or provider webhook). |
 | POST | `/api/payments` | Initiate charge on quote acceptance. |

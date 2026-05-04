@@ -52,7 +52,7 @@ Este plan **formaliza y completa** ese material; no parte de cero. Además:
   - `users` (auth + datos comunes), sin enum de role.
   - `carriers` (perfil del Transportista, FK `user_id`) y `shippers` (perfil del Expedidor, FK `user_id`) con datos específicos.
   - Un mismo `User` puede tener AMBOS perfiles si el negocio lo permite (decisión: **sí**, hay personas que cargan y mueven cargas según el caso).
-- **Refinamiento**: en lugar de `users.role : enum`, usar **dos booleanos** `is_carrier` / `is_shipper` (o tabla join `user_roles` si llegan más roles). Recomendación: dos booleanos para Phase 0/1, refactor a tabla cuando aparezca el tercer rol. Las filas en `carriers` / `shippers` son la fuente de verdad operativa; los flags son shortcuts para queries.
+- **Refinamiento (post-review)**: NO usar `users.role : enum` ni dos booleanos `is_carrier`/`is_shipper`. El estado de rol se **deriva** de las relaciones `has_one :carrier` / `has_one :shipper` en `User`. Acceso de conveniencia vía scopes (`User.carriers`, `User.shippers`) y predicados (`user.carrier?`, `user.shipper?`). Las filas en `carriers` / `shippers` son la única fuente de verdad — sin columnas denormalizadas en `users` (evita drift surface y dual-write hazard). Cuando aparezca un tercer rol: refactor a tabla `user_roles`. Si el join llegase a ser hot path en el futuro, denormalizar entonces detrás de un invariant explícito (callback + spec).
 - **Trade-off**:
   - STI puro (todo en `users`) — descartado: campos específicos quedan NULL para el otro rol; rompe integridad.
   - Polymorphic (un Profile abstract) — descartado: complejidad alta para 2 tipos.
@@ -110,12 +110,12 @@ Este plan **formaliza y completa** ese material; no parte de cero. Además:
 | 6 | Escribir ADR-007 (PK strategy = bigint) | Pending | `docs/01-technical-vision/technical-vision.md` |
 | 7 | Escribir ADR-008 (User↔Carrier/Shipper = role + extension; dos booleanos en lugar de enum; identifiers en inglés; cita el glosario como fuente de los nombres) | Pending | `docs/01-technical-vision/technical-vision.md` |
 | 8 | Escribir ADR-009 (soft-delete selectivo: Shipment/Payment/ArcaInvoice; resto hard-delete) | Pending | `docs/01-technical-vision/technical-vision.md` |
-| 9 | Escribir ADR-010 (geo storage: lat/lng en columnas Phase 0/1; PostGIS Phase 2) | Pending | `docs/01-technical-vision/technical-vision.md` |
+| 9 | Escribir ADR-010 (geo storage: lat/lng en columnas Phase 0/1; PostGIS Phase 2). Nota post-review: ADR-008 NO introduce booleanos `is_carrier`/`is_shipper`; el estado de rol es relation-derived (scopes + predicates en `User`). | Pending | `docs/01-technical-vision/technical-vision.md` |
 | 10 | Mover los items correspondientes fuera de "Decisiones Diferidas" en technical-vision.md | Pending | `docs/01-technical-vision/technical-vision.md` |
 | 11 | Crear `docs/02-high-level-design/domain-model.md`: spec detallado Identity + overview conceptual de los otros 3 contextos + FSM de Shipment + naming convention + **mapping persona↔modelo (deriva del glosario, NO inventa)** + cross-reference USM↔entidades + nota User↔AdminUser | Pending | `docs/02-high-level-design/domain-model.md` |
-| 12 | Refactorizar `erd-identity.puml`: **renombrar `transportistas`→`carriers`, `clientes`→`shippers`** (y `transportista_id`→`carrier_id`, `cliente_id`→`shipper_id`); reemplazar `role` enum por `is_carrier`/`is_shipper` booleans; agregar `created_at`/`updated_at`; unique constraints (`users.email`, `vehicles.plate`, `carriers.user_id`, `shippers.user_id`); índice en `users.email` | Pending | `docs/04-database-diagrams/erd-identity.puml` |
+| 12 | Refactorizar `erd-identity.puml`: **renombrar `transportistas`→`carriers`, `clientes`→`shippers`** (y `transportista_id`→`carrier_id`, `cliente_id`→`shipper_id`); eliminar `role` enum **sin reemplazarlo por columnas booleanas** — el rol se deriva de las relaciones `users ||--o| carriers` / `users ||--o| shippers` (ADR-008 post-review); agregar `created_at`/`updated_at`; unique constraints (`users.email`, `vehicles.plate`, `carriers.user_id`, `shippers.user_id`); índice en `users.email` | Pending | `docs/04-database-diagrams/erd-identity.puml` |
 | 13 | Crear `erd-overview.puml`: los 4 bounded contexts y sus relaciones cross-context (User←Carrier→Vehicle, Shipper→CargoOffer, Carrier→TransportWindow, Quote→Shipment, Shipment→Payment/InsurancePolicy/ArcaInvoice/TrackingEvent) | Pending | `docs/04-database-diagrams/erd-overview.puml` |
-| 14 | Refinar `erd-marketplace.puml` / `erd-fulfilment.puml` / `erd-commerce.puml`: alinear FKs renombradas (`carrier_id`/`shipper_id`), PK bigint explícito, soft-delete en Shipment/Payment/ArcaInvoice, lat/lng en TrackingEvent y direcciones. Verificar que ningún identificador quede en español. | Pending | `docs/04-database-diagrams/erd-{marketplace,fulfilment,commerce}.puml` |
+| 14 | Refinar `erd-marketplace.puml` / `erd-fulfilment.puml` / `erd-commerce.puml`: alinear FKs renombradas (`carrier_id`/`shipper_id`), PK bigint explícito, soft-delete en Shipment/Payment/ArcaInvoice, lat/lng en TrackingEvent y direcciones. Verificar que ningún identificador quede en español. **Post-review**: agregar `quotes.vehicle_id` (NOT NULL — Carrier commits a specific Vehicle when quoting; debe coincidir con `transport_windows.vehicle_id` cuando hay window) y `shipments.vehicle_id` (NOT NULL — frozen at acceptance; copiado del `Quote` aceptado). Reassignment fuera de scope Phase 0/1 (cancel + re-quote). | Pending | `docs/04-database-diagrams/erd-{marketplace,fulfilment,commerce}.puml` |
 | 15 | Actualizar `docs/04-database-diagrams/README.md`: status `Planned` → `Draft v1`, agregar `erd-overview.puml` a la tabla, cita a `domain-model.md` | Pending | `docs/04-database-diagrams/README.md` |
 | 16 | Actualizar `docs/02-high-level-design/high-level-design.md` § Domain Model: reemplazar la tabla de entidades por un párrafo + link a `domain-model.md` (evitar duplicación) | Pending | `docs/02-high-level-design/high-level-design.md` |
 | 17 | Actualizar `docs/onboarding/06-roadmap.md`: marcar "First domain model" slot como "draft completo, implementación siguiente" | Pending | `docs/onboarding/06-roadmap.md` |
@@ -224,13 +224,11 @@ Este plan **formaliza y completa** ese material; no parte de cero. Además:
 | full_name | string | yes | — | — |
 | phone | string | yes | — | — |
 | dni_or_cuit | string | yes | — | unique cuando esté presente |
-| is_carrier | boolean | no | false | Decisión B |
-| is_shipper | boolean | no | false | Decisión B |
 | verified_at | datetime | yes | — | — |
 | created_at | datetime | no | — | Rails default |
 | updated_at | datetime | no | — | Rails default |
 
-**Invariants**: `is_carrier` ⇔ existe fila en `carriers` con `user_id = self.id`. Idem `is_shipper` ⇔ `shippers`. Mantener consistencia via callback `after_save` en perfiles.
+**Role state (post-review)**: derivado de las relaciones `has_one :carrier` / `has_one :shipper` en `User`. Sin columnas booleanas. Acceso vía scopes (`User.carriers`, `User.shippers`) y predicados (`user.carrier?`, `user.shipper?`). Las filas en `carriers` / `shippers` son la fuente de verdad.
 
 ### 2.2 carriers (perfil del transportista)
 {tabla similar — FK `user_id`, datos específicos: `legal_name`, `base_city`, `rating_avg`, `completed_shipments`}
@@ -323,9 +321,9 @@ Cada ADR sigue el formato existente: **Context** / **Decision** / **Consequences
 
 ### 4.3 Modified file: `docs/04-database-diagrams/erd-identity.puml`
 
-**Purpose**: aplicar Decisiones B (boolean roles), D (drop admin), G (rename a inglés), agregar timestamps + unique constraints explícitos. **Renombra** `transportistas` → `carriers` y `clientes` → `shippers`.
+**Purpose**: aplicar Decisiones B (role state derivado de relaciones — sin booleanos), D (drop admin), G (rename a inglés), agregar timestamps + unique constraints explícitos. **Renombra** `transportistas` → `carriers` y `clientes` → `shippers`.
 
-**Diff**:
+**Diff (post-review — sin booleanos `is_carrier`/`is_shipper`)**:
 
 ```diff
  entity "users" as user {
@@ -334,8 +332,6 @@ Cada ADR sigue el formato existente: **Context** / **Decision** / **Consequences
    * email : string <<unique>>
    * password_digest : string
 -  * role : enum [transportista, cliente, admin]
-+  * is_carrier : boolean = false
-+  * is_shipper : boolean = false
    full_name : string
    phone : string
 -  dni_or_cuit : string
@@ -388,11 +384,16 @@ Cada ADR sigue el formato existente: **Context** / **Decision** / **Consequences
 -user ||--o| t : "(if role=transportista)"
 -user ||--o| c : "(if role=cliente)"
 -t ||--o{ v : "owns"
-+user ||--o| carrier : "(if is_carrier)"
-+user ||--o| shipper : "(if is_shipper)"
++user ||--o| carrier : "0..1 — present iff carrier profile exists"
++user ||--o| shipper : "0..1 — present iff shipper profile exists"
 +carrier ||--o{ v : "owns"
 +
 +note bottom
++  Role state is derived from the carriers / shippers relation rows — no
++  denormalised flags on users (ADR-008). Convenience access via scopes
++  (User.carriers, User.shippers) and predicates (user.carrier?,
++  user.shipper?).
++
 +  AdminUser (ActiveAdmin/Devise via INF-BE-00003) is a SEPARATE table.
 +  Domain users have NO 'admin' role; admin staff live in active_admin's
 +  own admin_users table.
@@ -452,6 +453,13 @@ ship ||--o| inv
 ### 4.5 Modified files: `erd-marketplace.puml`, `erd-fulfilment.puml`, `erd-commerce.puml`
 
 **Purpose**: alinear con ADRs (PK bigint explícito, soft-delete `deleted_at` en Shipment/Payment/ArcaInvoice, lat/lng en TrackingEvent + direcciones de TransportWindow/CargoOffer).
+
+**Post-review — Vehicle ↔ Fulfilment linkage**: en la primera versión de los ERDs, `Vehicle` solo se conectaba con `Carrier` (ownership) y `TransportWindow` (slot publicado). El reviewer notó que `Shipment` no referenciaba el camión que físicamente realiza el viaje. Cambios:
+
+- `quotes.vehicle_id : bigint <<FK>>` (NOT NULL): el Carrier compromete un Vehicle específico al cotizar. Si la `Quote` referencia una `TransportWindow`, debe coincidir con `transport_windows.vehicle_id` (invariant validado en AR).
+- `shipments.vehicle_id : bigint <<FK>>` (NOT NULL): se copia desde la `Quote` aceptada en la transición `quoted → accepted` y queda **frozen** para el resto del lifecycle (traceability).
+- Reassignment post-acceptance fuera de scope Phase 0/1 — el flujo es cancelar el `Shipment` y generar una nueva `Quote` con el reemplazo.
+- Agregar relaciones `vehicles ||--o{ quotes` y `vehicles ||--o{ shipments` al `erd-overview.puml` (cross-context lines, exactamente lo que el overview diagram debe mostrar).
 
 (Diff específico depende del estado actual de cada archivo; lectura previa obligatoria al implementar.)
 
@@ -628,7 +636,7 @@ grep -l "domain-model.md" docs/README.md docs/02-high-level-design/high-level-de
 | `CLAUDE.md` | Sección "Terminology" agregada con link al glosario y declaración "single source of truth — change here first". |
 | `docs/onboarding/00-philosophy-and-architecture.md` | Regla 1 (Spanish/English) amplificada con link al glosario. |
 | `docs/01-technical-vision/technical-vision.md` | +ADR-007..010 (PK / Profiles / Soft-delete / Geo); items movidos fuera de "Decisiones Diferidas"; ADR-008 cita glosario como fuente de los nombres. |
-| `docs/04-database-diagrams/erd-identity.puml` | **Rename** `transportistas`→`carriers`, `clientes`→`shippers`, `transportista_id`→`carrier_id`. `role` enum → 2 booleanos (`is_carrier`, `is_shipper`); drop `admin`; timestamps explícitos; unique constraints; nota AdminUser. |
+| `docs/04-database-diagrams/erd-identity.puml` | **Rename** `transportistas`→`carriers`, `clientes`→`shippers`, `transportista_id`→`carrier_id`. `role` enum **eliminado sin reemplazo por columnas booleanas** — el rol se deriva de las relaciones `users ||--o| carriers` / `users ||--o| shippers` (ADR-008 post-review). Drop `admin`; timestamps explícitos; unique constraints; nota AdminUser + nota relation-derived role state. |
 | `docs/04-database-diagrams/erd-marketplace.puml` | PK bigint explícito; lat/lng en direcciones; renombrar FKs `transportista_id`→`carrier_id`, `cliente_id`→`shipper_id` si existen. |
 | `docs/04-database-diagrams/erd-fulfilment.puml` | PK bigint; soft-delete en Shipment; lat/lng en TrackingEvent; renombrar FKs si existen; FK consistency. |
 | `docs/04-database-diagrams/erd-commerce.puml` | PK bigint; soft-delete en Payment y ArcaInvoice; renombrar FKs si existen. |

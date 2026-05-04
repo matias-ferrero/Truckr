@@ -8,6 +8,10 @@ FIUBA **GDSI** (Gestión del Desarrollo de Sistemas Informáticos) coursework fo
 
 All written content (artifacts, user stories, prompts) is in **Spanish (es-AR)**. Code, identifiers, and commit messages are in English.
 
+## Terminology
+
+**Source of truth: [`docs/05-appendices/glossary.md`](docs/05-appendices/glossary.md).** Whenever a term is introduced, renamed, or deprecated, update the glossary first and propagate from there. Personas / models in particular: `Transportista` ↔ `Carrier`, `Expedidor` ↔ `Shipper`. The terms `Cliente` / `Productor` are deprecated synonyms folded into `Expedidor`.
+
 ## Tooling (managed by mise)
 
 `mise install` provisions everything: `typst`, `typstyle`, `uv`, `gh`, `prek`, `just`, `deno`, `ruby 3.4`. After install, run `prek install` once to wire pre-commit hooks into `.git/hooks/`.
