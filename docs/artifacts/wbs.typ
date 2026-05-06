@@ -3,7 +3,7 @@
 
 #show: conf
 
-#set page(width: 356mm, height: 630mm, margin: (x: 1cm, y: 1.2cm))
+#set page(width: 594mm, height: 345mm, margin: (x: 1cm, y: 1.2cm))
 
 = WBS — Work Breakdown Structure
 
@@ -82,459 +82,709 @@
     let root = (0, 0)
     node(root, rhw, hh, [*Truckr® — Plataforma de Transporte*])
 
-    // ── 1. Gestión de Cuentas ──────────────────────────────────────────────
-    let gestion = (-14, -1.8)
-    node(gestion, hw, hh, [1. Gestión de Cuentas])
+    // Posiciones x de las 9 ramas top-level, equiespaciadas a 6.5cm
+    // x: -26, -19.5, -13, -6.5, 0, 6.5, 13, 19.5, 26
 
-    let gestion-branch-x = branch-x(gestion.at(0))
-    let registro = (gestion-branch-x, -3.0)
-    node(registro, hw, hh, [1.1 Registro])
+    // ── 1. Autenticación y Cuentas ─────────────────────────────────────────
+    let cuentas = (-26, -1.8)
+    node(cuentas, hw, hh, [1. Autenticación \ y Cuentas])
 
-    let registro-branch-x = branch-x(registro.at(0))
-    let formulario = (registro-branch-x, -4.6)
+    let cuentas-bx = branch-x(cuentas.at(0))
+
+    let c-registro = (cuentas-bx, -3.0)
+    node(c-registro, hw, hh, [1.1 Registro])
+
+    let c-registro-bx = branch-x(c-registro.at(0))
+    let c-reg-form = (c-registro-bx, -4.2)
     node(
-      formulario,
-      hw,
-      2 * hh,
-      [1.1.1 Formulario de \ Registro (email, \ nombre, contraseña)],
-    )
-    let validacion-contra = (registro-branch-x, -6.2)
-    node(validacion-contra, hw, hh, [1.1.2 Validación de \ contraseña segura])
-    let control = (registro-branch-x, -7.4)
-    node(control, hw, hh, [1.1.3 Control de \ usuario duplicado])
-
-    let login = (gestion-branch-x, -8.6)
-    node(login, hw, hh, [1.2 Login])
-
-    let login-branch-x = branch-x(login.at(0))
-    let ingreso = (login-branch-x, -9.8)
-    node(ingreso, hw, hh, [1.2.1 Ingreso con \ email y contraseña])
-    let validacion-cred = (login-branch-x, -11)
-    node(validacion-cred, hw, hh, [1.2.2 Validación de \ credenciales])
-    let sesion = (login-branch-x, -12.2)
-    node(sesion, hw, hh, [1.2.3 Gestión de sesión])
-
-    let perfil = (gestion-branch-x, -13.4)
-    node(perfil, hw, hh, [1.3 Perfil de Usuario])
-
-    let perfil-branch-x = branch-x(perfil.at(0))
-    let edicion = (perfil-branch-x, -14.6)
-    node(edicion, hw, hh, [1.3.1 Edición de datos \ personales])
-    let foto = (perfil-branch-x, -15.8)
-    node(foto, hw, hh, [1.3.2 Actualización de \ foto de perfil])
-    let camion = (perfil-branch-x, -17.4)
-    node(
-      camion,
-      hw,
-      2 * hh,
-      [1.3.3 Registro de \ camión, patente \ y dimensiones],
-    )
-
-    trunk(gestion, perfil)
-    branch(gestion, registro, hw)
-    branch(gestion, login, hw)
-    branch(gestion, perfil, hw)
-
-    trunk(registro, control)
-    branch(registro, formulario, hw)
-    branch(registro, validacion-contra, hw)
-    branch(registro, control, hw)
-
-    trunk(login, sesion)
-    branch(login, ingreso, hw)
-    branch(login, validacion-cred, hw)
-    branch(login, sesion, hw)
-
-    trunk(perfil, camion)
-    branch(perfil, edicion, hw)
-    branch(perfil, foto, hw)
-    branch(perfil, camion, hw)
-
-    // ── 2. Plataformas ──────────────────────────────────────────────
-    let plataformas = (-7.5, -1.8)
-    node(plataformas, hw, hh, [2. Plataformas])
-
-    let plataformas-branch-x = branch-x(plataformas.at(0))
-    let plataforma-expedidor = (plataformas-branch-x, -3.0)
-    node(plataforma-expedidor, hw, hh, [2.1 Plataforma Expedidor])
-
-    let plataforma-expedidor-branch-x = branch-x(plataforma-expedidor.at(0))
-    let busqueda = (plataforma-expedidor-branch-x, -4.2)
-    node(busqueda, hw, hh, [2.1.1 Búsqueda de \ Transportistas])
-
-    let busqueda-branch-x = branch-x(busqueda.at(0))
-    let origen-destino = (busqueda-branch-x, -5.4)
-    node(origen-destino, hw, hh, [2.1.1.1 Búsqueda por \ origen y destino])
-    let fecha = (busqueda-branch-x, -6.6)
-    node(fecha, hw, hh, [2.1.1.2 Búsqueda por \ rango de fecha])
-    let listado = (busqueda-branch-x, -7.8)
-    node(listado, hw, hh, [2.1.1.3 Listado paginado \ y scrolleable])
-    let ordenamiento = (busqueda-branch-x, -9)
-    node(ordenamiento, hw, hh, [2.1.1.4 Ordenamiento])
-
-    let filtrado = (plataforma-expedidor-branch-x, -10.2)
-    node(filtrado, hw, hh, [2.1.2 Filtrado de \ Transportistas])
-
-    let filtrado-branch-x = branch-x(filtrado.at(0))
-    let precio = (filtrado-branch-x, -11.4)
-    node(precio, hw, hh, [2.1.2.1 Filtro por precio])
-    let peso = (filtrado-branch-x, -12.6)
-    node(peso, hw, hh, [2.1.2.2 Filtro por peso])
-    let dimensiones = (filtrado-branch-x, -13.8)
-    node(dimensiones, hw, hh, [2.1.2.3 Filtro por \ dimensiones])
-    let capacidad = (filtrado-branch-x, -15)
-    node(capacidad, hw, hh, [2.1.2.4 Filtro por \ capacidad del camión])
-    let reset = (filtrado-branch-x, -16.2)
-    node(reset, hw, hh, [2.1.2.5 Reset de filtros])
-
-    let detalles = (plataforma-expedidor-branch-x, -17.4)
-    node(detalles, hw, hh, [2.1.3 Detalles del \ Transportista])
-
-    let detalles-branch-x = branch-x(detalles.at(0))
-    let fotos-camion = (detalles-branch-x, -18.6)
-    node(fotos-camion, hw, hh, [2.1.3.1 Fotos y descripción \ del camión])
-    let estimacion = (detalles-branch-x, -19.8)
-    node(estimacion, hw, hh, [2.1.3.2 Estimación de \ costos del viaje])
-    let historial = (detalles-branch-x, -21)
-    node(historial, hw, hh, [2.1.3.3 Historial de \ viajes del transportista])
-    let resenias = (detalles-branch-x, -22.2)
-    node(resenias, hw, hh, [2.1.3.4 Reseñas \ del transportista])
-
-    let oferta = (plataforma-expedidor-branch-x, -23.4)
-    node(oferta, hw, hh, [2.1.4 Oferta de Retiro])
-
-    let oferta-branch-x = branch-x(oferta.at(0))
-    let fecha-retiro = (oferta-branch-x, -24.6)
-    node(fecha-retiro, hw, hh, [2.1.4.1 Indicar fecha \ de retiro])
-    let direccion-retiro = (oferta-branch-x, -25.8)
-    node(direccion-retiro, hw, hh, [2.1.4.2 Indicar dirección \ de retiro])
-    let direccion-entrega = (oferta-branch-x, -27)
-    node(direccion-entrega, hw, hh, [2.1.4.3 Indicar dirección \ de entrega])
-    let confirmar-oferta = (oferta-branch-x, -28.2)
-    node(confirmar-oferta, hw, hh, [2.1.4.4 Confirmar oferta])
-
-    let pago = (plataforma-expedidor-branch-x, -29.4)
-    node(pago, hw, hh, [2.1.5 Pago del Servicio])
-
-    let pago-branch-x = branch-x(pago.at(0))
-    let pago-1 = (pago-branch-x, -30.6)
-    node(pago-1, hw, hh, [2.1.5.1 Realizar pago \ tras aceptación])
-    let pago-2 = (pago-branch-x, -31.8)
-    node(
-      pago-2,
+      c-reg-form,
       hw,
       hh,
-      [2.1.5.2 Recibir datos de \ contacto del transportista],
+      [1.1.1 Formulario de registro \ (email, nombre, contraseña)],
     )
+    let c-reg-pass = (c-registro-bx, -5.4)
+    node(c-reg-pass, hw, hh, [1.1.2 Validación de \ contraseña segura])
+    let c-reg-dup = (c-registro-bx, -6.6)
+    node(c-reg-dup, hw, hh, [1.1.3 Control de \ usuario duplicado])
+    let c-reg-email = (c-registro-bx, -7.8)
+    node(c-reg-email, hw, hh, [1.1.4 Verificación de \ cuenta por email])
 
-    let plataforma-transportista = (plataformas-branch-x, -33.0)
-    node(plataforma-transportista, hw, hh, [2.2 Plataforma \ Transportista])
+    let c-login = (cuentas-bx, -9.0)
+    node(c-login, hw, hh, [1.2 Login])
 
-    let plataforma-transportista-branch-x = branch-x(
-      plataforma-transportista.at(0),
-    )
+    let c-login-bx = branch-x(c-login.at(0))
+    let c-log-ingreso = (c-login-bx, -10.2)
+    node(c-log-ingreso, hw, hh, [1.2.1 Ingreso con email \ o usuario])
+    let c-log-cred = (c-login-bx, -11.4)
+    node(c-log-cred, hw, hh, [1.2.2 Validación de \ credenciales])
+    let c-log-sesion = (c-login-bx, -12.6)
+    node(c-log-sesion, hw, hh, [1.2.3 Gestión de sesión])
+    let c-log-cambio = (c-login-bx, -13.8)
+    node(c-log-cambio, hw, hh, [1.2.4 Cambiar contraseña])
 
-    let disponibilidad = (plataforma-transportista-branch-x, -34.2)
-    node(disponibilidad, hw, hh, [2.2.1 Publicación de \ Disponibilidad])
+    let c-perfil = (cuentas-bx, -15.0)
+    node(c-perfil, hw, hh, [1.3 Perfil de Usuario])
 
-    let disponibilidad-branch-x = branch-x(disponibilidad.at(0))
-    let zona-origen = (disponibilidad-branch-x, -35.4)
-    node(zona-origen, hw, hh, [2.2.1.1 Indicar zona \ de origen])
-    let limite-km = (disponibilidad-branch-x, -36.6)
-    node(limite-km, hw, hh, [2.2.1.2 Indicar limite \ de kilómetros])
-    let precio-km = (disponibilidad-branch-x, -37.8)
-    node(precio-km, hw, hh, [2.2.1.3 Indicar precio \ por km])
-    let confirmar-publicacion = (disponibilidad-branch-x, -39)
-    node(confirmar-publicacion, hw, hh, [2.2.1.4 Confirmar \ publicación])
+    let c-perfil-bx = branch-x(c-perfil.at(0))
+    let c-per-edicion = (c-perfil-bx, -16.2)
+    node(c-per-edicion, hw, hh, [1.3.1 Edición de datos \ personales])
+    let c-per-foto = (c-perfil-bx, -17.4)
+    node(c-per-foto, hw, hh, [1.3.2 Actualización de \ foto de perfil])
+    let c-per-historial = (c-perfil-bx, -18.6)
+    node(c-per-historial, hw, hh, [1.3.3 Historial de viajes])
 
-    let visualizacion-ofertas = (plataforma-transportista-branch-x, -40.2)
-    node(visualizacion-ofertas, hw, hh, [2.2.2 Visualización de \ Ofertas])
+    let c-vehiculo = (cuentas-bx, -19.8)
+    node(c-vehiculo, hw, hh, [1.4 Registro de Vehículo])
 
-    let visualizacion-ofertas-branch-x = branch-x(visualizacion-ofertas.at(0))
-    let listado-ofertas = (visualizacion-ofertas-branch-x, -41.4)
-    node(listado-ofertas, hw, hh, [2.2.2.1 Listado de \ ofertas recibidas])
-    let detalle-viaje = (visualizacion-ofertas-branch-x, -43.0)
+    let c-vehiculo-bx = branch-x(c-vehiculo.at(0))
+    let c-veh-patente = (c-vehiculo-bx, -21.0)
+    node(c-veh-patente, hw, hh, [1.4.1 Registrar patente])
+    let c-veh-dim = (c-vehiculo-bx, -22.2)
     node(
-      detalle-viaje,
-      hw,
-      2 * hh,
-      [2.2.2.2 Detalle de viaje \ (distancia, ubicación, \ volumen, peso)],
-    )
-    let detalle-expedidor = (visualizacion-ofertas-branch-x, -44.6)
-    node(
-      detalle-expedidor,
-      hw,
-      hh,
-      [2.2.2.3 Detalle del expedidor \ (datos personales, reseñas)],
-    )
-
-    let aceptacion = (plataforma-transportista-branch-x, -46.2)
-    node(aceptacion, hw, hh, [2.2.3 Aceptación de Viaje])
-
-    let aceptacion-branch-x = branch-x(aceptacion.at(0))
-    let boton-aceptacion = (aceptacion-branch-x, -47.4)
-    node(boton-aceptacion, hw, hh, [2.2.3.1 Botón de \ aceptación de viaje])
-    let actualizacion-fecha = (aceptacion-branch-x, -48.6)
-    node(
-      actualizacion-fecha,
+      c-veh-dim,
       hw,
       hh,
-      [2.2.3.2 Actualización de \ fecha estimada de entrega],
+      [1.4.2 Registrar dimensiones \ y capacidad de carga],
     )
+    let c-veh-fotos = (c-vehiculo-bx, -23.4)
+    node(c-veh-fotos, hw, hh, [1.4.3 Subir fotos \ del vehículo])
 
-    let realizacion-viaje = (plataforma-transportista-branch-x, -50.2)
-    node(realizacion-viaje, hw, hh, [2.2.4 Realización del Viaje])
+    trunk(cuentas, c-vehiculo)
+    branch(cuentas, c-registro, hw)
+    branch(cuentas, c-login, hw)
+    branch(cuentas, c-perfil, hw)
+    branch(cuentas, c-vehiculo, hw)
 
-    let realizacion-viaje-branch-x = branch-x(realizacion-viaje.at(0))
-    let marcar-recibido = (realizacion-viaje-branch-x, -51.4)
-    node(marcar-recibido, hw, hh, [2.2.4.1 Marcar producto \ como recibido])
-    let marcar-entregado = (realizacion-viaje-branch-x, -52.6)
-    node(marcar-entregado, hw, hh, [2.2.4.2 Marcar producto \ como entregado])
-    let notificacion-estado = (realizacion-viaje-branch-x, -53.8)
+    trunk(c-registro, c-reg-email)
+    branch(c-registro, c-reg-form, hw)
+    branch(c-registro, c-reg-pass, hw)
+    branch(c-registro, c-reg-dup, hw)
+    branch(c-registro, c-reg-email, hw)
+
+    trunk(c-login, c-log-cambio)
+    branch(c-login, c-log-ingreso, hw)
+    branch(c-login, c-log-cred, hw)
+    branch(c-login, c-log-sesion, hw)
+    branch(c-login, c-log-cambio, hw)
+
+    trunk(c-perfil, c-per-historial)
+    branch(c-perfil, c-per-edicion, hw)
+    branch(c-perfil, c-per-foto, hw)
+    branch(c-perfil, c-per-historial, hw)
+
+    trunk(c-vehiculo, c-veh-fotos)
+    branch(c-vehiculo, c-veh-patente, hw)
+    branch(c-vehiculo, c-veh-dim, hw)
+    branch(c-vehiculo, c-veh-fotos, hw)
+
+    // ── 2. Búsqueda y Descubrimiento ───────────────────────────────────────
+    let busqueda = (-19.5, -1.8)
+    node(busqueda, hw, hh, [2. Búsqueda y \ Descubrimiento])
+
+    let busqueda-bx = branch-x(busqueda.at(0))
+
+    let b-busq = (busqueda-bx, -3.0)
+    node(b-busq, hw, hh, [2.1 Búsqueda de \ Transportistas])
+
+    let b-busq-bx = branch-x(b-busq.at(0))
+    let b-busq-origen = (b-busq-bx, -4.2)
+    node(b-busq-origen, hw, hh, [2.1.1 Ingresar ubicación \ origen])
+    let b-busq-destino = (b-busq-bx, -5.4)
+    node(b-busq-destino, hw, hh, [2.1.2 Ingresar ubicación \ destino])
+    let b-busq-fecha = (b-busq-bx, -6.6)
+    node(b-busq-fecha, hw, hh, [2.1.3 Ingresar rango \ de fechas])
+    let b-busq-scroll = (b-busq-bx, -7.8)
+    node(b-busq-scroll, hw, hh, [2.1.4 Listado paginado \ y scrolleable])
+    let b-busq-orden = (b-busq-bx, -9.0)
+    node(b-busq-orden, hw, hh, [2.1.5 Ordenamiento \ de resultados])
+
+    let b-filtros = (busqueda-bx, -10.2)
+    node(b-filtros, hw, hh, [2.2 Filtrado de \ Transportistas])
+
+    let b-filtros-bx = branch-x(b-filtros.at(0))
+    let b-fil-precio = (b-filtros-bx, -11.4)
+    node(b-fil-precio, hw, hh, [2.2.1 Filtro por precio/km])
+    let b-fil-peso = (b-filtros-bx, -12.6)
+    node(b-fil-peso, hw, hh, [2.2.2 Filtro por peso])
+    let b-fil-vol = (b-filtros-bx, -13.8)
+    node(b-fil-vol, hw, hh, [2.2.3 Filtro por volumen])
+    let b-fil-dim = (b-filtros-bx, -15.0)
+    node(b-fil-dim, hw, hh, [2.2.4 Filtro por \ dimensiones])
+    let b-fil-cap = (b-filtros-bx, -16.2)
+    node(b-fil-cap, hw, hh, [2.2.5 Filtro por \ capacidad del camión])
+    let b-fil-dist = (b-filtros-bx, -17.4)
+    node(b-fil-dist, hw, hh, [2.2.6 Filtro por distancia])
+    let b-fil-reset = (b-filtros-bx, -18.6)
+    node(b-fil-reset, hw, hh, [2.2.7 Reset de filtros])
+
+    let b-detalles = (busqueda-bx, -19.8)
+    node(b-detalles, hw, hh, [2.3 Detalles del \ Transportista])
+
+    let b-det-bx = branch-x(b-detalles.at(0))
+    let b-det-fotos = (b-det-bx, -21.0)
+    node(b-det-fotos, hw, hh, [2.3.1 Ver fotos y \ descripción del camión])
+    let b-det-precio = (b-det-bx, -22.2)
+    node(b-det-precio, hw, hh, [2.3.2 Ver estimación \ de costo del viaje])
+    let b-det-hist = (b-det-bx, -23.4)
     node(
-      notificacion-estado,
+      b-det-hist,
       hw,
       hh,
-      [2.2.4.3 Notificación de \ estado al expedidor],
+      [2.3.3 Ver historial de \ viajes del transportista],
     )
+    let b-det-rese = (b-det-bx, -24.6)
+    node(b-det-rese, hw, hh, [2.3.4 Ver reseñas \ del transportista])
 
-    trunk(plataformas, plataforma-transportista)
-    branch(plataformas, plataforma-expedidor, hw)
-    branch(plataformas, plataforma-transportista, hw)
+    trunk(busqueda, b-detalles)
+    branch(busqueda, b-busq, hw)
+    branch(busqueda, b-filtros, hw)
+    branch(busqueda, b-detalles, hw)
 
-    trunk(plataforma-expedidor, pago)
-    branch(plataforma-expedidor, busqueda, hw)
-    branch(plataforma-expedidor, filtrado, hw)
-    branch(plataforma-expedidor, detalles, hw)
-    branch(plataforma-expedidor, oferta, hw)
-    branch(plataforma-expedidor, pago, hw)
+    trunk(b-busq, b-busq-orden)
+    branch(b-busq, b-busq-origen, hw)
+    branch(b-busq, b-busq-destino, hw)
+    branch(b-busq, b-busq-fecha, hw)
+    branch(b-busq, b-busq-scroll, hw)
+    branch(b-busq, b-busq-orden, hw)
 
-    trunk(busqueda, ordenamiento)
-    branch(busqueda, origen-destino, hw)
-    branch(busqueda, fecha, hw)
-    branch(busqueda, listado, hw)
-    branch(busqueda, ordenamiento, hw)
+    trunk(b-filtros, b-fil-reset)
+    branch(b-filtros, b-fil-precio, hw)
+    branch(b-filtros, b-fil-peso, hw)
+    branch(b-filtros, b-fil-vol, hw)
+    branch(b-filtros, b-fil-dim, hw)
+    branch(b-filtros, b-fil-cap, hw)
+    branch(b-filtros, b-fil-dist, hw)
+    branch(b-filtros, b-fil-reset, hw)
 
-    trunk(filtrado, reset)
-    branch(filtrado, precio, hw)
-    branch(filtrado, peso, hw)
-    branch(filtrado, dimensiones, hw)
-    branch(filtrado, capacidad, hw)
-    branch(filtrado, reset, hw)
+    trunk(b-detalles, b-det-rese)
+    branch(b-detalles, b-det-fotos, hw)
+    branch(b-detalles, b-det-precio, hw)
+    branch(b-detalles, b-det-hist, hw)
+    branch(b-detalles, b-det-rese, hw)
 
-    trunk(detalles, resenias)
-    branch(detalles, fotos-camion, hw)
-    branch(detalles, estimacion, hw)
-    branch(detalles, historial, hw)
-    branch(detalles, resenias, hw)
+    // ── 3. Reservas y Ofertas ──────────────────────────────────────────────
+    let reservas = (-13, -1.8)
+    node(reservas, hw, hh, [3. Reservas y Ofertas])
 
-    trunk(oferta, confirmar-oferta)
-    branch(oferta, fecha-retiro, hw)
-    branch(oferta, direccion-retiro, hw)
-    branch(oferta, direccion-entrega, hw)
-    branch(oferta, confirmar-oferta, hw)
+    let reservas-bx = branch-x(reservas.at(0))
 
-    trunk(pago, pago-2)
-    branch(pago, pago-1, hw)
-    branch(pago, pago-2, hw)
+    let r-oferta = (reservas-bx, -3.0)
+    node(r-oferta, hw, hh, [3.1 Oferta de Retiro \ (Cliente)])
 
-    trunk(plataforma-transportista, realizacion-viaje)
-    branch(plataforma-transportista, disponibilidad, hw)
-    branch(plataforma-transportista, visualizacion-ofertas, hw)
-    branch(plataforma-transportista, aceptacion, hw)
-    branch(plataforma-transportista, realizacion-viaje, hw)
+    let r-oferta-bx = branch-x(r-oferta.at(0))
+    let r-of-fecha = (r-oferta-bx, -4.2)
+    node(r-of-fecha, hw, hh, [3.1.1 Seleccionar \ fecha de retiro])
+    let r-of-retiro = (r-oferta-bx, -5.4)
+    node(r-of-retiro, hw, hh, [3.1.2 Ingresar dirección \ de retiro])
+    let r-of-entrega = (r-oferta-bx, -6.6)
+    node(r-of-entrega, hw, hh, [3.1.3 Ingresar dirección \ de entrega])
+    let r-of-confirmar = (r-oferta-bx, -7.8)
+    node(r-of-confirmar, hw, hh, [3.1.4 Confirmar oferta])
 
-    trunk(disponibilidad, confirmar-publicacion)
-    branch(disponibilidad, zona-origen, hw)
-    branch(disponibilidad, limite-km, hw)
-    branch(disponibilidad, precio-km, hw)
-    branch(disponibilidad, confirmar-publicacion, hw)
-
-    trunk(visualizacion-ofertas, detalle-expedidor)
-    branch(visualizacion-ofertas, listado-ofertas, hw)
-    branch(visualizacion-ofertas, detalle-viaje, hw)
-    branch(visualizacion-ofertas, detalle-expedidor, hw)
-
-    trunk(aceptacion, actualizacion-fecha)
-    branch(aceptacion, boton-aceptacion, hw)
-    branch(aceptacion, actualizacion-fecha, hw)
-
-    trunk(realizacion-viaje, notificacion-estado)
-    branch(realizacion-viaje, marcar-recibido, hw)
-    branch(realizacion-viaje, marcar-entregado, hw)
-    branch(realizacion-viaje, notificacion-estado, hw)
-
-    // ── 3. Integraciones ─────────────────────────────────────────────
-    let integraciones = (0, -1.8)
-    node(integraciones, hw, hh, [3. Integraciones])
-
-    let integraciones-branch-x = branch-x(integraciones.at(0))
-    let arca = (integraciones-branch-x, -3.0)
-    node(arca, hw, hh, [3.1 Integración con \ ARCA])
-    let pago-seguro = (integraciones-branch-x, -4.2)
-    node(pago-seguro, hw, hh, [3.2 Integración con \ medio de pago seguro])
-    let google-maps = (integraciones-branch-x, -5.4)
-    node(google-maps, hw, hh, [3.3 Integración con \ Google Maps])
-
-    let google-maps-branch-x = branch-x(google-maps.at(0))
-    let geocoding = (google-maps-branch-x, -6.6)
-    node(geocoding, hw, hh, [3.3.1 Geocodificación \ de direcciones])
-    let rutas = (google-maps-branch-x, -7.8)
-    node(rutas, hw, hh, [3.3.2 Visualización \ de rutas])
-
-    trunk(integraciones, google-maps)
-    branch(integraciones, arca, hw)
-    branch(integraciones, pago-seguro, hw)
-    branch(integraciones, google-maps, hw)
-
-    trunk(google-maps, rutas)
-    branch(google-maps, geocoding, hw)
-    branch(google-maps, rutas, hw)
-
-    // ── 4. Seguro ────────────────────────────────────────────────────
-    let seguro = (6, -1.8)
-    node(seguro, hw, hh, [4. Seguro])
-
-    let seguro-branch-x = branch-x(seguro.at(0))
-    let seguro-integracion = (seguro-branch-x, -3.0)
-    node(seguro-integracion, hw, hh, [4.1 Integración con \ Aseguradora])
-
-    let seguro-integracion-branch-x = branch-x(seguro-integracion.at(0))
-    let seguro-int-api = (seguro-integracion-branch-x, -4.2)
-    node(seguro-int-api, hw, hh, [4.1.1 Integración con \ API de aseguradora])
-    let seguro-int-coberturas = (seguro-integracion-branch-x, -5.4)
+    let r-disponibilidad = (reservas-bx, -9.0)
     node(
-      seguro-int-coberturas,
+      r-disponibilidad,
       hw,
       hh,
-      [4.1.2 Obtención de \ coberturas disponibles],
+      [3.2 Publicación de \ Disponibilidad],
     )
 
-    let seguro-cotizacion = (seguro-branch-x, -6.6)
-    node(seguro-cotizacion, hw, hh, [4.2 Cotización del Seguro])
+    let r-disp-bx = branch-x(r-disponibilidad.at(0))
+    let r-disp-zona = (r-disp-bx, -10.2)
+    node(r-disp-zona, hw, hh, [3.2.1 Indicar zona \ de origen])
+    let r-disp-km = (r-disp-bx, -11.4)
+    node(r-disp-km, hw, hh, [3.2.2 Indicar límite \ de kilómetros])
+    let r-disp-precio = (r-disp-bx, -12.6)
+    node(r-disp-precio, hw, hh, [3.2.3 Indicar precio \ por km])
+    let r-disp-pub = (r-disp-bx, -13.8)
+    node(r-disp-pub, hw, hh, [3.2.4 Confirmar publicación])
 
-    let seguro-cotizacion-branch-x = branch-x(seguro-cotizacion.at(0))
-    let seguro-cot-valor = (seguro-cotizacion-branch-x, -7.8)
-    node(seguro-cot-valor, hw, hh, [4.2.1 Cálculo por \ valor declarado])
-    let seguro-cot-distancia = (seguro-cotizacion-branch-x, -9)
+    let r-vis-ofertas = (reservas-bx, -15.0)
     node(
-      seguro-cot-distancia,
+      r-vis-ofertas,
       hw,
       hh,
-      [4.2.2 Cálculo por \ distancia del viaje],
+      [3.3 Visualización de \ Ofertas],
     )
-    let seguro-cot-visualizacion = (seguro-cotizacion-branch-x, -10.2)
+
+    let r-vis-bx = branch-x(r-vis-ofertas.at(0))
+    let r-vis-listado = (r-vis-bx, -16.2)
+    node(r-vis-listado, hw, hh, [3.3.1 Listado de \ ofertas recibidas])
+    let r-vis-det-viaje = (r-vis-bx, -17.4)
     node(
-      seguro-cot-visualizacion,
+      r-vis-det-viaje,
       hw,
       hh,
-      [4.2.3 Visualización del \ costo al expedidor],
+      [3.3.2 Detalle de viaje \ (distancia, volumen, peso)],
     )
-
-    let seguro-contratacion = (seguro-branch-x, -11.4)
-    node(seguro-contratacion, hw, hh, [4.3 Contratación del Seguro])
-
-    let seguro-contratacion-branch-x = branch-x(seguro-contratacion.at(0))
-    let seguro-cont-seleccion = (seguro-contratacion-branch-x, -12.6)
-    node(seguro-cont-seleccion, hw, hh, [4.3.1 Selección de cobertura])
-    let seguro-cont-pago = (seguro-contratacion-branch-x, -13.8)
-    node(seguro-cont-pago, hw, hh, [4.3.2 Pago integrado \ al flujo de pago])
-    let seguro-cont-emision = (seguro-contratacion-branch-x, -15)
-    node(seguro-cont-emision, hw, hh, [4.3.3 Emisión y envío \ de póliza])
-
-    let seguro-polizas = (seguro-branch-x, -16.2)
-    node(seguro-polizas, hw, hh, [4.4 Gestión de Pólizas])
-
-    let seguro-polizas-branch-x = branch-x(seguro-polizas.at(0))
-    let seguro-pol-historial = (seguro-polizas-branch-x, -17.4)
+    let r-vis-det-cliente = (r-vis-bx, -18.6)
     node(
-      seguro-pol-historial,
+      r-vis-det-cliente,
       hw,
       hh,
-      [4.4.1 Historial de \ seguros contratados],
+      [3.3.3 Detalle del cliente \ (datos personales, reseñas)],
     )
-    let seguro-pol-descarga = (seguro-polizas-branch-x, -18.6)
-    node(seguro-pol-descarga, hw, hh, [4.4.2 Descarga de póliza])
+    let r-vis-hist-cliente = (r-vis-bx, -19.8)
+    node(r-vis-hist-cliente, hw, hh, [3.3.4 Historial del cliente])
 
-    let seguro-siniestros = (seguro-branch-x, -19.8)
-    node(seguro-siniestros, hw, hh, [4.5 Gestión de Siniestros])
+    let r-filtros = (reservas-bx, -21.0)
+    node(r-filtros, hw, hh, [3.4 Filtros de Ofertas])
 
-    let seguro-siniestros-branch-x = branch-x(seguro-siniestros.at(0))
-    let seguro-sin-declaracion = (seguro-siniestros-branch-x, -21)
-    node(seguro-sin-declaracion, hw, hh, [4.5.1 Declaración \ de siniestro])
-    let seguro-sin-seguimiento = (seguro-siniestros-branch-x, -22.2)
-    node(seguro-sin-seguimiento, hw, hh, [4.5.2 Seguimiento \ del siniestro])
+    let r-fil-bx = branch-x(r-filtros.at(0))
+    let r-fil-origen = (r-fil-bx, -22.2)
+    node(r-fil-origen, hw, hh, [3.4.1 Filtrar por \ ubicación origen])
+    let r-fil-fecha = (r-fil-bx, -23.4)
+    node(r-fil-fecha, hw, hh, [3.4.2 Filtrar por \ rango de fecha])
+    let r-fil-peso = (r-fil-bx, -24.6)
+    node(r-fil-peso, hw, hh, [3.4.3 Filtrar por peso])
+    let r-fil-vol = (r-fil-bx, -25.8)
+    node(r-fil-vol, hw, hh, [3.4.4 Filtrar por volumen])
+    let r-fil-destino = (r-fil-bx, -27.0)
+    node(r-fil-destino, hw, hh, [3.4.5 Filtrar por \ ubicación destino])
 
-    trunk(seguro, seguro-siniestros)
-    branch(seguro, seguro-integracion, hw)
-    branch(seguro, seguro-cotizacion, hw)
-    branch(seguro, seguro-contratacion, hw)
-    branch(seguro, seguro-polizas, hw)
-    branch(seguro, seguro-siniestros, hw)
+    let r-aceptacion = (reservas-bx, -28.2)
+    node(r-aceptacion, hw, hh, [3.5 Aceptación de Viaje])
 
-    trunk(seguro-integracion, seguro-int-coberturas)
-    branch(seguro-integracion, seguro-int-api, hw)
-    branch(seguro-integracion, seguro-int-coberturas, hw)
+    let r-acep-bx = branch-x(r-aceptacion.at(0))
+    let r-acep-boton = (r-acep-bx, -29.4)
+    node(r-acep-boton, hw, hh, [3.5.1 Aceptar viaje])
+    let r-acep-fecha = (r-acep-bx, -30.6)
+    node(
+      r-acep-fecha,
+      hw,
+      hh,
+      [3.5.2 Actualización de fecha \ estimada de entrega],
+    )
 
-    trunk(seguro-cotizacion, seguro-cot-visualizacion)
-    branch(seguro-cotizacion, seguro-cot-valor, hw)
-    branch(seguro-cotizacion, seguro-cot-distancia, hw)
-    branch(seguro-cotizacion, seguro-cot-visualizacion, hw)
+    trunk(reservas, r-aceptacion)
+    branch(reservas, r-oferta, hw)
+    branch(reservas, r-disponibilidad, hw)
+    branch(reservas, r-vis-ofertas, hw)
+    branch(reservas, r-filtros, hw)
+    branch(reservas, r-aceptacion, hw)
 
-    trunk(seguro-contratacion, seguro-cont-emision)
-    branch(seguro-contratacion, seguro-cont-seleccion, hw)
-    branch(seguro-contratacion, seguro-cont-pago, hw)
-    branch(seguro-contratacion, seguro-cont-emision, hw)
+    trunk(r-oferta, r-of-confirmar)
+    branch(r-oferta, r-of-fecha, hw)
+    branch(r-oferta, r-of-retiro, hw)
+    branch(r-oferta, r-of-entrega, hw)
+    branch(r-oferta, r-of-confirmar, hw)
 
-    trunk(seguro-polizas, seguro-pol-descarga)
-    branch(seguro-polizas, seguro-pol-historial, hw)
-    branch(seguro-polizas, seguro-pol-descarga, hw)
+    trunk(r-disponibilidad, r-disp-pub)
+    branch(r-disponibilidad, r-disp-zona, hw)
+    branch(r-disponibilidad, r-disp-km, hw)
+    branch(r-disponibilidad, r-disp-precio, hw)
+    branch(r-disponibilidad, r-disp-pub, hw)
 
-    trunk(seguro-siniestros, seguro-sin-seguimiento)
-    branch(seguro-siniestros, seguro-sin-declaracion, hw)
-    branch(seguro-siniestros, seguro-sin-seguimiento, hw)
+    trunk(r-vis-ofertas, r-vis-hist-cliente)
+    branch(r-vis-ofertas, r-vis-listado, hw)
+    branch(r-vis-ofertas, r-vis-det-viaje, hw)
+    branch(r-vis-ofertas, r-vis-det-cliente, hw)
+    branch(r-vis-ofertas, r-vis-hist-cliente, hw)
 
-    // ── 5. Gestión del Proyecto ──────────────────────────────────────
-    let proyecto = (12, -1.8)
-    node(proyecto, hw, hh, [5. Gestión del Proyecto])
+    trunk(r-filtros, r-fil-destino)
+    branch(r-filtros, r-fil-origen, hw)
+    branch(r-filtros, r-fil-fecha, hw)
+    branch(r-filtros, r-fil-peso, hw)
+    branch(r-filtros, r-fil-vol, hw)
+    branch(r-filtros, r-fil-destino, hw)
 
-    let proyecto-branch-x = branch-x(proyecto.at(0))
-    let artefactos = (proyecto-branch-x, -3.0)
-    node(artefactos, hw, hh, [5.1 Artefactos])
+    trunk(r-aceptacion, r-acep-fecha)
+    branch(r-aceptacion, r-acep-boton, hw)
+    branch(r-aceptacion, r-acep-fecha, hw)
 
-    let artefactos-branch-x = branch-x(artefactos.at(0))
-    let lean = (artefactos-branch-x, -4.2)
-    node(lean, hw, hh, [5.1.1 Artefactos Lean])
-    let backlog = (artefactos-branch-x, -5.4)
-    node(backlog, hw, hh, [5.1.2 Product Backlog])
-    let usm = (artefactos-branch-x, -6.6)
-    node(usm, hw, hh, [5.1.3 User Story Map])
-    let wbs = (artefactos-branch-x, -7.8)
-    node(wbs, hw, hh, [5.1.4 Work Breakdown \ Structure])
-    let cronograma = (artefactos-branch-x, -9)
-    node(cronograma, hw, hh, [5.1.5 Cronograma])
-    let planilla-costos = (artefactos-branch-x, -10.2)
-    node(planilla-costos, hw, hh, [5.1.6 Planilla de Costos])
-    let plan-comunicacion = (artefactos-branch-x, -11.4)
-    node(plan-comunicacion, hw, hh, [5.1.7 Plan de \ Comunicación])
+    // ── 4. Ejecución de Viajes ─────────────────────────────────────────────
+    let ejecucion = (-6.5, -1.8)
+    node(ejecucion, hw, hh, [4. Ejecución \ de Viajes])
 
-    trunk(proyecto, artefactos)
-    branch(proyecto, artefactos, hw)
+    let ejecucion-bx = branch-x(ejecucion.at(0))
 
-    trunk(artefactos, plan-comunicacion)
-    branch(artefactos, lean, hw)
-    branch(artefactos, backlog, hw)
-    branch(artefactos, usm, hw)
-    branch(artefactos, wbs, hw)
-    branch(artefactos, cronograma, hw)
-    branch(artefactos, planilla-costos, hw)
-    branch(artefactos, plan-comunicacion, hw)
+    let e-estados = (ejecucion-bx, -3.0)
+    node(e-estados, hw, hh, [4.1 Estados del Viaje])
 
-    // ── Aristas raíz → nivel 1 ───────────────────────────────────────
-    arrow(root, gestion)
-    arrow(root, plataformas)
+    let e-estados-bx = branch-x(e-estados.at(0))
+    let e-est-retirado = (e-estados-bx, -4.2)
+    node(e-est-retirado, hw, hh, [4.1.1 Confirmar producto \ retirado])
+    let e-est-entregado = (e-estados-bx, -5.4)
+    node(e-est-entregado, hw, hh, [4.1.2 Confirmar producto \ entregado])
+
+    let e-notif = (ejecucion-bx, -6.6)
+    node(e-notif, hw, hh, [4.2 Notificaciones \ al Cliente])
+
+    let e-notif-bx = branch-x(e-notif.at(0))
+    let e-notif-retiro = (e-notif-bx, -7.8)
+    node(e-notif-retiro, hw, hh, [4.2.1 Notificación de \ producto retirado])
+    let e-notif-entrega = (e-notif-bx, -9.0)
+    node(e-notif-entrega, hw, hh, [4.2.2 Notificación de \ producto entregado])
+
+    let e-tracking = (ejecucion-bx, -10.2)
+    node(e-tracking, hw, hh, [4.3 Tracking GPS])
+
+    let e-tracking-bx = branch-x(e-tracking.at(0))
+    let e-track-maps = (e-tracking-bx, -11.4)
+    node(e-track-maps, hw, hh, [4.3.1 Integración con \ Google Maps])
+    let e-track-recorrido = (e-tracking-bx, -12.6)
+    node(e-track-recorrido, hw, hh, [4.3.2 Ver recorrido \ en tiempo real])
+    let e-track-destino = (e-tracking-bx, -13.8)
+    node(e-track-destino, hw, hh, [4.3.3 Ver siguiente \ destino])
+
+    let e-avanzados = (ejecucion-bx, -15.0)
+    node(e-avanzados, hw, hh, [4.4 Viajes Avanzados])
+
+    let e-avanz-bx = branch-x(e-avanzados.at(0))
+    let e-avanz-comp = (e-avanz-bx, -16.2)
+    node(e-avanz-comp, hw, hh, [4.4.1 Viajes compuestos \ (múltiples envíos)])
+    let e-avanz-cadena = (e-avanz-bx, -17.4)
+    node(e-avanz-cadena, hw, hh, [4.4.2 Encadenado \ de pedidos])
+
+    trunk(ejecucion, e-avanzados)
+    branch(ejecucion, e-estados, hw)
+    branch(ejecucion, e-notif, hw)
+    branch(ejecucion, e-tracking, hw)
+    branch(ejecucion, e-avanzados, hw)
+
+    trunk(e-estados, e-est-entregado)
+    branch(e-estados, e-est-retirado, hw)
+    branch(e-estados, e-est-entregado, hw)
+
+    trunk(e-notif, e-notif-entrega)
+    branch(e-notif, e-notif-retiro, hw)
+    branch(e-notif, e-notif-entrega, hw)
+
+    trunk(e-tracking, e-track-destino)
+    branch(e-tracking, e-track-maps, hw)
+    branch(e-tracking, e-track-recorrido, hw)
+    branch(e-tracking, e-track-destino, hw)
+
+    trunk(e-avanzados, e-avanz-cadena)
+    branch(e-avanzados, e-avanz-comp, hw)
+    branch(e-avanzados, e-avanz-cadena, hw)
+
+    // ── 5. Pagos ───────────────────────────────────────────────────────────
+    let pagos = (0, -1.8)
+    node(pagos, hw, hh, [5. Pagos])
+
+    let pagos-bx = branch-x(pagos.at(0))
+
+    let p-cliente = (pagos-bx, -3.0)
+    node(p-cliente, hw, hh, [5.1 Pago del Cliente])
+
+    let p-cliente-bx = branch-x(p-cliente.at(0))
+    let p-cli-reserva = (p-cliente-bx, -4.2)
+    node(
+      p-cli-reserva,
+      hw,
+      hh,
+      [5.1.1 Realizar pago \ tras aceptación del viaje],
+    )
+    let p-cli-contacto = (p-cliente-bx, -5.4)
+    node(
+      p-cli-contacto,
+      hw,
+      hh,
+      [5.1.2 Recibir datos de \ contacto del transportista],
+    )
+
+    let p-transportista = (pagos-bx, -6.6)
+    node(p-transportista, hw, hh, [5.2 Pago al Transportista])
+
+    let p-transp-bx = branch-x(p-transportista.at(0))
+    let p-transp-liquidacion = (p-transp-bx, -7.8)
+    node(
+      p-transp-liquidacion,
+      hw,
+      hh,
+      [5.2.1 Liquidación al \ transportista tras entrega],
+    )
+    let p-transp-historial = (p-transp-bx, -9.0)
+    node(p-transp-historial, hw, hh, [5.2.2 Historial de cobros])
+
+    let p-pasarela = (pagos-bx, -10.2)
+    node(p-pasarela, hw, hh, [5.3 Pasarela de Pago])
+
+    let p-pas-bx = branch-x(p-pasarela.at(0))
+    let p-pas-mp = (p-pas-bx, -11.4)
+    node(p-pas-mp, hw, hh, [5.3.1 Integración \ Mercado Pago])
+    let p-pas-seguro = (p-pas-bx, -12.6)
+    node(p-pas-seguro, hw, hh, [5.3.2 Procesamiento \ seguro de pagos])
+    let p-pas-reembolso = (p-pas-bx, -13.8)
+    node(p-pas-reembolso, hw, hh, [5.3.3 Gestión de \ reembolsos])
+
+    trunk(pagos, p-pasarela)
+    branch(pagos, p-cliente, hw)
+    branch(pagos, p-transportista, hw)
+    branch(pagos, p-pasarela, hw)
+
+    trunk(p-cliente, p-cli-contacto)
+    branch(p-cliente, p-cli-reserva, hw)
+    branch(p-cliente, p-cli-contacto, hw)
+
+    trunk(p-transportista, p-transp-historial)
+    branch(p-transportista, p-transp-liquidacion, hw)
+    branch(p-transportista, p-transp-historial, hw)
+
+    trunk(p-pasarela, p-pas-reembolso)
+    branch(p-pasarela, p-pas-mp, hw)
+    branch(p-pasarela, p-pas-seguro, hw)
+    branch(p-pasarela, p-pas-reembolso, hw)
+
+    // ── 6. Seguros ─────────────────────────────────────────────────────────
+    let seguros = (6.5, -1.8)
+    node(seguros, hw, hh, [6. Seguros])
+
+    let seguros-bx = branch-x(seguros.at(0))
+
+    let s-integracion = (seguros-bx, -3.0)
+    node(s-integracion, hw, hh, [6.1 Integración con \ Aseguradora])
+
+    let s-int-bx = branch-x(s-integracion.at(0))
+    let s-int-api = (s-int-bx, -4.2)
+    node(s-int-api, hw, hh, [6.1.1 Integración con \ API de aseguradora])
+    let s-int-coberturas = (s-int-bx, -5.4)
+    node(
+      s-int-coberturas,
+      hw,
+      hh,
+      [6.1.2 Obtención de \ coberturas disponibles],
+    )
+
+    let s-cotizacion = (seguros-bx, -6.6)
+    node(s-cotizacion, hw, hh, [6.2 Cotización del Seguro])
+
+    let s-cot-bx = branch-x(s-cotizacion.at(0))
+    let s-cot-valor = (s-cot-bx, -7.8)
+    node(s-cot-valor, hw, hh, [6.2.1 Cálculo por \ valor declarado])
+    let s-cot-dist = (s-cot-bx, -9.0)
+    node(s-cot-dist, hw, hh, [6.2.2 Cálculo por \ distancia del viaje])
+    let s-cot-vis = (s-cot-bx, -10.2)
+    node(s-cot-vis, hw, hh, [6.2.3 Visualización del \ costo al cliente])
+
+    let s-contratacion = (seguros-bx, -11.4)
+    node(s-contratacion, hw, hh, [6.3 Contratación del Seguro])
+
+    let s-cont-bx = branch-x(s-contratacion.at(0))
+    let s-cont-seleccion = (s-cont-bx, -12.6)
+    node(s-cont-seleccion, hw, hh, [6.3.1 Selección de cobertura])
+    let s-cont-pago = (s-cont-bx, -13.8)
+    node(s-cont-pago, hw, hh, [6.3.2 Pago integrado \ al flujo de compra])
+    let s-cont-emision = (s-cont-bx, -15.0)
+    node(s-cont-emision, hw, hh, [6.3.3 Emisión y envío \ de póliza])
+
+    let s-polizas = (seguros-bx, -16.2)
+    node(s-polizas, hw, hh, [6.4 Gestión de Pólizas])
+
+    let s-pol-bx = branch-x(s-polizas.at(0))
+    let s-pol-historial = (s-pol-bx, -17.4)
+    node(s-pol-historial, hw, hh, [6.4.1 Historial de \ seguros contratados])
+    let s-pol-descarga = (s-pol-bx, -18.6)
+    node(s-pol-descarga, hw, hh, [6.4.2 Descarga de póliza])
+
+    let s-siniestros = (seguros-bx, -19.8)
+    node(s-siniestros, hw, hh, [6.5 Gestión de Siniestros])
+
+    let s-sin-bx = branch-x(s-siniestros.at(0))
+    let s-sin-declaracion = (s-sin-bx, -21.0)
+    node(s-sin-declaracion, hw, hh, [6.5.1 Declaración \ de siniestro])
+    let s-sin-seguimiento = (s-sin-bx, -22.2)
+    node(s-sin-seguimiento, hw, hh, [6.5.2 Seguimiento \ del siniestro])
+
+    trunk(seguros, s-siniestros)
+    branch(seguros, s-integracion, hw)
+    branch(seguros, s-cotizacion, hw)
+    branch(seguros, s-contratacion, hw)
+    branch(seguros, s-polizas, hw)
+    branch(seguros, s-siniestros, hw)
+
+    trunk(s-integracion, s-int-coberturas)
+    branch(s-integracion, s-int-api, hw)
+    branch(s-integracion, s-int-coberturas, hw)
+
+    trunk(s-cotizacion, s-cot-vis)
+    branch(s-cotizacion, s-cot-valor, hw)
+    branch(s-cotizacion, s-cot-dist, hw)
+    branch(s-cotizacion, s-cot-vis, hw)
+
+    trunk(s-contratacion, s-cont-emision)
+    branch(s-contratacion, s-cont-seleccion, hw)
+    branch(s-contratacion, s-cont-pago, hw)
+    branch(s-contratacion, s-cont-emision, hw)
+
+    trunk(s-polizas, s-pol-descarga)
+    branch(s-polizas, s-pol-historial, hw)
+    branch(s-polizas, s-pol-descarga, hw)
+
+    trunk(s-siniestros, s-sin-seguimiento)
+    branch(s-siniestros, s-sin-declaracion, hw)
+    branch(s-siniestros, s-sin-seguimiento, hw)
+
+    // ── 7. Reseñas y Calificaciones ────────────────────────────────────────
+    let resenias = (13, -1.8)
+    node(resenias, hw, hh, [7. Reseñas y \ Calificaciones])
+
+    let resenias-bx = branch-x(resenias.at(0))
+
+    let re-crear = (resenias-bx, -3.0)
+    node(re-crear, hw, hh, [7.1 Crear Reseña])
+
+    let re-crear-bx = branch-x(re-crear.at(0))
+    let re-cre-texto = (re-crear-bx, -4.2)
+    node(re-cre-texto, hw, hh, [7.1.1 Redactar texto \ de la reseña])
+    let re-cre-puntaje = (re-crear-bx, -5.4)
+    node(re-cre-puntaje, hw, hh, [7.1.2 Asignar puntaje])
+    let re-cre-enviar = (re-crear-bx, -6.6)
+    node(re-cre-enviar, hw, hh, [7.1.3 Enviar reseña \ al transportista])
+
+    let re-leer = (resenias-bx, -7.8)
+    node(re-leer, hw, hh, [7.2 Leer Reseñas])
+
+    let re-leer-bx = branch-x(re-leer.at(0))
+    let re-lee-listado = (re-leer-bx, -9.0)
+    node(re-lee-listado, hw, hh, [7.2.1 Listado de reseñas \ del transportista])
+    let re-lee-promedio = (re-leer-bx, -10.2)
+    node(re-lee-promedio, hw, hh, [7.2.2 Puntaje promedio])
+
+    let re-gestionar = (resenias-bx, -11.4)
+    node(re-gestionar, hw, hh, [7.3 Gestión de Reseñas])
+
+    let re-gest-bx = branch-x(re-gestionar.at(0))
+    let re-gest-editar = (re-gest-bx, -12.6)
+    node(re-gest-editar, hw, hh, [7.3.1 Editar reseña \ propia])
+    let re-gest-eliminar = (re-gest-bx, -13.8)
+    node(re-gest-eliminar, hw, hh, [7.3.2 Eliminar reseña \ propia])
+
+    trunk(resenias, re-gestionar)
+    branch(resenias, re-crear, hw)
+    branch(resenias, re-leer, hw)
+    branch(resenias, re-gestionar, hw)
+
+    trunk(re-crear, re-cre-enviar)
+    branch(re-crear, re-cre-texto, hw)
+    branch(re-crear, re-cre-puntaje, hw)
+    branch(re-crear, re-cre-enviar, hw)
+
+    trunk(re-leer, re-lee-promedio)
+    branch(re-leer, re-lee-listado, hw)
+    branch(re-leer, re-lee-promedio, hw)
+
+    trunk(re-gestionar, re-gest-eliminar)
+    branch(re-gestionar, re-gest-editar, hw)
+    branch(re-gestionar, re-gest-eliminar, hw)
+
+    // ── 8. Integraciones Externas ──────────────────────────────────────────
+    let integraciones = (19.5, -1.8)
+    node(integraciones, hw, hh, [8. Integraciones \ Externas])
+
+    let int-bx = branch-x(integraciones.at(0))
+
+    let i-arca = (int-bx, -3.0)
+    node(i-arca, hw, hh, [8.1 ARCA])
+
+    let i-arca-bx = branch-x(i-arca.at(0))
+    let i-arc-api = (i-arca-bx, -4.2)
+    node(i-arc-api, hw, hh, [8.1.1 Integración con \ API de ARCA])
+    let i-arc-validacion = (i-arca-bx, -5.4)
+    node(i-arc-validacion, hw, hh, [8.1.2 Validación \ fiscal de usuarios])
+
+    let i-mp = (int-bx, -6.6)
+    node(i-mp, hw, hh, [8.2 Mercado Pago])
+
+    let i-mp-bx = branch-x(i-mp.at(0))
+    let i-mp-api = (i-mp-bx, -7.8)
+    node(i-mp-api, hw, hh, [8.2.1 Integración con \ API de Mercado Pago])
+    let i-mp-webhook = (i-mp-bx, -9.0)
+    node(i-mp-webhook, hw, hh, [8.2.2 Webhooks de \ confirmación de pago])
+
+    let i-maps = (int-bx, -10.2)
+    node(i-maps, hw, hh, [8.3 Google Maps])
+
+    let i-maps-bx = branch-x(i-maps.at(0))
+    let i-map-geo = (i-maps-bx, -11.4)
+    node(i-map-geo, hw, hh, [8.3.1 Geocodificación \ de direcciones])
+    let i-map-rutas = (i-maps-bx, -12.6)
+    node(i-map-rutas, hw, hh, [8.3.2 Visualización \ de rutas])
+    let i-map-dist = (i-maps-bx, -13.8)
+    node(i-map-dist, hw, hh, [8.3.3 Cálculo de \ distancias])
+
+    let i-aseg = (int-bx, -15.0)
+    node(i-aseg, hw, hh, [8.4 API Aseguradora])
+
+    let i-aseg-bx = branch-x(i-aseg.at(0))
+    let i-aseg-coberturas = (i-aseg-bx, -16.2)
+    node(i-aseg-coberturas, hw, hh, [8.4.1 Consulta de \ coberturas])
+    let i-aseg-emision = (i-aseg-bx, -17.4)
+    node(i-aseg-emision, hw, hh, [8.4.2 Emisión de póliza])
+    let i-aseg-siniestro = (i-aseg-bx, -18.6)
+    node(i-aseg-siniestro, hw, hh, [8.4.3 Notificación \ de siniestros])
+
+    trunk(integraciones, i-aseg)
+    branch(integraciones, i-arca, hw)
+    branch(integraciones, i-mp, hw)
+    branch(integraciones, i-maps, hw)
+    branch(integraciones, i-aseg, hw)
+
+    trunk(i-arca, i-arc-validacion)
+    branch(i-arca, i-arc-api, hw)
+    branch(i-arca, i-arc-validacion, hw)
+
+    trunk(i-mp, i-mp-webhook)
+    branch(i-mp, i-mp-api, hw)
+    branch(i-mp, i-mp-webhook, hw)
+
+    trunk(i-maps, i-map-dist)
+    branch(i-maps, i-map-geo, hw)
+    branch(i-maps, i-map-rutas, hw)
+    branch(i-maps, i-map-dist, hw)
+
+    trunk(i-aseg, i-aseg-siniestro)
+    branch(i-aseg, i-aseg-coberturas, hw)
+    branch(i-aseg, i-aseg-emision, hw)
+    branch(i-aseg, i-aseg-siniestro, hw)
+
+    // ── 9. Gestión del Proyecto ────────────────────────────────────────────
+    let proyecto = (26, -1.8)
+    node(proyecto, hw, hh, [9. Gestión del Proyecto])
+
+    let proyecto-bx = branch-x(proyecto.at(0))
+
+    let proy-artefactos = (proyecto-bx, -3.0)
+    node(proy-artefactos, hw, hh, [9.1 Artefactos])
+
+    let proy-art-bx = branch-x(proy-artefactos.at(0))
+    let proy-lean = (proy-art-bx, -4.2)
+    node(proy-lean, hw, hh, [9.1.1 Artefactos Lean])
+    let proy-backlog = (proy-art-bx, -5.4)
+    node(proy-backlog, hw, hh, [9.1.2 Product Backlog])
+    let proy-usm = (proy-art-bx, -6.6)
+    node(proy-usm, hw, hh, [9.1.3 User Story Map])
+    let proy-wbs = (proy-art-bx, -7.8)
+    node(proy-wbs, hw, hh, [9.1.4 Work Breakdown \ Structure])
+    let proy-cron = (proy-art-bx, -9.0)
+    node(proy-cron, hw, hh, [9.1.5 Cronograma])
+    let proy-costos = (proy-art-bx, -10.2)
+    node(proy-costos, hw, hh, [9.1.6 Planilla de Costos])
+    let proy-com = (proy-art-bx, -11.4)
+    node(proy-com, hw, hh, [9.1.7 Plan de \ Comunicación])
+
+    trunk(proyecto, proy-artefactos)
+    branch(proyecto, proy-artefactos, hw)
+
+    trunk(proy-artefactos, proy-com)
+    branch(proy-artefactos, proy-lean, hw)
+    branch(proy-artefactos, proy-backlog, hw)
+    branch(proy-artefactos, proy-usm, hw)
+    branch(proy-artefactos, proy-wbs, hw)
+    branch(proy-artefactos, proy-cron, hw)
+    branch(proy-artefactos, proy-costos, hw)
+    branch(proy-artefactos, proy-com, hw)
+
+    // ── Aristas raíz → nivel 1 ─────────────────────────────────────────────
+    arrow(root, cuentas)
+    arrow(root, busqueda)
+    arrow(root, reservas)
+    arrow(root, ejecucion)
+    arrow(root, pagos)
+    arrow(root, seguros)
+    arrow(root, resenias)
     arrow(root, integraciones)
-    arrow(root, seguro)
     arrow(root, proyecto)
   })
 ]
