@@ -101,5 +101,10 @@
 // ── 9. Plan de Comunicaciones ──────────────────────────────────────────────
 #include "comunicaciones.typ"
 
-// ── 10. Informe de Costos T&M ──────────────────────────────────────────────
+#pagebreak()
+
+// ── 10. Riesgos del Proyecto ───────────────────────────────────────────────
+#include "riesgos.typ"
+
+// ── 11. Informe de Costos T&M ──────────────────────────────────────────────
 #include "cost-report.typ"
