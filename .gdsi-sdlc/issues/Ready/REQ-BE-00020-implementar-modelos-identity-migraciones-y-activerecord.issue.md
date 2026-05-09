@@ -3,7 +3,7 @@ tag: REQ-BE-00020
 title: Implementar contexto Identity — migraciones + modelos AR (User, Carrier, Shipper,
   Vehicle)
 priority: P0
-status: backlog
+status: ready
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/100
@@ -12,6 +12,7 @@ github_issue: 100
 github_project_item: PVTI_lAHOAm1mPc4BWhiVzgrtCXQ
 github_repo: tcorzo/fiuba-gestion-tp
 last_synced: 2026-05-04T02:25:26.508326+00:00Z
+plan: docs/features/REQ/REQ-BE-00020/REQ-BE-00020-implementar-contexto-identity.plan.md
 labels:
 - REQ
 - BE

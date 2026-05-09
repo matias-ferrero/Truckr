@@ -3,7 +3,8 @@ tag: REQ-BE-00022
 title: Implementar contexto Fulfilment — Shipment (state machine), TrackingEvent,
   Route
 priority: P0
-status: backlog
+status: ready
+plan: docs/features/REQ/REQ-BE-00022/REQ-BE-00022-implementar-contexto-fulfilment.plan.md
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/102

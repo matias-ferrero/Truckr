@@ -3,7 +3,8 @@ tag: REQ-BE-00021
 title: Implementar contexto Marketplace — TransportWindow, CargoOffer, Quote (migraciones
   + AR)
 priority: P0
-status: backlog
+status: ready
+plan: docs/features/REQ/REQ-BE-00021/REQ-BE-00021-implementar-contexto-marketplace.plan.md
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/101
