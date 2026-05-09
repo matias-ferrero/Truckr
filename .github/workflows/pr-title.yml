@@ -1,0 +1,38 @@
+name: PR Title
+
+on:
+    pull_request_target:
+        types: [opened, edited, reopened, synchronize]
+
+permissions:
+    pull-requests: read
+
+jobs:
+    lint:
+        # release-please consumes the squash-merge commit, which GitHub derives
+        # from the PR title. A non-conventional title silently breaks the
+        # changelog and version bump — fail the check loudly instead.
+        runs-on: ubuntu-latest
+        steps:
+            - uses: amannn/action-semantic-pull-request@v5
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  types: |
+                      feat
+                      fix
+                      docs
+                      chore
+                      ci
+                      refactor
+                      test
+                      perf
+                      build
+                      style
+                      revert
+                  requireScope: false
+                  subjectPattern: ^(?![A-Z]).+$
+                  subjectPatternError: |
+                      The subject "{subject}" must start with a lowercase letter.
+                      Reference issues in the PR body via "Closes #N", not in the title.
+                  wip: true

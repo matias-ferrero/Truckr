@@ -68,3 +68,12 @@ Automated via `release-please` + GitHub Actions, driven by **Conventional Commit
 | `docs:` `chore:` `ci:` | none (rolled into next release) |
 
 Merging the auto-generated Release PR creates a tagged GitHub Release; a follow-up workflow attaches `artifacts.pdf` and `prompts.pdf`. Config: `release-please-config.json`, `.release-please-manifest.json`.
+
+### PR title format (squash-merge consumed by release-please)
+
+This repo squash-merges PRs. The squash commit subject is the PR title verbatim, and release-please parses that subject as a conventional commit. **The title MUST start with a conventional type** (`feat`, `fix`, `docs`, `chore`, `ci`, `refactor`, etc.) — otherwise the parser drops the commit silently and no version bump happens.
+
+- ✅ `feat(identity): add Carrier and Shipper models`
+- ❌ `[REQ-BE-00020] feat(identity): add Carrier and Shipper models` — bracket prefix kills the parse
+
+Reference the issue TAG in the **PR body** (`Closes #N` for auto-link) and in the **branch name** (`feature/REQ-BE-00020-...`), never in the title. The `.github/workflows/pr-title.yml` check enforces this on every PR.
