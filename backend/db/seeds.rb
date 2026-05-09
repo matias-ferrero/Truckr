@@ -18,3 +18,40 @@ AdminUser.find_or_create_by!(email: admin_email) do |user|
   user.password              = admin_password
   user.password_confirmation = admin_password
 end
+
+# Identity fixtures — REQ-BE-00020.
+# 3 Users, 2 Carriers, 2 Shippers, 2 Vehicles. Idempotent.
+identity_users = [
+  { email: "carrier1@truckr.test", full_name: "Carrier One", role: :carrier },
+  { email: "shipper1@truckr.test", full_name: "Shipper One", role: :shipper },
+  { email: "both@truckr.test",     full_name: "Both Roles",  role: :both    }
+]
+
+identity_users.each do |spec|
+  user = User.find_or_create_by!(email: spec[:email]) do |u|
+    u.password  = "password"
+    u.full_name = spec[:full_name]
+  end
+
+  if %i[carrier both].include?(spec[:role])
+    carrier = Carrier.find_or_create_by!(user: user) do |c|
+      c.legal_name = "#{spec[:full_name]} Transport SRL"
+      c.tax_id     = "30#{format('%08d', user.id)}1"
+      c.base_city  = "Buenos Aires"
+      c.province   = "CABA"
+    end
+
+    Vehicle.find_or_create_by!(carrier: carrier) do |v|
+      v.plate        = "AA#{format('%03d', user.id)}XX"
+      v.capacity_kg  = 5_000
+      v.vehicle_type = "truck_small"
+    end
+  end
+
+  if %i[shipper both].include?(spec[:role])
+    Shipper.find_or_create_by!(user: user) do |s|
+      s.company_name = "#{spec[:full_name]} S.A."
+      s.tax_id       = "20#{format('%08d', user.id)}9"
+    end
+  end
+end

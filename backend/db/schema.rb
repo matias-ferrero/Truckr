@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_03_152746) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_09_120004) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -36,4 +36,57 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_152746) do
     t.index ["email"], name: "index_admin_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_admin_users_on_reset_password_token", unique: true
   end
+
+  create_table "carriers", force: :cascade do |t|
+    t.string "base_city"
+    t.integer "completed_shipments", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.string "legal_name"
+    t.string "province"
+    t.decimal "rating_avg", precision: 3, scale: 2, default: "0.0", null: false
+    t.string "tax_id"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["province", "base_city"], name: "index_carriers_on_province_and_base_city"
+    t.index ["tax_id"], name: "index_carriers_on_tax_id", unique: true, where: "tax_id IS NOT NULL"
+    t.index ["user_id"], name: "index_carriers_on_user_id", unique: true
+  end
+
+  create_table "shippers", force: :cascade do |t|
+    t.string "billing_address"
+    t.string "company_name"
+    t.datetime "created_at", null: false
+    t.string "tax_id"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["tax_id"], name: "index_shippers_on_tax_id", unique: true, where: "tax_id IS NOT NULL"
+    t.index ["user_id"], name: "index_shippers_on_user_id", unique: true
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.string "full_name"
+    t.string "password_digest", null: false
+    t.string "phone"
+    t.datetime "updated_at", null: false
+    t.datetime "verified_at"
+    t.index ["email"], name: "index_users_on_email", unique: true
+  end
+
+  create_table "vehicles", force: :cascade do |t|
+    t.integer "capacity_kg", null: false
+    t.integer "carrier_id", null: false
+    t.datetime "created_at", null: false
+    t.boolean "gps_enabled", default: false, null: false
+    t.string "plate", null: false
+    t.datetime "updated_at", null: false
+    t.string "vehicle_type", default: "truck_small", null: false
+    t.index ["carrier_id"], name: "index_vehicles_on_carrier_id"
+    t.index ["plate"], name: "index_vehicles_on_plate", unique: true
+  end
+
+  add_foreign_key "carriers", "users"
+  add_foreign_key "shippers", "users"
+  add_foreign_key "vehicles", "carriers"
 end

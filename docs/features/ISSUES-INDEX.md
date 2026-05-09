@@ -34,7 +34,7 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REQ-BE-00017 | Seguros — cotización por valor y distancia (split US25) | NEW | BE | 2026-05-03 | - |
 | REQ-BE-00018 | Seguros — contratación, pago y emisión de póliza (split US25) | NEW | BE | 2026-05-03 | - |
 | REQ-BE-00019 | Seguros — declaración y seguimiento de siniestros (split US25) | NEW | BE | 2026-05-03 | - |
-| REQ-BE-00020 | Implementar contexto Identity — migraciones + modelos AR (foundation) | NEW | BE | 2026-05-03 | - |
+| REQ-BE-00020 | Implementar contexto Identity — migraciones + modelos AR (foundation) | IR | BE | 2026-05-03 | [plan](REQ/REQ-BE-00020/REQ-BE-00020-implementar-contexto-identity.plan.md) |
 | REQ-BE-00021 | Implementar contexto Marketplace — TransportWindow, CargoOffer, Quote (foundation) | NEW | BE | 2026-05-03 | - |
 | REQ-BE-00022 | Implementar contexto Fulfilment — Shipment + state machine, TrackingEvent, Route (foundation) | NEW | BE | 2026-05-03 | - |
 | REQ-BE-00023 | Auth fullstack — registro, login, sesiones + pantallas (foundation, US1+US2) | NEW | BE | 2026-05-03 | - |
