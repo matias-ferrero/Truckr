@@ -20,12 +20,13 @@ RSpec.describe Shipper, type: :model do
 
   describe "associations" do
     it { is_expected.to belong_to(:user) }
+    it { is_expected.to have_many(:cargo_offers).dependent(:restrict_with_error) }
   end
 
   describe "ransack allowlists (ActiveAdmin)" do
     it "exposes the columns and associations ActiveAdmin needs" do
       expect(Shipper.ransackable_attributes).to include("company_name", "tax_id")
-      expect(Shipper.ransackable_associations).to contain_exactly("user")
+      expect(Shipper.ransackable_associations).to contain_exactly("user", "cargo_offers")
     end
   end
 end

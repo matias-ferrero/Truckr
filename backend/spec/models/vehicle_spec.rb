@@ -13,6 +13,7 @@ RSpec.describe Vehicle, type: :model do
 
   describe "associations" do
     it { is_expected.to belong_to(:carrier) }
+    it { is_expected.to have_many(:transport_windows).dependent(:destroy) }
   end
 
   describe "vehicle_type values" do
@@ -46,7 +47,7 @@ RSpec.describe Vehicle, type: :model do
   describe "ransack allowlists (ActiveAdmin)" do
     it "exposes the columns and associations ActiveAdmin needs" do
       expect(Vehicle.ransackable_attributes).to include("plate", "vehicle_type", "capacity_kg")
-      expect(Vehicle.ransackable_associations).to contain_exactly("carrier")
+      expect(Vehicle.ransackable_associations).to contain_exactly("carrier", "transport_windows")
     end
   end
 end

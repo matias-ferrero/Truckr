@@ -55,3 +55,72 @@ identity_users.each do |spec|
     end
   end
 end
+
+# Marketplace fixtures — REQ-BE-00021.
+# 2 TransportWindows, 2 CargoOffers, 2 Quotes. Idempotent. Skips silently when
+# the dependent Identity rows have not been seeded yet.
+if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
+   Carrier.any? && Shipper.any? && Vehicle.any?
+
+  carrier = Carrier.first
+  shipper = Shipper.first
+  vehicle = carrier.vehicles.first
+
+  if vehicle
+    tw1 = TransportWindow.find_or_create_by!(
+      vehicle: vehicle, origin_zone: "Buenos Aires", destination_zone: "Córdoba"
+    ) do |w|
+      w.price_per_km   = 1500.0
+      w.max_km         = 1200
+      w.available_from = 1.day.from_now
+      w.available_to   = 10.days.from_now
+      w.active         = true
+    end
+
+    tw2 = TransportWindow.find_or_create_by!(
+      vehicle: vehicle, origin_zone: "Rosario", destination_zone: "Mendoza"
+    ) do |w|
+      w.price_per_km   = 1700.0
+      w.max_km         = 900
+      w.available_from = 11.days.from_now
+      w.available_to   = 18.days.from_now
+      w.active         = true
+    end
+
+    co1 = CargoOffer.find_or_create_by!(
+      shipper: shipper, cargo_description: "Pallets de granos"
+    ) do |c|
+      c.pickup_address       = "Puerto de Buenos Aires"
+      c.delivery_address     = "Av. Sabattini 5500, Córdoba"
+      c.pickup_date          = 3.days.from_now
+      c.weight_kg            = 12_000.0
+      c.volume_cm3           = 30_000_000
+      c.declared_value_cents = 150_000_000
+    end
+
+    co2 = CargoOffer.find_or_create_by!(
+      shipper: shipper, cargo_description: "Materiales de construcción"
+    ) do |c|
+      c.pickup_address       = "Parque industrial Rosario"
+      c.delivery_address     = "Godoy Cruz 1200, Mendoza"
+      c.pickup_date          = 4.days.from_now
+      c.weight_kg            = 8_500.0
+      c.volume_cm3           = 18_000_000
+      c.declared_value_cents = 90_000_000
+    end
+
+    Quote.find_or_create_by!(cargo_offer: co1, carrier: carrier, transport_window: tw1) do |q|
+      q.amount_cents = 18_000_000
+      q.currency     = "ARS"
+      q.status       = "pending"
+      q.expires_at   = 24.hours.from_now
+    end
+
+    Quote.find_or_create_by!(cargo_offer: co2, carrier: carrier, transport_window: tw2) do |q|
+      q.amount_cents = 15_300_000
+      q.currency     = "ARS"
+      q.status       = "pending"
+      q.expires_at   = 24.hours.from_now
+    end
+  end
+end

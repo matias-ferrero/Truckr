@@ -6,6 +6,7 @@ class Vehicle < ApplicationRecord
   VEHICLE_TYPES = %w[van truck_small truck_large semi_trailer].freeze
 
   belongs_to :carrier
+  has_many :transport_windows, dependent: :destroy, inverse_of: :vehicle
 
   before_destroy :ensure_no_active_commitments
 
@@ -21,7 +22,7 @@ class Vehicle < ApplicationRecord
   end
 
   def self.ransackable_associations(_auth_object = nil)
-    %w[carrier]
+    %w[carrier transport_windows]
   end
 
   private

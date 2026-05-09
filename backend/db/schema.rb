@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_09_120004) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_09_120007) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -37,6 +37,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_09_120004) do
     t.index ["reset_password_token"], name: "index_admin_users_on_reset_password_token", unique: true
   end
 
+  create_table "cargo_offers", force: :cascade do |t|
+    t.text "cargo_description", null: false
+    t.datetime "created_at", null: false
+    t.integer "declared_value_cents", null: false
+    t.string "delivery_address", null: false
+    t.string "pickup_address", null: false
+    t.datetime "pickup_date", null: false
+    t.integer "shipper_id", null: false
+    t.datetime "updated_at", null: false
+    t.integer "volume_cm3", null: false
+    t.decimal "weight_kg", precision: 10, scale: 2, null: false
+    t.index ["pickup_date"], name: "index_cargo_offers_on_pickup_date"
+    t.index ["shipper_id"], name: "index_cargo_offers_on_shipper_id"
+  end
+
   create_table "carriers", force: :cascade do |t|
     t.string "base_city"
     t.integer "completed_shipments", default: 0, null: false
@@ -52,6 +67,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_09_120004) do
     t.index ["user_id"], name: "index_carriers_on_user_id", unique: true
   end
 
+  create_table "quotes", force: :cascade do |t|
+    t.integer "amount_cents", null: false
+    t.integer "cargo_offer_id", null: false
+    t.integer "carrier_id", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "ARS", null: false
+    t.datetime "expires_at", null: false
+    t.string "status", default: "pending", null: false
+    t.integer "transport_window_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cargo_offer_id"], name: "index_quotes_on_cargo_offer_id"
+    t.index ["carrier_id"], name: "index_quotes_on_carrier_id"
+    t.index ["expires_at"], name: "index_quotes_on_expires_at"
+    t.index ["status"], name: "index_quotes_on_status"
+    t.index ["transport_window_id"], name: "index_quotes_on_transport_window_id"
+  end
+
   create_table "shippers", force: :cascade do |t|
     t.string "billing_address"
     t.string "company_name"
@@ -61,6 +93,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_09_120004) do
     t.integer "user_id", null: false
     t.index ["tax_id"], name: "index_shippers_on_tax_id", unique: true, where: "tax_id IS NOT NULL"
     t.index ["user_id"], name: "index_shippers_on_user_id", unique: true
+  end
+
+  create_table "transport_windows", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "available_from", null: false
+    t.datetime "available_to", null: false
+    t.datetime "created_at", null: false
+    t.string "destination_zone", null: false
+    t.integer "max_km", null: false
+    t.string "origin_zone", null: false
+    t.decimal "price_per_km", precision: 10, scale: 2, null: false
+    t.datetime "updated_at", null: false
+    t.integer "vehicle_id", null: false
+    t.index ["active"], name: "index_transport_windows_on_active"
+    t.index ["available_from", "available_to"], name: "index_transport_windows_on_available_from_and_available_to"
+    t.index ["vehicle_id", "available_from", "available_to"], name: "idx_tw_on_vehicle_and_window"
+    t.index ["vehicle_id"], name: "index_transport_windows_on_vehicle_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -86,7 +135,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_09_120004) do
     t.index ["plate"], name: "index_vehicles_on_plate", unique: true
   end
 
+  add_foreign_key "cargo_offers", "shippers"
   add_foreign_key "carriers", "users"
+  add_foreign_key "quotes", "cargo_offers"
+  add_foreign_key "quotes", "carriers"
+  add_foreign_key "quotes", "transport_windows"
   add_foreign_key "shippers", "users"
+  add_foreign_key "transport_windows", "vehicles", on_delete: :cascade
   add_foreign_key "vehicles", "carriers"
 end

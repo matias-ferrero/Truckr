@@ -27,6 +27,8 @@ RSpec.describe Carrier, type: :model do
   describe "associations" do
     it { is_expected.to belong_to(:user) }
     it { is_expected.to have_many(:vehicles).dependent(:destroy) }
+    it { is_expected.to have_many(:transport_windows).through(:vehicles) }
+    it { is_expected.to have_many(:quotes).dependent(:restrict_with_error) }
   end
 
   describe "defaults" do
@@ -48,7 +50,7 @@ RSpec.describe Carrier, type: :model do
   describe "ransack allowlists (ActiveAdmin)" do
     it "exposes the columns and associations ActiveAdmin needs" do
       expect(Carrier.ransackable_attributes).to include("legal_name", "tax_id", "rating_avg")
-      expect(Carrier.ransackable_associations).to contain_exactly("user", "vehicles")
+      expect(Carrier.ransackable_associations).to contain_exactly("user", "vehicles", "transport_windows", "quotes")
     end
   end
 end

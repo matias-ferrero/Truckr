@@ -3,7 +3,7 @@ tag: REQ-BE-00021
 title: Implementar contexto Marketplace — TransportWindow, CargoOffer, Quote (migraciones
   + AR)
 priority: P0
-status: ready
+status: in_review
 plan: docs/features/REQ/REQ-BE-00021/REQ-BE-00021-implementar-contexto-marketplace.plan.md
 created: '2026-05-03'
 source: manual
