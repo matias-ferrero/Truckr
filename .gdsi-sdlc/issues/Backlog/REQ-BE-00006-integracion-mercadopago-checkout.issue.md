@@ -10,10 +10,10 @@ author: Claude Code
 github_issue: 82
 github_project_item: PVTI_lAHOAm1mPc4BWhiVzgrs6pk
 github_repo: tcorzo/fiuba-gestion-tp
-last_synced: 2026-05-04T01:41:46.628948+00:00Z
+last_synced: 2026-05-09T13:35:40.076571+00:00Z
 labels:
-- REQ
 - BE
+- REQ
 - payments
 - mercadopago
 - mvp

@@ -10,7 +10,7 @@ author: Claude Code
 github_issue: 87
 github_project_item: PVTI_lAHOAm1mPc4BWhiVzgrtB2Q
 github_repo: tcorzo/fiuba-gestion-tp
-last_synced: 2026-05-04T02:22:23.842913+00:00Z
+last_synced: 2026-05-09T13:35:40.075274+00:00Z
 labels:
 - INF
 - BE

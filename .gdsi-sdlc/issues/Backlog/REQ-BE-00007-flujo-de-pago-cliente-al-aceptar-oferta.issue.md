@@ -10,15 +10,15 @@ author: Claude Code
 github_issue: 83
 github_project_item: PVTI_lAHOAm1mPc4BWhiVzgrs6sg
 github_repo: tcorzo/fiuba-gestion-tp
-last_synced: 2026-05-04T01:41:59.276625+00:00Z
+last_synced: 2026-05-09T13:35:40.077277+00:00Z
 labels:
-- REQ
 - BE
 - FE
+- REQ
 - payments
-- checkout
 - mvp
 - us8
+- checkout
 ---
 
 ## Summary

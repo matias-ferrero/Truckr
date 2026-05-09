@@ -10,15 +10,15 @@ author: Claude Code
 github_issue: 89
 github_project_item: PVTI_lAHOAm1mPc4BWhiVzgrtB60
 github_repo: tcorzo/fiuba-gestion-tp
-last_synced: 2026-05-04T02:22:46.705989+00:00Z
+last_synced: 2026-05-09T13:35:40.079177+00:00Z
 labels:
-- REQ
 - BE
 - FE
-- vehicle
-- fleet
+- REQ
 - mvp
+- vehicle
 - us14
+- fleet
 ---
 
 ## Summary
