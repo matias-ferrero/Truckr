@@ -124,3 +124,22 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
     end
   end
 end
+
+# Fulfilment fixtures — REQ-BE-00022.
+# One Shipment per state for any available Quote rows. Idempotent.
+if defined?(Quote) && defined?(Shipment) && Quote.exists?
+  Shipment::STATUSES.each_with_index do |state, i|
+    quote = Quote.offset(i).first or next
+    next if Shipment.with_discarded.exists?(quote_id: quote.id)
+
+    attrs = { quote: quote, status: state }
+    case state
+    when "in_transit" then attrs[:picked_up_at] = 1.hour.ago
+    when "delivered"  then attrs.merge!(picked_up_at: 4.hours.ago, delivered_at: 30.minutes.ago)
+    when "settled"    then attrs.merge!(picked_up_at: 1.day.ago, delivered_at: 6.hours.ago, settled_at: 30.minutes.ago)
+    when "cancelled"  then attrs.merge!(cancelled_at: 1.minute.ago, cancellation_reason: "demo")
+    end
+
+    Shipment.create!(attrs)
+  end
+end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_09_120007) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_09_120010) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -84,6 +84,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_09_120007) do
     t.index ["transport_window_id"], name: "index_quotes_on_transport_window_id"
   end
 
+  create_table "routes", force: :cascade do |t|
+    t.datetime "calculated_at"
+    t.datetime "created_at", null: false
+    t.integer "distance_m"
+    t.integer "duration_s"
+    t.text "polyline"
+    t.string "provider", default: "google_maps_directions", null: false
+    t.integer "shipment_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["shipment_id"], name: "index_routes_on_shipment_id", unique: true
+  end
+
+  create_table "shipments", force: :cascade do |t|
+    t.string "cancellation_reason"
+    t.datetime "cancelled_at"
+    t.datetime "created_at", null: false
+    t.datetime "delivered_at"
+    t.datetime "discarded_at"
+    t.datetime "picked_up_at"
+    t.integer "quote_id", null: false
+    t.datetime "settled_at"
+    t.string "status", default: "draft", null: false
+    t.datetime "updated_at", null: false
+    t.index ["discarded_at"], name: "index_shipments_on_discarded_at"
+    t.index ["quote_id"], name: "index_shipments_on_quote_id", unique: true
+    t.index ["status"], name: "index_shipments_on_status"
+    t.check_constraint "status IN ('draft','quoted','accepted','in_transit','delivered','settled','cancelled')", name: "shipments_status_check"
+  end
+
   create_table "shippers", force: :cascade do |t|
     t.string "billing_address"
     t.string "company_name"
@@ -93,6 +122,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_09_120007) do
     t.integer "user_id", null: false
     t.index ["tax_id"], name: "index_shippers_on_tax_id", unique: true, where: "tax_id IS NOT NULL"
     t.index ["user_id"], name: "index_shippers_on_user_id", unique: true
+  end
+
+  create_table "tracking_events", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "from_status"
+    t.string "kind", null: false
+    t.decimal "lat", precision: 9, scale: 6
+    t.decimal "lng", precision: 9, scale: 6
+    t.text "metadata"
+    t.datetime "recorded_at", null: false
+    t.integer "shipment_id", null: false
+    t.string "to_status"
+    t.datetime "updated_at", null: false
+    t.index ["kind"], name: "index_tracking_events_on_kind"
+    t.index ["shipment_id", "recorded_at"], name: "index_tracking_events_on_shipment_id_and_recorded_at"
+    t.index ["shipment_id"], name: "index_tracking_events_on_shipment_id"
+    t.check_constraint "kind IN ('status_change','gps_update','note')", name: "tracking_events_kind_check"
   end
 
   create_table "transport_windows", force: :cascade do |t|
@@ -140,7 +186,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_09_120007) do
   add_foreign_key "quotes", "cargo_offers"
   add_foreign_key "quotes", "carriers"
   add_foreign_key "quotes", "transport_windows"
+  add_foreign_key "routes", "shipments", on_delete: :cascade
+  add_foreign_key "shipments", "quotes", on_delete: :restrict
   add_foreign_key "shippers", "users"
+  add_foreign_key "tracking_events", "shipments", on_delete: :cascade
   add_foreign_key "transport_windows", "vehicles", on_delete: :cascade
   add_foreign_key "vehicles", "carriers"
 end

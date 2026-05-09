@@ -40,6 +40,7 @@ class Quote < ApplicationRecord
   belongs_to :cargo_offer,      inverse_of: :quotes
   belongs_to :carrier,          inverse_of: :quotes
   belongs_to :transport_window, inverse_of: :quotes
+  has_one    :shipment,         dependent: :restrict_with_error, inverse_of: :quote
 
   validates :amount_cents, numericality: { greater_than: 0, only_integer: true }
   validates :currency, inclusion: { in: %w[ARS] }
