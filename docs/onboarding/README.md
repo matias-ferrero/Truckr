@@ -35,6 +35,8 @@ These docs are designed to be loaded into AI agent context at session start. Pic
 
 Onboarding docs are condensations of the tech docs in `docs/01-` … `docs/05-`. If you find yourself updating an onboarding doc, **first update the canonical source** in the corresponding section, then re-distill here. Don't let the two drift.
 
+For execution order across issues, see [`docs/features/DEPENDENCY-GRAPH.md`](../features/DEPENDENCY-GRAPH.md) — that doc is canonical for the dependency edges and parallelization plan.
+
 | Onboarding | Canonical source |
 |------------|------------------|
 | `00-philosophy-and-architecture.md` | `01-technical-vision/technical-vision.md` + `02-high-level-design/high-level-design.md` |
@@ -43,4 +45,4 @@ Onboarding docs are condensations of the tech docs in `docs/01-` … `docs/05-`.
 | `03-module-reference.md` | `00-platform-architecture/platform-architecture.md` + repo tree |
 | `04-ai-harness.md` | `05-appendices/ai-harness.md` |
 | `05-testing-strategy.md` | (no canonical source yet — onboarding is the canonical source until a tech-doc section is added) |
-| `06-roadmap.md` | `01-technical-vision/technical-vision.md` (Future Considerations) + `docs/features/ISSUES-INDEX.md` |
+| `06-roadmap.md` | `01-technical-vision/technical-vision.md` (Future Considerations) + `docs/features/ISSUES-INDEX.md` + `docs/features/DEPENDENCY-GRAPH.md` |

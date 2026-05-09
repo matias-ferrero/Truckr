@@ -2,7 +2,8 @@
 tag: INF-BE-00001
 title: Reestructurar por funcionalidades (NO por pantallas/usuarios)
 priority: P2
-status: backlog
+status: ready
+plan: docs/features/INF/INF-BE-00001/INF-BE-00001-reestructurar-wbs.plan.md
 created: '2026-04-18'
 source: github
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/50

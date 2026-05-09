@@ -9,13 +9,13 @@ source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/54
 author: ''
 github_issue: 54
 github_repo: tcorzo/fiuba-gestion-tp
-last_synced: 2026-05-03T00:00:00+00:00Z
-plan: docs/features/REQ/REQ-DOC-00002/REQ-DOC-00002-crear-artefacto-de-riesgos.plan.md
+last_synced: 2026-05-04T01:27:14.812707+00:00Z
 labels:
 - enhancement
 - artifact
 - DOC
 - REQ
+plan: docs/features/REQ/REQ-DOC-00002/REQ-DOC-00002-crear-artefacto-de-riesgos.plan.md
 ---
 
 ## Resumen
