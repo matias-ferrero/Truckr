@@ -2,7 +2,7 @@
 tag: INF-BE-00001
 title: Reestructurar WBS por funcionalidades (NO por pantallas/usuarios)
 priority: P2
-status: ready
+status: done
 created: '2026-04-18'
 source: github
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/50
