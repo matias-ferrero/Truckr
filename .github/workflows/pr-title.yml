@@ -1,11 +1,11 @@
 name: PR Title
 
 on:
-    pull_request_target:
+    pull_request:
         types: [opened, edited, reopened, synchronize]
 
-permissions:
-    pull-requests: read
+# No permissions block: the check reads only context.payload.pull_request.title,
+# which is included in the event payload — no GitHub API call, no token needed.
 
 jobs:
     lint:
@@ -14,25 +14,37 @@ jobs:
         # changelog and version bump — fail the check loudly instead.
         runs-on: ubuntu-latest
         steps:
-            - uses: amannn/action-semantic-pull-request@v5
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - uses: actions/github-script@v9
               with:
-                  types: |
-                      feat
-                      fix
-                      docs
-                      chore
-                      ci
-                      refactor
-                      test
-                      perf
-                      build
-                      style
-                      revert
-                  requireScope: false
-                  subjectPattern: ^(?![A-Z]).+$
-                  subjectPatternError: |
-                      The subject "{subject}" must start with a lowercase letter.
-                      Reference issues in the PR body via "Closes #N", not in the title.
-                  wip: true
+                  script: |
+                      const title = context.payload.pull_request.title;
+                      const types = [
+                          'feat', 'fix', 'docs', 'chore', 'ci',
+                          'refactor', 'test', 'perf', 'build',
+                          'style', 'revert'
+                      ];
+                      const re = new RegExp(
+                          '^(' + types.join('|') + ')(\\([^)]+\\))?!?: [a-z].+'
+                      );
+                      if (re.test(title)) {
+                          core.info(`OK: "${title}" matches conventional commits.`);
+                          return;
+                      }
+                      const wipPrefix = /^(\[?WIP\]?|WIP:)/i;
+                      if (wipPrefix.test(title)) {
+                          core.warning('PR is marked WIP; skipping conventional check.');
+                          return;
+                      }
+                      core.setFailed(
+                          `PR title "${title}" is not a conventional commit.\n\n` +
+                          `Required: <type>(<scope>)?: <subject>\n` +
+                          `  - type: one of ${types.join(', ')}\n` +
+                          `  - subject: must start with a lowercase letter\n\n` +
+                          `Examples:\n` +
+                          `  feat(identity): add Carrier and Shipper models\n` +
+                          `  fix(ci): use pull_request event for PR title lint\n` +
+                          `  docs: update glossary\n\n` +
+                          `Reference issues in the PR body via "Closes #N", not in the title.\n` +
+                          `release-please parses this title as the squash-merge commit subject; ` +
+                          `a non-conventional title is silently dropped from the changelog.`
+                      );
