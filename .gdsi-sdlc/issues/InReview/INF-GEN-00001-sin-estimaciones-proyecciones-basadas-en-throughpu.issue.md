@@ -2,7 +2,7 @@
 tag: INF-GEN-00001
 title: 'Sin estimaciones: Proyecciones basadas en Throughput'
 priority: P2
-status: ready
+status: in_review
 plan: docs/features/INF/INF-GEN-00001/INF-GEN-00001-team-performance-script.plan.md
 created: '2026-04-18'
 source: github

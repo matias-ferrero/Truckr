@@ -100,6 +100,22 @@ backend-migrate:
 backend-test:
     cd backend && bundle exec rspec
 
+# ── Team performance (throughput-based projection CLI) ─────────────────────
+
+# Run the team-performance CLI (pass extra flags via ARGS)
+team-performance *ARGS:
+    uv run team-performance {{ ARGS }}
+
+# Run the team_performance test suite with coverage
+team-performance-test:
+    uv run pytest docs/scripts/team_performance --cov=team_performance --cov-report=term-missing
+
+# Lint + format-check + type-check team_performance
+team-performance-lint:
+    uv run ruff check docs/scripts/team_performance
+    uv run ruff format --check docs/scripts/team_performance
+    uv run mypy docs/scripts/team_performance
+
 # ── Utilities ───────────────────────────────────────────────────────────────
 
 # Format all .typ files with typstyle
