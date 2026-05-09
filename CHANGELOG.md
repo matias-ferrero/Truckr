@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.1.10](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.9...v0.1.10) (2026-05-09)
+
+
+### Features
+
+* add schedule artifact ([#61](https://github.com/tcorzo/fiuba-gestion-tp/issues/61)) ([3d9e6e6](https://github.com/tcorzo/fiuba-gestion-tp/commit/3d9e6e60d414d5a708a62850a223e8b07e4437c5))
+* **cost-report:** remove section 10 (what this report doesn't include) ([f0b25f9](https://github.com/tcorzo/fiuba-gestion-tp/commit/f0b25f92ef170a3344eae04338a01888e445c89b))
+* **cost-report:** remove section 2 (value framework) and renumber sections ([1c8b5af](https://github.com/tcorzo/fiuba-gestion-tp/commit/1c8b5af4728f9733c2bb0ed06315294c52616a29))
+* **cost-report:** remove sections 6-9 (calibration plan, reporting cadence, investment guardrails, risks & assumptions) ([47c3c7e](https://github.com/tcorzo/fiuba-gestion-tp/commit/47c3c7e3d8caae26ea2d28e1373d9b49e141b49e))
+* **cost-report:** reorder sections - move section 4 to first, section 1 to last ([d41d2fd](https://github.com/tcorzo/fiuba-gestion-tp/commit/d41d2fdba54eb3c03b429621d4cea9eed73409cf))
+* **cost-report:** simplify to single costs tables ([e6e3afe](https://github.com/tcorzo/fiuba-gestion-tp/commit/e6e3afe88c6b8067758aa35cd7fbf3a555834aa4))
+* **cost-report:** update section 2 team composition and rates ([dd5127b](https://github.com/tcorzo/fiuba-gestion-tp/commit/dd5127b138696aa262d285a99d5597a1c4cee43f))
+* **usm:** add insurance sales module ([ddccb42](https://github.com/tcorzo/fiuba-gestion-tp/commit/ddccb42554d36f5aeebfeeb20439b20a37affea4)), closes [#57](https://github.com/tcorzo/fiuba-gestion-tp/issues/57)
+* **USM:** add missing Insurance module ([991b08d](https://github.com/tcorzo/fiuba-gestion-tp/commit/991b08de3554b107602399849f673e647aa4efe4))
+* **usm:** reorder user stories priority ([885da35](https://github.com/tcorzo/fiuba-gestion-tp/commit/885da3516a02e256e1a5c682a58e1957e571dd25)), closes [#57](https://github.com/tcorzo/fiuba-gestion-tp/issues/57)
+
+
+### Bug Fixes
+
+* **cost-report:** update cost estimates and descriptions for clarity ([ecbc4a5](https://github.com/tcorzo/fiuba-gestion-tp/commit/ecbc4a50f5e42fd45afe88b9d60ee3a509581bc4))
+* **cost-report:** update server references and adjust cost estimates in AWS infrastructure ([3d8dc5f](https://github.com/tcorzo/fiuba-gestion-tp/commit/3d8dc5f1554d9a8201ae749a60be1b07bc610fa9))
+* **risks:** update artifact using course template ([#129](https://github.com/tcorzo/fiuba-gestion-tp/issues/129)) ([f62e056](https://github.com/tcorzo/fiuba-gestion-tp/commit/f62e056935f3215a2300db1cfa882b824b92cb7e))
+* **sdlc:** use parenthesized exception tuple in sync.py ([#76](https://github.com/tcorzo/fiuba-gestion-tp/issues/76)) ([1ad8b06](https://github.com/tcorzo/fiuba-gestion-tp/commit/1ad8b0694e45d0603add0c37da210d845bed32ae))
+
 ## [0.1.9](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.8...v0.1.9) (2026-04-15)
 
 
