@@ -13,7 +13,7 @@ class Rack::Attack
     [
       429,
       { "content-type" => "application/json" },
-      [{ error: { code: "rate_limited", message: "Demasiados intentos. Intentá en 15 minutos." } }.to_json]
+      [ { error: { code: "rate_limited", message: "Demasiados intentos. Intentá en 15 minutos." } }.to_json ]
     ]
   end
 end

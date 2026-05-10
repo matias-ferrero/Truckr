@@ -29,11 +29,11 @@ RSpec.describe Shipment, type: :model do
     it "is frozen and contains the canonical map" do
       expect(described_class::ALLOWED_TRANSITIONS).to be_frozen
       expect(described_class::ALLOWED_TRANSITIONS).to eq(
-        draft:      [:quoted],
-        quoted:     [:accepted, :cancelled],
-        accepted:   [:in_transit, :cancelled],
-        in_transit: [:delivered, :cancelled],
-        delivered:  [:settled],
+        draft:      [ :quoted ],
+        quoted:     [ :accepted, :cancelled ],
+        accepted:   [ :in_transit, :cancelled ],
+        in_transit: [ :delivered, :cancelled ],
+        delivered:  [ :settled ],
         settled:    [],
         cancelled:  []
       )
@@ -42,14 +42,14 @@ RSpec.describe Shipment, type: :model do
 
   describe "#transition_to! — permitted transitions" do
     permitted = [
-      [:draft,      :quoted,     {}],
-      [:quoted,     :accepted,   {}],
-      [:quoted,     :cancelled,  { reason: "buyer changed mind" }],
-      [:accepted,   :in_transit, {}],
-      [:accepted,   :cancelled,  { reason: "carrier no-show" }],
-      [:in_transit, :delivered,  {}],
-      [:in_transit, :cancelled,  { reason: "vehicle failure" }],
-      [:delivered,  :settled,    {}]
+      [ :draft,      :quoted,     {} ],
+      [ :quoted,     :accepted,   {} ],
+      [ :quoted,     :cancelled,  { reason: "buyer changed mind" } ],
+      [ :accepted,   :in_transit, {} ],
+      [ :accepted,   :cancelled,  { reason: "carrier no-show" } ],
+      [ :in_transit, :delivered,  {} ],
+      [ :in_transit, :cancelled,  { reason: "vehicle failure" } ],
+      [ :delivered,  :settled,    {} ]
     ]
 
     permitted.each do |from, to, extra|
@@ -71,11 +71,11 @@ RSpec.describe Shipment, type: :model do
 
   describe "#transition_to! — rejected transitions" do
     rejected = [
-      [:delivered,  :in_transit],
-      [:settled,    :in_transit],
-      [:cancelled,  :quoted],
-      [:draft,      :delivered],
-      [:delivered,  :cancelled] # explicit: no rollback after delivery
+      [ :delivered,  :in_transit ],
+      [ :settled,    :in_transit ],
+      [ :cancelled,  :quoted ],
+      [ :draft,      :delivered ],
+      [ :delivered,  :cancelled ] # explicit: no rollback after delivery
     ]
 
     rejected.each do |from, to|
@@ -104,15 +104,15 @@ RSpec.describe Shipment, type: :model do
     let!(:cancelled)  { create(:shipment, :cancelled) }
 
     it ".active excludes settled and cancelled" do
-      expect(Shipment.active).to match_array([draft, in_transit])
+      expect(Shipment.active).to match_array([ draft, in_transit ])
     end
 
     it ".completed includes settled and cancelled" do
-      expect(Shipment.completed).to match_array([settled, cancelled])
+      expect(Shipment.completed).to match_array([ settled, cancelled ])
     end
 
     it ".in_progress matches accepted/in_transit only" do
-      expect(Shipment.in_progress).to match_array([in_transit])
+      expect(Shipment.in_progress).to match_array([ in_transit ])
     end
   end
 

@@ -16,6 +16,6 @@ RSpec.describe MeResource do
     json = JSON.parse(MeResource.new(user).serialize)
 
     expect(json["carrier"]).to be_nil
-    expect(json["roles"]).to eq(["shipper"])
+    expect(json["roles"]).to eq([ "shipper" ])
   end
 end

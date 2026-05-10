@@ -4,7 +4,7 @@
 
 - **Backend**: RSpec (`rspec-rails ~> 7.1`) wired (`backend/spec/`, `.rspec`, `spec_helper.rb`, `rails_helper.rb`). 1 smoke spec (`spec/smoke_spec.rb`); 0 model/controller/job specs.
 - **Frontend**: Two-layer testing wired (Vitest + Playwright). One component spec (`src/App.test.tsx`) and one E2E smoke (`e2e/smoke.spec.ts`).
-- **CI**: only `release-please.yml` runs on pushes to `main`. No test workflow.
+- **CI**: `release-please.yml` (releases), `pr-title.yml` (conventional-commit lint), `backend-ci.yml` (brakeman + bundler-audit + importmap audit + rubocop + rspec + rswag), `frontend-ci.yml` (vitest --coverage + vite build + Playwright chromium). Backend/frontend workflows filtered by `paths:` so docs-only PRs don't fan out.
 - **Pre-commit**: `prek` runs `typstyle` on `.typ` only. Ruby and TypeScript are not gated.
 
 > Backend decision: RSpec is the **exclusive** backend test framework. Do not add Minitest specs or `bin/rails test`-style tests. Rails-default `backend/test/` is unused.
@@ -66,7 +66,9 @@ See `frontend/TESTING.md` for the full doctrine. Highlights:
 
 Order of work to close the testing gap:
 
-1. **Add a test workflow** — `.github/workflows/test.yml` running `bundle exec rspec`, `deno task test:run`, and `deno task test:e2e` on every PR. Cache Playwright browsers.
+1. ~~**Add a test workflow**~~ — Done. Two workflows at the repo root with `paths:` filters:
+   - `.github/workflows/backend-ci.yml` — `scan_ruby` (brakeman), `scan_js` (importmap audit + bundler-audit), `lint` (rubocop), `test` (rspec + rswag swagger-diff). Triggers on `backend/**`.
+   - `.github/workflows/frontend-ci.yml` — `unit` (vitest --coverage), `build` (vite), `e2e` (Playwright Chromium). Triggers on `frontend/**`. Toolchain via `jdx/mise-action@v2`; Playwright browsers + Deno + node_modules cached.
 2. **Wire backend pre-commit** — `bin/rubocop` and `bin/brakeman` on staged Ruby files via `prek`.
 3. **Wire frontend pre-commit** — `tsc --noEmit` and `vitest related --run` on staged TS files.
 4. **First domain specs** — land alongside the first real domain model + controller (likely Identity bounded context).

@@ -75,7 +75,7 @@ RSpec.describe "Api::Carriers::Me::Vehicles", type: :request do
         original_filename: "front.png"
       )
       params = valid_params.deep_dup
-      params[:vehicle][:photos] = [file]
+      params[:vehicle][:photos] = [ file ]
 
       post "/api/carriers/me/vehicles", params: params
       expect(response).to have_http_status(:created)

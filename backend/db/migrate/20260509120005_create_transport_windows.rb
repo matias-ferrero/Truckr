@@ -15,8 +15,8 @@ class CreateTransportWindows < ActiveRecord::Migration[8.1]
     end
 
     add_index :transport_windows, :active
-    add_index :transport_windows, [:available_from, :available_to]
-    add_index :transport_windows, [:vehicle_id, :available_from, :available_to],
+    add_index :transport_windows, [ :available_from, :available_to ]
+    add_index :transport_windows, [ :vehicle_id, :available_from, :available_to ],
               name: "idx_tw_on_vehicle_and_window"
   end
 end

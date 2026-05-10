@@ -52,7 +52,7 @@ RSpec.describe "Api::Auth", type: :request do
 
         run_test! do |response|
           body = JSON.parse(response.body)
-          expect(body["roles"]).to eq(["carrier"])
+          expect(body["roles"]).to eq([ "carrier" ])
           expect(User.exists?(email: payload[:email])).to be true
         end
       end
@@ -64,7 +64,7 @@ RSpec.describe "Api::Auth", type: :request do
 
         run_test! do |response|
           body = JSON.parse(response.body)
-          expect(body["roles"]).to eq(["shipper"])
+          expect(body["roles"]).to eq([ "shipper" ])
         end
       end
 
@@ -131,7 +131,7 @@ RSpec.describe "Api::Auth", type: :request do
         run_test! do |response|
           body = JSON.parse(response.body)
           expect(body["email"]).to eq("login@example.com")
-          expect(body["roles"]).to eq(["shipper"])
+          expect(body["roles"]).to eq([ "shipper" ])
         end
       end
 

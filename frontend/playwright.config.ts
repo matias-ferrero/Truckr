@@ -31,10 +31,20 @@ export default defineConfig({
             // opt-in: deno task test:e2e --project=webkit
         },
     ],
-    webServer: {
-        command: `deno task build && deno task preview --port ${PORT}`,
-        url: BASE_URL,
-        reuseExistingServer: !isCI,
-        timeout: 120_000,
-    },
+    webServer: [
+        {
+            command: `deno task build && deno task preview --port ${PORT}`,
+            url: BASE_URL,
+            reuseExistingServer: !isCI,
+            timeout: 120_000,
+        },
+        {
+            command:
+                "cd ../backend && bundle exec rails db:test:prepare && bundle exec rails server -e test -p 3000",
+            url: "http://localhost:3000/up",
+            reuseExistingServer: !isCI,
+            timeout: 180_000,
+            env: { RAILS_ENV: "test" },
+        },
+    ],
 });

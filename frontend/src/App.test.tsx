@@ -49,4 +49,36 @@ describe("LandingPage", () => {
             screen.getByText(/Decinos a dónde llega el envío/i),
         ).toBeInTheDocument();
     });
+
+    it("submits the quote happy path and shows the confirmation block", async () => {
+        const user = userEvent.setup();
+        renderLanding();
+
+        await user.type(screen.getByLabelText(/origen/i), "CABA");
+        await user.type(screen.getByLabelText(/destino/i), "Rosario");
+        await user.type(screen.getByLabelText(/qué transportás|carga/i), "5 cajas");
+        await user.type(screen.getByLabelText(/contacto|email|whatsapp/i), "ana@example.com");
+
+        await user.click(screen.getByRole("button", { name: /enviar solicitud/i }));
+
+        expect(await screen.findByText(/recibido\./i)).toBeInTheDocument();
+        expect(screen.getByText(/CABA → Rosario/i)).toBeInTheDocument();
+    });
+
+    it("'Pedir otra' resets the quote confirmation back to the form", async () => {
+        const user = userEvent.setup();
+        renderLanding();
+
+        await user.type(screen.getByLabelText(/origen/i), "CABA");
+        await user.type(screen.getByLabelText(/destino/i), "Rosario");
+        await user.type(screen.getByLabelText(/qué transportás|carga/i), "muebles");
+        await user.type(screen.getByLabelText(/contacto|email|whatsapp/i), "ana@example.com");
+        await user.click(screen.getByRole("button", { name: /enviar solicitud/i }));
+
+        await user.click(await screen.findByRole("button", { name: /pedir otra/i }));
+
+        expect(
+            screen.getByRole("button", { name: /enviar solicitud/i }),
+        ).toBeInTheDocument();
+    });
 });

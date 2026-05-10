@@ -5,6 +5,13 @@ on:
         branches:
             - main
 
+# Serialize: concurrent release-please runs would race on the Release PR.
+# Don't cancel-in-progress — a half-finished release with PDFs uploaded but
+# tag not pushed would be wedged.
+concurrency:
+    group: release-please-${{ github.ref }}
+    cancel-in-progress: false
+
 permissions:
     contents: write
     pull-requests: write

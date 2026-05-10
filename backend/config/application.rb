@@ -42,6 +42,6 @@ module Trukr
     # User-facing copy is es-AR; English remains available as a fallback.
     config.i18n.available_locales = %i[es en]
     config.i18n.default_locale = :es
-    config.i18n.fallbacks = [:en]
+    config.i18n.fallbacks = [ :en ]
   end
 end

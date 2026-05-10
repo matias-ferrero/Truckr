@@ -16,7 +16,7 @@ class CreateTrackingEvents < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :tracking_events, [:shipment_id, :recorded_at]
+    add_index :tracking_events, [ :shipment_id, :recorded_at ]
     add_index :tracking_events, :kind
     add_check_constraint :tracking_events,
       "kind IN ('status_change','gps_update','note')",

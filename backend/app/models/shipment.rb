@@ -19,11 +19,11 @@ class Shipment < ApplicationRecord
   class IllegalTransition < StandardError; end
 
   ALLOWED_TRANSITIONS = {
-    draft:      [:quoted],
-    quoted:     [:accepted, :cancelled],
-    accepted:   [:in_transit, :cancelled],
-    in_transit: [:delivered, :cancelled],
-    delivered:  [:settled],
+    draft:      [ :quoted ],
+    quoted:     [ :accepted, :cancelled ],
+    accepted:   [ :in_transit, :cancelled ],
+    in_transit: [ :delivered, :cancelled ],
+    delivered:  [ :settled ],
     settled:    [],
     cancelled:  []
   }.freeze

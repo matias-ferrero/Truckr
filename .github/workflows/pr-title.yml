@@ -4,6 +4,10 @@ on:
     pull_request:
         types: [opened, edited, reopened, synchronize]
 
+concurrency:
+    group: pr-title-${{ github.ref }}
+    cancel-in-progress: true
+
 # No permissions block: the check reads only context.payload.pull_request.title,
 # which is included in the event payload — no GitHub API call, no token needed.
 

@@ -14,7 +14,7 @@ class Vehicle < ApplicationRecord
   has_many :transport_windows, dependent: :destroy, inverse_of: :vehicle
   has_many_attached :photos
 
-  before_save   :compute_volume_cm3
+  before_save :compute_volume_cm3
   before_destroy :ensure_no_active_commitments
 
   validates :plate,
@@ -42,9 +42,9 @@ class Vehicle < ApplicationRecord
   def photo_variants(photo)
     base = ::Rails.application.routes.url_helpers
     {
-      thumbnail: base.url_for(photo.variant(resize_to_fill: [200, 200])),
-      card:      base.url_for(photo.variant(resize_to_fill: [600, 400])),
-      full:      base.url_for(photo.variant(resize_to_limit: [1200, 800]))
+      thumbnail: base.url_for(photo.variant(resize_to_fill: [ 200, 200 ])),
+      card:      base.url_for(photo.variant(resize_to_fill: [ 600, 400 ])),
+      full:      base.url_for(photo.variant(resize_to_limit: [ 1200, 800 ]))
     }
   rescue StandardError
     { thumbnail: base.url_for(photo), card: base.url_for(photo), full: base.url_for(photo) }
@@ -62,9 +62,9 @@ class Vehicle < ApplicationRecord
   private
 
   def compute_volume_cm3
-    self.volume_cm3 = if [length_cm, width_cm, height_cm].all?(&:present?)
+    self.volume_cm3 = if [ length_cm, width_cm, height_cm ].all?(&:present?)
                         length_cm.to_i * width_cm.to_i * height_cm.to_i
-                      end
+    end
   end
 
   def photos_within_limit
