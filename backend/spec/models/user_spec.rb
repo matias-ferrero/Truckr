@@ -99,13 +99,6 @@ RSpec.describe User, type: :model do
       create(:shipper, user: user)
       expect(user.reload.shipper?).to be true
     end
-
-    it "supports both roles on the same user" do
-      create(:carrier, user: user)
-      create(:shipper, user: user)
-      expect(user.reload.carrier?).to be true
-      expect(user.reload.shipper?).to be true
-    end
   end
 
   describe "scopes" do

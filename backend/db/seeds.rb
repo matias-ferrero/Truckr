@@ -20,11 +20,10 @@ AdminUser.find_or_create_by!(email: admin_email) do |user|
 end
 
 # Identity fixtures — REQ-BE-00020.
-# 3 Users, 2 Carriers, 2 Shippers, 2 Vehicles. Idempotent.
+# 2 Users, 1 Carrier, 1 Shipper, 1 Vehicle. Idempotent.
 identity_users = [
   { email: "carrier1@truckr.test", full_name: "Carrier One", role: :carrier },
-  { email: "shipper1@truckr.test", full_name: "Shipper One", role: :shipper },
-  { email: "both@truckr.test",     full_name: "Both Roles",  role: :both    }
+  { email: "shipper1@truckr.test", full_name: "Shipper One", role: :shipper }
 ]
 
 identity_users.each do |spec|
@@ -33,7 +32,7 @@ identity_users.each do |spec|
     u.full_name = spec[:full_name]
   end
 
-  if %i[carrier both].include?(spec[:role])
+  if spec[:role] == :carrier
     carrier = Carrier.find_or_create_by!(user: user) do |c|
       c.legal_name = "#{spec[:full_name]} Transport SRL"
       c.tax_id     = "30#{format('%08d', user.id)}1"
@@ -50,7 +49,7 @@ identity_users.each do |spec|
     end
   end
 
-  if %i[shipper both].include?(spec[:role])
+  if spec[:role] == :shipper
     Shipper.find_or_create_by!(user: user) do |s|
       s.company_name = "#{spec[:full_name]} S.A."
       s.tax_id       = "20#{format('%08d', user.id)}9"

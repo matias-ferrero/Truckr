@@ -39,7 +39,7 @@ RSpec.describe "Api::Auth", type: :request do
           email:    { type: :string },
           password: { type: :string },
           name:     { type: :string },
-          role:     { type: :string, enum: %w[carrier shipper both] }
+          role:     { type: :string, enum: %w[carrier shipper] }
         },
         required: %w[email password name role]
       }
@@ -68,14 +68,17 @@ RSpec.describe "Api::Auth", type: :request do
         end
       end
 
-      response "201", "created (both)" do
+      response "422", "invalid role" do
         let(:payload) do
           { email: "both-#{SecureRandom.hex(3)}@example.com", password: "Password1", name: "Both", role: "both" }
         end
 
+        schema "$ref" => "#/components/schemas/ErrorEnvelope"
+
         run_test! do |response|
           body = JSON.parse(response.body)
-          expect(body["roles"]).to contain_exactly("carrier", "shipper")
+          expect(body["error"]["code"]).to eq("unprocessable")
+          expect(body["error"]["details"]).to have_key("role")
         end
       end
 

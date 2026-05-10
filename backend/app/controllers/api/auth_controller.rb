@@ -17,14 +17,14 @@ module Api
     end
 
     # POST /api/auth/register
-    # body: { email, password, name, role: "carrier"|"shipper"|"both" }
+    # body: { email, password, name, role: "carrier"|"shipper" }
     #
     # `:role` is read directly from params (not strong-permitted) because it's a
     # control flag — never assigned to the User AR record. Strong params on it
     # would only earn a brakeman PermitAttributes false-positive.
     def register
       role = params[:role].to_s
-      unless %w[carrier shipper both].include?(role)
+      unless %w[carrier shipper].include?(role)
         return render json: {
           error: { code: "unprocessable", details: { role: [ "es inválido" ] } }
         }, status: :unprocessable_entity
@@ -82,9 +82,6 @@ module Api
       case role
       when "carrier" then user.create_carrier!
       when "shipper" then user.create_shipper!
-      when "both"
-        user.create_carrier!
-        user.create_shipper!
       end
     end
   end

@@ -18,7 +18,7 @@ export type RegisterInput = {
     email: string;
     password: string;
     name: string;
-    role: "carrier" | "shipper" | "both";
+    role: "carrier" | "shipper";
 };
 
 export type LoginInput = { email: string; password: string };

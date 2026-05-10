@@ -30,7 +30,7 @@ paths:
       parameters: []
       responses:
         '201':
-          description: created (both)
+          description: created (shipper)
           content:
             application/json:
               schema:
@@ -58,7 +58,6 @@ paths:
                   enum:
                   - carrier
                   - shipper
-                  - both
               required:
               - email
               - password

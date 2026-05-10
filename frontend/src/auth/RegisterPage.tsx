@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ApiError } from "../api";
 import { useCurrentUser } from "./useCurrentUser";
 
-type RegisterRole = "carrier" | "shipper" | "both";
+type RegisterRole = "carrier" | "shipper";
 
 type RegisterForm = {
     email: string;
@@ -87,7 +87,7 @@ export function RegisterPage() {
             <section className="authCard" aria-labelledby="register-title">
                 <h1 className="authTitle" id="register-title">Crear cuenta</h1>
                 <p className="authLead">
-                    Sumate a Truckr® como expedidor, transportista o ambos. Podés cambiarlo después.
+                    Sumate a Truckr® como expedidor o transportista.
                 </p>
 
                 {serverError ? (
@@ -192,17 +192,6 @@ export function RegisterPage() {
                                     onChange={() => update("role", "carrier")}
                                 />
                                 Transportista
-                            </label>
-                            <label className="authRoleOption">
-                                <input
-                                    type="radio"
-                                    name="role"
-                                    id="role-both"
-                                    value="both"
-                                    checked={form.role === "both"}
-                                    onChange={() => update("role", "both")}
-                                />
-                                Ambos
                             </label>
                         </div>
                         {errors.role ? <div className="authError" id="role-error">{errors.role}</div> : null}

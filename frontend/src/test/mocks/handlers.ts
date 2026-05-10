@@ -42,7 +42,7 @@ export const handlers: RequestHandler[] = [
 
     http.post(`${API}/api/auth/register`, async ({ request }) => {
         const body = (await request.json()) as RegisterBody;
-        const roles = body.role === "both" ? ["carrier", "shipper"] : [body.role];
+        const roles = [body.role];
         return HttpResponse.json(
             {
                 id: 42,

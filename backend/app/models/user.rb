@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # User — auth account. A User MAY have a Carrier profile, a Shipper profile,
-# both, or neither. Role state is derived from the relation rows — there are
+# or neither. Role state is derived from the relation rows — there are
 # NO is_carrier / is_shipper columns on this table (ADR-008).
 #
 # Auth is provided by Devise (REQ-BE-00023):
