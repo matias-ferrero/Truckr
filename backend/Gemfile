@@ -45,12 +45,15 @@ gem "activeadmin", ">= 3.2"
 # Compile ActiveAdmin's SCSS to CSS — required because Propshaft does not transform Sass.
 gem "dartsass-rails"
 
-# Authorization — Pundit (harness installed now; used by REQ-BE-00009/10/etc).
+# Authorization — Pundit.
 gem "pundit"
 
 # JSON serialization — Alba on Oj backend.
 gem "alba"
 gem "oj"
+
+# Pagination (REQ-BE-00009 / REQ-BE-00010 vehicle endpoints).
+gem "pagy", "~> 9.0"
 
 # OpenAPI generation from request specs (mounted at /api-docs in dev/test).
 gem "rswag-api"

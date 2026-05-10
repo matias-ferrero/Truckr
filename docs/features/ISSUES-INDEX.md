@@ -23,8 +23,8 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REQ-FE-00009 | Integración con Google Maps SDK (split US13) | NEW | FE | 2026-05-03 | - |
 | REQ-FE-00010 | Navegación en vivo — ruta + posición GPS (split US13) | NEW | FE | 2026-05-03 | - |
 | REQ-FE-00011 | ETA + distancia + reroute on deviation (split US13) | NEW | FE | 2026-05-03 | - |
-| REQ-BE-00009 | Registro de vehículo — datos básicos + fotos (split US14) | NEW | BE | 2026-05-03 | - |
-| REQ-BE-00010 | Soporte multi-vehículo (flota) por transportista (split US14) | NEW | BE | 2026-05-03 | - |
+| REQ-BE-00009 | Registro de vehículo — datos básicos + fotos (split US14) | IR | BE | 2026-05-03 | [plan](REQ/REQ-BE-00009/REQ-BE-00009-and-00010-vehicle-fleet.plan.md) |
+| REQ-BE-00010 | Soporte multi-vehículo (flota) por transportista (split US14) | IR | BE | 2026-05-03 | [plan](REQ/REQ-BE-00010/REQ-BE-00010-fleet-support.plan.md) |
 | REQ-BE-00011 | Payout vía Mercado Pago al transportista tras confirmación de entrega (split US15) | NEW | BE | 2026-05-03 | - |
 | REQ-BE-00012 | Historial y detalle de pagos recibidos por el transportista (split US15) | NEW | BE | 2026-05-03 | - |
 | REQ-BE-00013 | Reseñas — modelo + creación de reseña post-viaje (split US20) | NEW | BE | 2026-05-03 | - |

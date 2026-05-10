@@ -1,0 +1,93 @@
+/* Prototype-stage i18n bundle for carrier pages. Mirrors the carve-out in
+   landingContent.ts: content lives in a typed object until a real i18n
+   library lands. UI components must read strings from here, never inline. */
+
+export const carrierContent = {
+    list: {
+        title: "Mi flota",
+        lead: "Gestioná los vehículos que ofrecés para nuevos viajes.",
+        addCta: "Agregar vehículo",
+        loadingLabel: "Cargando flota",
+        loadError: "No pudimos cargar tu flota",
+        retry: "Reintentar",
+        emptyTitle: "Todavía no registraste vehículos.",
+        emptyCta: "Registrar el primero",
+        gridLabel: "Vehículos de la flota",
+        plate: "Patente",
+        capacity: "Capacidad",
+        capacityUnit: "kg",
+        edit: "Editar",
+        delete: "Eliminar",
+        deleting: "Eliminando…",
+        photoAlt: (label: string) => `Foto de ${label}`,
+        placeholderEmoji: "🚚",
+        pagination: {
+            label: "Paginación de flota",
+            previous: "← Anterior",
+            next: "Siguiente →",
+            page: (page: number, total: number) => `Página ${page} de ${total}`,
+            count: (total: number) =>
+                `${total} vehículo${total === 1 ? "" : "s"}`,
+        },
+        confirmDelete: {
+            title: "Eliminar vehículo",
+            text: "Esta acción no se puede deshacer. ¿Querés continuar?",
+            cancel: "Cancelar",
+            confirm: "Eliminar",
+        },
+    },
+    form: {
+        editTitle: "Editar vehículo",
+        newTitle: "Agregar otro vehículo",
+        primaryTitle: "Mi vehículo",
+        lead: "Completá los datos básicos. Las fotos ayudan a que los expedidores te elijan más rápido.",
+        hydrating: "Cargando datos del vehículo",
+        saveError: "No pudimos guardar el vehículo.",
+        plateHint:
+            "Patente esperada: AA123BB o AAA123 (6-8 caracteres alfanuméricos).",
+        volumeLabel: (cm3: string) => `Volumen estimado: ${cm3} cm³`,
+        fields: {
+            make: "Marca",
+            model: "Modelo",
+            year: "Año",
+            plate: "Patente",
+            vehicleType: "Tipo de vehículo",
+            maxLoadKg: "Capacidad de carga (kg)",
+            dimensions: "Dimensiones interiores",
+            length: "Largo (cm)",
+            width: "Ancho (cm)",
+            height: "Alto (cm)",
+            description: "Descripción (opcional)",
+            gps: "Tiene GPS / trackeo activo",
+        },
+        submit: {
+            saving: "Guardando…",
+            create: "Registrar vehículo",
+            update: "Guardar cambios",
+            cancel: "Cancelar",
+        },
+    },
+    uploader: {
+        defaultLabel: "Subir fotos",
+        accept: "JPG, PNG o WebP",
+        max: (n: number) => `máx. ${n}`,
+        limitReached: (n: number) => `Llegaste al límite (${n} fotos).`,
+        rejected: "Formato no soportado. Usá JPG, PNG o WebP.",
+        active: "Soltá las fotos para subirlas.",
+        prompt: (n: number) =>
+            `Arrastrá hasta ${n} foto${n === 1 ? "" : "s"} o hacé clic para elegir.`,
+        gridLabel: "Fotos seleccionadas",
+        remove: "Quitar",
+        removeFile: (name: string) => `Quitar ${name}`,
+    },
+    vehicleTypes: {
+        van: "Van / Utilitario",
+        truck_small: "Camión chico",
+        truck_large: "Camión grande",
+        semi_trailer: "Semirremolque",
+    } as Record<string, string>,
+} as const;
+
+export function vehicleTypeLabel(value: string): string {
+    return carrierContent.vehicleTypes[value] ?? value.replace(/_/g, " ");
+}

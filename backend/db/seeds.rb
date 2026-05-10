@@ -29,7 +29,7 @@ identity_users = [
 
 identity_users.each do |spec|
   user = User.find_or_create_by!(email: spec[:email]) do |u|
-    u.password  = "password"
+    u.password  = "Password123"
     u.full_name = spec[:full_name]
   end
 
@@ -43,7 +43,9 @@ identity_users.each do |spec|
 
     Vehicle.find_or_create_by!(carrier: carrier) do |v|
       v.plate        = "AA#{format('%03d', user.id)}XX"
-      v.capacity_kg  = 5_000
+      v.make         = "Mercedes-Benz"
+      v.model        = "Sprinter"
+      v.max_load_kg  = 5_000.0
       v.vehicle_type = "truck_small"
     end
   end

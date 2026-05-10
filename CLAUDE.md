@@ -12,6 +12,27 @@ All written content (artifacts, user stories, prompts) is in **Spanish (es-AR)**
 
 **Source of truth: [`docs/05-appendices/glossary.md`](docs/05-appendices/glossary.md).** Whenever a term is introduced, renamed, or deprecated, update the glossary first and propagate from there. Personas / models in particular: `Transportista` ↔ `Carrier`, `Expedidor` ↔ `Shipper`. The terms `Cliente` / `Productor` are deprecated synonyms folded into `Expedidor`.
 
+## Language policy (UTMOST importance)
+
+**All code and routes are ENGLISH. UI text and error messages are internationalized — NEVER hardcoded literals.** This is non-negotiable. PRs that add Spanish in code surfaces are blocked at review.
+
+| Surface | Rule | Example ✅ | Example ❌ |
+|---|---|---|---|
+| Backend routes | English path segments | `/api/carriers/me/vehicles` | `/api/transportistas/me/vehiculos` |
+| Frontend routes | English path segments | `/carrier/vehicle`, `/carrier/vehicles` | `/transportista/vehiculo`, `/transportista/vehiculos` |
+| Models / tables / columns | English | `Carrier`, `vehicles.max_load_kg` | `Transportista`, `vehiculos.peso_maximo` |
+| Controllers / files / params | English | `VehiclesController`, `vehicle[plate]` | `VehiculosController`, `vehiculo[patente]` |
+| JSON keys | English snake_case | `{ "max_load_kg": ... }` | `{ "peso_maximo": ... }` |
+| **UI copy** in components | Via translation key | `<h1>{t('vehicle.list.title')}</h1>` | `<h1>Mis vehículos</h1>` |
+| **Error messages** in controllers | Via `I18n.t(...)` | `I18n.t('errors.unauthorized')` | `"Autenticación requerida"` |
+| **Validation messages** on AR models | Symbolic key (resolved via `config/locales/*.yml`) | `errors.add(:plate, :invalid_format)` | `errors.add(:plate, "patente inválida")` |
+
+**Carve-outs (Spanish allowed):**
+- Product artifacts under `docs/artifacts/`, user/job stories, prompts under `docs/prompts/` and `docs/raw/`, issue titles, README copy aimed at humans. Cargo-cult-friendly: docs are deliverables, code is implementation.
+- `frontend/src/landingContent.ts` is *content data* (not hardcoded UI labels) and acts as the prototype-stage i18n bundle until a real i18n library lands. New JSX copy must wait for that library or extend `landingContent.ts`.
+
+**Workflow:** add the term to [`docs/05-appendices/glossary.md`](docs/05-appendices/glossary.md) first, then derive the English identifier *and* the Spanish i18n value from it.
+
 ## Tooling (managed by mise)
 
 `mise install` provisions everything: `typst`, `typstyle`, `uv`, `gh`, `prek`, `just`, `deno`, `ruby 3.4`. After install, run `prek install` once to wire pre-commit hooks into `.git/hooks/`.

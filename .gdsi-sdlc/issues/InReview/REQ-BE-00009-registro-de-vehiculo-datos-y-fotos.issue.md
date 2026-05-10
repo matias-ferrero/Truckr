@@ -2,7 +2,8 @@
 tag: REQ-BE-00009
 title: Registro de vehículo — datos básicos + fotos
 priority: P1
-status: backlog
+status: in_review
+pr_url: https://github.com/tcorzo/fiuba-gestion-tp/pull/144
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/85
@@ -11,6 +12,7 @@ github_issue: 85
 github_project_item: PVTI_lAHOAm1mPc4BWhiVzgrs6xs
 github_repo: tcorzo/fiuba-gestion-tp
 last_synced: 2026-05-09T13:35:40.078556+00:00Z
+plan: docs/features/REQ/REQ-BE-00009/REQ-BE-00009-and-00010-vehicle-fleet.plan.md
 labels:
 - BE
 - FE

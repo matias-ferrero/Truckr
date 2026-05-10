@@ -13,6 +13,19 @@ Rails.application.routes.draw do
     post   "auth/login",    to: "auth#login"
     delete "auth/logout",   to: "auth#logout"
     get    "auth/me",       to: "auth#me"
+
+    # Authenticated CRUD on the current carrier's fleet (REQ-BE-00009 / REQ-BE-00010).
+    # Declared before the public `:carrier_id` resource so `/carriers/me/...` wins
+    # over the wildcard.
+    scope path: "carriers/me", as: :me do
+      resources :vehicles, only: %i[index show create update destroy],
+                           module: "carriers/me"
+    end
+
+    # Public read endpoints — anyone can browse a carrier's fleet.
+    resources :carriers, only: [] do
+      resources :vehicles, only: %i[index show], controller: "carriers/vehicles"
+    end
   end
 
   # OpenAPI / Swagger UI (dev/test only — production gets it via separate deploy).

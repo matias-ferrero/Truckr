@@ -49,6 +49,52 @@ RSpec.configure do |config|
               shipper:     { type: :object, nullable: true }
             },
             required: %w[id email roles]
+          },
+          Photo: {
+            type: :object,
+            properties: {
+              id: { type: :integer },
+              thumbnail: { type: :string },
+              card: { type: :string },
+              full: { type: :string }
+            }
+          },
+          Vehicle: {
+            type: :object,
+            properties: {
+              id: { type: :integer },
+              make: { type: :string },
+              model: { type: :string },
+              year: { type: :integer, nullable: true },
+              plate: { type: :string },
+              vehicle_type: { type: :string },
+              max_load_kg: { type: :string },
+              length_cm: { type: :integer, nullable: true },
+              width_cm: { type: :integer, nullable: true },
+              height_cm: { type: :integer, nullable: true },
+              volume_cm3: { type: :integer, nullable: true },
+              gps_enabled: { type: :boolean },
+              description: { type: :string, nullable: true },
+              photos: { type: :array, items: { "$ref" => "#/components/schemas/Photo" } }
+            }
+          },
+          VehicleSlim: {
+            type: :object,
+            properties: {
+              id: { type: :integer },
+              make: { type: :string },
+              model: { type: :string },
+              year: { type: :integer, nullable: true },
+              plate: { type: :string },
+              vehicle_type: { type: :string },
+              max_load_kg: { type: :string },
+              gps_enabled: { type: :boolean },
+              photos: { type: :array, items: { "$ref" => "#/components/schemas/Photo" } }
+            }
+          },
+          VehicleListResponse: {
+            type: :array,
+            items: { "$ref" => "#/components/schemas/VehicleSlim" }
           }
         }
       }

@@ -2,7 +2,8 @@
 tag: REQ-BE-00010
 title: Soporte multi-vehículo (flota) por transportista
 priority: P3
-status: backlog
+status: in_review
+pr_url: https://github.com/tcorzo/fiuba-gestion-tp/pull/144
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/89
@@ -11,6 +12,7 @@ github_issue: 89
 github_project_item: PVTI_lAHOAm1mPc4BWhiVzgrtB60
 github_repo: tcorzo/fiuba-gestion-tp
 last_synced: 2026-05-09T13:35:40.079177+00:00Z
+plan: docs/features/REQ/REQ-BE-00010/REQ-BE-00010-fleet-support.plan.md
 labels:
 - BE
 - FE

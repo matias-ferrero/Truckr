@@ -13,6 +13,9 @@
     "imports": {
         "react": "npm:react@18.2.0",
         "react-dom": "npm:react-dom@18.2.0",
+        "react-router-dom": "npm:react-router-dom@6.26.2",
+        "react-dropzone": "npm:react-dropzone@14.2.10",
+        "clsx": "npm:clsx@2.1.1",
         "@vitejs/plugin-react": "npm:@vitejs/plugin-react@4.2.0",
         "vite": "npm:vite@5.0.0",
         "typescript": "npm:typescript@5.3.3",
@@ -23,8 +26,7 @@
         "@testing-library/jest-dom": "npm:@testing-library/jest-dom@6.6.3",
         "@testing-library/user-event": "npm:@testing-library/user-event@14.5.2",
         "msw": "npm:msw@2.7.0",
-        "@playwright/test": "npm:@playwright/test@1.49.1",
-        "react-router-dom": "npm:react-router-dom@6.26.2"
+        "@playwright/test": "npm:@playwright/test@1.49.1"
     },
     "nodeModulesDir": "auto"
 }

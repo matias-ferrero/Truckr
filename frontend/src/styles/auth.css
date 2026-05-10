@@ -214,8 +214,8 @@
 
 /* Header */
 .appHeader {
-  background: color-mix(in oklab, var(--brand-primary) 60%, var(--paper));
-  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklab, var(--brand-primary, #bee4fa) 60%, var(--paper, #fff));
+  border-bottom: 1px solid var(--border, rgba(15, 23, 42, 0.12));
   position: sticky;
   top: 0;
   z-index: 10;
