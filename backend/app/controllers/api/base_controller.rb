@@ -12,7 +12,7 @@ module Api
     include ActionController::RequestForgeryProtection
     include Devise::Controllers::Helpers
     include Pundit::Authorization
-    include Pagy::Backend
+    include Pagy::Method
 
     # ActionController::API doesn't pick up the test-env
     # `config.action_controller.allow_forgery_protection = false` (that flag
@@ -50,7 +50,7 @@ module Api
     private
 
     def pagy_response_headers
-      pagy_headers_merge(@pagy) if @pagy
+      response.headers.merge!(@pagy.headers_hash) if @pagy
     end
 
     def forbidden(_e)

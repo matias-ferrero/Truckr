@@ -1,18 +1,16 @@
 # frozen_string_literal: true
 
-# Pagy pagination defaults. Headers extra exposes `Link`, `X-Page`,
-# `X-Per-Page`, `X-Total` so the frontend can paginate without parsing JSON
-# envelopes.
-require "pagy/extras/headers"
+# Pagy pagination defaults. Headers are integrated in core (pagy 43+);
+# `:headers_map` exposes `X-Page`, `X-Per-Page`, `X-Total`, `X-Total-Pages`
+# so the frontend can paginate without parsing JSON envelopes.
+Pagy::OPTIONS[:limit]     = 20
+Pagy::OPTIONS[:max_limit] = 100
 
-Pagy::DEFAULT[:limit]     = 20
-Pagy::DEFAULT[:max_items] = 100
-
-# Expose pagination as RFC-8288 Link plus the friendlier X- aliases
-# the frontend already expects (`X-Page`, `X-Per-Page`, `X-Total`).
-Pagy::DEFAULT[:headers] = {
+Pagy::OPTIONS[:headers_map] = {
   page:  "X-Page",
   limit: "X-Per-Page",
   count: "X-Total",
   pages: "X-Total-Pages"
 }
+
+Pagy::OPTIONS.freeze
