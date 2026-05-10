@@ -432,8 +432,8 @@ GEM
     sass-embedded (1.99.0-x86_64-linux-musl)
       google-protobuf (~> 4.31)
     securerandom (0.4.1)
-    shoulda-matchers (6.5.0)
-      activesupport (>= 5.2.0)
+    shoulda-matchers (7.0.1)
+      activesupport (>= 7.1)
     simplecov (0.22.0)
       docile (~> 1.1)
       simplecov-html (~> 0.11)
@@ -534,7 +534,7 @@ DEPENDENCIES
   rswag-specs
   rswag-ui
   rubocop-rails-omakase
-  shoulda-matchers (~> 6.4)
+  shoulda-matchers (~> 7.0)
   simplecov (~> 0.22)
   solid_cache
   solid_queue
