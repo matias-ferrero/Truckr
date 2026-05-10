@@ -45,7 +45,26 @@ gem "activeadmin", ">= 3.2"
 # Compile ActiveAdmin's SCSS to CSS — required because Propshaft does not transform Sass.
 gem "dartsass-rails"
 
+# Authorization — Pundit (harness installed now; used by REQ-BE-00009/10/etc).
+gem "pundit"
+
+# JSON serialization — Alba on Oj backend.
+gem "alba"
+gem "oj"
+
+# OpenAPI generation from request specs (mounted at /api-docs in dev/test).
+gem "rswag-api"
+gem "rswag-ui"
+
+# Rate limiting (login throttle on /api/auth/login).
+gem "rack-attack"
+
+# CORS (frontend on :5173 ↔ API on :3000 with credentials).
+gem "rack-cors"
+
 group :development, :test do
+  # Generates OpenAPI specs from rspec request specs.
+  gem "rswag-specs"
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 

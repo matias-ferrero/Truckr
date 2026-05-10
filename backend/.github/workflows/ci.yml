@@ -64,3 +64,31 @@ jobs:
 
       - name: Lint code for consistent style
         run: bin/rubocop -f github
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Build ActiveAdmin stylesheet (dartsass)
+        run: bin/rails dartsass:build
+
+      - name: Prepare test database
+        env:
+          RAILS_ENV: test
+        run: bin/rails db:test:prepare
+
+      - name: Run RSpec
+        run: bundle exec rspec
+
+      - name: Regenerate OpenAPI spec
+        run: bundle exec rake rswag:specs:swaggerize
+
+      - name: Verify swagger.yaml is up to date
+        run: git diff --exit-code swagger

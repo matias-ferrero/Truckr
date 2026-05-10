@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { landingContent } from "./landingContent";
+import { SessionWidget } from "./components/SessionWidget";
 
 type QuoteDraft = {
     origen: string;
@@ -81,6 +82,7 @@ export default function LandingPage() {
                             <a href="#para-quien">Para quién</a>
                             <a href="#confianza">Confianza</a>
                         </nav>
+                        <SessionWidget />
                     </div>
                 </div>
             </header>

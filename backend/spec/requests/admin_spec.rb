@@ -25,7 +25,9 @@ RSpec.describe "Admin panel", type: :request do
       follow_redirect!
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("Dashboard")
+      # Assert via DOM hook rather than visible copy — the dashboard label is
+      # localized (es default).
+      expect(response.body).to include('id="dashboard_default_message"')
     end
 
     it "renders the AdminUsers index without Ransack allowlist errors" do

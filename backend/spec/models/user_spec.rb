@@ -9,7 +9,7 @@ RSpec.describe User, type: :model do
     it { is_expected.to allow_value("foo@bar.com").for(:email) }
     it { is_expected.not_to allow_value("not-an-email").for(:email) }
 
-    it "requires a password (has_secure_password)" do
+    it "requires a password (Devise :validatable)" do
       expect(build(:user, password: nil)).not_to be_valid
     end
 
@@ -25,12 +25,61 @@ RSpec.describe User, type: :model do
     it "does not have a tax_id or dni_or_cuit column — fiscal identity lives on Carrier/Shipper" do
       expect(User.column_names).not_to include("tax_id", "dni_or_cuit")
     end
+
+    it "stores hashed password in encrypted_password (Devise convention)" do
+      expect(User.column_names).to include("encrypted_password")
+      expect(User.column_names).not_to include("password_digest")
+    end
+  end
+
+  describe "password complexity" do
+    let(:base) { build(:user, password: nil) }
+
+    it "rejects passwords shorter than 8 characters" do
+      base.password = "Ab1cdef"
+      expect(base).not_to be_valid
+      expect(base.errors[:password]).to be_present
+    end
+
+    it "rejects passwords without an uppercase letter" do
+      base.password = "password1"
+      expect(base).not_to be_valid
+      expect(base.errors[:password]).to include(a_string_matching(/mayúscula/))
+    end
+
+    it "rejects passwords without a lowercase letter" do
+      base.password = "PASSWORD1"
+      expect(base).not_to be_valid
+      expect(base.errors[:password]).to include(a_string_matching(/minúscula/))
+    end
+
+    it "rejects passwords without a digit" do
+      base.password = "Password"
+      expect(base).not_to be_valid
+      expect(base.errors[:password]).to include(a_string_matching(/dígito/))
+    end
+
+    it "accepts a strong password" do
+      base.password = "Password1"
+      expect(base).to be_valid
+    end
+  end
+
+  describe "Devise password verification" do
+    it "valid_password? returns true for the right password" do
+      user = create(:user, password: "Password123")
+      expect(user.valid_password?("Password123")).to be true
+    end
+
+    it "valid_password? returns false for the wrong password" do
+      user = create(:user, password: "Password123")
+      expect(user.valid_password?("nope")).to be false
+    end
   end
 
   describe "associations" do
     it { is_expected.to have_one(:carrier).dependent(:destroy) }
     it { is_expected.to have_one(:shipper).dependent(:destroy) }
-    it { is_expected.to have_secure_password }
   end
 
   describe "role predicates (ADR-008)" do
@@ -85,7 +134,7 @@ RSpec.describe User, type: :model do
   describe "ransack allowlists (ActiveAdmin)" do
     it "exposes safe attributes" do
       expect(User.ransackable_attributes).to include("email", "full_name")
-      expect(User.ransackable_attributes).not_to include("password_digest")
+      expect(User.ransackable_attributes).not_to include("encrypted_password")
     end
 
     it "exposes carrier and shipper associations" do

@@ -1,0 +1,180 @@
+---
+openapi: 3.0.3
+info:
+  title: Truckr API
+  version: v1
+  description: Internal HTTP API for the Truckr® marketplace.
+paths:
+  "/api/auth/csrf":
+    get:
+      summary: Returns the CSRF token and bootstraps a session cookie
+      tags:
+      - Auth
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  csrf_token:
+                    type: string
+                required:
+                - csrf_token
+  "/api/auth/register":
+    post:
+      summary: Registers a new user with the chosen role
+      tags:
+      - Auth
+      parameters: []
+      responses:
+        '201':
+          description: created (both)
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Me"
+        '422':
+          description: duplicate email
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorEnvelope"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                name:
+                  type: string
+                role:
+                  type: string
+                  enum:
+                  - carrier
+                  - shipper
+                  - both
+              required:
+              - email
+              - password
+              - name
+              - role
+  "/api/auth/login":
+    post:
+      summary: Logs in with email + password
+      tags:
+      - Auth
+      parameters: []
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Me"
+        '401':
+          description: invalid credentials
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorEnvelope"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+              - email
+              - password
+  "/api/auth/logout":
+    delete:
+      summary: Signs the current user out
+      tags:
+      - Auth
+      responses:
+        '204':
+          description: no content
+  "/api/auth/me":
+    get:
+      summary: Returns the current user with carrier/shipper rows
+      tags:
+      - Auth
+      responses:
+        '200':
+          description: authenticated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Me"
+        '401':
+          description: anonymous
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorEnvelope"
+servers:
+- url: http://localhost:3000
+  description: Local dev
+components:
+  securitySchemes:
+    cookie_auth:
+      type: apiKey
+      in: cookie
+      name: _truckr_session
+  schemas:
+    ErrorEnvelope:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+      required:
+      - error
+    Me:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        full_name:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        verified_at:
+          type: string
+          format: date-time
+          nullable: true
+        roles:
+          type: array
+          items:
+            type: string
+            enum:
+            - carrier
+            - shipper
+        carrier:
+          type: object
+          nullable: true
+        shipper:
+          type: object
+          nullable: true
+      required:
+      - id
+      - email
+      - roles

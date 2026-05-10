@@ -1,12 +1,23 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import LandingPage from "./App";
+import { AuthProvider } from "./auth/AuthContext";
 import { landingContent } from "./landingContent";
+
+const renderLanding = () =>
+    render(
+        <MemoryRouter>
+            <AuthProvider>
+                <LandingPage />
+            </AuthProvider>
+        </MemoryRouter>,
+    );
 
 describe("LandingPage", () => {
     it("renders hero copy from landingContent", () => {
-        render(<LandingPage />);
+        renderLanding();
         expect(
             screen.getByRole("heading", { name: landingContent.hero.title }),
         ).toBeInTheDocument();
@@ -16,7 +27,7 @@ describe("LandingPage", () => {
     });
 
     it("renders every feature", () => {
-        render(<LandingPage />);
+        renderLanding();
         for (const feature of landingContent.features) {
             expect(
                 screen.getByRole("heading", { name: feature.title }),
@@ -26,7 +37,7 @@ describe("LandingPage", () => {
 
     it("shows validation errors when the quote form is submitted empty", async () => {
         const user = userEvent.setup();
-        render(<LandingPage />);
+        renderLanding();
 
         const submit = screen.getByRole("button", { name: /enviar solicitud/i });
         await user.click(submit);

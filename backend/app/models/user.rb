@@ -3,8 +3,17 @@
 # User — auth account. A User MAY have a Carrier profile, a Shipper profile,
 # both, or neither. Role state is derived from the relation rows — there are
 # NO is_carrier / is_shipper columns on this table (ADR-008).
+#
+# Auth is provided by Devise (REQ-BE-00023):
+# - :database_authenticatable — bcrypt password storage in encrypted_password
+# - :registerable             — exposes the registration flow (we wrap it)
+# - :validatable              — email format + presence + min password length
+#
+# Modules deliberately omitted: confirmable, recoverable, trackable, lockable,
+# timeoutable, rememberable, omniauthable. See plan Decision A.
 class User < ApplicationRecord
-  has_secure_password
+  devise :database_authenticatable, :registerable, :validatable,
+         password_length: 8..128
 
   has_one :carrier, dependent: :destroy
   has_one :shipper, dependent: :destroy
@@ -15,6 +24,12 @@ class User < ApplicationRecord
             presence: true,
             uniqueness: { case_sensitive: false },
             format: { with: URI::MailTo::EMAIL_REGEXP }
+
+  # Devise's :validatable already enforces presence + length on password;
+  # we layer complexity rules (≥1 upper, ≥1 lower, ≥1 digit) on top.
+  validates :password,
+            password_complexity: true,
+            if: -> { password.present? }
 
   scope :carriers, -> { joins(:carrier).distinct }
   scope :shippers, -> { joins(:shipper).distinct }

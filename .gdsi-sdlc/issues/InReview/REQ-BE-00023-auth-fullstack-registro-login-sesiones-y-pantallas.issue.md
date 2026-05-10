@@ -2,11 +2,13 @@
 tag: REQ-BE-00023
 title: Auth fullstack — registro, login, sesiones + pantallas en frontend
 priority: P0
-status: backlog
+status: in_review
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/103
 author: Claude Code
+plan: docs/features/REQ/REQ-BE-00023/REQ-BE-00023-auth-fullstack.plan.md
+pr_url: https://github.com/tcorzo/fiuba-gestion-tp/pull/145
 github_issue: 103
 github_project_item: PVTI_lAHOAm1mPc4BWhiVzgrtCd0
 github_repo: tcorzo/fiuba-gestion-tp

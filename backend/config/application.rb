@@ -38,5 +38,10 @@ module Trukr
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # User-facing copy is es-AR; English remains available as a fallback.
+    config.i18n.available_locales = %i[es en]
+    config.i18n.default_locale = :es
+    config.i18n.fallbacks = [:en]
   end
 end

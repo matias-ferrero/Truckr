@@ -1,0 +1,8 @@
+es:
+  hello: "Hola mundo"
+  errors:
+    messages:
+      password_complexity:
+        upper: "debe contener al menos una mayúscula"
+        lower: "debe contener al menos una minúscula"
+        digit: "debe contener al menos un dígito"

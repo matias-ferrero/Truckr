@@ -23,7 +23,8 @@
         "@testing-library/jest-dom": "npm:@testing-library/jest-dom@6.6.3",
         "@testing-library/user-event": "npm:@testing-library/user-event@14.5.2",
         "msw": "npm:msw@2.7.0",
-        "@playwright/test": "npm:@playwright/test@1.49.1"
+        "@playwright/test": "npm:@playwright/test@1.49.1",
+        "react-router-dom": "npm:react-router-dom@6.26.2"
     },
     "nodeModulesDir": "auto"
 }
