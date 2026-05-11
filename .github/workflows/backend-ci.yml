@@ -2,6 +2,7 @@ name: Backend CI
 
 on:
     pull_request:
+        types: [opened, synchronize, reopened, ready_for_review]
         paths:
             - "backend/**"
             - ".github/workflows/backend-ci.yml"
@@ -21,6 +22,7 @@ defaults:
 
 jobs:
     scan_ruby:
+        if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
@@ -38,6 +40,7 @@ jobs:
               run: bin/bundler-audit
 
     scan_js:
+        if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
@@ -52,6 +55,7 @@ jobs:
               run: bin/importmap audit
 
     lint:
+        if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
         runs-on: ubuntu-latest
         env:
             RUBOCOP_CACHE_ROOT: tmp/rubocop
@@ -78,6 +82,7 @@ jobs:
               run: bin/rubocop -f github
 
     test:
+        if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6

@@ -2,7 +2,7 @@ name: PR Title
 
 on:
     pull_request:
-        types: [opened, edited, reopened, synchronize]
+        types: [opened, edited, reopened, synchronize, ready_for_review]
 
 concurrency:
     group: pr-title-${{ github.ref }}
@@ -16,6 +16,8 @@ jobs:
         # release-please consumes the squash-merge commit, which GitHub derives
         # from the PR title. A non-conventional title silently breaks the
         # changelog and version bump — fail the check loudly instead.
+        # Skip on drafts: title can churn freely until the PR is opened for review.
+        if: github.event.pull_request.draft == false
         runs-on: ubuntu-latest
         steps:
             - uses: actions/github-script@v9
