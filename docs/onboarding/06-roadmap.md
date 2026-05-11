@@ -61,20 +61,19 @@ The dependency graph forces a narrow funnel through the foundation tier before f
 
 Recorded as "Decisions Deferred" in `01-technical-vision/`:
 
-- **Production database**: SQLite vs. PostgreSQL. Stick with SQLite while single-container; revisit when write volume or multi-node deploy lands.
-- **Geospatial storage**: PostGIS vs. external geo provider (Google Maps / HERE / OSRM). Tied to Maps integration.
 - **Mobile strategy**: PWA vs. React Native. Influences API versioning timing.
 - ~~**Test framework choice**: Minitest (Rails default) vs. RSpec.~~ Resolved 2026-05-03 — **RSpec exclusively** (`rspec-rails ~> 7.1`); Rails-default `backend/test/` is unused.
+- ~~**Production database**: SQLite vs. PostgreSQL.~~ Resolved 2026-05-11 — **SQLite, permanent**. Project will not be brought to market; no migration is planned. See `CLAUDE.md` § "Database policy" + ADR-002.
+- ~~**Geospatial storage**: PostGIS vs. external geo provider.~~ Resolved 2026-05-11 — **lat/lng columns + Haversine in app code + external API for routing distance**. No PostGIS, ever. See ADR-010.
 
 ## Scalability Roadmap
 
+Per `CLAUDE.md` § "Database policy", there is no scalability roadmap past Phase 0. SQLite + single Kamal container is the final infrastructure. The table below documents the closed shape, not deferred work.
+
 | Phase | Trigger | Change |
 |-------|---------|--------|
-| 0 (now) | Prototype demo | SQLite, single container, no auth, no tests. |
-| 1 | First real users / write volume | Migrate to PostgreSQL, add CI tests, ship auth. |
-| 2 | Geographic features go live | Add PostGIS or external geo provider. |
-| 3 | Multi-region / HA | Extract background workers, adopt managed queue (Sidekiq/Good Job). |
-| 4 | Mobile launch | Split API contract into `/api/v1`. |
+| 0 (final) | Coursework scope | SQLite, single container, lat/lng + Haversine geo, external API for routing. Auth + CI test workflows still in flight inside this phase. |
+| — | Scope change to market launch | Would re-open ADR-002 and ADR-010. Not on the table. |
 
 ## Known Technical Debt
 

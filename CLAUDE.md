@@ -12,6 +12,26 @@ All written content (artifacts, user stories, prompts) is in **Spanish (es-AR)**
 
 **Source of truth: [`docs/05-appendices/glossary.md`](docs/05-appendices/glossary.md).** Whenever a term is introduced, renamed, or deprecated, update the glossary first and propagate from there. Personas / models in particular: `Transportista` ↔ `Carrier`, `Expedidor` ↔ `Shipper`. The terms `Cliente` / `Productor` are deprecated synonyms folded into `Expedidor`.
 
+## Database policy (UTMOST importance)
+
+**SQLite is the production database — forever.** This product is academic coursework and will not be brought to market; there is no Phase-2 migration, no scalability cutover, no "when we grow" PostgreSQL plan. Treat SQLite as a permanent architectural constraint, not a temporary one.
+
+**Hard rules:**
+
+| Surface | Rule |
+|---|---|
+| Schema | Stays portable to SQLite. No `citext`, no partial indexes that require Postgres-only syntax, no `EXCLUDE` constraints, no array columns, no `jsonb`. |
+| Indexes | B-tree only. No GIN / GIST / spatial indexes. |
+| Geo | Lat/lng as `DECIMAL(9,6)` columns on the relevant tables. "Within N km" queries use Haversine in application code or an external API call — never PostGIS. |
+| Search | Diacritic-insensitive matching uses `I18n.transliterate` on a stored normalized column. Never `unaccent`, never a Postgres-only extension. |
+| Concurrency | Race-safety is handled at the application layer. Don't write "Phase-2 EXCLUDE constraint" comments — solve it on SQLite or accept the race for the MVP. |
+| ADRs / planning | Don't write "Phase 2 → Postgres" / "when we migrate" / "for future Postgres" framing. Solve the problem on SQLite or document the limitation as final. |
+| Cost / infra docs | No RDS line. No managed-Postgres line. Deploy is Kamal + single container with SQLite on the local volume. |
+
+**Why:** Stated 2026-05-11. Speculative Postgres baggage in code and docs creates phantom deferred work, biases solutions toward features that aren't actually reachable on the current stack, and pollutes ADRs with "still pending" decisions that will never be revisited. Reject it at review.
+
+**If you encounter pre-existing Postgres-baggage references** in already-merged code or docs (e.g. `transport_window.rb` Phase-2 PostGIS comment, `cost-report.typ` RDS line, `domain-model.md` `citext` note, historical plan files): leave historical plan files alone, but call them out for cleanup in the next docs sweep. Don't write new ones.
+
 ## Language policy (UTMOST importance)
 
 **All code and routes are ENGLISH. UI text and error messages are internationalized — NEVER hardcoded literals.** This is non-negotiable. PRs that add Spanish in code surfaces are blocked at review.

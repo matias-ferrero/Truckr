@@ -49,7 +49,7 @@ The project is transitioning from the **planning phase** (product artifacts, USM
 
 **Context**: Minimise operational surface in the prototype phase. Rails 8 ships with `solid_queue`, `solid_cache`, `solid_cable` — all DB-backed, removing the need for Redis/Memcached.
 **Decision**: `config.api_only = true`, SQLite primary DB, separate SQLite databases for `cache`, `queue` and `cable` in production.
-**Consequences**: Zero-infrastructure prototype; can be deployed with Kamal as a single container. Migration to PostgreSQL planned before multi-region or high-write workloads.
+**Consequences**: Zero-infrastructure prototype; can be deployed with Kamal as a single container. **SQLite is the production database for the lifetime of this project** — there is no planned migration to PostgreSQL (see project directive in `CLAUDE.md` § "Database policy"). All schema, query, and infrastructure choices treat SQLite as permanent.
 
 ### ADR-003 — React + Vite frontend, Deno as task runner
 
@@ -84,9 +84,9 @@ The project is transitioning from the **planning phase** (product artifacts, USM
 
 ### ADR-007 — Bigint primary keys (Rails default)
 
-**Context**: Phase 0/1 runs on SQLite, Phase 1+ migrates to PostgreSQL (still deferred). PKs are referenced by every FK in the schema, so the choice is hard to reverse. UUIDs would only pay off if external clients generated IDs offline, or if multi-master writes were on the table — neither is true.
+**Context**: Runs on SQLite (permanent — see ADR-002 and `CLAUDE.md` § "Database policy"). PKs are referenced by every FK in the schema, so the choice is hard to reverse. UUIDs would only pay off if external clients generated IDs offline, or if multi-master writes were on the table — neither is true.
 **Decision**: Use `bigint` PKs (Rails default) for every domain table. Public-facing URLs that need to hide sequential numbering will use a separate `slug` or `obfuscated_id` column on the relevant resource (decided per resource when the first endpoint exposes IDs).
-**Consequences**: Smaller indexes and faster joins on both SQLite and Postgres; trivially compatible with `references` migrations and Rails associations. Loses portability to event-sourced / offline-write scenarios — acceptable given the scope. Re-evaluating only triggers if a future feature explicitly requires client-generated IDs.
+**Consequences**: Smaller indexes and faster joins on SQLite; trivially compatible with `references` migrations and Rails associations. Loses portability to event-sourced / offline-write scenarios — acceptable given the scope. Re-evaluating only triggers if a future feature explicitly requires client-generated IDs.
 
 ### ADR-008 — User ↔ Carrier/Shipper: role + extension table
 
@@ -112,24 +112,28 @@ The project is transitioning from the **planning phase** (product artifacts, USM
 - **Hard-delete** on `Carrier`, `Shipper`, `Vehicle`, `TransportWindow`, `CargoOffer`, `Quote`, `TrackingEvent`, `Route`, `InsurancePolicy`. Cascade rules expressed via Rails `dependent: :destroy` / `:nullify` per relation (specifics in `domain-model.md`).
 - No gem mandated. The Phase-0 implementation is a `deleted_at` column, a default scope (`where(deleted_at: nil)`) only on the three audit-bearing models, and explicit `unscoped` for admin reads.
 
-**Consequences**: Most tables stay simple. Unique indexes on the three soft-deleted tables must be partial (`WHERE deleted_at IS NULL`) where uniqueness is meaningful — already supported in SQLite ≥ 3.8 and natively in Postgres. Reports that need historical rows must use `unscoped` explicitly.
+**Consequences**: Most tables stay simple. Unique indexes on the three soft-deleted tables must be partial (`WHERE deleted_at IS NULL`) where uniqueness is meaningful — supported in SQLite ≥ 3.8 (our target). Reports that need historical rows must use `unscoped` explicitly.
 
-### ADR-010 — Geo storage: lat/lng columns Phase 0/1; PostGIS Phase 2
+### ADR-010 — Geo storage: lat/lng columns, application-level distance math
 
-**Context**: ADR-002 keeps SQLite as the primary DB through Phase 1. PostGIS requires PostgreSQL — adopting it now would force the Phase-1 migration ahead of schedule. Tracking, routing, and "transportistas dentro de N km" features eventually need spatial indexes, but Phase 0/1 only needs to **store** coordinates and lookup-by-city. External providers (Google Maps Distance Matrix, OSRM) solve routing but not storage.
+**Context**: ADR-002 keeps SQLite as the production DB permanently (see `CLAUDE.md` § "Database policy"). PostGIS requires PostgreSQL and is therefore off the table. Tracking, routing, and "transportistas dentro de N km" features need to **store** coordinates and answer city / proximity queries — both achievable without spatial indexes at the scale this project will ever reach.
 **Decision**:
 
-- Phase 0/1 stores latitude / longitude as `DECIMAL(9,6)` columns directly on `tracking_events`, `routes`, `transport_windows` and `cargo_offers` (origin / destination pairs). City and province go in indexed `string` columns alongside.
-- No spatial index, no PostGIS, no GIN indexes. "Find by city" uses plain B-tree indexes on `(province, city)`.
-- Phase 2 introduces PostGIS in lockstep with the SQLite → Postgres migration; lat/lng columns become `point` / `geography(Point, 4326)` and acquire a GIST index. The migration is mechanical because no app-level code is allowed to bake in spatial-function calls before then.
+- Latitude / longitude stored as `DECIMAL(9,6)` columns directly on `tracking_events`, `routes`, `transport_windows` and `cargo_offers` (origin / destination pairs). City and province go in indexed `string` columns alongside.
+- No spatial index, no PostGIS, no GIN/GIST indexes. "Find by city" uses plain B-tree indexes on `(province, city)`.
+- "Within N km" queries compute Haversine distance in Ruby over a candidate set narrowed by `(province, city)` or a coarse lat/lng bounding-box filter (`WHERE latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?`). For routing distances, call an external API (Google Maps Distance Matrix / OSRM) — no spatial storage required.
 
-**Consequences**: Phase 0/1 ships with zero geospatial infra. Distance / radius queries return nothing useful until Phase 2 — features that depend on them are deferred to that phase. The Phase-2 schema migration is a focused, well-scoped piece of work.
+**Consequences**: Zero geospatial infrastructure ever. Proximity queries are O(N over a small bounded candidate set); fine at coursework scale. Routing distance is a paid/external call when needed, not a database concern.
 
 ### Decisions Deferred
 
 - Authentication / authorization (no users or sessions yet — the only endpoint is public). User schema in ADR-008 reserves the auth slots (`password_digest`, `verified_at`).
-- Database choice for production beyond SQLite (likely PostgreSQL — still deferred; ADR-010 hangs the geo Phase-2 migration off this).
 - Mobile strategy (React Native vs. PWA).
+
+### Decisions Closed (not deferred)
+
+- **Production database**: SQLite. Permanent. See `CLAUDE.md` § "Database policy" and ADR-002. No PostgreSQL migration is planned, queued, or under consideration.
+- **Geospatial storage**: lat/lng columns + Haversine in application code + external API for routing. See ADR-010. No PostGIS, ever.
 
 ---
 
@@ -179,9 +183,9 @@ The project is transitioning from the **planning phase** (product artifacts, USM
 
 ### Scalability
 
-- Single-container deploy today. Vertical scaling is sufficient for demo scope.
-- SQLite is the current primary store; migration to PostgreSQL is expected when write volume or multi-node deployment becomes necessary.
-- solid_queue scales by adding worker processes; can be swapped for Sidekiq/Good Job without changing job definitions.
+- Single-container deploy today and permanently — this project's scope ends at coursework, not market launch (see `CLAUDE.md` § "Database policy").
+- SQLite is the permanent primary store. Vertical scaling on a single Kamal container covers every realistic workload this project will see; there is no planned migration to PostgreSQL or multi-node deployment.
+- solid_queue scales by adding worker processes on the same container.
 
 ### Security
 
@@ -223,13 +227,12 @@ See `docs/artifacts/backlog-us.typ`, `usm.typ`, `wbs.typ` for the full backlog. 
 
 ### Scalability Roadmap
 
+Per `CLAUDE.md` § "Database policy", this project does not have a scalability roadmap past Phase 0. SQLite + single Kamal container is the final infrastructure. Items below would only be revisited if the project's scope changed from coursework to a market launch — which is not on the table.
+
 | Phase | Trigger | Change |
 |-------|---------|--------|
-| 0 (now) | Prototype demo | SQLite, single container |
-| 1 | First real users / write volume | Migrate to PostgreSQL, add CI tests |
-| 2 | Geographic features live | Add PostGIS or external geo provider |
-| 3 | Multi-region / HA | Extract background workers, adopt managed queue |
-| 4 | Mobile launch | Split API contract into v1 with versioning |
+| 0 (final) | Coursework scope | SQLite, single container, lat/lng + Haversine geo, external API for routing |
+| — | Scope change to market launch | Would re-open ADR-002 and ADR-010. Not planned. |
 
 ---
 
