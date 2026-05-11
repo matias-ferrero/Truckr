@@ -2,86 +2,90 @@
 tag: REQ-BE-00023
 title: Auth fullstack — registro, login, sesiones + pantallas en frontend
 priority: P0
-status: in_review
+status: done
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/103
 author: Claude Code
-plan: docs/features/REQ/REQ-BE-00023/REQ-BE-00023-auth-fullstack.plan.md
-pr_url: https://github.com/tcorzo/fiuba-gestion-tp/pull/145
 github_issue: 103
 github_project_item: PVTI_lAHOAm1mPc4BWhiVzgrtCd0
 github_repo: tcorzo/fiuba-gestion-tp
-last_synced: 2026-05-04T02:26:01.513502+00:00Z
+last_synced: 2026-05-11T22:38:02.151349+00:00Z
 labels:
-- REQ
 - BE
 - FE
-- auth
-- foundation
+- REQ
 - mvp
+- foundation
+- auth
+plan: docs/features/REQ/REQ-BE-00023/REQ-BE-00023-auth-fullstack.plan.md
+pr_url: https://github.com/tcorzo/fiuba-gestion-tp/pull/145
 ---
 
 ## Summary
 
-Implementar autenticación end-to-end: endpoints de registro/login/logout/sesión actual en el backend, pantallas correspondientes en el frontend, persistencia de sesión, y exposición de `current_user` a todos los `Api::*Controller`s. Cubre US1 (Registrarse), US2 (Login) y prepara el terreno para US3 (Modificar Perfil) y US16 (Cambiar Contraseña). Es bloqueante de **cualquier** endpoint `/me/*`.
+Implement end-to-end authentication: backend registration/login/logout/current-session endpoints, corresponding frontend screens, session persistence, and exposure of `current_user` to all `Api::*Controller`s. Covers US1 (Register), US2 (Login), and lays the groundwork for US3 (Edit Profile) and US16 (Change Password). This blocks **any** `/me/*` endpoint.
 
 ## Problem Statement
 
-`CLAUDE.md` y el roadmap declaran "no auth yet". Pero todos los issues que creé asumen `current_user` (los endpoints `carriers/me/...`, payouts, reseñas, etc.). Este issue cierra esa brecha y deja un sistema usable end-to-end: alguien se registra como Shipper o Carrier, se loguea, opera con su perfil.
+`CLAUDE.md` and the roadmap currently state "no auth yet". However, all previously created issues assume the existence of `current_user` (`carriers/me/...` endpoints, payouts, reviews, etc.). This issue closes that gap and delivers a usable end-to-end authentication system: a user can register as a Shipper or Carrier, log in, and operate with their profile.
 
 ## Expected Behavior
 
 ### Backend
-- Estrategia de sesión: **session cookie** httpOnly + SameSite=Lax (no JWT — Rails session store + Solid Cache es suficiente y elimina la complejidad de refresh tokens). Decisión registrada en un ADR breve si todavía no existe.
-- Endpoints:
-  - `POST /api/auth/register` — body: `{ email, password, name, role: "carrier"|"shipper"|"both" }`. Crea `User` + la fila de `Carrier`/`Shipper` correspondiente (o ambas).
-  - `POST /api/auth/login` — body: `{ email, password }`. Setea cookie de sesión.
-  - `DELETE /api/auth/logout` — borra cookie.
-  - `GET /api/auth/me` — devuelve `User` + roles + datos básicos del Carrier/Shipper.
-- `ApplicationController` expone `current_user`, `authenticate_user!`, `current_carrier`, `current_shipper` (helpers).
-- Rate limiting básico en login (5 intentos / 15min por IP) — usar `rack-attack` o equivalente.
-- Validaciones de password: mínimo 8 caracteres, al menos una mayúscula, una minúscula y un número (los AC de US1).
-- Envío de email de bienvenida (depende de `INF-BE-00005` mailer scaffolding).
+
+* Session strategy: **httpOnly session cookie** + `SameSite=Lax` (no JWT — Rails session store + Solid Cache is sufficient and removes refresh token complexity). Record the decision in a short ADR if one does not already exist.
+* Endpoints:
+
+  * `POST /api/auth/register` — body: `{ email, password, name, role: "carrier"|"shipper"|"both" }`. Creates `User` + the corresponding `Carrier`/`Shipper` row (or both).
+  * `POST /api/auth/login` — body: `{ email, password }`. Sets the session cookie.
+  * `DELETE /api/auth/logout` — clears the session cookie.
+  * `GET /api/auth/me` — returns `User` + roles + basic Carrier/Shipper data.
+* `ApplicationController` exposes `current_user`, `authenticate_user!`, `current_carrier`, `current_shipper` (helpers).
+* Basic login rate limiting (5 attempts / 15 min per IP) — use `rack-attack` or equivalent.
+* Password validations: minimum 8 characters, at least one uppercase letter, one lowercase letter, and one number (US1 acceptance criteria).
+* Send a welcome email (depends on `INF-BE-00005` mailer scaffolding).
 
 ### Frontend
-- Pantallas: `/registro`, `/login`, `/logout` (action), header con CTA "Iniciar sesión" / "Salir" según estado.
-- Form de registro con los campos requeridos + selector de rol (Cliente / Transportista / Ambos).
-- Validación client-side de password match + reglas; errores server-side mostrados inline.
-- Guardado del estado de sesión: poll inicial a `GET /api/auth/me`; React Context para `useCurrentUser()`.
-- Redirect post-login al "home" del rol correspondiente (placeholder hasta que existan US10 / US4).
-- Cierre de sesión disponible desde header en cualquier pantalla.
-- Cobertura E2E: registro + login + logout happy path en Playwright.
+
+* Screens: `/register`, `/login`, `/logout` (action), header with "Log in" / "Log out" CTA depending on session state.
+* Registration form with required fields + role selector (Customer / Carrier / Both).
+* Client-side validation for password confirmation + rules; server-side errors displayed inline.
+* Session state persistence: initial poll to `GET /api/auth/me`; React Context for `useCurrentUser()`.
+* Post-login redirect to the corresponding role home page (placeholder until US10 / US4 exist).
+* Logout available from the header on every screen.
+* E2E coverage: register + login + logout happy path in Playwright.
 
 ### Cross-cutting
-- CORS ajustado para que las cookies funcionen en dev (`localhost:5173` ↔ `localhost:3000`), `credentials: include` en fetch.
-- CSRF: dado que es API session-cookie, hace falta CSRF token. Endpoint `GET /api/csrf` que devuelve el token; el frontend lo agrega como header `X-CSRF-Token` en POSTs.
+
+* CORS configured so cookies work in development (`localhost:5173` ↔ `localhost:3000`), `credentials: include` enabled in fetch requests.
+* CSRF: since this uses API session cookies, CSRF protection is required. Add `GET /api/csrf` returning the token; the frontend sends it via the `X-CSRF-Token` header on POST requests.
 
 ## Technical Notes
 
-- **Session store**: Solid Cache (DB-backed), no Redis. Coherente con el stack del proyecto.
-- **Password digest**: `User` ya tiene `password_digest` por `REQ-BE-00020`; esto solo lo activa con `has_secure_password validations: true`.
-- **Roles**: la fila de `Carrier`/`Shipper` es el estado de rol. No se agregan booleans desnormalizados (regla del proyecto).
-- **Email verification**: NO se incluye acá. La verificación por email es US22 (Release 3); este issue acepta usuarios sin verificar y los marca como `email_verified: false`.
-- **Sin auth UI bonita todavía**: los formularios siguen `frontend/.impeccable.md` pero no requieren skill `polish`/`critique` corrida en este issue (eso es post-MVP).
+* **Session store**: Solid Cache (DB-backed), no Redis. Consistent with the project stack.
+* **Password digest**: `User` already has `password_digest` from `REQ-BE-00020`; this issue only enables it via `has_secure_password validations: true`.
+* **Roles**: the existence of a `Carrier`/`Shipper` row defines the role state. Do not add denormalized booleans (project rule).
+* **Email verification**: NOT included here. Email verification belongs to US22 (Release 3); this issue accepts unverified users and marks them as `email_verified: false`.
+* **Polished auth UI**: forms should follow `frontend/.impeccable.md` and require running the `polish`/`critique` skills in this issue.
 
 ## Related
 
-- Padres: `REQ-BE-00020` (Identity models), `INF-BE-00005` (mailer — para email de bienvenida; opcional, el welcome puede agregarse luego).
-- US fuente: US1, US2 (cubre las dos completas en un issue fullstack).
-- Bloquea: US3 (modificar perfil), US16 (cambiar contraseña), US22 (verify email), todos los endpoints `/me/*`.
+* Parent issues: `REQ-BE-00020` (Identity models), `INF-BE-00005` (mailer — welcome email can be added later if necessary).
+* Source user stories: US1, US2 (fully covered by this fullstack issue).
+* Blocks: US3 (edit profile), US16 (change password), US22 (verify email), all `/me/*` endpoints.
 
 ## Acceptance Criteria
 
-- [ ] Endpoints `/api/auth/{register,login,logout,me,csrf}` implementados con request specs.
-- [ ] `ApplicationController` expone `current_user`, `current_carrier`, `current_shipper`, `authenticate_user!`.
-- [ ] Rate limiting de login funcional.
-- [ ] Pantallas `/registro` y `/login` implementadas y conectadas al BE.
-- [ ] Header con estado de sesión + logout en cualquier ruta.
-- [ ] Validaciones de password (los 4 AC de US1) cubiertas en BE y FE.
-- [ ] CORS + CSRF configurados, fetch con `credentials: include` funciona.
-- [ ] E2E (Playwright): registro → login → me → logout.
-- [ ] Backend specs ≥80% sobre `app/controllers/api/auth_controller.rb`.
-- [ ] Frontend tests ≥80% sobre los componentes de auth.
-- [ ] Conventional commit `feat(auth): implement registration and login`.
-- [ ] Identifiers en inglés.
+* [ ] `/api/auth/{register,login,logout,me,csrf}` endpoints implemented with request specs.
+* [ ] `ApplicationController` exposes `current_user`, `current_carrier`, `current_shipper`, `authenticate_user!`.
+* [ ] Login rate limiting is functional.
+* [ ] `/register` and `/login` screens implemented and connected to the backend.
+* [ ] Header displays session state + logout on every route.
+* [ ] Password validation rules (all 4 US1 ACs) covered in backend and frontend.
+* [ ] CORS + CSRF configured; fetch requests with `credentials: include` work correctly.
+* [ ] E2E (Playwright): register → login → me → logout.
+* [ ] Backend specs ≥80% coverage for `app/controllers/api/auth_controller.rb`.
+* [ ] Frontend tests ≥80% coverage for auth components.
+* [ ] Conventional commit: `feat(auth): implement registration and login`.
+* [ ] All identifiers must be in English.
