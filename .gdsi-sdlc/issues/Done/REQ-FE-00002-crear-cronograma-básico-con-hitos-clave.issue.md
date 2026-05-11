@@ -2,7 +2,7 @@
 tag: REQ-FE-00002
 title: Crear cronograma básico con hitos clave
 priority: P2
-status: backlog
+status: done
 created: '2026-04-18'
 source: github
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/53

@@ -2,7 +2,7 @@
 tag: REQ-DOC-00002
 title: Crear artefacto de riesgos con metodología, registro y cobertura por categorías
 priority: P2
-status: in_review
+status: done
 created: '2026-04-18'
 source: github
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/54

@@ -1,6 +1,6 @@
 ---
 tag: REQ-FE-00016
-title: Publicar disponibilidad del transportista (TransportWindow CRUD)
+title: Publicar ventana de transporte (TransportWindow CRUD)
 priority: P1
 status: backlog
 created: '2026-05-03'
@@ -23,11 +23,11 @@ labels:
 
 ## Summary
 
-El transportista publica su disponibilidad: zona origen, precio/km, kilómetros máximos, ventana de fechas. Crea/edita/despublica `TransportWindow`s. Cubre US9 fullstack.
+El transportista publica una **ventana de transporte** (`TransportWindow`): zona origen, zona destino, franja temporal, vehículo asociado y precio/km. Crea/edita/despublica `TransportWindow`s. Cubre US9 fullstack.
 
 ## Problem Statement
 
-Sin disponibilidad publicada, los Shippers no encuentran transportistas y la búsqueda (US4) devuelve listas vacías. Es la contraparte visible de la búsqueda.
+Sin ventanas publicadas, los Shippers no encuentran transportes que coincidan con su carga y la búsqueda (US4) devuelve listas vacías. Es la contraparte productora de la búsqueda y cierra el loop visible del marketplace en el demo de Sprint 1.
 
 ## Expected Behavior
 
@@ -36,13 +36,14 @@ Sin disponibilidad publicada, los Shippers no encuentran transportistas y la bú
 - `GET /api/carriers/me/transport_windows` — lista las del carrier logueado.
 - `PATCH /api/carriers/me/transport_windows/:id` — edita.
 - `DELETE /api/carriers/me/transport_windows/:id` — soft delete (marcar `active=false`) — no destroy real para no romper Quotes ya creados.
-- Validaciones: `price_per_km > 0`, `available_from < available_to`, fechas no en el pasado.
+- Validaciones: `origin_zone` requerido, `destination_zone` requerido, `available_from < available_to`, fechas no en el pasado, `price_per_km > 0`, `vehicle_id` debe pertenecer al `Carrier` autenticado.
 
 ### Frontend
 - Ruta `/transportista/disponibilidad`.
 - Listado de las windows del carrier (activas + inactivas con toggle de visibilidad).
-- Form para crear nueva window: zona origen, zona destino (opcional para "cualquiera"), precio/km, max km, rango de fechas, vehículo asociado (si tiene flota).
+- Form para crear nueva window: zona origen, zona destino, rango de fechas (desde/hasta), vehículo asociado (selector poblado con la flota registrada en US14), precio/km.
 - Acciones por fila: editar, despublicar (toggle `active`), reactivar.
+- Estado vacío explicativo si el carrier no tiene vehículos registrados, con CTA al flujo de US14.
 
 ## Related
 
@@ -54,5 +55,6 @@ Sin disponibilidad publicada, los Shippers no encuentran transportistas y la bú
 - [ ] CRUD endpoints + request specs.
 - [ ] Soft delete (no `destroy`) cuando hay Quotes asociados.
 - [ ] Pantalla `/transportista/disponibilidad` con CRUD funcional.
-- [ ] E2E: crear window, ver que aparece en búsqueda pública (`REQ-FE-00006`), despublicar, ver que desaparece.
-- [ ] Solo Carriers logueados pueden gestionar sus windows (autorización).
+- [ ] E2E: crear window con vehículo asociado, ver que aparece en búsqueda pública (`REQ-FE-00006`), despublicar, ver que desaparece.
+- [ ] Solo Carriers logueados pueden gestionar sus windows (autorización), y sólo pueden asociar vehículos propios.
+- [ ] Validación de fechas (no pasado, from < to) y precio (> 0).

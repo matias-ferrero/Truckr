@@ -83,59 +83,61 @@ para completar y mantener actualizados mis datos personales.
 
 // ── Plataforma del Expedidor ────────────────────────────────────────────────
 
-== US4: Búsqueda de Transportistas
+== US4: Búsqueda de Ventanas de Transporte
 
 *Release:* MVP \
 *Prioridad:* Alta \
-*Épica:* Ver Transportistas Disponibles
+*Épica:* Ver Ventanas de Transporte Disponibles
 
 *Descripción:*
 Como expedidor,
-quiero buscar transportistas disponibles,
-para decidir a cuál pedirle el servicio de un viaje.
+quiero buscar ventanas de transporte (`TransportWindow`) que coincidan con mi necesidad,
+para identificar qué transportistas están dispuestos a realizar mi viaje en la fecha y zona requeridas.
 
 *Criterios de Aceptación:*
-+ Al ingresar una ubicación origen y una destino, aparecen los transportistas dispuestos a realizar el viaje por esas zonas.
-+ Al ingresar un rango de fecha, solo aparecen los transportistas disponibles dentro de ese rango.
-+ El listado de resultados permite scrollear entre todos los transportistas disponibles.
-+ En caso de existir muchos transportistas disponibles, se muestran en páginas distintas (paginado).
-+ Al hacer click en un transportista, se navega a los detalles del seleccionado.
++ Al ingresar una ubicación origen y una destino, aparecen las ventanas de transporte que cubren ese par origen → destino.
++ Al ingresar un rango de fecha, solo aparecen las ventanas cuya franja temporal se solapa con ese rango.
++ Cada resultado muestra origen, destino, franja de fechas, y un resumen del transportista responsable y del vehículo asociado.
++ El listado de resultados permite scrollear entre todas las ventanas disponibles.
++ En caso de existir muchas ventanas disponibles, se muestran en páginas distintas (paginado).
++ Al hacer click en una ventana, se navega a los detalles del transportista responsable (US6) con el contexto de la ventana seleccionada.
 + Se puede seleccionar un criterio de ordenamiento (ascendente/descendente) para ordenar los resultados.
 
-== US5: Filtrado de Transportistas
+== US5: Filtrado de Ventanas de Transporte
 
 *Release:* MVP \
 *Prioridad:* Media \
-*Épica:* Ver Transportistas Disponibles
+*Épica:* Ver Ventanas de Transporte Disponibles
 
 *Descripción:*
 Como expedidor,
-quiero filtrar los transportistas disponibles,
-para encontrar más rápido al que mejor se ajuste a mi necesidad.
+quiero filtrar las ventanas de transporte disponibles,
+para encontrar más rápido aquella que mejor se ajuste a mi carga y presupuesto.
 
 *Criterios de Aceptación:*
-+ Se puede filtrar por precio por kilómetro, mostrando solo los transportistas dentro del rango indicado.
-+ Se puede filtrar por peso, mostrando solo los transportistas capaces de cargar dicho peso.
-+ Se puede filtrar por volumen/dimensiones, mostrando solo los transportistas capaces de cargar dicho tamaño de producto.
-+ Se puede filtrar por capacidad del camión.
-+ Al borrar un filtro seleccionado, se resetea la búsqueda y aparecen todos los transportistas disponibles.
++ Se puede filtrar por precio por kilómetro, mostrando solo las ventanas dentro del rango indicado.
++ Se puede filtrar por peso, mostrando solo las ventanas cuyo vehículo asociado pueda cargar dicho peso.
++ Se puede filtrar por volumen/dimensiones, mostrando solo las ventanas cuyo vehículo pueda alojar dicho tamaño de producto.
++ Se puede filtrar por capacidad del vehículo.
++ Al borrar un filtro seleccionado, se resetea la búsqueda y aparecen todas las ventanas disponibles.
 + Los filtros se pueden combinar entre sí.
 
 == US6: Detalles de Transportista
 
 *Release:* MVP \
 *Prioridad:* Media \
-*Épica:* Ver Transportistas Disponibles
+*Épica:* Ver Ventanas de Transporte Disponibles
 
 *Descripción:*
 Como expedidor,
-quiero entrar a los detalles de un transportista,
-para decidir si es el indicado para realizar mi viaje.
+quiero entrar a los detalles del transportista responsable de una ventana de transporte que me interesó,
+para decidir si es el indicado para realizar mi viaje antes de ofertarle.
 
 *Criterios de Aceptación:*
-+ Se muestran fotos y una descripción detallada del camión del transportista.
-+ Se indica el costo estimado de realizar el viaje buscado.
-+ Se muestra un botón o enlace claro para iniciar una oferta de retiro desde esta pantalla.
++ Se accede a esta pantalla desde un resultado de búsqueda de ventanas (US4) y se conserva el contexto de la ventana seleccionada (origen, destino, fechas).
++ Se muestran fotos y una descripción detallada del/los vehículos del transportista.
++ Se indica el costo estimado de realizar el viaje buscado, calculado a partir del precio por kilómetro de la ventana seleccionada.
++ Se muestra un botón o enlace claro para iniciar una oferta de retiro contra la ventana seleccionada desde esta pantalla.
 + La información se carga correctamente y se presenta de forma clara y organizada.
 
 == US7: Ofertar Retiro de un Producto
@@ -178,7 +180,7 @@ para reservar el servicio y cumplir con mi parte del trato.
 
 // ── Plataforma del Transportista ──────────────────────────────────────────
 
-== US9: Publicar Disponibilidad
+== US9: Publicar Ventana de Transporte
 
 *Release:* MVP \
 *Prioridad:* Alta \
@@ -186,16 +188,18 @@ para reservar el servicio y cumplir con mi parte del trato.
 
 *Descripción:*
 Como transportista,
-quiero poder publicar mi disponibilidad en la plataforma,
-para que los expedidors me encuentren y me ofrezcan viajes.
+quiero publicar una ventana de transporte (`TransportWindow`) en la plataforma,
+para que los expedidores cuya carga coincida con mi ruta y fecha me encuentren y me ofrezcan viajes.
 
 *Criterios de Aceptación:*
-+ Se puede indicar la zona desde donde el transportista está dispuesto a partir (zona origen).
++ Se puede indicar la zona origen desde donde el transportista está dispuesto a partir.
++ Se puede indicar la zona destino hasta donde el transportista está dispuesto a llegar.
++ Se puede indicar la franja temporal (fecha y hora desde / hasta) en la que la ventana está vigente.
++ Se debe asociar uno de los vehículos previamente registrados por el transportista (US14) — la capacidad y dimensiones del vehículo determinan qué cargas pueden coincidir con la ventana.
 + Se puede indicar un precio por kilómetro para el servicio.
-+ Se puede indicar un límite de kilómetros máximo a recorrer.
-+ Una vez completados los datos necesarios, se puede confirmar la publicación de disponibilidad.
-+ La publicación aparece en los resultados de búsqueda de los expedidors que busquen en esa zona.
-+ Se puede editar o despublicar la disponibilidad en cualquier momento.
++ Una vez completados los datos necesarios, se puede confirmar la publicación de la ventana.
++ La ventana aparece en los resultados de búsqueda (US4) de los expedidores cuya carga, ruta y fecha coincidan.
++ El transportista puede listar sus ventanas activas, editarlas o despublicarlas en cualquier momento.
 
 == US10: Observar Ofertas de Viaje
 

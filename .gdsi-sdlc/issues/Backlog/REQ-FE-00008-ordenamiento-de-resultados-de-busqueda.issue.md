@@ -1,6 +1,6 @@
 ---
 tag: REQ-FE-00008
-title: Ordenamiento de resultados de búsqueda de transportistas
+title: Ordenamiento de resultados de búsqueda de ventanas de transporte
 priority: P2
 status: backlog
 created: '2026-05-03'
@@ -22,7 +22,7 @@ labels:
 
 ## Summary
 
-Permitir al cliente ordenar los resultados de la búsqueda de transportistas por un criterio (precio/km, rating, distancia) con dirección ascendente/descendente. Split de US4.
+Permitir al Shipper ordenar los resultados de la búsqueda de ventanas de transporte por un criterio (precio/km, rating del transportista, fecha de inicio de la ventana) con dirección ascendente/descendente. Split de US4.
 
 ## Problem Statement
 
@@ -30,7 +30,7 @@ US4 incluye "se puede seleccionar un criterio de ordenamiento (ascendente/descen
 
 ## Expected Behavior
 
-- Endpoint acepta `sort=<field>&dir=<asc|desc>`. Whitelist de fields (`price_per_km`, `rating_avg`, `created_at`).
+- Endpoint acepta `sort=<field>&dir=<asc|desc>`. Whitelist de fields (`price_per_km`, `available_from`, `rating_avg`, `created_at`).
 - Default: `sort=price_per_km&dir=asc`.
 - UI: dropdown con los criterios soportados + toggle de dirección, junto al listado.
 - Persiste en URL (query string) para que el back-button funcione y la URL sea compartible.

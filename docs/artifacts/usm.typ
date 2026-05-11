@@ -52,7 +52,7 @@
     #text(fill: black, weight: "bold")[Cuenta]
   ],
   table.cell(colspan: 3, fill: epic-color, align: center)[
-    #text(fill: black, weight: "bold")[Ver Transportistas Disponibles]
+    #text(fill: black, weight: "bold")[Ver Ventanas de Transporte Disponibles]
   ],
   table.cell(colspan: 3, fill: epic-color, align: center)[
     #text(fill: black, weight: "bold")[Gestión de Viajes]
@@ -133,7 +133,7 @@
     - Ingresar Ubicación Origen
     - Ingresar Ubicación Destino
     - Ingresar rango de Fecha de Retiro
-    - Scrollear entre Transportistas Disponibles
+    - Scrollear entre Ventanas Disponibles
   ],
   table.cell(fill: col5-task)[
     - Filtrar por Precio/Km
@@ -145,8 +145,10 @@
     - Ver Precio del Servicio
   ],
   table.cell(fill: col7-task)[
+    - Ingresar zona origen y destino
+    - Ingresar franja temporal (desde / hasta)
+    - Asociar vehículo registrado
     - Ingresar Precio/Km
-    - Publicar zona origen
   ],
   table.cell(fill: col8-task)[
     - Observar Listado de Ofertas
