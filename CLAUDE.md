@@ -97,6 +97,32 @@ Rails (`backend/`) and React + Deno + Vite + TypeScript (`frontend/`, dev server
 - Feature matrices score personas × features on a 1–5 scale.
 - typstyle auto-formats on commit — let it.
 
+## Pre-PR UI quality gate (UTMOST importance)
+
+CI on this repo is **expensive** — it builds Typst PDFs, runs frontend Vitest + Playwright, and runs the full Rails RSpec suite on every push to a PR. Treat opening a PR as a costly action: get it right locally first.
+
+**Before opening any PR that touches the frontend (new component, new screen, new UI element, restyle, or copy change), run the [impeccable](https://github.com/anthropic-experimental/impeccable) skills against the changed files, in this order:**
+
+| Step | Slash command | Purpose |
+|---|---|---|
+| 1 | `/critique` | Surface design, IA, and UX problems before they harden. Acts as a design review. |
+| 2 | `/polish` | Apply spacing, typography, alignment, and visual-rhythm fixes. |
+| 3 | `/audit` | Final pass — accessibility (a11y), semantic HTML, contrast, focus states, keyboard nav. Blocks merge if findings remain. |
+
+These are real installed skills (impeccable plugin). Invoke them with the slash syntax in your Claude Code session and address the findings — don't just ask for a report and move on. If a finding is intentional, note it inline in the PR description.
+
+**Then, before pushing the branch and opening the PR:**
+
+1. `just lint` — pre-commit hooks (typstyle, formatting, basic checks). Must be clean. (Note: the recipe shells out to `pre-commit`; if only `prek` is on PATH via mise, run `prek run --all-files` directly.)
+2. `just frontend-test-coverage` — Vitest with v8 coverage. **Hard threshold: 80% lines / functions / branches / statements** (configured in `frontend/vitest.config.ts`). The command exits non-zero if any threshold is missed; do not open the PR until it passes.
+3. `just frontend-test-e2e` — Playwright (chromium). New UI elements must have an E2E spec covering the golden path; run e2e before pushing.
+4. `just backend-test` — RSpec, if the branch touches `backend/`. SimpleCov reports under `backend/coverage/`; maintain or improve the existing coverage percentage.
+5. `just build-artifacts` — only if the branch touches `docs/`. PDF must compile cleanly.
+
+**Hard rule:** if any of the above fails locally, fix it before opening the PR. Pushing a known-broken branch to burn CI minutes for diagnosis is wasteful — reproduce locally instead. The same goes for `gh pr create`: don't open a PR you haven't run the quality gate against.
+
+**Carve-outs:** typo-only doc edits and pure planning-doc changes (`docs/artifacts/**`, `docs/raw/**`, `docs/prompts/**`) skip steps 1–4 but still need `just build-artifacts` and `just lint`.
+
 ## Releases
 
 Automated via `release-please` + GitHub Actions, driven by **Conventional Commits** on `main`:
