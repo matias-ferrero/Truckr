@@ -7,6 +7,12 @@ module Api
     #   GET /api/carriers/:carrier_id/vehicles/:id
     # Consumed by the public carrier profile page (REQ-FE-00014).
     class VehiclesController < Api::BaseController
+      # Public read — no Pundit scope needed (the nesting under `:carrier_id`
+      # already restricts the rows). `VehiclePolicy::Scope` is owner-only and
+      # would zero out an unauthenticated request, so skip the invariant.
+      skip_after_action :verify_authorized, raise: false
+      skip_after_action :verify_policy_scoped, raise: false
+
       def index
         carrier = ::Carrier.find(params[:carrier_id])
         @pagy, vehicles = pagy(carrier.vehicles.includes(photos_attachments: :blob))

@@ -14,9 +14,19 @@ class Carrier < ApplicationRecord
             numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 5 }
   validates :completed_shipments,
             numericality: { greater_than_or_equal_to: 0, only_integer: true }
+  validates :reviews_count,
+            numericality: { greater_than_or_equal_to: 0, only_integer: true }
+  validates :description, length: { maximum: 2_000 }, allow_blank: true
+
+  # Returns the active TransportWindows visible from the public profile page.
+  # Avoids hitting `vehicles` twice by going through the join association.
+  def active_transport_windows
+    TransportWindow.active.joins(:vehicle).where(vehicles: { carrier_id: id })
+  end
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[id user_id legal_name tax_id base_city province rating_avg completed_shipments created_at updated_at]
+    %w[id user_id legal_name tax_id base_city province rating_avg reviews_count
+       completed_shipments description created_at updated_at]
   end
 
   def self.ransackable_associations(_auth_object = nil)

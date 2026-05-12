@@ -37,6 +37,45 @@ RSpec.describe Carrier, type: :model do
       expect(carrier.rating_avg).to eq(0.0)
       expect(carrier.completed_shipments).to eq(0)
     end
+
+    it "defaults reviews_count to 0" do
+      carrier = Carrier.new(user: build(:user))
+      expect(carrier.reviews_count).to eq(0)
+    end
+  end
+
+  describe "#active_transport_windows" do
+    it "returns only windows whose vehicle belongs to this carrier and which are active" do
+      carrier = create(:carrier)
+      vehicle = create(:vehicle, carrier: carrier)
+      active_win = create(:transport_window, vehicle: vehicle, active: true,
+                                             available_from: 1.day.from_now,
+                                             available_to:   10.days.from_now)
+      _inactive  = create(:transport_window, vehicle: vehicle, active: false,
+                                             available_from: 30.days.from_now,
+                                             available_to:   45.days.from_now)
+      # Another carrier — should not leak.
+      other_vehicle = create(:vehicle, carrier: create(:carrier))
+      _other_win = create(:transport_window, vehicle: other_vehicle, active: true,
+                                             available_from: 1.day.from_now,
+                                             available_to:   10.days.from_now)
+
+      expect(carrier.active_transport_windows).to contain_exactly(active_win)
+    end
+  end
+
+  describe "validations (extended)" do
+    it "rejects a description longer than 2000 characters" do
+      expect(build(:carrier, description: "x" * 2_001)).not_to be_valid
+    end
+
+    it "accepts a blank description" do
+      expect(build(:carrier, description: nil)).to be_valid
+    end
+
+    it "rejects a negative reviews_count" do
+      expect(build(:carrier, reviews_count: -1)).not_to be_valid
+    end
   end
 
   describe "cascading destroy" do

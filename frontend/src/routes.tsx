@@ -11,6 +11,8 @@ const LoginPage = lazy(() => import("./auth/LoginPage").then((m) => ({ default: 
 const RegisterPage = lazy(() => import("./auth/RegisterPage").then((m) => ({ default: m.RegisterPage })));
 const VehicleForm = lazy(() => import("./pages/carrier/VehicleForm"));
 const VehicleList = lazy(() => import("./pages/carrier/VehicleList"));
+const CarrierDetail = lazy(() => import("./pages/public/CarrierDetail"));
+const CarrierMeRedirect = lazy(() => import("./pages/public/CarrierMeRedirect"));
 
 function AuthShell({ children }: { children: React.ReactNode }) {
     return (
@@ -35,6 +37,18 @@ function CarrierLayout() {
                 </Suspense>
             </div>
         </RequireCarrier>
+    );
+}
+
+function PublicLayout() {
+    return (
+        <div className="publicPage">
+            <a className="skipLink" href="#main">Saltar al contenido</a>
+            <Header />
+            <Suspense fallback={<main className="publicMain" id="main" aria-busy="true" />}>
+                <Outlet />
+            </Suspense>
+        </div>
     );
 }
 
@@ -84,6 +98,11 @@ export function AppRoutes() {
                         <Route path="vehicle/new" element={<VehicleForm mode="new" />} />
                         <Route path="vehicle/:id" element={<VehicleForm mode="edit" />} />
                         <Route path="vehicles" element={<VehicleList />} />
+                    </Route>
+                    <Route element={<PublicLayout />}>
+                        {/* Declared before `:id` so the literal segment wins over the wildcard. */}
+                        <Route path="/carriers/me" element={<CarrierMeRedirect />} />
+                        <Route path="/carriers/:id" element={<CarrierDetail />} />
                     </Route>
                     <Route path="*" element={<IndexRoute />} />
                 </Routes>

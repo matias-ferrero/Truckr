@@ -26,7 +26,11 @@ export function Header() {
                         <span className="appHeaderEmail" aria-hidden="true">…</span>
                     ) : me ? (
                         <>
-                            <Link to="/profile" className="appHeaderProfile" aria-label={`Perfil de ${me.full_name || me.email}`}>
+                            <Link
+                                to={me.roles.includes("carrier") ? "/carriers/me" : "/profile"}
+                                className="appHeaderProfile"
+                                aria-label={`Perfil de ${me.full_name || me.email}`}
+                            >
                                 {me.full_name || me.email}
                             </Link>
                             <button

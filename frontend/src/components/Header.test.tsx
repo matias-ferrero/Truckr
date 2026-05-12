@@ -56,6 +56,31 @@ describe("Header", () => {
         renderHeader("/");
         await waitFor(() => expect(screen.getByText("Logged")).toBeInTheDocument());
         expect(screen.getByRole("button", { name: /salir/i })).toBeInTheDocument();
+        // Shipper falls back to /profile
+        expect(screen.getByRole("link", { name: /perfil de logged/i }))
+            .toHaveAttribute("href", "/profile");
+    });
+
+    it("points the profile chip at /carriers/me for carriers", async () => {
+        server.use(
+            http.get(`${API}/api/auth/me`, () =>
+                HttpResponse.json({
+                    id: 9,
+                    email: "carrier@example.com",
+                    full_name: "Carrier User",
+                    phone: null,
+                    verified_at: null,
+                    roles: ["carrier"],
+                    carrier: { id: 7 },
+                    shipper: null,
+                })
+            ),
+        );
+
+        renderHeader("/");
+        await waitFor(() => expect(screen.getByText("Carrier User")).toBeInTheDocument());
+        expect(screen.getByRole("link", { name: /perfil de carrier user/i }))
+            .toHaveAttribute("href", "/carriers/me");
     });
 
     it("logs out when Salir is clicked", async () => {

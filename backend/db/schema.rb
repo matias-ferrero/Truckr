@@ -84,9 +84,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_11_230129) do
     t.string "base_city"
     t.integer "completed_shipments", default: 0, null: false
     t.datetime "created_at", null: false
+    t.text "description"
     t.string "legal_name"
     t.string "province"
     t.decimal "rating_avg", precision: 3, scale: 2, default: "0.0", null: false
+    t.integer "reviews_count", default: 0, null: false
     t.string "tax_id"
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false

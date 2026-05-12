@@ -15,6 +15,10 @@ module Api
   # inherits from Devise::SessionsController and is wrapped by devise-jwt.
   # See ADR-011.
   class AuthController < BaseController
+    # Auth endpoints predate Pundit; no policies apply here.
+    skip_after_action :verify_authorized, raise: false
+    skip_after_action :verify_policy_scoped, raise: false
+
     before_action :authenticate_user!, only: :me
 
     # POST /api/auth/register

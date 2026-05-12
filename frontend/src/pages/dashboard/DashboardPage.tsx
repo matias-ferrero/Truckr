@@ -78,6 +78,12 @@ export function DashboardPage() {
                     <span className="dashboardHeroAccount" aria-label={`Sesión iniciada como ${me.email}`}>
                         <IconUser /> {me.email}
                     </span>
+                    {isCarrier && (
+                        <Link to="/carriers/me" className="dashboardHeroLink">
+                            Ver mi perfil público
+                            <IconArrowRight />
+                        </Link>
+                    )}
                 </header>
 
                 <section className="dashboardSection" aria-labelledby="section-trips">

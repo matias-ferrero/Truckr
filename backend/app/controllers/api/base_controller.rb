@@ -14,12 +14,22 @@ module Api
     include Pundit::Authorization
     include Pagy::Method
 
+    # Pundit's verify_* invariants are wired as after_actions with `only:` /
+    # `except:` references to `:index`. Rails 7.1 raises when a callback names
+    # an action the controller doesn't define (e.g. AuthController has no
+    # `index`), so opt out of that check here — Pundit handles the "did you
+    # call authorize?" assertion itself.
+    self.raise_on_missing_callback_actions = false
+
     rescue_from Pundit::NotAuthorizedError, with: :forbidden
     rescue_from ActiveRecord::RecordNotFound, with: :not_found
     rescue_from ActiveRecord::RecordInvalid, with: :unprocessable
     rescue_from ActionController::ParameterMissing, with: :unprocessable_param
+    rescue_from Date::Error, with: :unprocessable_param
 
     after_action :pagy_response_headers
+    after_action :verify_authorized, except: :index
+    after_action :verify_policy_scoped, only: :index
 
     # current_user comes from Devise::Controllers::Helpers and is populated
     # by Warden's :jwt_authenticatable strategy when the request carries a
@@ -45,6 +55,18 @@ module Api
 
     def pagy_response_headers
       response.headers.merge!(@pagy.headers_hash) if @pagy
+    end
+
+    def render_error(code:, status:, details: nil, message: nil)
+      payload = { code: code }
+      payload[:message] = message if message
+      payload[:details] = details if details
+      render json: { error: payload }, status: status
+    end
+
+    def render_collection(resource_class, scope)
+      @pagy, page_records = pagy(scope)
+      render json: resource_class.new(page_records).serialize
     end
 
     def forbidden(_e)

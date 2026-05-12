@@ -31,7 +31,7 @@ Rails.application.routes.draw do
     end
 
     # Public read endpoints — anyone can browse a carrier's fleet.
-    resources :carriers, only: [] do
+    resources :carriers, only: %i[show] do
       resources :vehicles, only: %i[index show], controller: "carriers/vehicles"
     end
   end

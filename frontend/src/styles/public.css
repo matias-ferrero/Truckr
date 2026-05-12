@@ -1,0 +1,200 @@
+/* Public-facing pages (US6+). Inherits brand tokens from .publicPage; mirrors
+   the .carrierPage scope so headers and components stay visually consistent. */
+
+.publicPage {
+    --brand-primary: oklch(89% 0.06 235);
+    --brand-secondary: oklch(91% 0.07 95);
+    --brand-tertiary: oklch(75% 0.005 240);
+    --brand-error: oklch(72% 0.16 25);
+    --paper: oklch(99% 0.005 240);
+
+    --ink: oklch(18% 0.02 240);
+    --ink-2: color-mix(in oklab, var(--ink) 78%, white);
+    --ink-3: color-mix(in oklab, var(--ink) 62%, white);
+    --surface: var(--paper);
+    --surface-2: color-mix(in oklab, var(--paper) 92%, var(--brand-tertiary));
+    --page-bg: color-mix(in oklab, var(--brand-primary) 14%, var(--paper));
+    --border: color-mix(in oklab, var(--brand-tertiary) 70%, var(--paper));
+    --star: oklch(78% 0.16 85);
+
+    background: var(--page-bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.publicMain {
+    flex: 1;
+}
+
+.sectionSubtitle {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    margin: 0 0 12px;
+}
+
+.carrierHero {
+    background: var(--surface);
+    border-radius: 24px;
+    padding: 28px;
+    margin: 24px 0 16px;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: 1fr;
+    box-shadow: 0 8px 24px color-mix(in oklab, var(--ink) 8%, transparent);
+}
+
+@media (min-width: 720px) {
+    .carrierHero {
+        grid-template-columns: 1fr auto;
+        align-items: center;
+    }
+}
+
+.carrierHeroBody {
+    display: grid;
+    gap: 8px;
+}
+
+.carrierHeroMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    color: var(--ink-2);
+    font-size: 0.95rem;
+}
+
+.carrierHeroRating {
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.starRow {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.star {
+    color: color-mix(in oklab, var(--ink) 18%, transparent);
+    font-size: 18px;
+    line-height: 1;
+}
+
+.star.starFilled {
+    color: var(--star);
+}
+
+/* Sections */
+.carrierSection {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 0 0 16px;
+}
+
+.carrierDescription {
+    margin: 0;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+}
+
+.carrierMutedBlock {
+    margin: 0;
+    color: var(--ink-3);
+    font-style: italic;
+}
+
+/* Zones list */
+.zoneList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.zoneItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--surface-2);
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.zoneRoute {
+    font-weight: 600;
+}
+
+.zonePrice {
+    color: var(--ink-2);
+}
+
+/* Gallery */
+.galleryGrid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+.galleryItem {
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    background: color-mix(in oklab, var(--ink) 4%, transparent);
+}
+
+.galleryItem img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Vehicles — re-uses .vehicleGrid + .vehicleCard from carrier.css, just
+   tweaks the description block. */
+.cardDescription {
+    font-style: italic;
+    color: var(--ink-3);
+}
+
+/* Skeleton */
+.carrierDetailSkeleton {
+    display: grid;
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.skeletonBlock {
+    background: linear-gradient(
+        90deg,
+        color-mix(in oklab, var(--ink) 4%, transparent),
+        color-mix(in oklab, var(--ink) 8%, transparent),
+        color-mix(in oklab, var(--ink) 4%, transparent)
+    );
+    background-size: 200% 100%;
+    animation: skeleton 1.4s linear infinite;
+    border-radius: 16px;
+}
+
+.skeletonHero {
+    height: 160px;
+}
+
+.skeletonBody {
+    height: 140px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skeletonBlock {
+        animation: none;
+    }
+}

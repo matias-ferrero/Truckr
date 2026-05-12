@@ -5,6 +5,7 @@ import "./styles/global.css";
 import "./styles/landing.css";
 import "./styles/auth.css";
 import "./styles/carrier.css";
+import "./styles/public.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>

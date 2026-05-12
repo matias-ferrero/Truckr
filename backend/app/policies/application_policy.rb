@@ -18,6 +18,12 @@ class ApplicationPolicy
   def edit? = update?
   def destroy? = false
 
+  def owns?(record_owner_id)
+    return false if record_owner_id.nil? || user.nil?
+
+    user.carrier&.id == record_owner_id
+  end
+
   class Scope
     attr_reader :user, :scope
 

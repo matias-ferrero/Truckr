@@ -98,6 +98,37 @@ RSpec.configure do |config|
           VehicleListResponse: {
             type: :array,
             items: { "$ref" => "#/components/schemas/VehicleSlim" }
+          },
+          TransportWindow: {
+            type: :object,
+            properties: {
+              id:               { type: :integer },
+              vehicle_id:       { type: :integer },
+              origin_zone:      { type: :string },
+              destination_zone: { type: :string },
+              price_per_km:     { type: :string },
+              max_km:           { type: :integer },
+              available_from:   { type: :string, format: "date-time" },
+              available_to:     { type: :string, format: "date-time" },
+              active:           { type: :boolean }
+            }
+          },
+          CarrierDetail: {
+            type: :object,
+            properties: {
+              id:                  { type: :integer },
+              legal_name:          { type: :string, nullable: true },
+              tax_id:              { type: :string, nullable: true },
+              base_city:           { type: :string, nullable: true },
+              province:            { type: :string, nullable: true },
+              description:         { type: :string, nullable: true },
+              rating_avg:          { type: :string },
+              reviews_count:       { type: :integer },
+              completed_shipments: { type: :integer },
+              vehicles:            { type: :array, items: { "$ref" => "#/components/schemas/Vehicle" } },
+              transport_windows:   { type: :array, items: { "$ref" => "#/components/schemas/TransportWindow" } }
+            },
+            required: %w[id rating_avg reviews_count vehicles transport_windows]
           }
         }
       }
