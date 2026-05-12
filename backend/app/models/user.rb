@@ -4,21 +4,28 @@
 # or neither. Role state is derived from the relation rows — there are
 # NO is_carrier / is_shipper columns on this table (ADR-008).
 #
-# Auth is provided by Devise (REQ-BE-00023):
+# Auth is provided by Devise (REQ-BE-00023, REF-BE-00001 / ADR-011):
 # - :database_authenticatable — bcrypt password storage in encrypted_password
 # - :registerable             — exposes the registration flow (we wrap it)
 # - :validatable              — email format + presence + min password length
+# - :jwt_authenticatable      — stateless JWT auth via devise-jwt; revocation
+#                               is delegated to JTIMatcher (this class itself)
 #
 # Modules deliberately omitted: confirmable, recoverable, trackable, lockable,
 # timeoutable, rememberable, omniauthable. See plan Decision A.
 class User < ApplicationRecord
+  include Devise::JWT::RevocationStrategies::JTIMatcher
+
   devise :database_authenticatable, :registerable, :validatable,
+         :jwt_authenticatable,
+         jwt_revocation_strategy: self,
          password_length: 8..128
 
   has_one :carrier, dependent: :destroy
   has_one :shipper, dependent: :destroy
 
   before_validation :canonicalise_email
+  before_create :set_jti
 
   validates :email,
             presence: true,
@@ -49,5 +56,9 @@ class User < ApplicationRecord
 
   def canonicalise_email
     self.email = email.to_s.strip.downcase.presence
+  end
+
+  def set_jti
+    self.jti ||= SecureRandom.uuid
   end
 end

@@ -7,5 +7,8 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => {
     cleanup();
     server.resetHandlers();
+    // Stateless JWT lives in localStorage — clear between tests so an
+    // authenticated case doesn't leak into the next anonymous one.
+    window.localStorage.clear();
 });
 afterAll(() => server.close());

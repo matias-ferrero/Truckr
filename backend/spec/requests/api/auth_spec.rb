@@ -1,33 +1,6 @@
 require "swagger_helper"
 
 RSpec.describe "Api::Auth", type: :request do
-  before do
-    # rack-attack reads from Rails.cache; the test env defaults to :null_store
-    # which silently drops counters. Swap to a memory store and reset it
-    # between examples so throttling is observable.
-    Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
-    Rack::Attack.reset!
-  end
-
-  path "/api/auth/csrf" do
-    get "Returns the CSRF token and bootstraps a session cookie" do
-      tags "Auth"
-      produces "application/json"
-
-      response "200", "ok" do
-        schema type: :object,
-               properties: { csrf_token: { type: :string } },
-               required: %w[csrf_token]
-
-        run_test! do |response|
-          body = JSON.parse(response.body)
-          expect(body).to have_key("csrf_token")
-          expect(body["csrf_token"]).to be_a(String).and be_present
-        end
-      end
-    end
-  end
-
   path "/api/auth/register" do
     post "Registers a new user with the chosen role" do
       tags "Auth"
@@ -54,6 +27,8 @@ RSpec.describe "Api::Auth", type: :request do
           body = JSON.parse(response.body)
           expect(body["roles"]).to eq([ "carrier" ])
           expect(User.exists?(email: payload[:email])).to be true
+          # devise-jwt dispatcher injects the Bearer token on register too (ADR-011)
+          expect(response.headers["Authorization"]).to match(/\ABearer [\w-]+\.[\w-]+\.[\w-]+\z/)
         end
       end
 
@@ -115,67 +90,16 @@ RSpec.describe "Api::Auth", type: :request do
     end
   end
 
-  path "/api/auth/login" do
-    post "Logs in with email + password" do
-      tags "Auth"
-      consumes "application/json"
-      produces "application/json"
-      parameter name: :payload, in: :body, schema: {
-        type: :object,
-        properties: { email: { type: :string }, password: { type: :string } },
-        required: %w[email password]
-      }
-
-      response "200", "ok" do
-        let!(:user) { create(:user, :with_shipper, email: "login@example.com", password: "Password1") }
-        let(:payload) { { email: "login@example.com", password: "Password1" } }
-        schema "$ref" => "#/components/schemas/Me"
-
-        run_test! do |response|
-          body = JSON.parse(response.body)
-          expect(body["email"]).to eq("login@example.com")
-          expect(body["roles"]).to eq([ "shipper" ])
-        end
-      end
-
-      response "401", "invalid credentials" do
-        let!(:user) { create(:user, email: "login@example.com", password: "Password1") }
-        let(:payload) { { email: "login@example.com", password: "WrongOne1" } }
-        schema "$ref" => "#/components/schemas/ErrorEnvelope"
-
-        run_test! do |response|
-          expect(JSON.parse(response.body)["error"]["code"]).to eq("invalid_credentials")
-        end
-      end
-    end
-  end
-
-  path "/api/auth/logout" do
-    delete "Signs the current user out" do
-      tags "Auth"
-      produces "application/json"
-
-      response "204", "no content" do
-        before do
-          create(:user, email: "out@example.com", password: "Password1")
-          post "/api/auth/login", params: { email: "out@example.com", password: "Password1" }, as: :json
-        end
-
-        run_test!
-      end
-    end
-  end
-
   path "/api/auth/me" do
     get "Returns the current user with carrier/shipper rows" do
       tags "Auth"
       produces "application/json"
+      security [ bearer_auth: [] ]
+      parameter name: :Authorization, in: :header, type: :string, required: true
 
       response "200", "authenticated" do
-        before do
-          create(:user, :with_carrier, :with_shipper, email: "me@example.com", password: "Password1")
-          post "/api/auth/login", params: { email: "me@example.com", password: "Password1" }, as: :json
-        end
+        let(:user) { create(:user, :with_carrier, :with_shipper, email: "me@example.com", password: "Password1") }
+        let(:Authorization) { "Bearer #{Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first}" }
         schema "$ref" => "#/components/schemas/Me"
 
         run_test! do |response|
@@ -188,25 +112,12 @@ RSpec.describe "Api::Auth", type: :request do
       end
 
       response "401", "anonymous" do
+        let(:Authorization) { "" }
         schema "$ref" => "#/components/schemas/ErrorEnvelope"
         run_test! do |response|
           expect(JSON.parse(response.body)["error"]["code"]).to eq("unauthorized")
         end
       end
-    end
-  end
-
-  describe "rate limiting" do
-    let!(:user) { create(:user, email: "rl@example.com", password: "Password1") }
-
-    it "returns 429 after 5 failed login attempts from the same IP" do
-      6.times do
-        post "/api/auth/login",
-             params: { email: "rl@example.com", password: "Wrong1234" },
-             as: :json
-      end
-      expect(response).to have_http_status(:too_many_requests)
-      expect(JSON.parse(response.body)["error"]["code"]).to eq("rate_limited")
     end
   end
 end

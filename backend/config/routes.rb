@@ -2,17 +2,25 @@ Rails.application.routes.draw do
   devise_for :admin_users, ActiveAdmin::Devise.config
   ActiveAdmin.routes(self)
 
-  # Devise mount for the domain User. We ship our own controllers (Api::AuthController),
-  # so the default Devise routes are skipped — but the `devise_for :users` declaration
-  # is still required so that `sign_in`/`sign_out` can resolve a scope.
+  # Devise mount for the domain User. Sessions go through Api::SessionsController
+  # (Devise::SessionsController subclass) wrapped by devise-jwt; register stays
+  # custom because of the role-attach side effect. The skip keeps Devise's
+  # default HTML routes off the surface — the `devise_for :users` declaration
+  # is still required so that `sign_in`/`sign_out` can resolve a scope and so
+  # that the devise-jwt middleware sees the `:user` Warden scope.
   devise_for :users, skip: :all
 
   namespace :api do
-    get    "auth/csrf",     to: "auth#csrf"
-    post   "auth/register", to: "auth#register"
-    post   "auth/login",    to: "auth#login"
-    delete "auth/logout",   to: "auth#logout"
-    get    "auth/me",       to: "auth#me"
+    post "auth/register", to: "auth#register"
+    get  "auth/me",       to: "auth#me"
+
+    # Sessions inherit from Devise::SessionsController and so must live
+    # inside a devise_scope block — Warden + devise-jwt need the scope to
+    # resolve `:user` for the dispatcher/revocation middleware.
+    devise_scope :user do
+      post   "auth/login",  to: "sessions#create"
+      delete "auth/logout", to: "sessions#destroy"
+    end
 
     # Authenticated CRUD on the current carrier's fleet (REQ-BE-00009 / REQ-BE-00010).
     # Declared before the public `:carrier_id` resource so `/carriers/me/...` wins

@@ -144,21 +144,17 @@ describe("api/vehicles", () => {
         await expect(deleteVehicle(7)).rejects.toMatchObject({ status: 403 });
     });
 
-    it("attaches X-Stub-Carrier-Id header when localStorage carries a stub id", async () => {
-        let stubHeader: string | null = null;
+    it("attaches `Authorization: Bearer <jwt>` from localStorage", async () => {
+        let authHeader: string | null = null;
         server.use(
             http.get(`${API}/api/carriers/me/vehicles`, ({ request }) => {
-                stubHeader = request.headers.get("X-Stub-Carrier-Id");
+                authHeader = request.headers.get("Authorization");
                 return HttpResponse.json([]);
             }),
         );
 
-        window.localStorage.setItem("truckr.stubCarrierId", "42");
-        try {
-            await listMyVehicles();
-            expect(stubHeader).toBe("42");
-        } finally {
-            window.localStorage.removeItem("truckr.stubCarrierId");
-        }
+        window.localStorage.setItem("truckr.jwt", "header.payload.signature");
+        await listMyVehicles();
+        expect(authHeader).toBe("Bearer header.payload.signature");
     });
 });

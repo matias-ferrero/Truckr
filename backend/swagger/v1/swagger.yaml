@@ -5,23 +5,6 @@ info:
   version: v1
   description: Internal HTTP API for the Truckr® marketplace.
 paths:
-  "/api/auth/csrf":
-    get:
-      summary: Returns the CSRF token and bootstraps a session cookie
-      tags:
-      - Auth
-      responses:
-        '200':
-          description: ok
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  csrf_token:
-                    type: string
-                required:
-                - csrf_token
   "/api/auth/register":
     post:
       summary: Registers a new user with the chosen role
@@ -63,51 +46,19 @@ paths:
               - password
               - name
               - role
-  "/api/auth/login":
-    post:
-      summary: Logs in with email + password
-      tags:
-      - Auth
-      parameters: []
-      responses:
-        '200':
-          description: ok
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/Me"
-        '401':
-          description: invalid credentials
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/ErrorEnvelope"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password:
-                  type: string
-              required:
-              - email
-              - password
-  "/api/auth/logout":
-    delete:
-      summary: Signs the current user out
-      tags:
-      - Auth
-      responses:
-        '204':
-          description: no content
   "/api/auth/me":
     get:
       summary: Returns the current user with carrier/shipper rows
       tags:
       - Auth
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: authenticated
@@ -162,15 +113,74 @@ paths:
       responses:
         '200':
           description: successful
+  "/api/auth/login":
+    post:
+      summary: Authenticates with email + password and returns a JWT
+      tags:
+      - Auth
+      parameters: []
+      responses:
+        '200':
+          description: ok (returns Bearer token in Authorization header)
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Me"
+        '401':
+          description: email not found (no user enumeration)
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorEnvelope"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                    password:
+                      type: string
+                  required:
+                  - email
+                  - password
+              required:
+              - user
+  "/api/auth/logout":
+    delete:
+      summary: Revokes the JWT (rotates the user's JTI)
+      tags:
+      - Auth
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        '204':
+          description: no content (JWT revoked)
+        '401':
+          description: missing Authorization header
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorEnvelope"
 servers:
 - url: http://localhost:3000
   description: Local dev
 components:
   securitySchemes:
-    cookie_auth:
-      type: apiKey
-      in: cookie
-      name: _truckr_session
+    bearer_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     ErrorEnvelope:
       type: object

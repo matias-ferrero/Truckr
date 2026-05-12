@@ -20,7 +20,10 @@ RSpec.configure do |config|
       ],
       components: {
         securitySchemes: {
-          cookie_auth: { type: :apiKey, in: :cookie, name: "_truckr_session" }
+          # Stateless JWT — see ADR-011. Login/register responses inject the
+          # token in the `Authorization` response header; clients echo it
+          # back as `Authorization: Bearer <jwt>` on subsequent requests.
+          bearer_auth: { type: :http, scheme: :bearer, bearerFormat: "JWT" }
         },
         schemas: {
           ErrorEnvelope: {

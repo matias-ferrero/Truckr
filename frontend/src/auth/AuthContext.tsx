@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState, type ReactNode } from "react";
-import { ApiError, apiFetch } from "../api";
+import { ApiError, apiFetch, clearJwt, getJwt } from "../api";
 
 export type Role = "carrier" | "shipper";
 
@@ -26,7 +26,6 @@ export type LoginInput = { email: string; password: string };
 export type AuthState = {
     me: Me | null;
     loading: boolean;
-    csrfToken: string | null;
     register: (input: RegisterInput) => Promise<void>;
     login: (input: LoginInput) => Promise<void>;
     logout: () => Promise<void>;
@@ -34,31 +33,26 @@ export type AuthState = {
 
 export const AuthContext = createContext<AuthState | undefined>(undefined);
 
-async function fetchCsrf(): Promise<string> {
-    const r = await apiFetch<{ csrf_token: string }>("/api/auth/csrf");
-    return r.csrf_token;
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [me, setMe] = useState<Me | null>(null);
     const [loading, setLoading] = useState(true);
-    const [csrfToken, setCsrfToken] = useState<string | null>(null);
 
     useEffect(() => {
         let cancelled = false;
         (async () => {
             try {
-                const token = await fetchCsrf();
-                if (cancelled) return;
-                setCsrfToken(token);
-                try {
-                    const meRes = await apiFetch<Me>("/api/auth/me");
-                    if (!cancelled) setMe(meRes);
-                } catch (err) {
-                    if (!(err instanceof ApiError) || err.status !== 401) throw err;
-                }
+                // Bootstrap: probe /me. If a JWT is in storage, apiFetch
+                // attaches it; otherwise the request goes anonymous and
+                // the backend returns 401 — both branches are normal.
+                const meRes = await apiFetch<Me>("/api/auth/me");
+                if (!cancelled) setMe(meRes);
             } catch (err) {
-                console.error("Auth bootstrap failed", err);
+                if (err instanceof ApiError && err.status === 401) {
+                    // Stored token (if any) is no longer valid — drop it.
+                    clearJwt();
+                } else if (!cancelled) {
+                    console.error("Auth bootstrap failed", err);
+                }
             } finally {
                 if (!cancelled) setLoading(false);
             }
@@ -68,48 +62,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
     }, []);
 
-    const ensureToken = async () => {
-        if (csrfToken) return csrfToken;
-        const t = await fetchCsrf();
-        setCsrfToken(t);
-        return t;
-    };
-
     const register: AuthState["register"] = async (input) => {
-        const token = await ensureToken();
+        // apiFetch captures the Authorization response header into JWT
+        // storage automatically (devise-jwt dispatch).
         const next = await apiFetch<Me>("/api/auth/register", {
             method: "POST",
             body: input,
-            csrfToken: token,
         });
         setMe(next);
     };
 
     const login: AuthState["login"] = async (input) => {
-        const token = await ensureToken();
+        // Devise's :database_authenticatable reads `params[:user]`, so the
+        // wire shape is nested.
         const next = await apiFetch<Me>("/api/auth/login", {
             method: "POST",
-            body: input,
-            csrfToken: token,
+            body: { user: input },
         });
         setMe(next);
     };
 
     const logout: AuthState["logout"] = async () => {
-        const token = await ensureToken();
-        await apiFetch<void>("/api/auth/logout", { method: "DELETE", csrfToken: token });
-        setMe(null);
-        // Refresh CSRF token: logout reset_session invalidates the previous one.
         try {
-            const fresh = await fetchCsrf();
-            setCsrfToken(fresh);
-        } catch {
-            setCsrfToken(null);
+            await apiFetch<void>("/api/auth/logout", { method: "DELETE" });
+        } finally {
+            // Drop local state regardless of network outcome — a 401 from
+            // a server-side revocation race shouldn't leave us logged in.
+            clearJwt();
+            setMe(null);
         }
     };
 
     return (
-        <AuthContext.Provider value={{ me, loading, csrfToken, register, login, logout }}>
+        <AuthContext.Provider value={{ me, loading, register, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

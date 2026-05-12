@@ -1,6 +1,12 @@
 es:
   hello: "Hola mundo"
   errors:
+    unauthorized: "Autenticación requerida"
+    invalid_credentials: "Email o contraseña inválidos"
+    forbidden: "Acceso denegado"
+    not_found: "Recurso no encontrado"
+    carrier_role_required: "Se requiere rol de transportista"
+    rate_limited: "Demasiados intentos. Intentá en 15 minutos."
     messages:
       password_complexity:
         upper: "debe contener al menos una mayúscula"

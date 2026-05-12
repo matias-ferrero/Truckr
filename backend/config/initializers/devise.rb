@@ -310,4 +310,29 @@ Devise.setup do |config|
   # When set to false, does not sign a user in automatically after their password is
   # changed. Defaults to true, so a user is signed in automatically after changing a password.
   # config.sign_in_after_change_password = true
+
+  # ==> Failure responses
+  # Devise's default FailureApp redirects to a sign-in HTML page. The API
+  # subclass emits the unified JSON error envelope instead. ADR-011.
+  config.warden do |manager|
+    manager.failure_app = Api::DeviseFailureApp
+  end
+
+  # ==> Configuration for :jwt_authenticatable (devise-jwt) — ADR-011
+  # The middleware injects `Authorization: Bearer <jwt>` on responses from
+  # `dispatch_requests` after `sign_in` runs, and revokes the JTI on
+  # `revocation_requests`. Falls back to `secret_key_base` in dev/test where
+  # a dedicated credential is not minted.
+  config.jwt do |jwt|
+    jwt.secret = Rails.application.credentials.devise_jwt_secret_key.presence ||
+                 Rails.application.secret_key_base
+    jwt.dispatch_requests = [
+      [ "POST", %r{^/api/auth/login$} ],
+      [ "POST", %r{^/api/auth/register$} ]
+    ]
+    jwt.revocation_requests = [
+      [ "DELETE", %r{^/api/auth/logout$} ]
+    ]
+    jwt.expiration_time = 24.hours.to_i
+  end
 end

@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "../api";
+import { API_BASE_URL, getJwt } from "../api";
 
 // Wire format mirrors VehicleResource (and VehicleSlimResource) on the backend.
 export type VehiclePhoto = {
@@ -40,12 +40,12 @@ export type VehicleListResult = {
     meta: VehicleListMeta;
 };
 
-// TODO(REQ-BE-00023): drop this stub once the auth PR provides Devise cookies.
-// Reads the carrier id from localStorage so manual smoke testing works.
+// Bearer JWT auth (ADR-011). The token lives in localStorage and rides on
+// every authenticated request. If absent, requests go out anonymous and
+// the backend will return 401.
 function authHeaders(): HeadersInit {
-    if (typeof window === "undefined") return {};
-    const stub = window.localStorage?.getItem("truckr.stubCarrierId");
-    return stub ? { "X-Stub-Carrier-Id": stub } : {};
+    const token = getJwt();
+    return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 async function handle<T>(res: Response): Promise<T> {
@@ -69,7 +69,6 @@ function metaFromHeaders(res: Response): VehicleListMeta {
 export async function listMyVehicles(page = 1): Promise<VehicleListResult> {
     const res = await fetch(`${API_BASE_URL}/api/carriers/me/vehicles?page=${page}`, {
         headers: { Accept: "application/json", ...authHeaders() },
-        credentials: "include",
     });
     if (!res.ok) {
         await handle(res);
@@ -81,7 +80,6 @@ export async function listMyVehicles(page = 1): Promise<VehicleListResult> {
 export async function getMyVehicle(id: number): Promise<Vehicle> {
     const res = await fetch(`${API_BASE_URL}/api/carriers/me/vehicles/${id}`, {
         headers: { Accept: "application/json", ...authHeaders() },
-        credentials: "include",
     });
     return handle<Vehicle>(res);
 }
@@ -91,7 +89,6 @@ export async function createVehicle(form: FormData): Promise<Vehicle> {
         method: "POST",
         body: form,
         headers: { ...authHeaders() },
-        credentials: "include",
     });
     return handle<Vehicle>(res);
 }
@@ -101,7 +98,6 @@ export async function updateVehicle(id: number, form: FormData): Promise<Vehicle
         method: "PATCH",
         body: form,
         headers: { ...authHeaders() },
-        credentials: "include",
     });
     return handle<Vehicle>(res);
 }
@@ -110,7 +106,6 @@ export async function deleteVehicle(id: number): Promise<void> {
     const res = await fetch(`${API_BASE_URL}/api/carriers/me/vehicles/${id}`, {
         method: "DELETE",
         headers: { ...authHeaders() },
-        credentials: "include",
     });
     if (!res.ok && res.status !== 204) {
         await handle(res);

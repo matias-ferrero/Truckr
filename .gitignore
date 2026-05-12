@@ -221,3 +221,6 @@ docs/raw/*
 .gdsi-sdlc/automation/.sync-state.json
 .gdsi-sdlc/automation/queue/
 .gdsi-sdlc/automation/processed/
+
+# Local session exports (gdsi-sdlc — never commit)
+.gdsi-sdlc/sessions/

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_10_120001) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_11_230129) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -191,10 +191,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_10_120001) do
     t.string "email", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "full_name"
+    t.string "jti", null: false
     t.string "phone"
     t.datetime "updated_at", null: false
     t.datetime "verified_at"
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["jti"], name: "index_users_on_jti", unique: true
   end
 
   create_table "vehicles", force: :cascade do |t|

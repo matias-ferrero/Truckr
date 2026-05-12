@@ -134,4 +134,29 @@ RSpec.describe User, type: :model do
       expect(User.ransackable_associations).to contain_exactly("carrier", "shipper")
     end
   end
+
+  describe "JWT JTI Matcher revocation (ADR-011)" do
+    it "assigns a jti on create" do
+      user = create(:user)
+      expect(user.jti).to be_present
+      expect(user.jti).to match(/\A[0-9a-f-]{36}\z/)
+    end
+
+    it "rotates jti on revoke_jwt" do
+      user = create(:user)
+      original = user.jti
+      User.revoke_jwt({ "jti" => original }, user)
+      expect(user.reload.jti).not_to eq(original)
+    end
+
+    it "considers tokens with the current jti as not revoked" do
+      user = create(:user)
+      expect(User.jwt_revoked?({ "jti" => user.jti }, user)).to be false
+    end
+
+    it "considers tokens with a stale jti as revoked" do
+      user = create(:user)
+      expect(User.jwt_revoked?({ "jti" => "stale-jti" }, user)).to be true
+    end
+  end
 end

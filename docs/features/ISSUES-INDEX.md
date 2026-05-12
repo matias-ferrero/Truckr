@@ -60,7 +60,7 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REQ-BE-00030 | Viajes compuestos — multi-pickup/multi-delivery (US23) | NEW | BE | 2026-05-03 | - |
 | REQ-BE-00031 | Encadenado de pedidos — rutas secuenciales (US24) | NEW | BE | 2026-05-03 | - |
 | REQ-FE-00021 | Dashboard post-login + navegación global (Sprint 1 UX glue) | NEW | FE | 2026-05-10 | - |
-| REF-BE-00001 | Migrar Api::AuthController de sesiones a herencia de Devise (login/logout); mantener register custom | NEW | BE | 2026-05-11 | - |
+| REF-BE-00001 | Migrar Api::AuthController a Devise + devise-jwt (login/logout/me con JWT); mantener register custom | RDY | BE | 2026-05-11 | [plan](REF/REF-BE-00001/REF-BE-00001-migrar-sessions-auth-a-herencia-devise.plan.md) |
 
 ## Legend
 

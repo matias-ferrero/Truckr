@@ -125,15 +125,39 @@ The project is transitioning from the **planning phase** (product artifacts, USM
 
 **Consequences**: Zero geospatial infrastructure ever. Proximity queries are O(N over a small bounded candidate set); fine at coursework scale. Routing distance is a paid/external call when needed, not a database concern.
 
+### ADR-011 — Stateless auth via Devise + devise-jwt (JTI Matcher revocation)
+
+**Context**: The first cut of auth (REQ-BE-00023) shipped `Api::AuthController` with hand-rolled `login` / `logout` / `csrf` on top of Devise primitives (`valid_password?`, `sign_in`, `sign_out`) — controllers stayed custom because the comment in the file judged `Devise::SessionsController` "too HTML-centric for the JSON contract". That decision is now reversed: the goal of REF-BE-00001 is to **reduce custom auth surface** (security/maintenance), and the natural fit for `config.api_only = true` (ADR-002) is stateless JWT.
+
+**Decision**:
+
+- Authentication runs on **Devise** (`:database_authenticatable`, `:validatable`, `:registerable`, `:jwt_authenticatable`) + the **`devise-jwt`** gem (warden-jwt_auth under the hood).
+- Sessions (login/logout) are handled by `Api::SessionsController < Devise::SessionsController`. `respond_with` and `respond_to_on_destroy` are overridden to emit JSON (`MeResource` body, 204 on destroy).
+- `register` stays custom in `Api::AuthController` because the role-attach side-effect (`Carrier` / `Shipper` profile creation in a transaction) doesn't model cleanly through `Devise::RegistrationsController#create`. `sign_in(user)` at the end of the flow triggers the devise-jwt dispatcher, so the response carries `Authorization: Bearer <jwt>` automatically.
+- **Revocation = JTI Matcher.** A single `jti :string NOT NULL UNIQUE` column on `users`. Logout rotates it; any token bearing the prior `jti` becomes invalid for that user.
+- **Transport = `Authorization: Bearer <jwt>` header.** No cookies in the API path. `Api::BaseController` drops `protect_from_forgery`, `ActionController::Cookies`, and `ActionController::RequestForgeryProtection` — eliminating the CSRF vector entirely. The bespoke `GET /api/auth/csrf` endpoint is removed.
+- **FE storage = `localStorage["truckr.jwt"]`.** Survives page reload; XSS-exfiltratable. Accepted trade-off for coursework (no PII, no real users). Stricter CSP is a separate, follow-up concern.
+- **Expiration**: 24 hours, no refresh tokens (re-login once per day is acceptable for coursework).
+- **Failure responses**: a custom `Api::DeviseFailureApp < Devise::FailureApp` emits the unified `{ error: { code, message } }` envelope (`invalid_credentials` for bad login, `unauthorized` for missing/bad/revoked tokens).
+
+**Consequences**:
+
+- Auth-custom surface shrinks to two methods (`register` + `me`). Login/logout flow is library code.
+- Zero CSRF code in the API path. SPA loses the bootstrap CSRF call.
+- Stateless API: no session storage lookup per request — just the `jti` check on the user row.
+- Logout invalidates all of a user's tokens (single-device-effective). Multi-device logout requires the `Denylist` strategy and a `jwt_denylist` table; not on the roadmap.
+- Mobile / PWA (Decision Deferred) is no longer auth-blocked — Bearer tokens work the same on any client.
+- JWT secret lives in Rails credentials (`devise_jwt_secret_key`); rotation requires a deploy (acceptable for coursework).
+
 ### Decisions Deferred
 
-- Authentication / authorization (no users or sessions yet — the only endpoint is public). User schema in ADR-008 reserves the auth slots (`password_digest`, `verified_at`).
-- Mobile strategy (React Native vs. PWA).
+- Mobile strategy (React Native vs. PWA) — auth is no longer a blocker for either.
 
 ### Decisions Closed (not deferred)
 
 - **Production database**: SQLite. Permanent. See `CLAUDE.md` § "Database policy" and ADR-002. No PostgreSQL migration is planned, queued, or under consideration.
 - **Geospatial storage**: lat/lng columns + Haversine in application code + external API for routing. See ADR-010. No PostGIS, ever.
+- **Authentication / authorization**: Devise + devise-jwt with JTI Matcher revocation. See ADR-011.
 
 ---
 

@@ -5,22 +5,14 @@ module Api
   #
   # ApplicationController stays untouched (it must inherit from
   # ActionController::Base for ActiveAdmin to work). The API hangs off this
-  # leaner ActionController::API stack — augmented with the bits we need:
-  # cookies, CSRF, Devise helpers, Pundit, Pagy, and a uniform error envelope.
+  # leaner ActionController::API stack — augmented with Devise helpers (for
+  # current_user resolution via Warden), Pundit, Pagy, and a uniform error
+  # envelope. CSRF / cookies are deliberately absent: ADR-011 routes auth
+  # through stateless JWTs and there is no session vector to protect.
   class BaseController < ActionController::API
-    include ActionController::Cookies
-    include ActionController::RequestForgeryProtection
     include Devise::Controllers::Helpers
     include Pundit::Authorization
     include Pagy::Method
-
-    # ActionController::API doesn't pick up the test-env
-    # `config.action_controller.allow_forgery_protection = false` (that flag
-    # only flips on ActionController::Base). Explicitly mirror it here so
-    # request specs can POST without juggling tokens.
-    self.allow_forgery_protection = false if Rails.env.test?
-
-    protect_from_forgery with: :exception
 
     rescue_from Pundit::NotAuthorizedError, with: :forbidden
     rescue_from ActiveRecord::RecordNotFound, with: :not_found
@@ -29,21 +21,23 @@ module Api
 
     after_action :pagy_response_headers
 
-    # current_user comes from Devise::Controllers::Helpers.
+    # current_user comes from Devise::Controllers::Helpers and is populated
+    # by Warden's :jwt_authenticatable strategy when the request carries a
+    # valid `Authorization: Bearer <jwt>` header.
     def current_carrier = current_user&.carrier
     def current_shipper = current_user&.shipper
 
     def authenticate_user!
       return if current_user
 
-      render json: { error: { code: "unauthorized", message: "Autenticación requerida" } },
+      render json: { error: { code: "unauthorized", message: I18n.t("errors.unauthorized") } },
              status: :unauthorized
     end
 
     def require_carrier!
       return if current_carrier
 
-      render json: { error: { code: "forbidden", message: "Carrier role required" } },
+      render json: { error: { code: "forbidden", message: I18n.t("errors.carrier_role_required") } },
              status: :forbidden
     end
 
@@ -54,11 +48,13 @@ module Api
     end
 
     def forbidden(_e)
-      render json: { error: { code: "forbidden", message: "Acceso denegado" } }, status: :forbidden
+      render json: { error: { code: "forbidden", message: I18n.t("errors.forbidden") } },
+             status: :forbidden
     end
 
     def not_found(_e)
-      render json: { error: { code: "not_found", message: "Recurso no encontrado" } }, status: :not_found
+      render json: { error: { code: "not_found", message: I18n.t("errors.not_found") } },
+             status: :not_found
     end
 
     def unprocessable(e)

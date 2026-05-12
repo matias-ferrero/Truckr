@@ -41,6 +41,9 @@ gem "image_processing", "~> 1.2"
 
 # Admin panel — ActiveAdmin (https://activeadmin.info) on top of Devise
 gem "devise", ">= 5.0.3"
+# Stateless JWT for the domain User (REF-BE-00001 / ADR-011). ActiveAdmin's
+# `AdminUser` keeps cookie-based Devise; only `:user` is JWT-backed.
+gem "devise-jwt", "~> 0.12"
 gem "activeadmin", ">= 3.2"
 # Compile ActiveAdmin's SCSS to CSS — required because Propshaft does not transform Sass.
 gem "dartsass-rails"

@@ -1,6 +1,12 @@
 en:
   hello: "Hello world"
   errors:
+    unauthorized: "Authentication required"
+    invalid_credentials: "Invalid email or password"
+    forbidden: "Access denied"
+    not_found: "Resource not found"
+    carrier_role_required: "Carrier role required"
+    rate_limited: "Too many attempts. Try again in 15 minutes."
     messages:
       password_complexity:
         upper: "must contain at least one uppercase letter"
