@@ -26,9 +26,9 @@ export function Header() {
                         <span className="appHeaderEmail" aria-hidden="true">…</span>
                     ) : me ? (
                         <>
-                            <span className="appHeaderEmail" aria-label={`Sesión como ${me.email}`}>
-                                {me.email}
-                            </span>
+                            <Link to="/profile" className="appHeaderProfile" aria-label={`Perfil de ${me.full_name || me.email}`}>
+                                {me.full_name || me.email}
+                            </Link>
                             <button
                                 type="button"
                                 className="appHeaderButton"

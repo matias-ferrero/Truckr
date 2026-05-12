@@ -1,0 +1,174 @@
+import { describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
+import { DashboardPage } from "./DashboardPage";
+import * as authHook from "../../auth/useCurrentUser";
+import * as vehiclesApi from "../../api/vehicles";
+
+vi.mock("../../auth/useCurrentUser");
+vi.mock("../../api/vehicles");
+
+type MeShape = Parameters<typeof authHook.useCurrentUser>[0] extends never ? object : never;
+const _typeOnly: MeShape | undefined = undefined;
+void _typeOnly;
+
+function fakeMe(over: Partial<{ full_name: string | null; email: string; roles: string[] }> = {}) {
+    return {
+        id: 1,
+        email: "ana@example.com",
+        full_name: "Ana García",
+        phone: null,
+        verified_at: null,
+        roles: ["shipper"],
+        carrier: null,
+        shipper: { id: 1 },
+        ...over,
+    };
+}
+
+function mockMe(me: ReturnType<typeof fakeMe> | null, loading = false) {
+    (authHook.useCurrentUser as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        me,
+        loading,
+        bootstrap: vi.fn(),
+        login: vi.fn(),
+        register: vi.fn(),
+        logout: vi.fn(),
+    });
+}
+
+function fakeVehicle(over: Partial<vehiclesApi.Vehicle> = {}): vehiclesApi.Vehicle {
+    return {
+        id: 1,
+        carrier_id: 1,
+        make: "MB",
+        model: "Sprinter",
+        year: 2022,
+        plate: "AAA111",
+        vehicle_type: "truck_small",
+        max_load_kg: "3500.00",
+        length_cm: 500,
+        width_cm: 200,
+        height_cm: 220,
+        volume_cm3: 22_000_000,
+        gps_enabled: false,
+        description: "",
+        photos: [],
+        created_at: "",
+        updated_at: "",
+        ...over,
+    };
+}
+
+const renderPage = () =>
+    render(
+        <MemoryRouter>
+            <DashboardPage />
+        </MemoryRouter>,
+    );
+
+describe("DashboardPage", () => {
+    it("renders a skeleton while bootstrapping", () => {
+        mockMe(null, true);
+        const { container } = renderPage();
+        expect(container.querySelector('[aria-busy="true"]')).toBeInTheDocument();
+        expect(container.querySelectorAll(".dashboardSkeletonCard").length).toBe(3);
+    });
+
+    it("renders nothing when bootstrap finishes and there is no user", () => {
+        mockMe(null, false);
+        const { container } = renderPage();
+        expect(container.firstChild).toBeNull();
+    });
+
+    it("renders the shipper view: greeting, role eyebrow, account email, only the trips section", () => {
+        mockMe(fakeMe({ roles: ["shipper"], full_name: "Ana García", email: "ana@example.com" }));
+        renderPage();
+
+        expect(screen.getByRole("heading", { level: 1, name: /hola, ana/i })).toBeInTheDocument();
+        expect(screen.getByText(/panel · expedidor/i)).toBeInTheDocument();
+        expect(screen.getByText("ana@example.com")).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 2, name: /mis viajes/i })).toBeInTheDocument();
+        expect(screen.queryByRole("heading", { level: 2, name: /mi disponibilidad/i })).toBeNull();
+        expect(screen.queryByRole("heading", { level: 2, name: /mis vehículos/i })).toBeNull();
+    });
+
+    it("uses the email local-part as fallback greeting when full_name is empty", () => {
+        mockMe(fakeMe({ full_name: "", email: "ana@example.com" }));
+        renderPage();
+        expect(screen.getByRole("heading", { level: 1, name: /hola, ana/i })).toBeInTheDocument();
+    });
+
+    it("renders the trip card with route, price, status badge, and the New CTA", () => {
+        mockMe(fakeMe());
+        renderPage();
+        expect(screen.getByText(/tigre → belgrano/i)).toBeInTheDocument();
+        expect(screen.getByText("$ 50.000")).toBeInTheDocument();
+        expect(screen.getByText(/^pendiente$/i)).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: /nuevo viaje/i })).toHaveAttribute("href", "/trips/new");
+    });
+
+    it("filter pills toggle aria-pressed and show the empty state when no trips match", async () => {
+        mockMe(fakeMe());
+        renderPage();
+
+        const todos = screen.getByRole("button", { name: /todos/i, pressed: true });
+        expect(todos).toBeInTheDocument();
+
+        const aceptados = screen.getByRole("button", { name: /aceptados/i, pressed: false });
+        await userEvent.click(aceptados);
+
+        expect(screen.getByRole("button", { name: /aceptados/i, pressed: true })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /todos/i, pressed: false })).toBeInTheDocument();
+        expect(screen.getByText(/sin viajes para mostrar/i)).toBeInTheDocument();
+    });
+
+    it("renders the carrier view: disponibilidad + vehículos sections and fetches vehicles", async () => {
+        mockMe(fakeMe({ roles: ["carrier"], full_name: "Beto", email: "beto@example.com" }));
+        (vehiclesApi.listMyVehicles as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+            items: [fakeVehicle({ plate: "AAA111", make: "MB", model: "Sprinter" })],
+            meta: { total: 1, page: 1, perPage: 20, totalPages: 1 },
+        });
+
+        renderPage();
+
+        expect(screen.getByText(/panel · transportista/i)).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 2, name: /mi disponibilidad/i })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 2, name: /mis vehículos/i })).toBeInTheDocument();
+        expect(screen.getByText("Centro → Pilar")).toBeInTheDocument();
+        expect(screen.getByText("San Isidro → CABA")).toBeInTheDocument();
+
+        await waitFor(() => expect(screen.getByText("AAA111")).toBeInTheDocument());
+        expect(screen.getByText(/mb sprinter/i)).toBeInTheDocument();
+        expect(vehiclesApi.listMyVehicles).toHaveBeenCalledTimes(1);
+    });
+
+    it("shows the empty vehicle state when the carrier has no vehicles", async () => {
+        mockMe(fakeMe({ roles: ["carrier"], full_name: "Beto" }));
+        (vehiclesApi.listMyVehicles as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+            items: [],
+            meta: { total: 0, page: 1, perPage: 20, totalPages: 0 },
+        });
+
+        renderPage();
+
+        await waitFor(() =>
+            expect(screen.getByText(/aún no cargaste un vehículo/i)).toBeInTheDocument()
+        );
+    });
+
+    it("swallows vehicle-fetch errors and still renders the page", async () => {
+        mockMe(fakeMe({ roles: ["carrier"], full_name: "Beto" }));
+        (vehiclesApi.listMyVehicles as unknown as ReturnType<typeof vi.fn>).mockRejectedValue(
+            new Error("boom"),
+        );
+        const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+
+        renderPage();
+
+        await waitFor(() => expect(vehiclesApi.listMyVehicles).toHaveBeenCalled());
+        expect(screen.getByRole("heading", { level: 2, name: /mis vehículos/i })).toBeInTheDocument();
+        consoleError.mockRestore();
+    });
+});

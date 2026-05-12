@@ -4,6 +4,8 @@ import LandingPage from "./App";
 import { AuthProvider } from "./auth/AuthContext";
 import { Header } from "./components/Header";
 import RequireCarrier from "./auth/RequireCarrier";
+import { useCurrentUser } from "./auth/useCurrentUser";
+import { DashboardPage } from "./pages/dashboard/DashboardPage";
 
 const LoginPage = lazy(() => import("./auth/LoginPage").then((m) => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import("./auth/RegisterPage").then((m) => ({ default: m.RegisterPage })));
@@ -36,12 +38,31 @@ function CarrierLayout() {
     );
 }
 
+function IndexRoute() {
+    const { me, loading } = useCurrentUser();
+    if (loading) return null;
+
+    if (me) {
+        return (
+            <div className="dashboardPage">
+                <a className="skipLink" href="#main">Saltar al contenido</a>
+                <Header />
+                <Suspense fallback={<main className="dashboardMain" id="main" aria-busy="true" />}>
+                    <DashboardPage />
+                </Suspense>
+            </div>
+        );
+    }
+
+    return <LandingPage />;
+}
+
 export function AppRoutes() {
     return (
         <BrowserRouter>
             <AuthProvider>
                 <Routes>
-                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/" element={<IndexRoute />} />
                     <Route
                         path="/login"
                         element={
@@ -64,7 +85,7 @@ export function AppRoutes() {
                         <Route path="vehicle/:id" element={<VehicleForm mode="edit" />} />
                         <Route path="vehicles" element={<VehicleList />} />
                     </Route>
-                    <Route path="*" element={<LandingPage />} />
+                    <Route path="*" element={<IndexRoute />} />
                 </Routes>
             </AuthProvider>
         </BrowserRouter>

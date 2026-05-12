@@ -9,6 +9,13 @@ module Api
   class SessionsController < Devise::SessionsController
     respond_to :json
 
+    # Inherits from ApplicationController (ActionController::Base), which
+    # turns on CSRF + the cross-origin check. Auth is stateless JWT — there
+    # is no session vector to protect — so skip the token check on the JSON
+    # endpoint. Without this the SPA dev origin (127.0.0.1:5173 → :3000)
+    # trips `InvalidAuthenticityToken` on every login.
+    skip_before_action :verify_authenticity_token
+
     # Devise's `verify_signed_out_user` halts destroy when no session-based
     # user exists — and our stateless JWT setup never populates the session,
     # so this filter always halts with 401. The JWT-bearing user is found

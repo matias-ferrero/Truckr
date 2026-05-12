@@ -54,7 +54,7 @@ describe("Header", () => {
         );
 
         renderHeader("/");
-        await waitFor(() => expect(screen.getByText("logged@example.com")).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText("Logged")).toBeInTheDocument());
         expect(screen.getByRole("button", { name: /salir/i })).toBeInTheDocument();
     });
 
@@ -77,11 +77,11 @@ describe("Header", () => {
         const user = userEvent.setup();
         renderHeader("/");
 
-        await waitFor(() => expect(screen.getByText("logged@example.com")).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText("Logged")).toBeInTheDocument());
         await user.click(screen.getByRole("button", { name: /salir/i }));
 
         await waitFor(() =>
-            expect(screen.queryByText("logged@example.com")).not.toBeInTheDocument()
+            expect(screen.queryByText("Logged")).not.toBeInTheDocument()
         );
     });
 });
