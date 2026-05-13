@@ -84,9 +84,17 @@ frontend-test-e2e-install:
 backend-install:
     cd backend && bundle install
 
-# Run the backend dev server (Puma on http://localhost:3000)
-backend-dev:
-    cd backend && bin/rails server
+# Run the backend dev server (Puma on http://localhost:3000 + dartsass watch via foreman)
+backend-dev: backend-assets-build
+    cd backend && bin/dev
+
+# Compile backend SCSS (ActiveAdmin) to app/assets/builds/ — Propshaft does not transform Sass
+backend-assets-build:
+    cd backend && bin/rails dartsass:build
+
+# Watch backend SCSS and rebuild on change (standalone — bin/dev already does this via Procfile.dev)
+backend-assets-watch:
+    cd backend && bin/rails dartsass:watch
 
 # Open the Rails console
 backend-console:
