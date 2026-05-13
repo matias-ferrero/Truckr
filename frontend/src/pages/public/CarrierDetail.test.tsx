@@ -93,16 +93,18 @@ describe("CarrierDetail", () => {
         expect(screen.getByText(/24 viajes completados/i)).toBeInTheDocument();
     });
 
-    it("renders the vehicle gallery and vehicle cards", async () => {
+    it("renders the vehicle cards (photo + plate + capacity)", async () => {
         vi.mocked(carriersApi.getCarrier).mockResolvedValueOnce(fakeCarrier());
         renderAt("/carriers/42");
 
-        expect(await screen.findByText(/galería de la flota/i)).toBeInTheDocument();
-        const galleryImg = screen.getAllByRole("img", { name: /foto de mercedes-benz sprinter/i });
-        expect(galleryImg.length).toBeGreaterThan(0);
-        // Vehicle card shows plate + capacity + gps
+        expect(
+            await screen.findByRole("img", { name: /foto de mercedes-benz sprinter/i }),
+        ).toBeInTheDocument();
         expect(screen.getByText(/AB123CD/)).toBeInTheDocument();
         expect(screen.getByText(/3500\.00/)).toBeInTheDocument();
+        // The duplicate "Galería de la flota" section was removed in favour of
+        // a single Vehicles section — guard the regression.
+        expect(screen.queryByText(/galería de la flota/i)).toBeNull();
     });
 
     it("renders transport windows with price per km", async () => {
@@ -122,7 +124,7 @@ describe("CarrierDetail", () => {
         expect(await screen.findByText(/transportista no encontrado/i)).toBeInTheDocument();
     });
 
-    it("shows the gallery empty state when there are no photos", async () => {
+    it("renders a vehicle card without a photo by falling back to the truck glyph", async () => {
         const carrier = fakeCarrier({
             vehicles: [
                 {
@@ -135,8 +137,10 @@ describe("CarrierDetail", () => {
         renderAt("/carriers/42");
 
         expect(
-            await screen.findByText(/el transportista todavía no subió fotos/i),
+            await screen.findByRole("heading", { name: /mercedes-benz sprinter/i }),
         ).toBeInTheDocument();
+        // No <img> rendered without photos; the placeholder is aria-hidden.
+        expect(screen.queryByRole("img", { name: /foto de mercedes-benz/i })).toBeNull();
     });
 
     it("falls back to descriptionFallback when the carrier has no description", async () => {

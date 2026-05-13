@@ -34,6 +34,9 @@ rescue ActiveRecord::PendingMigrationError => e
 end
 RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
+  # ActiveJob::TestHelper exposes `perform_enqueued_jobs` for specs that need
+  # to flush jobs (e.g. ActiveStorage `purge_later`) inline within an example.
+  config.include ActiveJob::TestHelper
 
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [

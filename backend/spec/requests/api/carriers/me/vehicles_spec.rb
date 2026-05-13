@@ -100,6 +100,40 @@ RSpec.describe "Api::Carriers::Me::Vehicles", type: :request do
             params: { vehicle: { description: "hijack" } }
       expect(response).to have_http_status(:not_found)
     end
+
+    it "detaches photos listed in remove_photo_ids on update" do
+      file = Rack::Test::UploadedFile.new(
+        StringIO.new("\x89PNG\r\n\x1a\n" + ("0" * 64)),
+        "image/png", original_filename: "front.png"
+      )
+      vehicle.photos.attach(file)
+      attachment_id = vehicle.photos.attachments.first.id
+
+      patch "/api/carriers/me/vehicles/#{vehicle.id}",
+            params: { vehicle: { remove_photo_ids: [ attachment_id ] } }
+
+      expect(response).to have_http_status(:ok)
+      # purge_later schedules an ActiveJob; run inline to flush it within the spec.
+      perform_enqueued_jobs
+      expect(vehicle.reload.photos.attached?).to be(false)
+    end
+
+    it "ignores remove_photo_ids that don't belong to this vehicle (cross-carrier guard)" do
+      foreign = create(:vehicle, carrier: other_user.carrier)
+      file = Rack::Test::UploadedFile.new(
+        StringIO.new("\x89PNG\r\n\x1a\n" + ("0" * 64)),
+        "image/png", original_filename: "front.png"
+      )
+      foreign.photos.attach(file)
+      foreign_attachment_id = foreign.photos.attachments.first.id
+
+      patch "/api/carriers/me/vehicles/#{vehicle.id}",
+            params: { vehicle: { remove_photo_ids: [ foreign_attachment_id ] } }
+
+      expect(response).to have_http_status(:ok)
+      perform_enqueued_jobs
+      expect(foreign.reload.photos.attached?).to be(true)
+    end
   end
 
   describe "DELETE /api/carriers/me/vehicles/:id" do

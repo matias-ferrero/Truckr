@@ -1,4 +1,8 @@
-/* Auth screens — share design tokens with landing.css. */
+/* Auth page frame — owns the brand var scope and the sticky app header.
+   The form internals (cards, inputs, buttons, alerts, role pickers) now
+   live in Tailwind utilities + shadcn/ui primitives under
+   `src/components/ui/`. This file keeps only what those primitives don't
+   own: the page wrapper, the suspense fallback shell, and the header. */
 
 .authPage {
     --brand-primary: oklch(89% 0.06 235);
@@ -22,6 +26,7 @@
     flex-direction: column;
 }
 
+/* Suspense fallback shell. Real auth pages render their own <main>. */
 .authMain {
     flex: 1;
     display: flex;
@@ -30,195 +35,13 @@
     padding: var(--space-7) var(--space-5);
 }
 
-.authCard {
-    width: min(440px, 100%);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: var(--space-6);
-    box-shadow: 0 4px 18px color-mix(in oklab, var(--ink) 8%, transparent);
-}
-
-.authTitle {
-    font-family: var(--font-display);
-    font-size: clamp(1.5rem, 1rem + 1vw, 1.875rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin: 0 0 var(--space-2) 0;
-}
-
-.authLead {
-    margin: 0 0 var(--space-5) 0;
-    color: var(--ink-2);
-    font-size: var(--text-sm);
-    max-width: 65ch;
-    line-height: 1.5;
-}
-
-.authForm {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-}
-
-.authField {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    border: 0;
-    padding: 0;
-    margin: 0;
-    min-width: 0;
-}
-
-.authLabel {
-    font-weight: 600;
-    font-size: var(--text-sm);
-    color: var(--ink);
-}
-
-.authInput {
-    width: 100%;
-    font: inherit;
-    font-size: var(--text-base);
-    min-height: 44px;
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--surface);
-    color: var(--ink);
-    transition: border-color 120ms var(--ease-out), box-shadow 120ms var(--ease-out);
-}
-
-.authInput:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--brand-primary) 70%, white);
-  outline-offset: 2px;
-  border-color: color-mix(in oklab, var(--brand-primary) 70%, var(--ink));
-}
-
-.authInput[aria-invalid="true"] {
-    border-color: color-mix(in oklab, var(--brand-error) 80%, var(--ink));
-}
-
-.authHelp {
-    font-size: var(--text-xs);
-    color: var(--ink-3);
-    line-height: 1.4;
-}
-
-.authError {
-    font-size: var(--text-xs);
-    color: color-mix(in oklab, var(--brand-error) 50%, var(--ink));
-    font-weight: 600;
-}
-
-.authRoles {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-}
-
-.authRoleOption {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    min-height: 44px;
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--surface);
-    cursor: pointer;
-    font-size: var(--text-sm);
-    transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out);
-}
-
-.authRoleOption:has(input:checked) {
-    background: color-mix(in oklab, var(--brand-primary) 35%, var(--paper));
-    border-color: color-mix(in oklab, var(--brand-primary) 60%, var(--ink));
-}
-
-.authRoleOption:has(input:focus-visible) {
-    outline: 3px solid color-mix(in oklab, var(--ink) 15%, transparent);
-    outline-offset: 2px;
-}
-
-.authRoleOption input[type="radio"] {
-    accent-color: var(--ink);
-}
-
-.authButton {
-    appearance: none;
-    border: 0;
-    border-radius: var(--radius-sm);
-    padding: 14px 18px;
-    min-height: 44px;
-    background: var(--ink);
-    color: var(--paper);
-    font-weight: 600;
-    font-size: var(--text-base);
-    cursor: pointer;
-    transition: transform 80ms var(--ease-out), opacity 120ms var(--ease-out);
-}
-
-.authButton:hover {
-    transform: translateY(-1px);
-}
-
-.authButton:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.authBanner {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-2);
-    border: 1px solid color-mix(in oklab, var(--brand-error) 60%, var(--ink));
-    background: color-mix(in oklab, var(--brand-error) 14%, var(--paper));
-    color: color-mix(in oklab, var(--brand-error) 25%, var(--ink));
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-    font-size: var(--text-sm);
-    margin-bottom: var(--space-4);
-}
-
-.authBanner::before {
-    content: "!";
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    margin-top: 2px;
-    border-radius: 999px;
-    background: color-mix(in oklab, var(--brand-error) 50%, var(--ink));
-    color: var(--paper);
-    font-weight: 700;
-    font-size: 0.75rem;
-    line-height: 1;
-}
-
-.authFootnote {
-    margin-top: var(--space-5);
-    font-size: var(--text-sm);
-    color: var(--ink-2);
-    text-align: center;
-}
-
-.authFootnote a {
-    color: var(--ink);
-    font-weight: 600;
-}
-
 /* Header */
 .appHeader {
-  background: color-mix(in oklab, var(--brand-primary, oklch(89% 0.06 235)) 60%, var(--paper, oklch(99% 0.005 240)));
-  border-bottom: 1px solid var(--border, color-mix(in oklab, oklch(75% 0.005 240) 70%, oklch(99% 0.005 240)));
-  position: sticky;
-  top: 0;
-  z-index: 10;
+    background: color-mix(in oklab, var(--brand-primary, #bee4fa) 60%, var(--paper, #fff));
+    border-bottom: 1px solid var(--border, rgba(15, 23, 42, 0.12));
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .appHeaderInner {
@@ -256,36 +79,19 @@
 }
 
 .appHeaderLink {
-  color: var(--ink);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: var(--text-sm);
-  padding: 8px 12px;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  border-radius: var(--radius-sm);
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    padding: 8px 12px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-sm);
 }
 
 .appHeaderLink:hover {
     background: color-mix(in oklab, var(--brand-primary) 50%, var(--paper));
-}
-
-.appHeaderButton {
-  appearance: none;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--ink);
-  padding: 8px 12px;
-  min-height: 44px;
-  border-radius: var(--radius-sm);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.appHeaderButton:hover {
-    background: var(--surface-2);
 }
 
 @media (max-width: 480px) {
@@ -301,21 +107,12 @@
         font-size: 1rem;
     }
 
-    .appHeaderLink,
-    .appHeaderButton {
+    .appHeaderLink {
         padding: 6px 10px;
     }
 
     .authMain {
         padding: var(--space-5) var(--space-4);
-    }
-
-    .authCard {
-        padding: var(--space-5);
-    }
-
-    .authRoleOption {
-        padding: 12px;
     }
 }
 

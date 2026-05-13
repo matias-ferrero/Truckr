@@ -1,5 +1,5 @@
-import { FormEvent, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { ApiError } from "../../api";
 import {
     CarrierSearchParams,
@@ -8,6 +8,11 @@ import {
     searchCarriers,
 } from "../../api/carriers";
 import { carrierSearchContent as t } from "./carrierSearchContent";
+import { Button, buttonVariants } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { FormField } from "../../components/ui/form-field";
+import { Alert } from "../../components/ui/alert";
+import { cn } from "../../lib/utils";
 import "./carrier.css";
 
 type SearchState =
@@ -22,6 +27,24 @@ const initialFilters: CarrierSearchParams = {
     dateFrom: "",
     dateTo: "",
 };
+
+function readFiltersFromParams(params: URLSearchParams): CarrierSearchParams {
+    return {
+        originZone: params.get("origin_zone") ?? "",
+        destinationZone: params.get("destination_zone") ?? "",
+        dateFrom: params.get("date_from") ?? "",
+        dateTo: params.get("date_to") ?? "",
+    };
+}
+
+function hasAllFilters(filters: CarrierSearchParams): boolean {
+    return (
+        filters.originZone.trim().length > 0 &&
+        filters.destinationZone.trim().length > 0 &&
+        filters.dateFrom.length > 0 &&
+        filters.dateTo.length > 0
+    );
+}
 
 function formatMoney(pricePerKm: string): string {
     const value = Number(pricePerKm);
@@ -38,9 +61,13 @@ function firstWindow(item: CarrierSearchResult): SearchTransportWindow | null {
 }
 
 export default function CarrierSearchPage() {
-    const [filters, setFilters] = useState(initialFilters);
+    const [searchParams] = useSearchParams();
+    const [filters, setFilters] = useState<CarrierSearchParams>(() =>
+        readFiltersFromParams(searchParams)
+    );
     const [state, setState] = useState<SearchState>({ status: "idle" });
     const [rangeError, setRangeError] = useState<string | null>(null);
+    const autoRanRef = useRef(false);
 
     const canSubmit = useMemo(
         () =>
@@ -65,6 +92,21 @@ export default function CarrierSearchPage() {
         }
     };
 
+    useEffect(() => {
+        if (autoRanRef.current) return;
+        const initial = readFiltersFromParams(searchParams);
+        if (!hasAllFilters(initial)) return;
+        if (initial.dateFrom > initial.dateTo) {
+            setRangeError(t.form.rangeError);
+            autoRanRef.current = true;
+            return;
+        }
+        autoRanRef.current = true;
+        void runSearch(initial);
+        // searchParams is read once on mount via ref guard; do not re-run on every URL tick.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -84,13 +126,17 @@ export default function CarrierSearchPage() {
                     <p className="sectionLead">{t.lead}</p>
                 </header>
 
-                <form className="searchForm" onSubmit={onSubmit}>
-                    <fieldset>
-                        <legend className="visuallyHidden">{t.form.filterLegend || "Criterios de búsqueda"}</legend>
-                        <label className="searchField">
-                            <span>{t.form.origin}</span>
-                            <input
-                                className="input"
+                <form
+                    className="grid gap-4 bg-paper p-6 rounded-md shadow-[0_6px_24px_color-mix(in_oklab,var(--color-ink)_6%,transparent)]"
+                    onSubmit={onSubmit}
+                >
+                    <fieldset className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(200px,1fr))] border-0 p-0 m-0 min-w-0">
+                        <legend className="sr-only">
+                            {t.form.filterLegend || "Criterios de búsqueda"}
+                        </legend>
+                        <FormField id="search-origin" label={t.form.origin}>
+                            <Input
+                                id="search-origin"
                                 type="text"
                                 value={filters.originZone}
                                 placeholder={t.form.originPlaceholder}
@@ -99,12 +145,10 @@ export default function CarrierSearchPage() {
                                 required
                                 aria-label={t.form.origin}
                             />
-                        </label>
-
-                        <label className="searchField">
-                            <span>{t.form.destination}</span>
-                            <input
-                                className="input"
+                        </FormField>
+                        <FormField id="search-destination" label={t.form.destination}>
+                            <Input
+                                id="search-destination"
                                 type="text"
                                 value={filters.destinationZone}
                                 placeholder={t.form.destinationPlaceholder}
@@ -113,12 +157,10 @@ export default function CarrierSearchPage() {
                                 required
                                 aria-label={t.form.destination}
                             />
-                        </label>
-
-                        <label className="searchField">
-                            <span>{t.form.dateFrom}</span>
-                            <input
-                                className="input"
+                        </FormField>
+                        <FormField id="search-date-from" label={t.form.dateFrom}>
+                            <Input
+                                id="search-date-from"
                                 type="date"
                                 value={filters.dateFrom}
                                 onChange={(event) =>
@@ -126,34 +168,28 @@ export default function CarrierSearchPage() {
                                 required
                                 aria-label={t.form.dateFrom}
                             />
-                        </label>
-
-                        <label className="searchField">
-                            <span>{t.form.dateTo}</span>
-                            <input
-                                className="input"
+                        </FormField>
+                        <FormField
+                            id="search-date-to"
+                            label={t.form.dateTo}
+                            error={rangeError ?? undefined}
+                        >
+                            <Input
+                                id="search-date-to"
                                 type="date"
                                 value={filters.dateTo}
                                 onChange={(event) =>
                                     setFilters((current) => ({ ...current, dateTo: event.target.value }))}
                                 required
                                 aria-label={t.form.dateTo}
-                                aria-invalid={rangeError ? "true" : "false"}
-                                aria-describedby={rangeError ? "range-error-msg" : undefined}
                             />
-                        </label>
+                        </FormField>
                     </fieldset>
 
-                    <button className="button buttonPrimary" type="submit" disabled={!canSubmit || state.status === "loading"}>
+                    <Button type="submit" disabled={!canSubmit || state.status === "loading"}>
                         {state.status === "loading" ? t.form.submitBusy : t.form.submit}
-                    </button>
+                    </Button>
                 </form>
-
-                {rangeError && (
-                    <div className="errorPanel" role="alert" id="range-error-msg">
-                        <p>{rangeError}</p>
-                    </div>
-                )}
 
                 {state.status === "idle" && (
                     <section className="searchStatePanel" aria-live="polite">
@@ -177,13 +213,20 @@ export default function CarrierSearchPage() {
                 )}
 
                 {state.status === "error" && (
-                    <section className="searchStatePanel" aria-live="polite" role="alert">
-                        <h2>{t.states.errorTitle}</h2>
-                        <p>{state.message}</p>
-                        <button className="button buttonGhost" type="button" onClick={() => runSearch(filters)}>
-                            {t.states.retry}
-                        </button>
-                    </section>
+                    <Alert tone="error" aria-live="polite" className="mt-4">
+                        <div className="flex flex-col gap-2 w-full">
+                            <h2 className="font-semibold text-base">{t.states.errorTitle}</h2>
+                            <p>{state.message}</p>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => runSearch(filters)}
+                                className="self-start"
+                            >
+                                {t.states.retry}
+                            </Button>
+                        </div>
+                    </Alert>
                 )}
 
                 {state.status === "ready" && state.items.length === 0 && (
@@ -236,7 +279,10 @@ export default function CarrierSearchPage() {
                                         </p>
                                     </div>
                                     <div className="searchCardActions">
-                                        <Link className="button buttonGhost" to={`/carriers/${item.id}`}>
+                                        <Link
+                                            className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                                            to={`/carriers/${item.id}`}
+                                        >
                                             {t.card.details}
                                         </Link>
                                     </div>

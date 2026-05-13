@@ -5,4 +5,12 @@ if ! gem list foreman -i --silent; then
   gem install foreman
 fi
 
-exec foreman start -f Procfile.dev "$@"
+# `-p 3000` tells foreman to assign PORT=3000 to the first process (`web`).
+# Without it foreman defaults to 5000, which leaks into ENV["PORT"] for the
+# web process. ActiveStorage's signed-redirect URLs read the request port
+# (which Rack derives from SERVER_PORT, ultimately ENV["PORT"]), so the
+# default-5000 base produced AS image URLs like http://localhost:5000/rails/...
+# even though Puma was bound to 3000 via the Procfile `-p 3000` flag —
+# resulting in ERR_CONNECTION_REFUSED in the browser. Pinning foreman to
+# 3000 makes the listening port and the URL port agree.
+exec foreman start -f Procfile.dev -p 3000 "$@"

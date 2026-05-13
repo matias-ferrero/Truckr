@@ -5,9 +5,9 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./AuthContext";
 import { RegisterPage } from "./RegisterPage";
 
-const renderRegister = () =>
+const renderRegister = (initialPath = "/signup") =>
     render(
-        <MemoryRouter initialEntries={["/signup"]}>
+        <MemoryRouter initialEntries={[initialPath]}>
             <AuthProvider>
                 <Routes>
                     <Route path="/signup" element={<RegisterPage />} />
@@ -70,6 +70,24 @@ describe("RegisterPage", () => {
         await user.click(screen.getByRole("button", { name: /^crear cuenta$/i }));
 
         expect(await screen.findByText(/no coinciden/i)).toBeInTheDocument();
+    });
+
+    it("pre-selects the shipper role from ?role=shipper", () => {
+        renderRegister("/signup?role=shipper");
+        expect(screen.getByLabelText(/expedidor/i)).toBeChecked();
+        expect(screen.getByLabelText(/transportista/i)).not.toBeChecked();
+    });
+
+    it("pre-selects the carrier role from ?role=carrier", () => {
+        renderRegister("/signup?role=carrier");
+        expect(screen.getByLabelText(/transportista/i)).toBeChecked();
+        expect(screen.getByLabelText(/expedidor/i)).not.toBeChecked();
+    });
+
+    it("ignores an unknown role query value", () => {
+        renderRegister("/signup?role=hacker");
+        expect(screen.getByLabelText(/expedidor/i)).not.toBeChecked();
+        expect(screen.getByLabelText(/transportista/i)).not.toBeChecked();
     });
 
     it("submits successfully and navigates home", async () => {

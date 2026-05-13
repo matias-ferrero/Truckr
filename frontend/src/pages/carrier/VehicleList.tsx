@@ -7,6 +7,8 @@ import {
     VehicleListMeta,
 } from "../../api/vehicles";
 import { carrierContent, vehicleTypeLabel } from "./carrierContent";
+import { Button, buttonVariants } from "../../components/ui/button";
+import { cn } from "../../lib/utils";
 
 const t = carrierContent.list;
 
@@ -57,7 +59,10 @@ export default function VehicleList() {
                         <h1 className="sectionTitle">{t.title}</h1>
                         <p className="sectionLead">{t.lead}</p>
                     </div>
-                    <Link to="/carrier/vehicle/new" className="button buttonPrimary">
+                    <Link
+                        to="/carrier/vehicle/new"
+                        className={cn(buttonVariants({ variant: "primary" }))}
+                    >
                         {t.addCta}
                     </Link>
                 </header>
@@ -77,20 +82,19 @@ export default function VehicleList() {
                 {state.status === "error" && (
                     <div className="errorPanel" role="alert">
                         <p>{t.loadError}: {state.message}</p>
-                        <button
-                            className="button buttonGhost"
-                            onClick={() => reload(page)}
-                            type="button"
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => reload(page)}>
                             {t.retry}
-                        </button>
+                        </Button>
                     </div>
                 )}
 
                 {state.status === "ready" && state.items.length === 0 && (
                     <div className="emptyState">
                         <p>{t.emptyTitle}</p>
-                        <Link to="/carrier/vehicle/new" className="button buttonPrimary">
+                        <Link
+                            to="/carrier/vehicle/new"
+                            className={cn(buttonVariants({ variant: "primary" }))}
+                        >
                             {t.emptyCta}
                         </Link>
                     </div>
@@ -134,45 +138,49 @@ export default function VehicleList() {
                                     <div className="cardActions">
                                         <Link
                                             to={`/carrier/vehicle/${v.id}`}
-                                            className="button buttonGhost"
+                                            className={cn(
+                                                buttonVariants({ variant: "ghost", size: "sm" }),
+                                                "flex-1",
+                                            )}
                                         >
                                             {t.edit}
                                         </Link>
-                                        <button
-                                            className="button buttonDanger"
-                                            type="button"
+                                        <Button
+                                            variant="danger"
+                                            size="sm"
                                             onClick={() => setConfirmTarget(v.id)}
                                             disabled={pendingDelete === v.id}
+                                            className="flex-1"
                                         >
                                             {pendingDelete === v.id ? t.deleting : t.delete}
-                                        </button>
+                                        </Button>
                                     </div>
                                 </li>
                             ))}
                         </ul>
                         {state.meta.totalPages > 1 && (
                             <nav className="paginator" aria-label={t.pagination.label}>
-                                <button
-                                    type="button"
-                                    className="button buttonGhost"
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
                                     disabled={page <= 1}
                                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                                 >
                                     {t.pagination.previous}
-                                </button>
+                                </Button>
                                 <p>
                                     {t.pagination.page(state.meta.page, state.meta.totalPages)}
                                     {" · "}
                                     {t.pagination.count(state.meta.total)}
                                 </p>
-                                <button
-                                    type="button"
-                                    className="button buttonGhost"
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
                                     disabled={page >= state.meta.totalPages}
                                     onClick={() => setPage((p) => p + 1)}
                                 >
                                     {t.pagination.next}
-                                </button>
+                                </Button>
                             </nav>
                         )}
                     </>
@@ -229,12 +237,12 @@ function ConfirmDialog({ open, onCancel, onConfirm }: ConfirmDialogProps) {
                 <h2 id="confirm-title" className="confirmDialogTitle">{c.title}</h2>
                 <p id="confirm-text" className="confirmDialogText">{c.text}</p>
                 <div className="confirmDialogActions">
-                    <button type="button" className="button buttonGhost" onClick={onCancel}>
+                    <Button variant="ghost" size="sm" onClick={onCancel}>
                         {c.cancel}
-                    </button>
-                    <button type="button" className="button buttonDanger" onClick={onConfirm}>
+                    </Button>
+                    <Button variant="danger" size="sm" onClick={onConfirm}>
                         {c.confirm}
-                    </button>
+                    </Button>
                 </div>
             </div>
         </dialog>

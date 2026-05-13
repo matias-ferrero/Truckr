@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { DashboardPage } from "./DashboardPage";
 import * as authHook from "../../auth/useCurrentUser";
@@ -114,7 +113,7 @@ describe("DashboardPage", () => {
         expect(screen.getByRole("heading", { level: 2, name: /encontrá un transportista/i })).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mis viajes/i })).toBeInTheDocument();
         expect(screen.queryByRole("heading", { level: 2, name: /mi disponibilidad/i })).toBeNull();
-        expect(screen.queryByRole("heading", { level: 2, name: /mis vehículos/i })).toBeNull();
+        expect(screen.queryByRole("heading", { level: 2, name: /mi flota/i })).toBeNull();
     });
 
     it("does not render the carrier-search section in the carrier view", async () => {
@@ -143,28 +142,14 @@ describe("DashboardPage", () => {
         expect(screen.getByRole("heading", { level: 1, name: /hola, ana/i })).toBeInTheDocument();
     });
 
-    it("renders the trip card with route, price, status badge, and the New CTA", () => {
+    it("shows the empty-state for trips (no real trips API yet)", () => {
         mockMe(fakeMe());
         renderPage();
-        expect(screen.getByText(/tigre → belgrano/i)).toBeInTheDocument();
-        expect(screen.getByText("$ 50.000")).toBeInTheDocument();
-        expect(screen.getByText(/^pendiente$/i)).toBeInTheDocument();
-        expect(screen.getByRole("link", { name: /nuevo viaje/i })).toHaveAttribute("href", "/trips/new");
-    });
-
-    it("filter pills toggle aria-pressed and show the empty state when no trips match", async () => {
-        mockMe(fakeMe());
-        renderPage();
-
-        const todos = screen.getByRole("button", { name: /todos/i, pressed: true });
-        expect(todos).toBeInTheDocument();
-
-        const aceptados = screen.getByRole("button", { name: /aceptados/i, pressed: false });
-        await userEvent.click(aceptados);
-
-        expect(screen.getByRole("button", { name: /aceptados/i, pressed: true })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /todos/i, pressed: false })).toBeInTheDocument();
-        expect(screen.getByText(/sin viajes para mostrar/i)).toBeInTheDocument();
+        expect(screen.getByText(/todavía no tenés viajes/i)).toBeInTheDocument();
+        // Filters and "new trip" CTA were dropped along with the mocked trip data —
+        // they implied features the backend doesn't ship yet.
+        expect(screen.queryByRole("button", { name: /^todos$/i })).toBeNull();
+        expect(screen.queryByRole("link", { name: /nuevo viaje/i })).toBeNull();
     });
 
     it("renders the carrier view: disponibilidad + vehículos sections and fetches vehicles", async () => {
@@ -185,7 +170,7 @@ describe("DashboardPage", () => {
 
         expect(screen.getByText(/panel · transportista/i)).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mi disponibilidad/i })).toBeInTheDocument();
-        expect(screen.getByRole("heading", { level: 2, name: /mis vehículos/i })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 2, name: /mi flota/i })).toBeInTheDocument();
 
         await waitFor(() => {
             expect(screen.getByText("Centro → Pilar")).toBeInTheDocument();
@@ -229,7 +214,7 @@ describe("DashboardPage", () => {
         renderPage();
 
         await waitFor(() => expect(vehiclesApi.listMyVehicles).toHaveBeenCalled());
-        expect(screen.getByRole("heading", { level: 2, name: /mis vehículos/i })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 2, name: /mi flota/i })).toBeInTheDocument();
         consoleError.mockRestore();
     });
 });

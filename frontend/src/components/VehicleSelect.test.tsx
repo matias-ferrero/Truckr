@@ -66,8 +66,8 @@ describe("VehicleSelect", () => {
                 <VehicleSelect value={null} onChange={() => {}} />
             </MemoryRouter>
         );
-        expect(await screen.findByText(/todavía no registraste vehículos/i)).toBeInTheDocument();
-        expect(screen.getByRole("link", { name: /registrá el primero/i })).toHaveAttribute(
+        expect(await screen.findByText(/todavía no agregaste vehículos/i)).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: /agregá el primero/i })).toHaveAttribute(
             "href",
             "/carrier/vehicle/new"
         );

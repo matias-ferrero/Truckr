@@ -43,5 +43,14 @@ module Trukr
     config.i18n.available_locales = %i[es en]
     config.i18n.default_locale = :es
     config.i18n.fallbacks = [ :en ]
+
+    # ImageMagick is the variant backend instead of libvips. Rails 8 defaults
+    # to :vips, which requires libvips.so.42 in the OS image — not present in
+    # stock Fedora / Debian dev images and not installed by `mise install`,
+    # so the first GET /rails/active_storage/representations/... blew up with
+    # LoadError ("Could not open library 'vips.so.42'"). ImageMagick is
+    # already a transitive dependency (Fedora ships ImageMagick-7), so
+    # picking :mini_magick keeps dev + CI green without an OS-package step.
+    config.active_storage.variant_processor = :mini_magick
   end
 end

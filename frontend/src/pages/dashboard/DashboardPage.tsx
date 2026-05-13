@@ -1,20 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCurrentUser } from "../../auth/useCurrentUser";
 import { listMyVehicles, Vehicle } from "../../api/vehicles";
 import { listMyTransportWindows, TransportWindow } from "../../api/transport_windows";
 import { TransportWindowSearchSection } from "./TransportWindowSearchSection";
 import "../../styles/dashboard.css";
-
-type TripStatus = "PENDIENTE" | "ACEPTADO" | "PASADO";
-type TripFilter = "TODOS" | TripStatus;
-
-const TRIP_FILTERS: { value: TripFilter; label: string }[] = [
-    { value: "TODOS", label: "Todos" },
-    { value: "ACEPTADO", label: "Aceptados" },
-    { value: "PENDIENTE", label: "Pendientes" },
-    { value: "PASADO", label: "Pasados" },
-];
 
 function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString("es-AR", {
@@ -27,19 +17,9 @@ function formatDate(iso: string) {
 export function DashboardPage() {
     const { me, loading } = useCurrentUser();
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-    const [activeFilter, setActiveFilter] = useState<TripFilter>("TODOS");
 
     const [windows, setWindows]           = useState<TransportWindow[]>([]);
     const [windowsTotal, setWindowsTotal] = useState(0);
-    const [trips] = useState<{
-        id: number;
-        date: string;
-        status: TripStatus;
-        route: string;
-        price: string;
-    }[]>([
-        { id: 1, date: "20/05", status: "PENDIENTE", route: "Tigre → Belgrano", price: "$ 50.000" },
-    ]);
 
     const isCarrier = me?.roles.includes("carrier");
 
@@ -51,11 +31,6 @@ export function DashboardPage() {
                 .catch(console.error);
         }
     }, [isCarrier]);
-
-    const visibleTrips = useMemo(
-        () => (activeFilter === "TODOS" ? trips : trips.filter(t => t.status === activeFilter)),
-        [trips, activeFilter],
-    );
 
     if (loading) {
         return (
@@ -104,56 +79,18 @@ export function DashboardPage() {
                         <div className="dashboardSectionHeading">
                             <span className="dashboardSectionIcon" aria-hidden="true"><IconTruck /></span>
                             <h2 id="section-trips">Mis viajes</h2>
-                            <span className="dashboardSectionCount" aria-label={`${visibleTrips.length} viajes`}>
-                                {visibleTrips.length}
-                            </span>
-                        </div>
-                        <div className="dashboardFilters" role="group" aria-label="Filtrar viajes">
-                            {TRIP_FILTERS.map(f => (
-                                <button
-                                    key={f.value}
-                                    type="button"
-                                    aria-pressed={activeFilter === f.value}
-                                    onClick={() => setActiveFilter(f.value)}
-                                >
-                                    {f.label}
-                                </button>
-                            ))}
                         </div>
                     </div>
                     <div className="dashboardCardList">
-                        {visibleTrips.length === 0 ? (
-                            <div className="dashboardEmpty" role="status">
-                                <span className="dashboardEmptyIcon" aria-hidden="true"><IconRoute /></span>
-                                <div>
-                                    <span className="dashboardEmptyTitle">Sin viajes para mostrar</span>
-                                    <span className="dashboardEmptyHint">
-                                        Probá con otro filtro o publicá tu primer viaje.
-                                    </span>
-                                </div>
+                        <div className="dashboardEmpty" role="status">
+                            <span className="dashboardEmptyIcon" aria-hidden="true"><IconRoute /></span>
+                            <div>
+                                <span className="dashboardEmptyTitle">Todavía no tenés viajes</span>
+                                <span className="dashboardEmptyHint">
+                                    Cuando se confirme tu primer viaje vas a verlo acá.
+                                </span>
                             </div>
-                        ) : (
-                            visibleTrips.map(t => (
-                                <article key={t.id} className="dashboardCard">
-                                    <div className="dashboardCardHead">
-                                        <span className="dashboardCardEyebrow">Viaje #{t.id}</span>
-                                        <span className="dashboardCardPrice">{t.price}</span>
-                                    </div>
-                                    <h3 className="dashboardCardTitle">{t.route}</h3>
-                                    <div className="dashboardCardMeta">
-                                        <IconCalendar />
-                                        <span>{t.date}</span>
-                                    </div>
-                                    <div className="dashboardCardFoot">
-                                        <StatusBadge status={t.status} />
-                                    </div>
-                                </article>
-                            ))
-                        )}
-                        <Link to="/trips/new" className="dashboardCard dashboardCardNew" aria-label="Nuevo viaje">
-                            <span className="dashboardCardNewIcon" aria-hidden="true"><IconPlus /></span>
-                            <span className="dashboardCardNewLabel">Nuevo viaje</span>
-                        </Link>
+                        </div>
                     </div>
                 </section>
 
@@ -215,7 +152,7 @@ export function DashboardPage() {
                             <div className="dashboardSectionHeader">
                                 <div className="dashboardSectionHeading">
                                     <span className="dashboardSectionIcon" aria-hidden="true"><IconVehicle /></span>
-                                    <h2 id="section-vehicles">Mis vehículos</h2>
+                                    <h2 id="section-vehicles">Mi flota</h2>
                                     <span className="dashboardSectionCount" aria-label={`${vehicles.length} vehículos`}>
                                         {vehicles.length}
                                     </span>
@@ -256,9 +193,9 @@ export function DashboardPage() {
                                         </Link>
                                     ))
                                 )}
-                                <Link to="/carrier/vehicle/new" className="dashboardCard dashboardCardNew" aria-label="Nuevo vehículo">
+                                <Link to="/carrier/vehicle/new" className="dashboardCard dashboardCardNew" aria-label="Agregar vehículo">
                                     <span className="dashboardCardNewIcon" aria-hidden="true"><IconPlus /></span>
-                                    <span className="dashboardCardNewLabel">Nuevo vehículo</span>
+                                    <span className="dashboardCardNewLabel">Agregar vehículo</span>
                                 </Link>
                             </div>
                         </section>
@@ -266,24 +203,6 @@ export function DashboardPage() {
                 )}
             </div>
         </main>
-    );
-}
-
-/* ---- Status badge --------------------------------------------------- */
-
-function StatusBadge({ status }: { status: TripStatus }) {
-    const className = `statusBadge ${status.toLowerCase()}`;
-    const label = status.charAt(0) + status.slice(1).toLowerCase();
-    const icon = status === "ACEPTADO"
-        ? <IconCheck />
-        : status === "PENDIENTE"
-            ? <IconClock />
-            : <IconCheck />;
-    return (
-        <span className={className}>
-            {icon}
-            {label}
-        </span>
     );
 }
 
@@ -346,32 +265,6 @@ function IconPlus() {
     return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M12 5v14M5 12h14" />
-        </svg>
-    );
-}
-
-function IconClock() {
-    return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 7v5l3 2" />
-        </svg>
-    );
-}
-
-function IconCheck() {
-    return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M5 12l4.5 4.5L19 7" />
-        </svg>
-    );
-}
-
-function IconMapPin() {
-    return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13z" />
-            <circle cx="12" cy="9" r="2.25" />
         </svg>
     );
 }

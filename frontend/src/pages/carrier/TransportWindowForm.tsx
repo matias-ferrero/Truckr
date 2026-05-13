@@ -9,6 +9,10 @@ import {
 } from "../../api/transport_windows";
 import VehicleSelect from "../../components/VehicleSelect";
 import { carrierContent } from "./carrierContent";
+import { Alert } from "../../components/ui/alert";
+import { Button } from "../../components/ui/button";
+import { FormField } from "../../components/ui/form-field";
+import { Input } from "../../components/ui/input";
 
 type Mode = "new" | "edit";
 
@@ -156,11 +160,16 @@ export default function TransportWindowForm({ mode }: Props) {
                     <p className="sectionLead">{f.lead}</p>
                 </header>
 
-                <form className="vehicleForm" aria-labelledby="form-title" onSubmit={handleSubmit} noValidate>
+                <form
+                    className="grid gap-6 bg-paper p-6 rounded-md shadow-[0_6px_24px_color-mix(in_oklab,var(--color-ink)_6%,transparent)]"
+                    aria-labelledby="form-title"
+                    onSubmit={handleSubmit}
+                    noValidate
+                >
                     {error && (
-                        <div className="errorPanel" role="alert">
-                            <p>{error}</p>
-                        </div>
+                        <Alert tone="error" aria-live="assertive">
+                            {error}
+                        </Alert>
                     )}
 
                     {mode === "new" && (
@@ -179,157 +188,125 @@ export default function TransportWindowForm({ mode }: Props) {
                         </dl>
                     )}
 
-                    <div className="fieldSection">
                     <p className="requiredNote">{f.allRequired}</p>
-                    <div className="fieldGrid">
-                        <Field
+
+                    <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
+                        <FormField
+                            id="origin_zone"
                             label={f.fields.originZone}
                             error={fieldError("origin_zone")}
                         >
-                            <input
+                            <Input
                                 id="origin_zone"
-                                className="input"
                                 type="text"
                                 value={draft.origin_zone}
                                 onChange={(e) => set("origin_zone", e.target.value)}
                                 required
-                                aria-invalid={!!fieldError("origin_zone")}
-                                aria-describedby={fieldError("origin_zone") ? "origin_zone-error" : undefined}
                             />
-                        </Field>
+                        </FormField>
 
-                        <Field
+                        <FormField
+                            id="destination_zone"
                             label={f.fields.destinationZone}
                             error={fieldError("destination_zone")}
                         >
-                            <input
+                            <Input
                                 id="destination_zone"
-                                className="input"
                                 type="text"
                                 value={draft.destination_zone}
                                 onChange={(e) => set("destination_zone", e.target.value)}
                                 required
-                                aria-invalid={!!fieldError("destination_zone")}
-                                aria-describedby={fieldError("destination_zone") ? "destination_zone-error" : undefined}
                             />
-                        </Field>
+                        </FormField>
 
-                        <Field
+                        <FormField
+                            id="price_per_km"
                             label={f.fields.pricePerKm}
                             error={fieldError("price_per_km")}
                         >
-                            <input
+                            <Input
                                 id="price_per_km"
-                                className="input"
                                 type="text"
                                 inputMode="decimal"
                                 value={draft.price_per_km}
                                 onChange={(e) => set("price_per_km", e.target.value)}
                                 required
-                                aria-invalid={!!fieldError("price_per_km")}
-                                aria-describedby={fieldError("price_per_km") ? "price_per_km-error" : undefined}
                             />
-                        </Field>
+                        </FormField>
 
-                        <Field
+                        <FormField
+                            id="max_km"
                             label={f.fields.maxKm}
                             error={fieldError("max_km")}
                         >
-                            <input
+                            <Input
                                 id="max_km"
-                                className="input"
                                 type="text"
                                 inputMode="numeric"
                                 pattern="[0-9]*"
                                 value={draft.max_km}
                                 onChange={(e) => set("max_km", e.target.value)}
                                 required
-                                aria-invalid={!!fieldError("max_km")}
-                                aria-describedby={fieldError("max_km") ? "max_km-error" : undefined}
                             />
-                        </Field>
+                        </FormField>
                     </div>
 
-                    <fieldset className="dateRange">
-                        <legend>{f.periodLegend}</legend>
-                        <Field
-                            label={f.fields.availableFrom}
-                            error={fieldError("available_from")}
-                        >
-                            <input
+                    <fieldset className="border border-stroke rounded-sm p-4">
+                        <legend className="px-2 font-semibold text-ink">
+                            {f.periodLegend}
+                        </legend>
+                        <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
+                            <FormField
                                 id="available_from"
-                                className="input"
-                                type="datetime-local"
-                                min={todayMin}
-                                value={draft.available_from}
-                                onChange={(e) => set("available_from", e.target.value)}
-                                required
-                                aria-invalid={!!fieldError("available_from")}
-                                aria-describedby={fieldError("available_from") ? "available_from-error" : undefined}
-                            />
-                        </Field>
+                                label={f.fields.availableFrom}
+                                error={fieldError("available_from")}
+                            >
+                                <Input
+                                    id="available_from"
+                                    type="datetime-local"
+                                    min={todayMin}
+                                    value={draft.available_from}
+                                    onChange={(e) => set("available_from", e.target.value)}
+                                    required
+                                />
+                            </FormField>
 
-                        <Field
-                            label={f.fields.availableTo}
-                            error={fieldError("available_to")}
-                        >
-                            <input
+                            <FormField
                                 id="available_to"
-                                className="input"
-                                type="datetime-local"
-                                min={draft.available_from || todayMin}
-                                value={draft.available_to}
-                                onChange={(e) => set("available_to", e.target.value)}
-                                required
-                                aria-invalid={!!fieldError("available_to")}
-                                aria-describedby={fieldError("available_to") ? "available_to-error" : undefined}
-                            />
-                        </Field>
+                                label={f.fields.availableTo}
+                                error={fieldError("available_to")}
+                            >
+                                <Input
+                                    id="available_to"
+                                    type="datetime-local"
+                                    min={draft.available_from || todayMin}
+                                    value={draft.available_to}
+                                    onChange={(e) => set("available_to", e.target.value)}
+                                    required
+                                />
+                            </FormField>
+                        </div>
                     </fieldset>
-                    </div>
 
-                    <div className="cardActions">
-                        <button
-                            type="button"
-                            className="button buttonGhost"
-                            onClick={() => navigate("/carrier/availability")}
-                        >
-                            {f.submit.cancel}
-                        </button>
-                        <button
-                            type="submit"
-                            className="button buttonPrimary"
-                            disabled={loading}
-                        >
+                    <div className="flex flex-wrap gap-3">
+                        <Button type="submit" disabled={loading}>
                             {loading
                                 ? f.submit.saving
                                 : mode === "edit" ? f.submit.update : f.submit.create}
-                        </button>
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() =>
+                                window.history.length > 1
+                                    ? navigate(-1)
+                                    : navigate("/carrier/availability")}
+                        >
+                            {f.submit.cancel}
+                        </Button>
                     </div>
                 </form>
             </div>
         </main>
-    );
-}
-
-type FieldProps = {
-    label: string;
-    error?: string;
-    children: React.ReactNode;
-};
-
-function Field({ label, error, children }: FieldProps) {
-    const child = children as React.ReactElement<{ id?: string }>;
-    const id    = child?.props?.id ?? label.toLowerCase().replace(/\s+/g, "_");
-    return (
-        <div className="field">
-            <label htmlFor={id}>{label}</label>
-            {children}
-            {error && (
-                <p id={`${id}-error`} className="fieldError">
-                    {error}
-                </p>
-            )}
-        </div>
     );
 }

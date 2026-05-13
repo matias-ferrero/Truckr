@@ -110,6 +110,30 @@ describe("api/vehicles", () => {
         expect(result.id).toBe(7);
     });
 
+    it("createVehicle unwraps the {error:{code,message,details}} envelope into a readable message", async () => {
+        server.use(
+            http.post(`${API}/api/carriers/me/vehicles`, () =>
+                HttpResponse.json(
+                    {
+                        error: {
+                            code: "unprocessable",
+                            message: "Validation failed: Year must be greater than 1980",
+                            details: { year: ["must be greater than 1980"] },
+                        },
+                    },
+                    { status: 422 },
+                )),
+        );
+
+        await expect(createVehicle(new FormData())).rejects.toMatchObject({
+            // The previous shape did `new Error(body.error)` on the {code,message,details}
+            // object and produced "[object Object]" — guard against that regression.
+            message: "Validation failed: Year must be greater than 1980",
+            status: 422,
+            body: { error: { details: { year: ["must be greater than 1980"] } } },
+        });
+    });
+
     it("updateVehicle PATCHes FormData", async () => {
         let receivedMethod = "";
         server.use(

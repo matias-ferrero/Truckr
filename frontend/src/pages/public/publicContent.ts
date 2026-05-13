@@ -26,8 +26,6 @@ export const publicContent = {
         zoneLine: (origin: string, destination: string) =>
             `${origin} → ${destination}`,
         pricePerKmLabel: (price: string) => `$${price} / km`,
-        galleryTitle: "Galería de la flota",
-        galleryEmpty: "El transportista todavía no subió fotos de su flota.",
         photoAlt: (label: string) => `Foto de ${label}`,
         vehiclesTitle: "Vehículos",
         vehicleHeading: (make: string, model: string) => `${make} ${model}`,

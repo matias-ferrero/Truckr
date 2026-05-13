@@ -27,13 +27,13 @@ describe("SessionWidget", () => {
         expect(screen.getByRole("link", { name: /crear cuenta/i })).toBeInTheDocument();
     });
 
-    it("shows email + Salir when authenticated and logs out on click", async () => {
+    it("shows the display name + Salir when authenticated and logs out on click", async () => {
         server.use(
             http.get(`${API}/api/auth/me`, () =>
                 HttpResponse.json({
                     id: 5,
                     email: "widget@example.com",
-                    full_name: "W",
+                    full_name: "Wanda",
                     phone: null,
                     verified_at: null,
                     roles: ["carrier"],
@@ -46,10 +46,37 @@ describe("SessionWidget", () => {
         const user = userEvent.setup();
         renderWidget();
 
-        await waitFor(() => expect(screen.getByText("widget@example.com")).toBeInTheDocument());
+        // Carrier display name shown as a link to their public profile
+        const profileLink = await screen.findByRole("link", { name: /perfil de wanda/i });
+        expect(profileLink).toHaveAttribute("href", "/carriers/me");
+        expect(profileLink).toHaveTextContent("Wanda");
+
         await user.click(screen.getByRole("button", { name: /salir/i }));
         await waitFor(() =>
-            expect(screen.queryByText("widget@example.com")).not.toBeInTheDocument()
+            expect(screen.queryByText("Wanda")).not.toBeInTheDocument()
         );
+    });
+
+    it("renders a non-link chip for shippers (no public profile)", async () => {
+        server.use(
+            http.get(`${API}/api/auth/me`, () =>
+                HttpResponse.json({
+                    id: 6,
+                    email: "ship@example.com",
+                    full_name: "Sam",
+                    phone: null,
+                    verified_at: null,
+                    roles: ["shipper"],
+                    carrier: null,
+                    shipper: { id: 1 },
+                })
+            ),
+        );
+
+        renderWidget();
+
+        await waitFor(() => expect(screen.getByText("Sam")).toBeInTheDocument());
+        expect(screen.queryByRole("link", { name: /perfil de sam/i })).toBeNull();
+        expect(screen.getByLabelText(/sesión como sam/i)).toBeInTheDocument();
     });
 });

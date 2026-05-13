@@ -8,6 +8,10 @@ import {
     searchCarriers,
 } from "../../api/carriers";
 import { transportWindowSearchContent as t } from "./transportWindowSearchContent";
+import { Button, buttonVariants } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { FormField } from "../../components/ui/form-field";
+import { cn } from "../../lib/utils";
 
 type SearchState =
     | { status: "idle" }
@@ -106,20 +110,19 @@ export function TransportWindowSearchSection() {
                         </span>
                     )}
                 </div>
-                <span className="dashboardSearchLead">{t.section.lead}</span>
+                <span className="text-sm text-ink-soft">{t.section.lead}</span>
             </div>
 
             <form
-                className="dashboardSearchForm"
+                className="grid gap-3 mt-3"
                 onSubmit={onSubmit}
-                aria-describedby={rangeError ? "transport-window-search-range-error" : undefined}
             >
-                <fieldset className="dashboardSearchFields">
+                <fieldset className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(180px,1fr))] border-0 p-0 m-0 min-w-0">
                     <legend className="sr-only">{t.form.legend}</legend>
 
-                    <label className="dashboardSearchField">
-                        <span>{t.form.origin}</span>
-                        <input
+                    <FormField id="tw-search-origin" label={t.form.origin}>
+                        <Input
+                            id="tw-search-origin"
                             type="text"
                             value={filters.originZone}
                             placeholder={t.form.originPlaceholder}
@@ -128,11 +131,11 @@ export function TransportWindowSearchSection() {
                             required
                             aria-label={t.form.origin}
                         />
-                    </label>
+                    </FormField>
 
-                    <label className="dashboardSearchField">
-                        <span>{t.form.destination}</span>
-                        <input
+                    <FormField id="tw-search-destination" label={t.form.destination}>
+                        <Input
+                            id="tw-search-destination"
                             type="text"
                             value={filters.destinationZone}
                             placeholder={t.form.destinationPlaceholder}
@@ -141,11 +144,11 @@ export function TransportWindowSearchSection() {
                             required
                             aria-label={t.form.destination}
                         />
-                    </label>
+                    </FormField>
 
-                    <label className="dashboardSearchField">
-                        <span>{t.form.dateFrom}</span>
-                        <input
+                    <FormField id="tw-search-date-from" label={t.form.dateFrom}>
+                        <Input
+                            id="tw-search-date-from"
                             type="date"
                             value={filters.dateFrom}
                             onChange={(e) =>
@@ -153,43 +156,35 @@ export function TransportWindowSearchSection() {
                             required
                             aria-label={t.form.dateFrom}
                         />
-                    </label>
+                    </FormField>
 
-                    <label className="dashboardSearchField">
-                        <span>{t.form.dateTo}</span>
-                        <input
+                    <FormField
+                        id="tw-search-date-to"
+                        label={t.form.dateTo}
+                        error={rangeError ?? undefined}
+                    >
+                        <Input
+                            id="tw-search-date-to"
                             type="date"
                             value={filters.dateTo}
                             onChange={(e) =>
                                 setFilters((prev) => ({ ...prev, dateTo: e.target.value }))}
                             required
                             aria-label={t.form.dateTo}
-                            aria-invalid={rangeError ? "true" : "false"}
-                            aria-describedby={rangeError ? "transport-window-search-range-error" : undefined}
                         />
-                    </label>
+                    </FormField>
                 </fieldset>
 
-                <div className="dashboardSearchActions">
-                    <button
+                <div className="flex justify-end">
+                    <Button
                         type="submit"
-                        className="dashboardSearchSubmit"
+                        size="sm"
                         disabled={!canSubmit || state.status === "loading"}
                     >
                         {state.status === "loading" ? t.form.submitBusy : t.form.submit}
-                    </button>
+                    </Button>
                 </div>
             </form>
-
-            {rangeError && (
-                <p
-                    className="dashboardSearchAlert"
-                    role="alert"
-                    id="transport-window-search-range-error"
-                >
-                    {rangeError}
-                </p>
-            )}
 
             {state.status === "idle" && (
                 <div className="dashboardEmpty" role="status">
@@ -220,16 +215,16 @@ export function TransportWindowSearchSection() {
                     <span className="dashboardEmptyIcon" aria-hidden="true">
                         <IconAlert />
                     </span>
-                    <div className="dashboardSearchErrorBody">
+                    <div className="flex flex-col items-start gap-2">
                         <span className="dashboardEmptyTitle">{t.states.errorTitle}</span>
                         <span className="dashboardEmptyHint">{state.message}</span>
-                        <button
-                            type="button"
-                            className="dashboardSearchRetry"
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => runSearch(filters)}
                         >
                             {t.states.retry}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}
@@ -272,8 +267,7 @@ export function TransportWindowSearchSection() {
                                             {window && (
                                                 <span className="dashboardCardPrice">
                                                     {formatMoney(window.price_per_km)}
-                                                    <span className="dashboardSearchPriceUnit">
-                                                        {" "}
+                                                    <span className="text-xs font-medium text-ink-faint ml-1">
                                                         {t.results.priceUnit}
                                                     </span>
                                                 </span>
@@ -309,7 +303,10 @@ export function TransportWindowSearchSection() {
                     {state.items.length > RESULT_PREVIEW_LIMIT && (
                         <Link
                             to={buildSearchUrl(filters)}
-                            className="dashboardSearchViewAll"
+                            className={cn(
+                                buttonVariants({ variant: "ghost", size: "sm" }),
+                                "self-start mt-3",
+                            )}
                         >
                             {t.results.viewAll}
                             <IconArrowRight />

@@ -55,7 +55,7 @@ describe("VehicleForm", () => {
         await user.type(screen.getByLabelText(/patente/i), "ab123cd");
         await user.type(screen.getByLabelText(/capacidad de carga/i), "3500");
 
-        await user.click(screen.getByRole("button", { name: /registrar vehículo/i }));
+        await user.click(screen.getByRole("button", { name: /agregar vehículo/i }));
 
         await waitFor(() => expect(vehiclesApi.createVehicle).toHaveBeenCalled());
         const [fd] = vi.mocked(vehiclesApi.createVehicle).mock.calls[0]!;

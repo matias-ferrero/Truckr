@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { listMyVehicles, Vehicle } from "../api/vehicles";
+import { Select } from "./ui/select";
+import { FormField } from "./ui/form-field";
 
 export type VehicleSelectProps = {
     value: number | null;
@@ -15,8 +17,6 @@ type LoadState =
     | { status: "ready"; items: Vehicle[] }
     | { status: "error"; message: string };
 
-// Reusable dropdown for picking one of the carrier's vehicles. Stays standalone
-// for now — REQ-FE-00016 mounts it inside the TransportWindow form.
 export default function VehicleSelect({
     value,
     onChange,
@@ -30,8 +30,6 @@ export default function VehicleSelect({
         let cancelled = false;
         (async () => {
             try {
-                // Use a generous page size so the typical carrier sees the
-                // full fleet in one shot. Pagy caps at 100 by default.
                 const res = await listMyVehicles(1);
                 if (cancelled) return;
                 setState({ status: "ready", items: res.items });
@@ -52,44 +50,48 @@ export default function VehicleSelect({
 
     if (state.status === "loading") {
         return (
-            <div className="field">
-                <span aria-hidden="true">{label}</span>
-                <p role="status" aria-busy="true">Cargando tu flota…</p>
-            </div>
+            <FormField id="vehicle-select" label={label} help="Cargando tu flota…">
+                <span aria-hidden="true" className="hidden" />
+            </FormField>
         );
     }
 
     if (state.status === "error") {
         return (
-            <div className="field">
-                <label htmlFor="vehicle-select">{label}</label>
-                <p id="vehicle-select-error" className="fieldError" role="alert">
-                    No pudimos cargar tu flota: {state.message}
-                </p>
-            </div>
+            <FormField
+                id="vehicle-select"
+                label={label}
+                error={`No pudimos cargar tu flota: ${state.message}`}
+            >
+                <span aria-hidden="true" className="hidden" />
+            </FormField>
         );
     }
 
     if (state.items.length === 0) {
         return (
-            <div className="field">
-                <label htmlFor="vehicle-select">{label}</label>
-                <p className="emptyFleetHint">
-                    Todavía no registraste vehículos.{" "}
-                    <Link to="/carrier/vehicle/new" className="link">
-                        Registrá el primero
-                    </Link>.
-                </p>
-            </div>
+            <FormField
+                id="vehicle-select"
+                label={label}
+                help={
+                    <>
+                        Todavía no agregaste vehículos.{" "}
+                        <Link to="/carrier/vehicle/new" className="underline">
+                            Agregá el primero
+                        </Link>
+                        .
+                    </>
+                }
+            >
+                <span aria-hidden="true" className="hidden" />
+            </FormField>
         );
     }
 
     return (
-        <div className="field">
-            <label htmlFor="vehicle-select">{label}</label>
-            <select
+        <FormField id="vehicle-select" label={label}>
+            <Select
                 id="vehicle-select"
-                className="input"
                 value={value ?? ""}
                 onChange={(e) => {
                     const v = e.target.value;
@@ -102,7 +104,7 @@ export default function VehicleSelect({
                         {v.make} {v.model} — {v.plate}
                     </option>
                 ))}
-            </select>
-        </div>
+            </Select>
+        </FormField>
     );
 }

@@ -52,7 +52,7 @@ describe("VehicleList", () => {
             meta: { total: 0, page: 1, perPage: 20, totalPages: 1 },
         });
         render(<MemoryRouter><VehicleList /></MemoryRouter>);
-        expect(await screen.findByText(/todavía no registraste vehículos/i)).toBeInTheDocument();
+        expect(await screen.findByText(/todavía no agregaste vehículos/i)).toBeInTheDocument();
     });
 
     it("renders cards for each vehicle", async () => {

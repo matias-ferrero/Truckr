@@ -13,13 +13,13 @@ test.describe("Carrier — vehicle CRUD (REQ-BE-00009 + REQ-BE-00010)", () => {
         await page.getByLabel(/modelo/i).fill("Sprinter");
         await page.getByLabel(/patente/i).fill("AB123CD");
         await page.getByLabel(/capacidad de carga/i).fill("3500");
-        await page.getByRole("button", { name: /registrar vehículo/i }).click();
+        await page.getByRole("button", { name: /agregar vehículo/i }).click();
 
         await expect(page).toHaveURL(/\/carrier\/vehicles$/);
         await expect(page.getByText(/AB123CD/)).toBeVisible();
 
         page.on("dialog", (d) => d.accept());
         await page.getByRole("button", { name: /eliminar/i }).click();
-        await expect(page.getByText(/todavía no registraste/i)).toBeVisible();
+        await expect(page.getByText(/todavía no agregaste/i)).toBeVisible();
     });
 });

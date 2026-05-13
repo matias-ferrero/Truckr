@@ -34,7 +34,17 @@ module Api
         def update
           vehicle = current_carrier.vehicles.find(params[:id])
           authorize vehicle
-          vehicle.update!(vehicle_params)
+          # `remove_photo_ids` is a virtual param the form uses to detach
+          # specific photos in the same PATCH that may also add new ones.
+          # Strip it before update! so AR doesn't see an unknown attribute,
+          # then resolve the IDs against this vehicle's attachments only —
+          # never trust the IDs to belong to the caller.
+          remove_ids = remove_photo_ids
+          attrs = vehicle_params
+          vehicle.update!(attrs)
+          if remove_ids.any?
+            vehicle.photos.attachments.where(id: remove_ids).each(&:purge_later)
+          end
           render json: VehicleResource.new(vehicle).serialize
         end
 
@@ -53,6 +63,14 @@ module Api
             :length_cm, :width_cm, :height_cm, :description, :gps_enabled,
             photos: []
           )
+        end
+
+        # Read + coerce the virtual `remove_photo_ids` array. FormData ships
+        # values as strings; cast to Integer and drop blanks before the
+        # subsequent `where(id: …)` so the SQL doesn't widen unnecessarily.
+        def remove_photo_ids
+          raw = params.dig(:vehicle, :remove_photo_ids)
+          Array(raw).filter_map { |v| Integer(v, exception: false) }
         end
       end
     end

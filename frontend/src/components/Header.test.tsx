@@ -56,9 +56,9 @@ describe("Header", () => {
         renderHeader("/");
         await waitFor(() => expect(screen.getByText("Logged")).toBeInTheDocument());
         expect(screen.getByRole("button", { name: /salir/i })).toBeInTheDocument();
-        // Shipper falls back to /profile
-        expect(screen.getByRole("link", { name: /perfil de logged/i }))
-            .toHaveAttribute("href", "/profile");
+        // Shippers see a non-interactive name chip (no profile screen exists for them yet)
+        expect(screen.queryByRole("link", { name: /perfil de logged/i })).toBeNull();
+        expect(screen.queryByRole("link", { name: /sesión como logged/i })).toBeNull();
     });
 
     it("points the profile chip at /carriers/me for carriers", async () => {

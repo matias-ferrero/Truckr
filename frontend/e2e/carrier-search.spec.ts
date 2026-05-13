@@ -31,6 +31,28 @@ test("carrier search happy path with mocked results", async ({ page }) => {
         });
     });
 
+    await page.route("**/api/carriers/42", async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({
+                id: 42,
+                legal_name: "Fletes del Centro",
+                tax_id: "30700000042",
+                base_city: "Buenos Aires",
+                province: "CABA",
+                description: null,
+                rating_avg: "4.8",
+                reviews_count: 31,
+                completed_shipments: 124,
+                vehicles: [],
+                transport_windows: [],
+                created_at: "",
+                updated_at: "",
+            }),
+        });
+    });
+
     await page.goto("/transport_windows/search");
 
     await page.getByLabel("Zona de origen").fill("Buenos Aires");
@@ -44,5 +66,8 @@ test("carrier search happy path with mocked results", async ({ page }) => {
     await page.getByRole("link", { name: "Ver detalle" }).click();
 
     await expect(page).toHaveURL(/\/carriers\/42$/);
-    await expect(page.getByRole("heading", { name: "Detalle del transportista" })).toBeVisible();
+    // The placeholder was deleted — the real CarrierDetail renders the legal name as H1.
+    await expect(
+        page.getByRole("heading", { name: "Fletes del Centro", level: 1 }),
+    ).toBeVisible();
 });

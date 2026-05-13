@@ -50,8 +50,15 @@ function authHeaders(): HeadersInit {
 
 async function handle<T>(res: Response): Promise<T> {
     if (res.ok) return res.json() as Promise<T>;
-    const body = await res.json().catch(() => ({ error: "request_failed" }));
-    throw Object.assign(new Error(body.error ?? "request_failed"), {
+    const body = await res.json().catch(() => ({}));
+    // Backend envelope: { error: { code, message?, details? } } — see
+    // api/base_controller.rb#render_error. Older callers also handled a
+    // plain-string `body.error`, keep that as a fallback for safety.
+    const envelope = body?.error;
+    const message = typeof envelope === "string"
+        ? envelope
+        : envelope?.message ?? envelope?.code ?? `HTTP ${res.status}`;
+    throw Object.assign(new Error(message), {
         status: res.status,
         body,
     });

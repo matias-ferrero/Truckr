@@ -1,15 +1,18 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCurrentUser } from "../auth/useCurrentUser";
+import { Button } from "./ui/button";
 
 /**
- * Compact session widget meant to drop into existing layouts (e.g. the
- * landing topbar). Renders the email + logout button when authenticated,
- * or login/register links otherwise. Shows nothing while bootstrapping
- * to avoid layout flash.
+ * Auth-state chip used by both the dashboard `Header` and the landing
+ * topbar. Renders the user's display name + logout when signed in, or
+ * login / register links otherwise. Carriers get a link to their public
+ * profile; shippers see a non-interactive name chip (no profile screen
+ * exists for them yet).
  */
 export function SessionWidget() {
     const { me, loading, logout } = useCurrentUser();
     const navigate = useNavigate();
+    const location = useLocation();
 
     if (loading) return <span className="appHeaderEmail" aria-hidden="true">…</span>;
 
@@ -22,22 +25,40 @@ export function SessionWidget() {
     };
 
     if (me) {
+        const displayName = me.full_name || me.email;
         return (
             <div className="appHeaderActions">
-                <span className="appHeaderEmail" aria-label={`Sesión como ${me.email}`}>
-                    {me.email}
-                </span>
-                <button type="button" className="appHeaderButton" onClick={onLogout}>
+                {me.roles.includes("carrier") ? (
+                    <Link
+                        to="/carriers/me"
+                        className="appHeaderProfile"
+                        aria-label={`Perfil de ${displayName}`}
+                    >
+                        {displayName}
+                    </Link>
+                ) : (
+                    <span
+                        className="appHeaderProfile"
+                        aria-label={`Sesión como ${displayName}`}
+                    >
+                        {displayName}
+                    </span>
+                )}
+                <Button variant="ghost" size="sm" onClick={onLogout}>
                     Salir
-                </button>
+                </Button>
             </div>
         );
     }
 
     return (
         <div className="appHeaderActions">
-            <Link to="/login" className="appHeaderLink">Iniciar sesión</Link>
-            <Link to="/signup" className="appHeaderLink">Crear cuenta</Link>
+            {location.pathname !== "/login" ? (
+                <Link to="/login" className="appHeaderLink">Iniciar sesión</Link>
+            ) : null}
+            {location.pathname !== "/signup" ? (
+                <Link to="/signup" className="appHeaderLink">Crear cuenta</Link>
+            ) : null}
         </div>
     );
 }

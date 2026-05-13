@@ -38,6 +38,10 @@ Rails.application.configure do
   config.action_mailer.perform_caching = false
 
   # Set localhost to be used by links generated in mailer templates and ActiveStorage URL helpers.
+  # ActiveStorage::SetCurrent middleware overwrites ActiveStorage::Current.url_options per request
+  # using request.host / request.optional_port / request.protocol — so the only way to get stable
+  # 3000-port URLs back from ActiveStorage is to make the request itself come in on 3000. See the
+  # `-p 3000` flag wired into bin/dev for foreman, and Procfile.dev's `bin/rails server -p 3000`.
   config.action_mailer.default_url_options    = { host: "localhost", port: 3000 }
   config.action_controller.default_url_options = { host: "localhost", port: 3000 }
 

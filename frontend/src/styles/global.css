@@ -64,8 +64,14 @@ body {
   min-height: 100vh;
 }
 
+/* `color: inherit` is already set by Tailwind's preflight (inside @layer
+   base). Setting it again here UNLAYERED would beat utility classes like
+   `text-paper`, because unlayered rules outrank layered ones regardless
+   of specificity — that made <Link> rendered as <a> with `text-paper`
+   on it (the shadcn Button on the "Agregar vehículo" pill) inherit the
+   parent page's dark ink colour, producing dark-on-dark labels. Keep
+   only the typography refinements here. */
 a {
-  color: inherit;
   text-decoration-thickness: 0.08em;
   text-underline-offset: 0.18em;
 }

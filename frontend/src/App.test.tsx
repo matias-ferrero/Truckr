@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import LandingPage from "./App";
 import { AuthProvider } from "./auth/AuthContext";
@@ -16,17 +15,59 @@ const renderLanding = () =>
     );
 
 describe("LandingPage", () => {
-    it("renders hero copy from landingContent", () => {
+    it("renders the editorial headline as the h1", () => {
         renderLanding();
-        expect(
-            screen.getByRole("heading", { name: landingContent.hero.title }),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText(new RegExp(landingContent.hero.subtitle, "i")),
-        ).toBeInTheDocument();
+        const h1 = screen.getByRole("heading", { level: 1 });
+        expect(h1).toHaveTextContent(landingContent.hero.title);
     });
 
-    it("renders every feature", () => {
+    it("renders supporting hero copy", () => {
+        renderLanding();
+        expect(screen.getByText(landingContent.hero.subtitle)).toBeInTheDocument();
+        expect(screen.getByText(landingContent.hero.kicker)).toBeInTheDocument();
+    });
+
+    it("hero CTAs route to signup pre-tagged with the user's role", () => {
+        renderLanding();
+        const primary = screen.getByRole("link", {
+            name: new RegExp(landingContent.hero.cta_primary, "i"),
+        });
+        const secondary = screen.getByRole("link", {
+            name: new RegExp(landingContent.hero.cta_secondary, "i"),
+        });
+        expect(primary).toHaveAttribute("href", "/signup?role=shipper");
+        expect(secondary).toHaveAttribute("href", "/signup?role=carrier");
+    });
+
+    it("audience card CTAs route to signup with the matching role", () => {
+        renderLanding();
+        const shipperCta = screen.getByRole("link", {
+            name: new RegExp(landingContent.audiences.shipper.cta, "i"),
+        });
+        const carrierCta = screen.getByRole("link", {
+            name: new RegExp(landingContent.audiences.carrier.cta, "i"),
+        });
+        expect(shipperCta).toHaveAttribute("href", "/signup?role=shipper");
+        expect(carrierCta).toHaveAttribute("href", "/signup?role=carrier");
+    });
+
+    it("renders a final CTA band linking to signup and login", () => {
+        renderLanding();
+        const finalShipper = screen.getByRole("link", {
+            name: new RegExp(landingContent.finalCta.shipper, "i"),
+        });
+        const finalCarrier = screen.getByRole("link", {
+            name: new RegExp(landingContent.finalCta.carrier, "i"),
+        });
+        expect(finalShipper).toHaveAttribute("href", "/signup?role=shipper");
+        expect(finalCarrier).toHaveAttribute("href", "/signup?role=carrier");
+        const login = screen.getByRole("link", {
+            name: new RegExp(landingContent.finalCta.loginLabel, "i"),
+        });
+        expect(login).toHaveAttribute("href", "/login");
+    });
+
+    it("renders every feature heading", () => {
         renderLanding();
         for (const feature of landingContent.features) {
             expect(
@@ -35,50 +76,56 @@ describe("LandingPage", () => {
         }
     });
 
-    it("shows validation errors when the quote form is submitted empty", async () => {
-        const user = userEvent.setup();
+    it("renders both audience cards with their bullet lists", () => {
         renderLanding();
-
-        const submit = screen.getByRole("button", { name: /enviar solicitud/i });
-        await user.click(submit);
-
         expect(
-            screen.getByText(/Decinos desde dónde sale el envío/i),
+            screen.getByRole("heading", { name: landingContent.audiences.shipper.title }),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/Decinos a dónde llega el envío/i),
+            screen.getByRole("heading", { name: landingContent.audiences.carrier.title }),
         ).toBeInTheDocument();
+        for (const bullet of landingContent.audiences.shipper.bullets) {
+            expect(screen.getByText(bullet)).toBeInTheDocument();
+        }
+        for (const bullet of landingContent.audiences.carrier.bullets) {
+            expect(screen.getByText(bullet)).toBeInTheDocument();
+        }
     });
 
-    it("submits the quote happy path and shows the confirmation block", async () => {
-        const user = userEvent.setup();
+    it("renders all three steps with both perspectives", () => {
         renderLanding();
-
-        await user.type(screen.getByLabelText(/origen/i), "CABA");
-        await user.type(screen.getByLabelText(/destino/i), "Rosario");
-        await user.type(screen.getByLabelText(/qué transportás|carga/i), "5 cajas");
-        await user.type(screen.getByLabelText(/contacto|email|whatsapp/i), "ana@example.com");
-
-        await user.click(screen.getByRole("button", { name: /enviar solicitud/i }));
-
-        expect(await screen.findByText(/recibido\./i)).toBeInTheDocument();
-        expect(screen.getByText(/CABA → Rosario/i)).toBeInTheDocument();
+        for (const step of landingContent.steps) {
+            expect(
+                screen.getByRole("heading", { name: step.title }),
+            ).toBeInTheDocument();
+            expect(screen.getByText(step.shipper)).toBeInTheDocument();
+            expect(screen.getByText(step.carrier)).toBeInTheDocument();
+        }
     });
 
-    it("'Pedir otra' resets the quote confirmation back to the form", async () => {
-        const user = userEvent.setup();
+    it("renders the three honest commitments", () => {
         renderLanding();
+        for (const c of landingContent.commitments) {
+            expect(
+                screen.getByRole("heading", { name: c.title }),
+            ).toBeInTheDocument();
+            expect(screen.getByText(c.body)).toBeInTheDocument();
+        }
+    });
 
-        await user.type(screen.getByLabelText(/origen/i), "CABA");
-        await user.type(screen.getByLabelText(/destino/i), "Rosario");
-        await user.type(screen.getByLabelText(/qué transportás|carga/i), "muebles");
-        await user.type(screen.getByLabelText(/contacto|email|whatsapp/i), "ana@example.com");
-        await user.click(screen.getByRole("button", { name: /enviar solicitud/i }));
-
-        await user.click(await screen.findByRole("button", { name: /pedir otra/i }));
-
+    it("does not render the removed quote widget", () => {
+        renderLanding();
         expect(
-            screen.getByRole("button", { name: /enviar solicitud/i }),
-        ).toBeInTheDocument();
+            screen.queryByRole("heading", { name: /pedí una cotización/i }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", { name: /enviar solicitud/i }),
+        ).not.toBeInTheDocument();
+    });
+
+    it("exposes a 'cómo funciona' anchor linking to the steps section", () => {
+        renderLanding();
+        const link = screen.getAllByRole("link", { name: /cómo funciona/i })[0];
+        expect(link).toHaveAttribute("href", "#como-funciona");
     });
 });

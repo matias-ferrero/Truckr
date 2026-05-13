@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { CarrierDetail as CarrierDetailDto, getCarrier } from "../../api/carriers";
 import { ApiError } from "../../api";
 import { publicContent } from "./publicContent";
+import { Button, buttonVariants } from "../../components/ui/button";
+import { cn } from "../../lib/utils";
 
 const t = publicContent.carrierDetail;
 
@@ -74,7 +76,12 @@ export default function CarrierDetail() {
                     <div className="emptyState" role="status">
                         <h1 className="sectionTitle">{t.notFoundTitle}</h1>
                         <p>{t.notFoundLead}</p>
-                        <Link to="/" className="button buttonGhost">{t.backToSearch}</Link>
+                        <Link
+                            to="/"
+                            className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                        >
+                            {t.backToSearch}
+                        </Link>
                     </div>
                 </div>
             </main>
@@ -87,13 +94,13 @@ export default function CarrierDetail() {
                 <div className="container">
                     <div className="errorPanel" role="alert">
                         <p>{t.loadError}: {state.message}</p>
-                        <button
-                            type="button"
-                            className="button buttonGhost"
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => setReloadKey((k) => k + 1)}
                         >
                             {t.retry}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </main>
@@ -140,8 +147,6 @@ export default function CarrierDetail() {
                 </section>
 
                 <ZonesSection windows={carrier.transport_windows} />
-
-                <GallerySection vehicles={carrier.vehicles} />
 
                 <VehiclesSection vehicles={carrier.vehicles} />
 
@@ -195,36 +200,6 @@ function ZonesSection({ windows }: { windows: CarrierDetailDto["transport_window
                                 <span className="zonePrice">
                                     {t.pricePerKmLabel(w.price_per_km)}
                                 </span>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-        </section>
-    );
-}
-
-function GallerySection({ vehicles }: { vehicles: CarrierDetailDto["vehicles"] }) {
-    const photos = vehicles.flatMap((v) =>
-        (v.photos ?? []).map((p) => ({ ...p, label: `${v.make} ${v.model}` }))
-    );
-
-    return (
-        <section className="carrierSection" aria-labelledby="carrier-gallery-title">
-            <h2 id="carrier-gallery-title" className="sectionSubtitle">
-                {t.galleryTitle}
-            </h2>
-            {photos.length === 0
-                ? <p className="carrierMutedBlock">{t.galleryEmpty}</p>
-                : (
-                    <ul className="galleryGrid" aria-label={t.galleryTitle}>
-                        {photos.map((p) => (
-                            <li key={p.id} className="galleryItem">
-                                <img
-                                    src={p.full}
-                                    alt={t.photoAlt(p.label)}
-                                    loading="lazy"
-                                    decoding="async"
-                                />
                             </li>
                         ))}
                     </ul>

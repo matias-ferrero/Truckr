@@ -2,6 +2,10 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ApiError } from "../api";
 import { useCurrentUser } from "./useCurrentUser";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Alert } from "../components/ui/alert";
+import { FormField } from "../components/ui/form-field";
 
 type LoginForm = { email: string; password: string };
 type FieldErrors = Partial<Record<keyof LoginForm, string>>;
@@ -47,60 +51,65 @@ export function LoginPage() {
     };
 
     return (
-        <main className="authMain" id="main">
-            <section className="authCard" aria-labelledby="login-title">
-                <h1 className="authTitle" id="login-title">Iniciar sesión</h1>
-                <p className="authLead">Bienvenido de vuelta. Entrá con tu email y contraseña.</p>
+        <main
+            id="main"
+            className="flex-1 flex items-start justify-center px-5 py-12"
+        >
+            <section
+                aria-labelledby="login-title"
+                className="w-full max-w-[440px] bg-paper border border-stroke rounded-md p-8 shadow-[0_4px_18px_color-mix(in_oklab,var(--color-ink)_8%,transparent)]"
+            >
+                <h1
+                    id="login-title"
+                    className="font-display text-3xl font-bold tracking-tight mb-2"
+                >
+                    Iniciar sesión
+                </h1>
+                <p className="text-sm text-ink-soft mb-6 max-w-[65ch] leading-relaxed">
+                    Bienvenido de vuelta. Entrá con tu email y contraseña.
+                </p>
 
                 {serverError ? (
-                    <div className="authBanner" role="alert" aria-live="polite">
+                    <Alert tone="error" aria-live="polite" className="mb-4">
                         {serverError}
-                    </div>
+                    </Alert>
                 ) : null}
 
-                <form className="authForm" onSubmit={onSubmit} noValidate>
-                    <div className="authField">
-                        <label className="authLabel" htmlFor="email">Email</label>
-                        <input
+                <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
+                    <FormField id="email" label="Email" error={errors.email}>
+                        <Input
                             id="email"
                             type="email"
-                            className="authInput"
                             value={form.email}
                             autoComplete="email"
-                            aria-invalid={errors.email ? "true" : undefined}
-                            aria-describedby={errors.email ? "email-error" : undefined}
                             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                         />
-                        {errors.email ? <div className="authError" id="email-error">{errors.email}</div> : null}
-                    </div>
+                    </FormField>
 
-                    <div className="authField">
-                        <label className="authLabel" htmlFor="password">Contraseña</label>
-                        <input
+                    <FormField id="password" label="Contraseña" error={errors.password}>
+                        <Input
                             id="password"
                             type="password"
-                            className="authInput"
                             value={form.password}
                             autoComplete="current-password"
-                            aria-invalid={errors.password ? "true" : undefined}
-                            aria-describedby={errors.password ? "password-error" : undefined}
                             onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                         />
-                        {errors.password ? <div className="authError" id="password-error">{errors.password}</div> : null}
-                    </div>
+                    </FormField>
 
-                    <button
-                        className="authButton"
+                    <Button
                         type="submit"
                         disabled={submitting}
                         aria-busy={submitting ? "true" : "false"}
                     >
                         {submitting ? "Entrando…" : "Iniciar sesión"}
-                    </button>
+                    </Button>
                 </form>
 
-                <p className="authFootnote">
-                    ¿No tenés cuenta? <Link to="/signup">Crear cuenta</Link>
+                <p className="mt-6 text-sm text-ink-soft text-center">
+                    ¿No tenés cuenta?{" "}
+                    <Link to="/signup" className="text-ink font-semibold underline underline-offset-2">
+                        Crear cuenta
+                    </Link>
                 </p>
             </section>
         </main>

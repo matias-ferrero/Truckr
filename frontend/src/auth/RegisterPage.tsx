@@ -1,9 +1,18 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ApiError } from "../api";
 import { useCurrentUser } from "./useCurrentUser";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Alert } from "../components/ui/alert";
+import { FormField } from "../components/ui/form-field";
+import { RadioGroup, RadioOption } from "../components/ui/radio-group";
 
 type RegisterRole = "carrier" | "shipper";
+
+function roleFromQuery(value: string | null): RegisterRole | "" {
+    return value === "carrier" || value === "shipper" ? value : "";
+}
 
 type RegisterForm = {
     email: string;
@@ -40,12 +49,13 @@ function validate(form: RegisterForm): FieldErrors {
 export function RegisterPage() {
     const { register } = useCurrentUser();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [form, setForm] = useState<RegisterForm>({
         email: "",
         password: "",
         passwordConfirm: "",
         name: "",
-        role: "",
+        role: roleFromQuery(searchParams.get("role")),
     });
     const [errors, setErrors] = useState<FieldErrors>({});
     const [serverError, setServerError] = useState<string | null>(null);
@@ -83,132 +93,124 @@ export function RegisterPage() {
     };
 
     return (
-        <main className="authMain" id="main">
-            <section className="authCard" aria-labelledby="register-title">
-                <h1 className="authTitle" id="register-title">Crear cuenta</h1>
-                <p className="authLead">
+        <main
+            id="main"
+            className="flex-1 flex items-start justify-center px-5 py-12"
+        >
+            <section
+                aria-labelledby="register-title"
+                className="w-full max-w-[440px] bg-paper border border-stroke rounded-md p-8 shadow-[0_4px_18px_color-mix(in_oklab,var(--color-ink)_8%,transparent)]"
+            >
+                <h1
+                    id="register-title"
+                    className="font-display text-3xl font-bold tracking-tight mb-2"
+                >
+                    Crear cuenta
+                </h1>
+                <p className="text-sm text-ink-soft mb-6 max-w-[65ch] leading-relaxed">
                     Sumate a Truckr® como expedidor o transportista.
                 </p>
 
                 {serverError ? (
-                    <div className="authBanner" role="alert" aria-live="polite">
+                    <Alert tone="error" aria-live="polite" className="mb-4">
                         {serverError}
-                    </div>
+                    </Alert>
                 ) : null}
 
-                <form className="authForm" onSubmit={onSubmit} noValidate>
-                    <div className="authField">
-                        <label className="authLabel" htmlFor="name">Nombre completo</label>
-                        <input
+                <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
+                    <FormField
+                        id="name"
+                        label="Nombre completo"
+                        error={errors.name}
+                        help="Como querés que te identifiquemos."
+                    >
+                        <Input
                             id="name"
-                            className="authInput"
                             value={form.name}
                             autoComplete="name"
-                            aria-invalid={errors.name ? "true" : undefined}
-                            aria-describedby={errors.name ? "name-error" : "name-help"}
                             onChange={(e) => update("name", e.target.value)}
                         />
-                        {errors.name ? (
-                            <div className="authError" id="name-error">{errors.name}</div>
-                        ) : (
-                            <div className="authHelp" id="name-help">Como querés que te identifiquemos.</div>
-                        )}
-                    </div>
+                    </FormField>
 
-                    <div className="authField">
-                        <label className="authLabel" htmlFor="email">Email</label>
-                        <input
+                    <FormField id="email" label="Email" error={errors.email}>
+                        <Input
                             id="email"
                             type="email"
-                            className="authInput"
                             value={form.email}
                             autoComplete="email"
-                            aria-invalid={errors.email ? "true" : undefined}
-                            aria-describedby={errors.email ? "email-error" : undefined}
                             onChange={(e) => update("email", e.target.value)}
                         />
-                        {errors.email ? <div className="authError" id="email-error">{errors.email}</div> : null}
-                    </div>
+                    </FormField>
 
-                    <div className="authField">
-                        <label className="authLabel" htmlFor="password">Contraseña</label>
-                        <input
+                    <FormField
+                        id="password"
+                        label="Contraseña"
+                        error={errors.password}
+                        help="Mínimo 8 caracteres, con mayúscula, minúscula y un número."
+                    >
+                        <Input
                             id="password"
                             type="password"
-                            className="authInput"
                             value={form.password}
                             autoComplete="new-password"
-                            aria-invalid={errors.password ? "true" : undefined}
-                            aria-describedby={errors.password ? "password-error" : "password-help"}
                             onChange={(e) => update("password", e.target.value)}
                         />
-                        {errors.password ? (
-                            <div className="authError" id="password-error">{errors.password}</div>
-                        ) : (
-                            <div className="authHelp" id="password-help">
-                                Mínimo 8 caracteres, con mayúscula, minúscula y un número.
-                            </div>
-                        )}
-                    </div>
+                    </FormField>
 
-                    <div className="authField">
-                        <label className="authLabel" htmlFor="passwordConfirm">Confirmar contraseña</label>
-                        <input
+                    <FormField
+                        id="passwordConfirm"
+                        label="Confirmar contraseña"
+                        error={errors.passwordConfirm}
+                    >
+                        <Input
                             id="passwordConfirm"
                             type="password"
-                            className="authInput"
                             value={form.passwordConfirm}
                             autoComplete="new-password"
-                            aria-invalid={errors.passwordConfirm ? "true" : undefined}
-                            aria-describedby={errors.passwordConfirm ? "passwordConfirm-error" : undefined}
                             onChange={(e) => update("passwordConfirm", e.target.value)}
                         />
-                        {errors.passwordConfirm ? (
-                            <div className="authError" id="passwordConfirm-error">{errors.passwordConfirm}</div>
-                        ) : null}
-                    </div>
+                    </FormField>
 
-                    <fieldset className="authField" aria-describedby={errors.role ? "role-error" : undefined}>
-                        <legend className="authLabel">Tipo de cuenta</legend>
-                        <div className="authRoles">
-                            <label className="authRoleOption">
-                                <input
-                                    type="radio"
-                                    name="role"
-                                    id="role-shipper"
-                                    value="shipper"
-                                    checked={form.role === "shipper"}
-                                    onChange={() => update("role", "shipper")}
-                                />
-                                Expedidor
-                            </label>
-                            <label className="authRoleOption">
-                                <input
-                                    type="radio"
-                                    name="role"
-                                    id="role-carrier"
-                                    value="carrier"
-                                    checked={form.role === "carrier"}
-                                    onChange={() => update("role", "carrier")}
-                                />
-                                Transportista
-                            </label>
-                        </div>
-                        {errors.role ? <div className="authError" id="role-error">{errors.role}</div> : null}
-                    </fieldset>
+                    <FormField
+                        id="role"
+                        label="Tipo de cuenta"
+                        error={errors.role}
+                        asFieldset
+                    >
+                        <RadioGroup>
+                            <RadioOption
+                                id="role-shipper"
+                                name="role"
+                                value="shipper"
+                                checked={form.role === "shipper"}
+                                onChange={() => update("role", "shipper")}
+                                label="Expedidor"
+                            />
+                            <RadioOption
+                                id="role-carrier"
+                                name="role"
+                                value="carrier"
+                                checked={form.role === "carrier"}
+                                onChange={() => update("role", "carrier")}
+                                label="Transportista"
+                            />
+                        </RadioGroup>
+                    </FormField>
 
-                    <button
-                        className="authButton"
+                    <Button
                         type="submit"
                         disabled={submitting}
                         aria-busy={submitting ? "true" : "false"}
                     >
                         {submitting ? "Creando cuenta…" : "Crear cuenta"}
-                    </button>
+                    </Button>
                 </form>
 
-                <p className="authFootnote">
-                    ¿Ya tenés cuenta? <Link to="/login">Iniciar sesión</Link>
+                <p className="mt-6 text-sm text-ink-soft text-center">
+                    ¿Ya tenés cuenta?{" "}
+                    <Link to="/login" className="text-ink font-semibold underline underline-offset-2">
+                        Iniciar sesión
+                    </Link>
                 </p>
             </section>
         </main>
