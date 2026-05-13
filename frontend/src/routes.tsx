@@ -9,6 +9,7 @@ import { DashboardPage } from "./pages/dashboard/DashboardPage";
 
 const LoginPage = lazy(() => import("./auth/LoginPage").then((m) => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import("./auth/RegisterPage").then((m) => ({ default: m.RegisterPage })));
+const ImpersonatePage = lazy(() => import("./auth/ImpersonatePage"));
 const CarrierSearchPage = lazy(() => import("./pages/search/CarrierSearchPage"));
 const CarrierDetailPlaceholder = lazy(() => import("./pages/carriers/CarrierDetailPlaceholder"));
 const VehicleForm = lazy(() => import("./pages/carrier/VehicleForm"));
@@ -93,6 +94,14 @@ export function AppRoutes() {
                             <AuthShell>
                                 <RegisterPage />
                             </AuthShell>
+                        }
+                    />
+                    <Route
+                        path="/impersonate"
+                        element={
+                            <Suspense fallback={<main aria-busy="true" />}>
+                                <ImpersonatePage />
+                            </Suspense>
                         }
                     />
                     <Route
