@@ -5,9 +5,11 @@ import { MemoryRouter } from "react-router-dom";
 import { DashboardPage } from "./DashboardPage";
 import * as authHook from "../../auth/useCurrentUser";
 import * as vehiclesApi from "../../api/vehicles";
+import * as carriersApi from "../../api/carriers";
 
 vi.mock("../../auth/useCurrentUser");
 vi.mock("../../api/vehicles");
+vi.mock("../../api/carriers");
 
 type MeShape = Parameters<typeof authHook.useCurrentUser>[0] extends never ? object : never;
 const _typeOnly: MeShape | undefined = undefined;
@@ -82,16 +84,32 @@ describe("DashboardPage", () => {
         expect(container.firstChild).toBeNull();
     });
 
-    it("renders the shipper view: greeting, role eyebrow, account email, only the trips section", () => {
+    it("renders the shipper view: greeting, role eyebrow, account email, carrier-search section, and trips — no carrier-only sections", () => {
         mockMe(fakeMe({ roles: ["shipper"], full_name: "Ana García", email: "ana@example.com" }));
         renderPage();
 
         expect(screen.getByRole("heading", { level: 1, name: /hola, ana/i })).toBeInTheDocument();
         expect(screen.getByText(/panel · expedidor/i)).toBeInTheDocument();
         expect(screen.getByText("ana@example.com")).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 2, name: /encontrá un transportista/i })).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mis viajes/i })).toBeInTheDocument();
         expect(screen.queryByRole("heading", { level: 2, name: /mi disponibilidad/i })).toBeNull();
         expect(screen.queryByRole("heading", { level: 2, name: /mis vehículos/i })).toBeNull();
+    });
+
+    it("does not render the carrier-search section in the carrier view", async () => {
+        mockMe(fakeMe({ roles: ["carrier"], full_name: "Beto" }));
+        const listMock = vehiclesApi.listMyVehicles as unknown as ReturnType<typeof vi.fn>;
+        listMock.mockResolvedValue({
+            items: [],
+            meta: { total: 0, page: 1, perPage: 20, totalPages: 0 },
+        });
+        renderPage();
+        await waitFor(() => expect(listMock).toHaveBeenCalled());
+        expect(screen.queryByRole("heading", { level: 2, name: /encontrá un transportista/i })).toBeNull();
+        expect(carriersApi.searchCarriers).not.toHaveBeenCalled();
+        // Don't leak vehicle-fetch call counts into later carrier-view tests.
+        listMock.mockClear();
     });
 
     it("uses the email local-part as fallback greeting when full_name is empty", () => {

@@ -45,3 +45,58 @@ export function formatCurrency(cents: number, currency = "ARS", locale = "es-AR"
         maximumFractionDigits: 0,
     }).format(cents / 100);
 }
+
+// ---- Public carrier search (transport_windows) ----------------------------
+//
+// Mirrors the wire format of CarrierSearchResource: lists matching carriers
+// with the transport windows that overlap the requested zone+date filters.
+// Endpoint is public (no auth required) — apiFetch still attaches a Bearer
+// token if the user is signed in, which the backend ignores for this route.
+
+export type SearchTransportWindow = {
+    id: number;
+    origin_zone: string;
+    destination_zone: string;
+    price_per_km: string;
+    max_km: number;
+    available_from: string;
+    available_to: string;
+    active: boolean;
+};
+
+export type CarrierSearchResult = {
+    id: number;
+    legal_name: string | null;
+    display_name: string | null;
+    base_city: string | null;
+    province: string | null;
+    rating_avg: string;
+    completed_shipments: number;
+    transport_windows: SearchTransportWindow[];
+};
+
+export type CarrierSearchParams = {
+    originZone: string;
+    destinationZone: string;
+    dateFrom: string;
+    dateTo: string;
+};
+
+function toQuery(params: CarrierSearchParams): string {
+    return new URLSearchParams({
+        origin_zone: params.originZone,
+        destination_zone: params.destinationZone,
+        date_from: params.dateFrom,
+        date_to: params.dateTo,
+    }).toString();
+}
+
+export async function searchCarriers(
+    params: CarrierSearchParams,
+    opts: { signal?: AbortSignal } = {},
+): Promise<CarrierSearchResult[]> {
+    return apiFetch<CarrierSearchResult[]>(
+        `/api/transport_windows?${toQuery(params)}`,
+        { signal: opts.signal },
+    );
+}

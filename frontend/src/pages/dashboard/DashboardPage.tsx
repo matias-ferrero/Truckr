@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCurrentUser } from "../../auth/useCurrentUser";
 import { listMyVehicles, Vehicle } from "../../api/vehicles";
+import { TransportWindowSearchSection } from "./TransportWindowSearchSection";
 import "../../styles/dashboard.css";
 
 type TripStatus = "PENDIENTE" | "ACEPTADO" | "PASADO";
@@ -85,6 +86,8 @@ export function DashboardPage() {
                         </Link>
                     )}
                 </header>
+
+                {!isCarrier && <TransportWindowSearchSection />}
 
                 <section className="dashboardSection" aria-labelledby="section-trips">
                     <div className="dashboardSectionHeader">

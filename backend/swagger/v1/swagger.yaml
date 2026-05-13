@@ -192,6 +192,37 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorEnvelope"
+  "/api/transport_windows":
+    parameters:
+    - name: origin_zone
+      in: query
+      required: true
+      schema:
+        type: string
+    - name: destination_zone
+      in: query
+      required: true
+      schema:
+        type: string
+    - name: date_from
+      in: query
+      required: true
+      schema:
+        type: string
+    - name: date_to
+      in: query
+      required: true
+      schema:
+        type: string
+    get:
+      summary: search carriers by zones and date range
+      tags:
+      - Transport Windows
+      responses:
+        '200':
+          description: successful
+        '422':
+          description: invalid date format
 servers:
 - url: http://localhost:3000
   description: Local dev

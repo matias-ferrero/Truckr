@@ -141,17 +141,7 @@ Cronograma en formato planilla de trabajo por sprint, con tareas numeradas del b
   [],
   [],
 
-  [Sprint 1],
-  [US3],
-  [Modificar perfil],
-  [Equipo],
-  [X],
-  [],
-  [],
-  [],
-  [],
-  [],
-  [],
+  [Sprint 1], [US3], [Modificar perfil], [Equipo], [X], [], [], [], [], [], [],
 
   [Sprint 2],
   [US4],

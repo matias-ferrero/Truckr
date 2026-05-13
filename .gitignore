@@ -222,5 +222,8 @@ docs/raw/*
 .gdsi-sdlc/automation/queue/
 .gdsi-sdlc/automation/processed/
 
+# bundle ruby files
+backend/vendor/bundle/*
+
 # Local session exports (gdsi-sdlc — never commit)
 .gdsi-sdlc/sessions/

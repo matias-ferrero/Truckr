@@ -15,18 +15,18 @@ class TransportWindow < ApplicationRecord
   validate  :time_window_is_coherent
   validate  :no_vehicle_overlap
 
+  before_save :normalize_search_fields
+
   scope :active, -> { where(active: true) }
 
-  # MVP: case-insensitive substring match on both endpoints.
+  # MVP: diacritic-insensitive substring match via normalized columns.
   # Phase 2: replace with PostGIS / proper geocoded matching (ADR-010).
-  scope :matching, ->(origin:, destination:) {
-    where("LOWER(origin_zone) LIKE ?", "%#{origin.to_s.downcase}%")
-      .where("LOWER(destination_zone) LIKE ?", "%#{destination.to_s.downcase}%")
-  }
+  # Filtering is delegated to Ransack via origin_zone_normalized_cont, destination_zone_normalized_cont
+  # in Api::TransportWindowsController#index.
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[id vehicle_id origin_zone destination_zone price_per_km max_km
-       available_from available_to active created_at updated_at]
+    %w[id vehicle_id origin_zone destination_zone origin_zone_normalized destination_zone_normalized
+       price_per_km max_km available_from available_to active created_at updated_at]
   end
 
   def self.ransackable_associations(_auth_object = nil)
@@ -34,6 +34,11 @@ class TransportWindow < ApplicationRecord
   end
 
   private
+
+  def normalize_search_fields
+    self.origin_zone_normalized = I18n.transliterate(origin_zone.to_s).downcase if origin_zone.present?
+    self.destination_zone_normalized = I18n.transliterate(destination_zone.to_s).downcase if destination_zone.present?
+  end
 
   def time_window_is_coherent
     return if available_from.blank? || available_to.blank?

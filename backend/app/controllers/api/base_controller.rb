@@ -85,7 +85,12 @@ module Api
     end
 
     def unprocessable_param(e)
-      render json: { error: { code: "unprocessable", details: { e.param => [ "is required" ] } } },
+      details = if e.respond_to?(:param)
+        { e.param => [ "is required" ] }
+      else
+        { base: [ e.message ] }
+      end
+      render json: { error: { code: "unprocessable", details: details } },
              status: :unprocessable_entity
     end
   end

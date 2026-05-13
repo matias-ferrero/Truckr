@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { landingContent } from "./landingContent";
 import { SessionWidget } from "./components/SessionWidget";
 
@@ -79,6 +80,7 @@ export default function LandingPage() {
                         </a>
                         <nav className="nav" aria-label="Secciones">
                             <a href="#cotizacion">Pedir cotización</a>
+                            <Link to="/transport_windows/search">Buscar transportistas</Link>
                             <a href="#para-quien">Para quién</a>
                             <a href="#confianza">Confianza</a>
                         </nav>
@@ -303,6 +305,9 @@ export default function LandingPage() {
                                     Pedís cotización en minutos, comparás opciones y coordinás sin vueltas. Te ayudamos a
                                     anticipar tiempos y requisitos.
                                 </p>
+                                <Link to="/transport_windows/search" className="button buttonGhost" style={{ marginTop: "16px" }}>
+                                    Buscar transportistas
+                                </Link>
                             </article>
                             <article className="splitCard">
                                 <h3>Para transportistas</h3>

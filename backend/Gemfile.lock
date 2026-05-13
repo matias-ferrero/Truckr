@@ -291,11 +291,11 @@ GEM
       ostruct (>= 0.2)
     orm_adapter (0.5.0)
     ostruct (0.6.3)
-    pagy (43.5.3)
+    pagy (43.4.4)
       json
       uri
       yaml
-    parallel (2.0.1)
+    parallel (1.28.0)
     parser (3.3.11.1)
       ast (~> 2.4.1)
       racc
@@ -547,7 +547,7 @@ DEPENDENCIES
   jbuilder
   kamal
   oj
-  pagy (~> 43.5)
+  pagy (~> 43.4)
   propshaft
   puma (>= 5.0)
   pundit

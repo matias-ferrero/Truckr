@@ -22,6 +22,10 @@ Rails.application.routes.draw do
       delete "auth/logout", to: "sessions#destroy"
     end
 
+    # Public search endpoint — GET /api/transport_windows?origin_zone=...&date_from=...
+    # Filters by diacritic-insensitive substring match on normalized zones and availability date range.
+    resources :transport_windows, only: :index
+
     # Authenticated CRUD on the current carrier's fleet (REQ-BE-00009 / REQ-BE-00010).
     # Declared before the public `:carrier_id` resource so `/carriers/me/...` wins
     # over the wildcard.

@@ -51,22 +51,17 @@ RSpec.describe TransportWindow, type: :model do
     end
   end
 
-  describe "scope :matching" do
-    let!(:bsas_cba) do
-      create(:transport_window, origin_zone: "Buenos Aires", destination_zone: "Córdoba")
-    end
-    let!(:rosario_mza) do
-      create(:transport_window, origin_zone: "Rosario", destination_zone: "Mendoza")
-    end
-
-    it "matches case-insensitively on substrings" do
-      expect(TransportWindow.matching(origin: "aires", destination: "córdoba")).to include(bsas_cba)
-      expect(TransportWindow.matching(origin: "AIRES", destination: "CÓRDOBA")).to include(bsas_cba)
-      expect(TransportWindow.matching(origin: "aires", destination: "córdoba")).not_to include(rosario_mza)
+  describe "normalized search fields callback" do
+    it "normalizes origin_zone and destination_zone on save" do
+      tw = create(:transport_window, origin_zone: "Buenos Aires", destination_zone: "Córdoba")
+      expect(tw.origin_zone_normalized).to eq("buenos aires")
+      expect(tw.destination_zone_normalized).to eq("cordoba")
     end
 
-    it "rejects non-matches" do
-      expect(TransportWindow.matching(origin: "Mar del Plata", destination: "Salta")).to be_empty
+    it "handles diacritics during normalization" do
+      tw = create(:transport_window, origin_zone: "São Paulo", destination_zone: "Zürich")
+      expect(tw.origin_zone_normalized).to eq("sao paulo")
+      expect(tw.destination_zone_normalized).to eq("zurich")
     end
   end
 

@@ -9,6 +9,8 @@ import { DashboardPage } from "./pages/dashboard/DashboardPage";
 
 const LoginPage = lazy(() => import("./auth/LoginPage").then((m) => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import("./auth/RegisterPage").then((m) => ({ default: m.RegisterPage })));
+const CarrierSearchPage = lazy(() => import("./pages/search/CarrierSearchPage"));
+const CarrierDetailPlaceholder = lazy(() => import("./pages/carriers/CarrierDetailPlaceholder"));
 const VehicleForm = lazy(() => import("./pages/carrier/VehicleForm"));
 const VehicleList = lazy(() => import("./pages/carrier/VehicleList"));
 const CarrierDetail = lazy(() => import("./pages/public/CarrierDetail"));
@@ -90,6 +92,22 @@ export function AppRoutes() {
                         element={
                             <AuthShell>
                                 <RegisterPage />
+                            </AuthShell>
+                        }
+                    />
+                    <Route
+                        path="/transport_windows/search"
+                        element={
+                            <AuthShell>
+                                <CarrierSearchPage />
+                            </AuthShell>
+                        }
+                    />
+                    <Route
+                        path="/carriers/:id"
+                        element={
+                            <AuthShell>
+                                <CarrierDetailPlaceholder />
                             </AuthShell>
                         }
                     />

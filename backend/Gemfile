@@ -56,7 +56,10 @@ gem "alba"
 gem "oj"
 
 # Pagination (REQ-BE-00009 / REQ-BE-00010 vehicle endpoints).
-gem "pagy", "~> 43.5"
+# Use a patch-level constraint compatible with Ruby 3.2 in CI/dev environments
+# Pagy 43.5+ requires Ruby >= 3.3; pin to the latest 43.4.x series which
+# supports Ruby 3.2 while keeping API parity for headers usage.
+gem "pagy", "~> 43.4"
 
 # OpenAPI generation from request specs (mounted at /api-docs in dev/test).
 gem "rswag-api"

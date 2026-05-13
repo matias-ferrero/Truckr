@@ -177,13 +177,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_11_230129) do
     t.datetime "available_to", null: false
     t.datetime "created_at", null: false
     t.string "destination_zone", null: false
+    t.string "destination_zone_normalized"
     t.integer "max_km", null: false
     t.string "origin_zone", null: false
+    t.string "origin_zone_normalized"
     t.decimal "price_per_km", precision: 10, scale: 2, null: false
     t.datetime "updated_at", null: false
     t.integer "vehicle_id", null: false
     t.index ["active"], name: "index_transport_windows_on_active"
     t.index ["available_from", "available_to"], name: "index_transport_windows_on_available_from_and_available_to"
+    t.index ["destination_zone_normalized"], name: "index_transport_windows_on_destination_zone_normalized"
+    t.index ["origin_zone_normalized"], name: "index_transport_windows_on_origin_zone_normalized"
     t.index ["vehicle_id", "available_from", "available_to"], name: "idx_tw_on_vehicle_and_window"
     t.index ["vehicle_id"], name: "index_transport_windows_on_vehicle_id"
   end
