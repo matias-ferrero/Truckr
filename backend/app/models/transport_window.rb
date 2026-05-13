@@ -45,11 +45,12 @@ class TransportWindow < ApplicationRecord
     errors.add(:available_to, "must be after available_from") if available_to <= available_from
   end
 
-  # Phase 0/1 guard against double-booking. Race-safe at the application layer
-  # only; a Postgres EXCLUDE constraint replaces this when we move off SQLite.
+  # Guards against double-booking among active windows only. Inactive windows
+  # are excluded so editing or reactivating them checks current availability.
   def no_vehicle_overlap
     return if vehicle_id.blank? || available_from.blank? || available_to.blank?
     overlap = TransportWindow.where(vehicle_id: vehicle_id)
+                             .where(active: true)
                              .where.not(id: id)
                              .where("available_from < ? AND available_to > ?", available_to, available_from)
     errors.add(:base, "vehicle is already booked in an overlapping window") if overlap.exists?

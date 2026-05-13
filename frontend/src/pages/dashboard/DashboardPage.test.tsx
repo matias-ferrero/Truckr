@@ -5,10 +5,12 @@ import { MemoryRouter } from "react-router-dom";
 import { DashboardPage } from "./DashboardPage";
 import * as authHook from "../../auth/useCurrentUser";
 import * as vehiclesApi from "../../api/vehicles";
+import * as transportWindowsApi from "../../api/transport_windows";
 import * as carriersApi from "../../api/carriers";
 
 vi.mock("../../auth/useCurrentUser");
 vi.mock("../../api/vehicles");
+vi.mock("../../api/transport_windows");
 vi.mock("../../api/carriers");
 
 type MeShape = Parameters<typeof authHook.useCurrentUser>[0] extends never ? object : never;
@@ -38,6 +40,24 @@ function mockMe(me: ReturnType<typeof fakeMe> | null, loading = false) {
         register: vi.fn(),
         logout: vi.fn(),
     });
+}
+
+function fakeWindow(over: Partial<transportWindowsApi.TransportWindow> = {}): transportWindowsApi.TransportWindow {
+    return {
+        id: 1,
+        vehicle_id: 1,
+        origin_zone: "Centro",
+        destination_zone: "Pilar",
+        price_per_km: "150.00",
+        max_km: 100,
+        available_from: "2026-06-01T09:00:00.000Z",
+        available_to: "2026-06-30T18:00:00.000Z",
+        active: true,
+        vehicle: { id: 1, make: "MB", model: "Sprinter", plate: "AAA111", vehicle_type: "van" },
+        created_at: "",
+        updated_at: "",
+        ...over,
+    };
 }
 
 function fakeVehicle(over: Partial<vehiclesApi.Vehicle> = {}): vehiclesApi.Vehicle {
@@ -104,12 +124,17 @@ describe("DashboardPage", () => {
             items: [],
             meta: { total: 0, page: 1, perPage: 20, totalPages: 0 },
         });
+        (transportWindowsApi.listMyTransportWindows as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+            items: [],
+            meta: { total: 0, page: 1, perPage: 20, totalPages: 1 },
+        });
         renderPage();
         await waitFor(() => expect(listMock).toHaveBeenCalled());
         expect(screen.queryByRole("heading", { level: 2, name: /encontrá un transportista/i })).toBeNull();
         expect(carriersApi.searchCarriers).not.toHaveBeenCalled();
-        // Don't leak vehicle-fetch call counts into later carrier-view tests.
+        // Don't leak call counts into later carrier-view tests.
         listMock.mockClear();
+        (transportWindowsApi.listMyTransportWindows as unknown as ReturnType<typeof vi.fn>).mockClear();
     });
 
     it("uses the email local-part as fallback greeting when full_name is empty", () => {
@@ -148,18 +173,28 @@ describe("DashboardPage", () => {
             items: [fakeVehicle({ plate: "AAA111", make: "MB", model: "Sprinter" })],
             meta: { total: 1, page: 1, perPage: 20, totalPages: 1 },
         });
+        (transportWindowsApi.listMyTransportWindows as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+            items: [
+                fakeWindow({ origin_zone: "Centro", destination_zone: "Pilar" }),
+                fakeWindow({ id: 2, origin_zone: "San Isidro", destination_zone: "CABA" }),
+            ],
+            meta: { total: 2, page: 1, perPage: 20, totalPages: 1 },
+        });
 
         renderPage();
 
         expect(screen.getByText(/panel · transportista/i)).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mi disponibilidad/i })).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mis vehículos/i })).toBeInTheDocument();
-        expect(screen.getByText("Centro → Pilar")).toBeInTheDocument();
-        expect(screen.getByText("San Isidro → CABA")).toBeInTheDocument();
 
-        await waitFor(() => expect(screen.getByText("AAA111")).toBeInTheDocument());
+        await waitFor(() => {
+            expect(screen.getByText("Centro → Pilar")).toBeInTheDocument();
+            expect(screen.getByText("San Isidro → CABA")).toBeInTheDocument();
+            expect(screen.getByText("AAA111")).toBeInTheDocument();
+        });
         expect(screen.getByText(/mb sprinter/i)).toBeInTheDocument();
         expect(vehiclesApi.listMyVehicles).toHaveBeenCalledTimes(1);
+        expect(transportWindowsApi.listMyTransportWindows).toHaveBeenCalledTimes(1);
     });
 
     it("shows the empty vehicle state when the carrier has no vehicles", async () => {
@@ -167,6 +202,10 @@ describe("DashboardPage", () => {
         (vehiclesApi.listMyVehicles as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
             items: [],
             meta: { total: 0, page: 1, perPage: 20, totalPages: 0 },
+        });
+        (transportWindowsApi.listMyTransportWindows as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+            items: [],
+            meta: { total: 0, page: 1, perPage: 20, totalPages: 1 },
         });
 
         renderPage();
@@ -181,6 +220,10 @@ describe("DashboardPage", () => {
         (vehiclesApi.listMyVehicles as unknown as ReturnType<typeof vi.fn>).mockRejectedValue(
             new Error("boom"),
         );
+        (transportWindowsApi.listMyTransportWindows as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+            items: [],
+            meta: { total: 0, page: 1, perPage: 20, totalPages: 1 },
+        });
         const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
         renderPage();

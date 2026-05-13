@@ -46,7 +46,7 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REQ-FE-00013 | Filtrado multi-criterio en búsqueda de ventanas de transporte (US5) | NEW | FE | 2026-05-03 | - |
 | REQ-FE-00014 | Página de detalle de transportista — perfil público + CTA ofertar (US6) | NEW | FE | 2026-05-03 | - |
 | REQ-FE-00015 | Ofertar retiro de un producto — wizard de creación de oferta (US7) | NEW | FE | 2026-05-03 | - |
-| REQ-FE-00016 | Publicar ventana de transporte — TransportWindow CRUD (US9) | NEW | FE | 2026-05-03 | - |
+| REQ-FE-00016 | Publicar ventana de transporte — TransportWindow CRUD (US9) | IR | FE | 2026-05-03 | [plan](REQ/REQ-FE-00016/REQ-FE-00016-transport-window-crud.plan.md) |
 | REQ-FE-00017 | Bandeja de ofertas recibidas por el transportista (US10) | NEW | FE | 2026-05-03 | - |
 | REQ-FE-00018 | Filtrado de ofertas en bandeja del transportista (US11) | NEW | FE | 2026-05-03 | - |
 | REQ-BE-00024 | Aceptación de viaje por el transportista (US12) | NEW | BE | 2026-05-03 | - |

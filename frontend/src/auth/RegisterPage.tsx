@@ -104,7 +104,7 @@ export function RegisterPage() {
                             className="authInput"
                             value={form.name}
                             autoComplete="name"
-                            aria-invalid={errors.name ? "true" : "false"}
+                            aria-invalid={errors.name ? "true" : undefined}
                             aria-describedby={errors.name ? "name-error" : "name-help"}
                             onChange={(e) => update("name", e.target.value)}
                         />
@@ -123,7 +123,7 @@ export function RegisterPage() {
                             className="authInput"
                             value={form.email}
                             autoComplete="email"
-                            aria-invalid={errors.email ? "true" : "false"}
+                            aria-invalid={errors.email ? "true" : undefined}
                             aria-describedby={errors.email ? "email-error" : undefined}
                             onChange={(e) => update("email", e.target.value)}
                         />
@@ -138,7 +138,7 @@ export function RegisterPage() {
                             className="authInput"
                             value={form.password}
                             autoComplete="new-password"
-                            aria-invalid={errors.password ? "true" : "false"}
+                            aria-invalid={errors.password ? "true" : undefined}
                             aria-describedby={errors.password ? "password-error" : "password-help"}
                             onChange={(e) => update("password", e.target.value)}
                         />
@@ -159,7 +159,7 @@ export function RegisterPage() {
                             className="authInput"
                             value={form.passwordConfirm}
                             autoComplete="new-password"
-                            aria-invalid={errors.passwordConfirm ? "true" : "false"}
+                            aria-invalid={errors.passwordConfirm ? "true" : undefined}
                             aria-describedby={errors.passwordConfirm ? "passwordConfirm-error" : undefined}
                             onChange={(e) => update("passwordConfirm", e.target.value)}
                         />
@@ -170,7 +170,7 @@ export function RegisterPage() {
 
                     <fieldset className="authField" aria-describedby={errors.role ? "role-error" : undefined}>
                         <legend className="authLabel">Tipo de cuenta</legend>
-                        <div className="authRoles" role="radiogroup">
+                        <div className="authRoles">
                             <label className="authRoleOption">
                                 <input
                                     type="radio"

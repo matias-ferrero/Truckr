@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCurrentUser } from "../../auth/useCurrentUser";
 import { listMyVehicles, Vehicle } from "../../api/vehicles";
+import { listMyTransportWindows, TransportWindow } from "../../api/transport_windows";
 import { TransportWindowSearchSection } from "./TransportWindowSearchSection";
 import "../../styles/dashboard.css";
 
@@ -15,15 +16,21 @@ const TRIP_FILTERS: { value: TripFilter; label: string }[] = [
     { value: "PASADO", label: "Pasados" },
 ];
 
+function formatDate(iso: string) {
+    return new Date(iso).toLocaleDateString("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
+    });
+}
+
 export function DashboardPage() {
     const { me, loading } = useCurrentUser();
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
     const [activeFilter, setActiveFilter] = useState<TripFilter>("TODOS");
 
-    const [availabilities] = useState([
-        { id: 1, date: "Hoy", time: "14:00 - 18:00", route: "Centro → Pilar" },
-        { id: 2, date: "Mañana", time: "09:00 - 13:00", route: "San Isidro → CABA" },
-    ]);
+    const [windows, setWindows]           = useState<TransportWindow[]>([]);
+    const [windowsTotal, setWindowsTotal] = useState(0);
     const [trips] = useState<{
         id: number;
         date: string;
@@ -39,6 +46,9 @@ export function DashboardPage() {
     useEffect(() => {
         if (isCarrier) {
             listMyVehicles().then(res => setVehicles(res.items)).catch(console.error);
+            listMyTransportWindows(1)
+                .then(res => { setWindows(res.items); setWindowsTotal(res.meta.total); })
+                .catch(console.error);
         }
     }, [isCarrier]);
 
@@ -154,13 +164,16 @@ export function DashboardPage() {
                                 <div className="dashboardSectionHeading">
                                     <span className="dashboardSectionIcon" aria-hidden="true"><IconCalendar /></span>
                                     <h2 id="section-availability">Mi disponibilidad</h2>
-                                    <span className="dashboardSectionCount" aria-label={`${availabilities.length} ventanas`}>
-                                        {availabilities.length}
+                                    <span className="dashboardSectionCount" aria-label={`${windowsTotal} ventanas`}>
+                                        {windowsTotal}
                                     </span>
                                 </div>
+                                <Link to="/carrier/availability" className="button buttonGhost">
+                                    Ver todas
+                                </Link>
                             </div>
                             <div className="dashboardCardList">
-                                {availabilities.length === 0 ? (
+                                {windows.length === 0 ? (
                                     <div className="dashboardEmpty" role="status">
                                         <span className="dashboardEmptyIcon" aria-hidden="true"><IconCalendar /></span>
                                         <div>
@@ -171,23 +184,27 @@ export function DashboardPage() {
                                         </div>
                                     </div>
                                 ) : (
-                                    availabilities.map(a => (
-                                        <article key={a.id} className="dashboardCard">
+                                    windows.map(w => (
+                                        <Link
+                                            key={w.id}
+                                            to={`/carrier/availability/${w.id}`}
+                                            className="dashboardCard"
+                                        >
                                             <div className="dashboardCardHead">
-                                                <span className="dashboardCardEyebrow">{a.date}</span>
+                                                <span className="dashboardCardEyebrow">{w.active ? "Publicada" : "Sin publicar"}</span>
                                             </div>
                                             <h3 className="dashboardCardTitle">
-                                                <IconClock />
-                                                {a.time}
+                                                {w.origin_zone} → {w.destination_zone}
+                                                <IconArrowRight className="arrow" />
                                             </h3>
                                             <div className="dashboardCardMeta">
-                                                <IconMapPin />
-                                                <span>{a.route}</span>
+                                                <IconCalendar />
+                                                <span>{formatDate(w.available_from)} – {formatDate(w.available_to)}</span>
                                             </div>
-                                        </article>
+                                        </Link>
                                     ))
                                 )}
-                                <Link to="/availability/new" className="dashboardCard dashboardCardNew" aria-label="Nueva disponibilidad">
+                                <Link to="/carrier/availability/new" className="dashboardCard dashboardCardNew" aria-label="Nueva disponibilidad">
                                     <span className="dashboardCardNewIcon" aria-hidden="true"><IconPlus /></span>
                                     <span className="dashboardCardNewLabel">Nueva disponibilidad</span>
                                 </Link>
@@ -203,6 +220,9 @@ export function DashboardPage() {
                                         {vehicles.length}
                                     </span>
                                 </div>
+                                <Link to="/carrier/vehicles" className="button buttonGhost">
+                                    Ver todos
+                                </Link>
                             </div>
                             <div className="dashboardCardList">
                                 {vehicles.length === 0 ? (

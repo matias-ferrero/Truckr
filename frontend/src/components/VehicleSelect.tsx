@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { listMyVehicles, Vehicle } from "../api/vehicles";
 
 export type VehicleSelectProps = {
@@ -52,8 +53,8 @@ export default function VehicleSelect({
     if (state.status === "loading") {
         return (
             <div className="field">
-                <label>{label}</label>
-                <p className="help">Cargando tu flota…</p>
+                <span aria-hidden="true">{label}</span>
+                <p role="status" aria-busy="true">Cargando tu flota…</p>
             </div>
         );
     }
@@ -61,9 +62,23 @@ export default function VehicleSelect({
     if (state.status === "error") {
         return (
             <div className="field">
-                <label>{label}</label>
-                <p className="error" role="alert">
+                <label htmlFor="vehicle-select">{label}</label>
+                <p id="vehicle-select-error" className="fieldError" role="alert">
                     No pudimos cargar tu flota: {state.message}
+                </p>
+            </div>
+        );
+    }
+
+    if (state.items.length === 0) {
+        return (
+            <div className="field">
+                <label htmlFor="vehicle-select">{label}</label>
+                <p className="emptyFleetHint">
+                    Todavía no registraste vehículos.{" "}
+                    <Link to="/carrier/vehicle/new" className="link">
+                        Registrá el primero
+                    </Link>.
                 </p>
             </div>
         );
@@ -80,10 +95,8 @@ export default function VehicleSelect({
                     const v = e.target.value;
                     onChange(v ? Number(v) : null);
                 }}
-                disabled={state.items.length === 0}
             >
-                {state.items.length === 0 && <option value="">Todavía no tenés vehículos</option>}
-                {state.items.length > 0 && <option value="">{placeholder}</option>}
+                <option value="">{placeholder}</option>
                 {state.items.map((v) => (
                     <option key={v.id} value={v.id}>
                         {v.make} {v.model} — {v.plate}

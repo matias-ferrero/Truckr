@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import VehicleSelect from "./VehicleSelect";
 import * as vehiclesApi from "../api/vehicles";
 
@@ -55,12 +56,20 @@ describe("VehicleSelect", () => {
         expect(onChange).toHaveBeenCalledWith(2);
     });
 
-    it("shows the empty placeholder when the carrier has no vehicles", async () => {
+    it("shows the empty state with a registration link when the carrier has no vehicles", async () => {
         vi.mocked(vehiclesApi.listMyVehicles).mockResolvedValueOnce({
             items: [],
             meta: { total: 0, page: 1, perPage: 20, totalPages: 1 },
         });
-        render(<VehicleSelect value={null} onChange={() => {}} />);
-        expect(await screen.findByText(/todavía no tenés vehículos/i)).toBeInTheDocument();
+        render(
+            <MemoryRouter>
+                <VehicleSelect value={null} onChange={() => {}} />
+            </MemoryRouter>
+        );
+        expect(await screen.findByText(/todavía no registraste vehículos/i)).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: /registrá el primero/i })).toHaveAttribute(
+            "href",
+            "/carrier/vehicle/new"
+        );
     });
 });

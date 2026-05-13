@@ -49,7 +49,7 @@ Dado que se trata de un proyecto de cursada (FIUBA GDSI), el costo y la velocida
 - Menos representativo de arquitecturas de producción reales
 - Actualizaciones de la app requieren SSH o un script de deploy (no rolling update nativo)
 
-**Effort:** S  
+**Effort:** S
 **Risk:** Low
 
 ---
@@ -79,7 +79,7 @@ Dado que se trata de un proyecto de cursada (FIUBA GDSI), el costo y la velocida
 - Requiere más tiempo de implementación inicial
 - Workspaces comparten el mismo state backend, lo que puede generar confusión
 
-**Effort:** L  
+**Effort:** L
 **Risk:** Medium
 
 ---
@@ -105,7 +105,7 @@ Dado que se trata de un proyecto de cursada (FIUBA GDSI), el costo y la velocida
 - Mayor riesgo de bugs en la configuración de módulos (permisos IAM, security groups, etc.)
 - Más código a mantener
 
-**Effort:** XL  
+**Effort:** XL
 **Risk:** High
 
 ---
@@ -135,5 +135,5 @@ Para un proyecto de cursada que también sirve como portfolio, Alt 2 ofrece el m
 
 ## Decision
 
-**Selected:** Alternative 1 — EC2 + Docker Compose + módulos custom mínimos  
+**Selected:** Alternative 1 — EC2 + Docker Compose + módulos custom mínimos
 **Rationale:** Para el alcance de un proyecto de cursada, el menor costo y la menor complejidad operativa son prioritarios. EC2 + Docker Compose es suficiente para hacer demos reales y aprender IaC con Terraform sin incurrir en los costos de ECS Fargate + ALB.

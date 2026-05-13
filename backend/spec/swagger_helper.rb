@@ -99,6 +99,16 @@ RSpec.configure do |config|
             type: :array,
             items: { "$ref" => "#/components/schemas/VehicleSlim" }
           },
+          TransportWindowVehicle: {
+            type: :object,
+            properties: {
+              id:           { type: :integer },
+              make:         { type: :string },
+              model:        { type: :string },
+              plate:        { type: :string },
+              vehicle_type: { type: :string }
+            }
+          },
           TransportWindow: {
             type: :object,
             properties: {
@@ -110,8 +120,15 @@ RSpec.configure do |config|
               max_km:           { type: :integer },
               available_from:   { type: :string, format: "date-time" },
               available_to:     { type: :string, format: "date-time" },
-              active:           { type: :boolean }
+              active:           { type: :boolean },
+              vehicle:          { "$ref" => "#/components/schemas/TransportWindowVehicle" },
+              created_at:       { type: :string, format: "date-time" },
+              updated_at:       { type: :string, format: "date-time" }
             }
+          },
+          TransportWindowListResponse: {
+            type: :array,
+            items: { "$ref" => "#/components/schemas/TransportWindow" }
           },
           CarrierDetail: {
             type: :object,

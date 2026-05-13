@@ -2,7 +2,7 @@
 tag: REQ-FE-00016
 title: Publicar ventana de transporte (TransportWindow CRUD)
 priority: P1
-status: backlog
+status: in_review
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/122

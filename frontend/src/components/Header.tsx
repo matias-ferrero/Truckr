@@ -21,7 +21,7 @@ export function Header() {
                     Truckr®
                 </Link>
 
-                <nav className="appHeaderActions" aria-label="Sesión">
+                <nav className="appHeaderActions" aria-label="Cuenta">
                     {loading ? (
                         <span className="appHeaderEmail" aria-hidden="true">…</span>
                     ) : me ? (

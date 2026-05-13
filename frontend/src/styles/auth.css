@@ -90,10 +90,10 @@
     transition: border-color 120ms var(--ease-out), box-shadow 120ms var(--ease-out);
 }
 
-.authInput:focus {
-    outline: 2px solid color-mix(in oklab, var(--brand-primary) 70%, white);
-    outline-offset: 2px;
-    border-color: color-mix(in oklab, var(--brand-primary) 70%, var(--ink));
+.authInput:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--brand-primary) 70%, white);
+  outline-offset: 2px;
+  border-color: color-mix(in oklab, var(--brand-primary) 70%, var(--ink));
 }
 
 .authInput[aria-invalid="true"] {
@@ -214,11 +214,11 @@
 
 /* Header */
 .appHeader {
-    background: color-mix(in oklab, var(--brand-primary, #bee4fa) 60%, var(--paper, #fff));
-    border-bottom: 1px solid var(--border, rgba(15, 23, 42, 0.12));
-    position: sticky;
-    top: 0;
-    z-index: 10;
+  background: color-mix(in oklab, var(--brand-primary, oklch(89% 0.06 235)) 60%, var(--paper, oklch(99% 0.005 240)));
+  border-bottom: 1px solid var(--border, color-mix(in oklab, oklch(75% 0.005 240) 70%, oklch(99% 0.005 240)));
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .appHeaderInner {
@@ -256,15 +256,15 @@
 }
 
 .appHeaderLink {
-    color: var(--ink);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: var(--text-sm);
-    padding: 8px 12px;
-    min-height: 36px;
-    display: inline-flex;
-    align-items: center;
-    border-radius: var(--radius-sm);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  padding: 8px 12px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
 }
 
 .appHeaderLink:hover {
@@ -272,16 +272,16 @@
 }
 
 .appHeaderButton {
-    appearance: none;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--ink);
-    padding: 8px 12px;
-    min-height: 36px;
-    border-radius: var(--radius-sm);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    cursor: pointer;
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 8px 12px;
+  min-height: 44px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .appHeaderButton:hover {

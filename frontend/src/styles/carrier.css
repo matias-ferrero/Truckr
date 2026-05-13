@@ -12,6 +12,8 @@
     --brand-tertiary: oklch(75% 0.005 240);
     --brand-error: oklch(72% 0.16 25);
     --paper: oklch(99% 0.005 240);
+    --status-active-bg: color-mix(in oklab, oklch(72% 0.14 145) 15%, transparent);
+    --status-active-fg: oklch(32% 0.12 145);
 
     --ink: oklch(18% 0.02 240);
     --ink-2: color-mix(in oklab, var(--ink) 78%, white);
@@ -57,7 +59,7 @@
 .fieldGrid {
     display: grid;
     gap: 16px;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
 }
 
 .dimensions {
@@ -82,12 +84,43 @@
     resize: vertical;
 }
 
-/* Brand-colored focus ring on inputs inside carrier scope. The global
-   default outline is too low-contrast on white card backgrounds. */
-.carrierPage .input:focus-visible {
+/* Brand-colored focus ring for inputs and buttons inside carrier scope.
+   The global default (15% black transparent) fails WCAG 2.4.11 on light
+   card surfaces — this override lifts contrast well above the 3:1 threshold. */
+.carrierPage .input:focus-visible,
+.carrierPage .button:focus-visible {
     outline: 2px solid color-mix(in oklab, var(--brand-primary) 70%, var(--ink));
     outline-offset: 2px;
+}
+
+.carrierPage .input:focus-visible {
     border-color: color-mix(in oklab, var(--brand-primary) 70%, var(--ink));
+}
+
+/* Override the landing-scope pale-yellow primary button with a higher-contrast
+   dark-blue variant suited to the carrier page's light surface. */
+.carrierPage .buttonPrimary {
+    background: oklch(42% 0.14 235);
+    color: oklch(98% 0.005 235);
+    border-color: transparent;
+    box-shadow: 0 2px 8px color-mix(in oklab, oklch(42% 0.14 235) 30%, transparent);
+    font-weight: 600;
+}
+
+.carrierPage .buttonPrimary:hover {
+    background: oklch(37% 0.14 235);
+    transform: translateY(-1px);
+}
+
+.carrierPage .buttonPrimary:active {
+    background: oklch(34% 0.14 235);
+    transform: translateY(0);
+}
+
+.carrierPage .buttonPrimary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .uploader {
@@ -157,8 +190,8 @@
     position: absolute;
     bottom: 6px;
     right: 6px;
-    background: rgba(0, 0, 0, 0.72);
-    color: #fff;
+    background: color-mix(in oklab, var(--ink) 72%, transparent);
+    color: var(--paper);
     border: 0;
     padding: 0 14px;
     border-radius: 999px;
@@ -183,7 +216,7 @@
     padding: 0;
     display: grid;
     gap: 16px;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
 }
 
 .vehicleCard {
@@ -262,7 +295,7 @@
 
 .button.buttonDanger {
     background: var(--brand-error);
-    color: #fff;
+    color: var(--paper);
     border: 0;
     padding: 8px 14px;
     min-height: 44px;
@@ -291,6 +324,29 @@
     color: var(--ink-2);
 }
 
+.emptyStateTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+}
+
+.emptyFleetHint {
+    font-size: 14px;
+    color: var(--ink-2);
+    margin: 0;
+}
+
+.emptyFleetHint .link {
+    color: oklch(42% 0.14 235);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.emptyFleetHint .link:hover {
+    color: oklch(34% 0.14 235);
+}
+
 .errorPanel {
     padding: 16px;
     border-radius: 12px;
@@ -313,22 +369,32 @@
 
 .skeleton .skeletonCard {
     height: 280px;
-    background: linear-gradient(90deg,
-        color-mix(in oklab, var(--ink) 4%, transparent),
-        color-mix(in oklab, var(--ink) 8%, transparent),
-        color-mix(in oklab, var(--ink) 4%, transparent));
-    background-size: 200% 100%;
-    animation: skeleton 1.4s linear infinite;
+    background: color-mix(in oklab, var(--ink) 5%, transparent);
     border-radius: 16px;
+    overflow: hidden;
+    position: relative;
 }
 
-@keyframes skeleton {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+.skeleton .skeletonCard::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        color-mix(in oklab, var(--paper) 55%, transparent) 50%,
+        transparent 100%
+    );
+    transform: translateX(-100%);
+    animation: skeleton-shimmer 1.4s linear infinite;
+}
+
+@keyframes skeleton-shimmer {
+    to { transform: translateX(200%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .skeleton .skeletonCard {
+    .skeleton .skeletonCard::after {
         animation: none;
     }
 }
@@ -345,7 +411,7 @@
 }
 
 .confirmDialog::backdrop {
-    background: color-mix(in oklab, black 40%, transparent);
+    background: color-mix(in oklab, var(--ink) 40%, transparent);
     backdrop-filter: blur(2px);
 }
 
@@ -479,7 +545,6 @@
 }
 
 .searchCardBody {
-    padding: 16px;
     display: grid;
     gap: 8px;
 }
@@ -559,5 +624,175 @@
 @media (prefers-reduced-motion: reduce) {
     .searchResults.skeleton .skeletonCard {
         animation: none;
+    }
+}
+
+/* TransportWindow grid and cards (REQ-FE-00016) */
+.windowGrid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+}
+
+.windowCard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 16px color-mix(in oklab, var(--ink) 5%, transparent);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .windowCard:not(.isInactive):hover,
+    .windowCard:not(.isInactive):focus-within {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 28px color-mix(in oklab, var(--ink) 10%, transparent);
+    }
+}
+
+.windowCard.isInactive {
+    background: color-mix(in oklab, var(--surface) 70%, var(--page-bg));
+    box-shadow: none;
+}
+
+.windowCard.isInactive .windowRoute {
+    color: var(--ink-2);
+}
+
+.windowCardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 16px 16px 8px;
+    background: var(--page-bg);
+}
+
+.windowCard.isInactive .windowCardHeader {
+    background: transparent;
+}
+
+.windowRoute {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1 1 0;
+}
+
+.statusBadge {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.statusActive {
+    background: var(--status-active-bg);
+    color: var(--status-active-fg);
+}
+
+.statusInactive {
+    background: color-mix(in oklab, var(--ink) 8%, transparent);
+    color: var(--ink-2);
+}
+
+.windowCardBody {
+    padding: 8px 16px 12px;
+}
+
+.windowMeta {
+    margin: 4px 0;
+    font-size: 13px;
+    color: var(--ink-2);
+}
+
+.windowMeta strong {
+    color: var(--ink);
+}
+
+.windowCardBody .windowMeta:last-child {
+    color: var(--ink);
+    font-weight: 500;
+    margin-top: 8px;
+}
+
+.fieldSection {
+    display: grid;
+    gap: 16px;
+}
+
+/* Date-range fieldset — groups available_from + available_to semantically */
+.dateRange {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+    margin: 0;
+}
+
+.dateRange legend {
+    padding: 0 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+}
+
+.requiredNote {
+    font-size: 12px;
+    color: var(--ink-2);
+    margin: 0;
+}
+
+.field.fieldReadonly {
+    gap: 6px;
+    margin: 0;
+}
+
+.fieldReadonly dt {
+    font-weight: 400;
+    color: var(--ink);
+    font-size: 14px;
+}
+
+.fieldReadonly dd {
+    margin: 0;
+}
+
+.fieldError {
+    font-size: 12px;
+    color: color-mix(in oklab, var(--brand-error) 80%, black);
+    margin: 0;
+}
+
+.confirmText {
+    font-size: 13px;
+    font-weight: 600;
+    color: color-mix(in oklab, var(--brand-error) 70%, black);
+    width: 100%;
+}
+
+@media (max-width: 360px) {
+    .vehicleForm {
+        padding: 16px;
+    }
+
+    .fieldGrid {
+        grid-template-columns: 1fr;
     }
 }

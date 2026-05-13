@@ -183,7 +183,7 @@ export default function VehicleForm({ mode }: Props) {
 
                 <form className="form vehicleForm" onSubmit={handleSubmit} noValidate>
                     {error && (
-                        <div className="error" role="alert" aria-live="assertive">
+                        <div className="error" role="alert">
                             {error}
                         </div>
                     )}

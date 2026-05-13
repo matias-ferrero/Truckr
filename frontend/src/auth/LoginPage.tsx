@@ -67,7 +67,7 @@ export function LoginPage() {
                             className="authInput"
                             value={form.email}
                             autoComplete="email"
-                            aria-invalid={errors.email ? "true" : "false"}
+                            aria-invalid={errors.email ? "true" : undefined}
                             aria-describedby={errors.email ? "email-error" : undefined}
                             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                         />
@@ -82,7 +82,7 @@ export function LoginPage() {
                             className="authInput"
                             value={form.password}
                             autoComplete="current-password"
-                            aria-invalid={errors.password ? "true" : "false"}
+                            aria-invalid={errors.password ? "true" : undefined}
                             aria-describedby={errors.password ? "password-error" : undefined}
                             onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                         />

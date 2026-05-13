@@ -1,21 +1,19 @@
 /* Landing page styles are scoped by class names (no CSS modules dependency). */
 
 .page {
-  --brand-primary: #bee4fa;
-  --brand-secondary: #f1e3aa;
-  --brand-tertiary: #b4b4b4;
-  --brand-error: #ff9999;
-  --brand-neutral: #ffffff;
+  --brand-primary: oklch(89% 0.06 235);
+  --brand-secondary: oklch(91% 0.07 95);
+  --brand-tertiary: oklch(75% 0.005 240);
+  --brand-error: oklch(72% 0.16 25);
+  --paper: oklch(99% 0.005 240);
 
-  /* Derived neutrals tinted toward primary */
   --ink: oklch(18% 0.02 240);
   --ink-2: color-mix(in oklab, var(--ink) 78%, white);
   --ink-3: color-mix(in oklab, var(--ink) 62%, white);
 
-  /* White page background; grey components + grey structure */
-  --surface: var(--brand-neutral);
-  --surface-2: color-mix(in oklab, white 92%, var(--brand-tertiary));
-  --border: color-mix(in oklab, var(--brand-tertiary) 70%, white);
+  --surface: var(--paper);
+  --surface-2: color-mix(in oklab, var(--paper) 92%, var(--brand-tertiary));
+  --border: color-mix(in oklab, var(--brand-tertiary) 70%, var(--paper));
 
   background: var(--surface);
   color: var(--ink);
@@ -198,7 +196,7 @@
 
 .buttonGhost {
   background: transparent;
-  border-color: color-mix(in oklab, var(--ink) 16%, transparent);
+  border-color: color-mix(in oklab, var(--ink) 50%, transparent);
   color: var(--ink-2);
 }
 
@@ -261,7 +259,7 @@
   width: 100%;
   border-radius: 14px;
   border: 1px solid var(--border);
-  background: var(--brand-neutral);
+  background: var(--paper);
   padding: 12px 12px;
   min-height: 44px;
   color: var(--ink);

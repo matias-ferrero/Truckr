@@ -32,6 +32,8 @@ Rails.application.routes.draw do
     scope path: "carriers/me", as: :me do
       resources :vehicles, only: %i[index show create update destroy],
                            module: "carriers/me"
+      resources :transport_windows, only: %i[index show create update destroy],
+                                    module: "carriers/me"
     end
 
     # Public read endpoints — anyone can browse a carrier's fleet.

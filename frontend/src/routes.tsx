@@ -12,8 +12,10 @@ const RegisterPage = lazy(() => import("./auth/RegisterPage").then((m) => ({ def
 const ImpersonatePage = lazy(() => import("./auth/ImpersonatePage"));
 const CarrierSearchPage = lazy(() => import("./pages/search/CarrierSearchPage"));
 const CarrierDetailPlaceholder = lazy(() => import("./pages/carriers/CarrierDetailPlaceholder"));
-const VehicleForm = lazy(() => import("./pages/carrier/VehicleForm"));
-const VehicleList = lazy(() => import("./pages/carrier/VehicleList"));
+const VehicleForm           = lazy(() => import("./pages/carrier/VehicleForm"));
+const VehicleList           = lazy(() => import("./pages/carrier/VehicleList"));
+const TransportWindowList   = lazy(() => import("./pages/carrier/TransportWindowList"));
+const TransportWindowForm   = lazy(() => import("./pages/carrier/TransportWindowForm"));
 const CarrierDetail = lazy(() => import("./pages/public/CarrierDetail"));
 const CarrierMeRedirect = lazy(() => import("./pages/public/CarrierMeRedirect"));
 
@@ -125,6 +127,9 @@ export function AppRoutes() {
                         <Route path="vehicle/new" element={<VehicleForm mode="new" />} />
                         <Route path="vehicle/:id" element={<VehicleForm mode="edit" />} />
                         <Route path="vehicles" element={<VehicleList />} />
+                        <Route path="availability"     element={<TransportWindowList />} />
+                        <Route path="availability/new" element={<TransportWindowForm mode="new" />} />
+                        <Route path="availability/:id" element={<TransportWindowForm mode="edit" />} />
                     </Route>
                     <Route element={<PublicLayout />}>
                         {/* Declared before `:id` so the literal segment wins over the wildcard. */}

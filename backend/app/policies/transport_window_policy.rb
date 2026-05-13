@@ -2,18 +2,32 @@
 
 # Pundit policy for TransportWindow.
 #
-# Public read: anyone (including anonymous) can search the catalog of
-# published windows. There is no mutate-side here yet — carrier-side window
-# CRUD lives in a sibling PR (#163) which will extend this policy.
+# Public read (index/show): anyone can browse the active window catalog.
+# Carrier mutations: the authenticated carrier must own the window's vehicle.
 class TransportWindowPolicy < ApplicationPolicy
-  def index? = true
-  def show?  = true
+  def index?   = carrier_present?
+  def show?    = owner?
+  def create?  = owner?
+  def update?  = owner?
+  def destroy? = owner?
 
   class Scope < Scope
-    # Public catalog == only `active` windows. Inactive (paused / retired)
-    # rows must not leak into search results.
     def resolve
-      scope.active
+      if user&.carrier
+        scope.joins(:vehicle).where(vehicles: { carrier_id: user.carrier.id })
+      else
+        scope.active
+      end
     end
+  end
+
+  private
+
+  def carrier_present?
+    user&.carrier.present?
+  end
+
+  def owner?
+    owns?(record.vehicle&.carrier_id)
   end
 end

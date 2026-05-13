@@ -196,13 +196,22 @@ type ConfirmDialogProps = {
 
 function ConfirmDialog({ open, onCancel, onConfirm }: ConfirmDialogProps) {
     const ref = useRef<HTMLDialogElement | null>(null);
+    const triggerRef = useRef<Element | null>(null);
     const c = carrierContent.list.confirmDelete;
 
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
-        if (open && !el.open) el.showModal();
-        if (!open && el.open) el.close();
+        if (open && !el.open) {
+            triggerRef.current = document.activeElement;
+            el.showModal();
+        }
+        if (!open && el.open) {
+            el.close();
+            if (triggerRef.current instanceof HTMLElement) {
+                triggerRef.current.focus();
+            }
+        }
     }, [open]);
 
     return (
