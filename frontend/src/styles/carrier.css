@@ -222,6 +222,9 @@
 
 /* Confirm dialog (replaces window.confirm for destructive actions) */
 .confirmDialog {
+    /* Tailwind preflight resets `dialog { margin: 0 }`, which kills the UA
+       `margin: auto` that centers a `:modal` dialog. Restore it. */
+    margin: auto;
     border: 0;
     border-radius: 16px;
     padding: 0;
