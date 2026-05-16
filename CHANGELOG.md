@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.2.0](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.10...v0.2.0) (2026-05-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* **ux:** The on-page quote-request form on the landing page is removed. The hero CTA now routes to the "Para quién" section instead of scrolling to a quote panel that never submitted to the API.
+* **auth:** The login request body shape moves from `{ email, password }` to `{ user: { email, password } }`. CSRF endpoints and the `/api/auth/csrf` route are gone.
+
+### Features
+
+* **admin:** enable full CRUD on all ActiveAdmin resources ([#175](https://github.com/tcorzo/fiuba-gestion-tp/issues/175)) ([d9ff6a7](https://github.com/tcorzo/fiuba-gestion-tp/commit/d9ff6a79ca2c287e23bda385c19162145582bec5))
+* **admin:** user impersonation from ActiveAdmin via fragment-passed JWT ([#173](https://github.com/tcorzo/fiuba-gestion-tp/issues/173)) ([898c32f](https://github.com/tcorzo/fiuba-gestion-tp/commit/898c32f085f01f1ed8b5f1a74816787e07ff81f9))
+* **auth:** implement registration, login, sessions and frontend screens ([#145](https://github.com/tcorzo/fiuba-gestion-tp/issues/145)) ([51af7f4](https://github.com/tcorzo/fiuba-gestion-tp/commit/51af7f4c41cd32c226f49dd3ad5e73bc76dc6545))
+* **auth:** migrate to stateless JWT auth (devise-jwt + JTI Matcher) ([#167](https://github.com/tcorzo/fiuba-gestion-tp/issues/167)) ([75bcfab](https://github.com/tcorzo/fiuba-gestion-tp/commit/75bcfab7a04a6fa863ed8fd3bb5ed0ff5d9c0f42))
+* **carriers:** public carrier profile + quote estimator (US6) ([#164](https://github.com/tcorzo/fiuba-gestion-tp/issues/164)) ([5d1ba2d](https://github.com/tcorzo/fiuba-gestion-tp/commit/5d1ba2d624ea23d3674fa8dacac4958e3e9bce04))
+* **dashboard:** initial dashboard implementation ([#162](https://github.com/tcorzo/fiuba-gestion-tp/issues/162)) ([0bc884c](https://github.com/tcorzo/fiuba-gestion-tp/commit/0bc884ce73f697e34c4b97fde3def230554032e7))
+* **transport window:** carrier search and date-range filtering ([#159](https://github.com/tcorzo/fiuba-gestion-tp/issues/159)) ([dc3cf53](https://github.com/tcorzo/fiuba-gestion-tp/commit/dc3cf53102e615ec51ac175e2d2054822d539231))
+* **transport-windows:** transport window CRUD for carrier availability (US9) ([#163](https://github.com/tcorzo/fiuba-gestion-tp/issues/163)) ([c0c66d2](https://github.com/tcorzo/fiuba-gestion-tp/commit/c0c66d2738a854e1846507753520156a41fc496c))
+* **ux:** streamline navigation/UX and adopted schadcn/ui + tailwindcss ([#170](https://github.com/tcorzo/fiuba-gestion-tp/issues/170)) ([36589c5](https://github.com/tcorzo/fiuba-gestion-tp/commit/36589c5da8baeac7f42732b25c669bfba2aa1ba1))
+* **vehicles:** registration with photos and multi-vehicle fleet support ([#144](https://github.com/tcorzo/fiuba-gestion-tp/issues/144)) ([e1fc01f](https://github.com/tcorzo/fiuba-gestion-tp/commit/e1fc01f718d461f8e672a5ddace1a12a8b5cf4ee))
+
+
+### Bug Fixes
+
+* **auth:** polish sign-up error messages ([#182](https://github.com/tcorzo/fiuba-gestion-tp/issues/182)) ([aec58b6](https://github.com/tcorzo/fiuba-gestion-tp/commit/aec58b6a8678766caa3ebd2c41a08d930dd3c78a))
+* **carrier:** center delete vehicle modal ([#180](https://github.com/tcorzo/fiuba-gestion-tp/issues/180)) ([76204e5](https://github.com/tcorzo/fiuba-gestion-tp/commit/76204e5e1f6bd27a984ae115b4c01734a27033ff))
+* **ci:** replace amannn action with inline payload check ([#138](https://github.com/tcorzo/fiuba-gestion-tp/issues/138)) ([a3fdb95](https://github.com/tcorzo/fiuba-gestion-tp/commit/a3fdb95fe2cdc34e99fca2e95a0383c88bee0163))
+* **ci:** run Playwright via node to unblock frontend e2e on main ([#179](https://github.com/tcorzo/fiuba-gestion-tp/issues/179)) ([b8449a7](https://github.com/tcorzo/fiuba-gestion-tp/commit/b8449a725430e3d11b36e98a3cabd6c095209624))
+* **justfile:** compile ActiveAdmin SCSS on backend-dev ([#171](https://github.com/tcorzo/fiuba-gestion-tp/issues/171)) ([82d8411](https://github.com/tcorzo/fiuba-gestion-tp/commit/82d841136d717c1004b99dc0612a1e7dc81af5f1))
+* **ux:** make signup page fit desktop viewport without scroll ([#181](https://github.com/tcorzo/fiuba-gestion-tp/issues/181)) ([da4a879](https://github.com/tcorzo/fiuba-gestion-tp/commit/da4a879df521674fee42c785979f0136e3bcb800))
+
+
+### Reverts
+
+* **user:** removed the option to be both a transportist and a carrier ([#158](https://github.com/tcorzo/fiuba-gestion-tp/issues/158)) ([3aae4aa](https://github.com/tcorzo/fiuba-gestion-tp/commit/3aae4aaa76499b6185f3eacf4aceb86a0fdfd8b0))
+
 ## [0.1.10](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.9...v0.1.10) (2026-05-09)
 
 
