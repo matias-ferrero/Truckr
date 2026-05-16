@@ -7,6 +7,7 @@ import { Input } from "../components/ui/input";
 import { Alert } from "../components/ui/alert";
 import { FormField } from "../components/ui/form-field";
 import { RadioGroup, RadioOption } from "../components/ui/radio-group";
+import { authContent, type PasswordRuleKey } from "./authContent";
 
 type RegisterRole = "carrier" | "shipper";
 
@@ -24,25 +25,35 @@ type RegisterForm = {
 
 type FieldErrors = Partial<Record<keyof RegisterForm, string>>;
 
-const PASSWORD_RULES = [
-    { test: (v: string) => v.length >= 8, msg: "al menos 8 caracteres" },
-    { test: (v: string) => /[A-Z]/.test(v), msg: "una mayúscula" },
-    { test: (v: string) => /[a-z]/.test(v), msg: "una minúscula" },
-    { test: (v: string) => /\d/.test(v), msg: "un dígito" },
+const t = authContent.register.errors;
+
+const PASSWORD_RULES: Array<{ test: (v: string) => boolean; key: PasswordRuleKey }> = [
+    { test: (v) => v.length >= 8, key: "minLength" },
+    { test: (v) => /[A-Z]/.test(v), key: "upper" },
+    { test: (v) => /[a-z]/.test(v), key: "lower" },
+    { test: (v) => /\d/.test(v), key: "digit" },
 ];
+
+// Joins list parts with commas and a final "y", so the password error reads
+// as a sentence ("...una minúscula y un número") instead of a raw CSV list.
+function joinAnd(parts: string[]): string {
+    if (parts.length <= 1) return parts.join("");
+    return `${parts.slice(0, -1).join(", ")} y ${parts[parts.length - 1]}`;
+}
 
 function validate(form: RegisterForm): FieldErrors {
     const errs: FieldErrors = {};
-    if (!form.name.trim()) errs.name = "Decinos cómo te llamás.";
-    if (!form.email.trim()) errs.email = "Necesitamos un email para crear tu cuenta.";
-    else if (!/.+@.+\..+/.test(form.email)) errs.email = "Ese email no parece válido.";
-    if (!form.password) errs.password = "Elegí una contraseña segura.";
+    if (!form.name.trim()) errs.name = t.nameRequired;
+    if (!form.email.trim()) errs.email = t.emailRequired;
+    else if (!/.+@.+\..+/.test(form.email)) errs.email = t.emailInvalid;
+    if (!form.password) errs.password = t.passwordRequired;
     else {
-        const failed = PASSWORD_RULES.filter((r) => !r.test(form.password));
-        if (failed.length) errs.password = `Debe contener ${failed.map((f) => f.msg).join(", ")}.`;
+        const missing = PASSWORD_RULES.filter((r) => !r.test(form.password))
+            .map((r) => t.passwordRules[r.key]);
+        if (missing.length) errs.password = t.passwordMissing(joinAnd(missing));
     }
-    if (form.password !== form.passwordConfirm) errs.passwordConfirm = "Las contraseñas no coinciden.";
-    if (!form.role) errs.role = "Elegí qué tipo de cuenta querés crear.";
+    if (form.password !== form.passwordConfirm) errs.passwordConfirm = t.passwordMismatch;
+    if (!form.role) errs.role = t.roleRequired;
     return errs;
 }
 
@@ -82,10 +93,11 @@ export function RegisterPage() {
             });
             navigate("/");
         } catch (err) {
+            const s = authContent.register.serverErrors;
             if (err instanceof ApiError) {
-                setServerError(err.message || "No pudimos crear tu cuenta. Probá de nuevo.");
+                setServerError(err.message || s.generic);
             } else {
-                setServerError("No pudimos crear tu cuenta. Probá de nuevo.");
+                setServerError(s.network);
             }
         } finally {
             setSubmitting(false);

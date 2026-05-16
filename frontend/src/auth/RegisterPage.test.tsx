@@ -36,7 +36,7 @@ describe("RegisterPage", () => {
 
         expect(await screen.findByText(/Decinos cómo te llamás/i)).toBeInTheDocument();
         expect(screen.getByText(/Necesitamos un email/i)).toBeInTheDocument();
-        expect(screen.getByText(/Elegí una contraseña segura/i)).toBeInTheDocument();
+        expect(screen.getByText(/Elegí una contraseña para proteger tu cuenta/i)).toBeInTheDocument();
         expect(screen.getByText(/Elegí qué tipo de cuenta/i)).toBeInTheDocument();
     });
 
@@ -54,7 +54,7 @@ describe("RegisterPage", () => {
 
         expect(await screen.findByText(/al menos 8 caracteres/i)).toBeInTheDocument();
         expect(screen.getByText(/una mayúscula/i)).toBeInTheDocument();
-        expect(screen.getByText(/un dígito/i)).toBeInTheDocument();
+        expect(screen.getByText(/un número/i)).toBeInTheDocument();
     });
 
     it("complains when passwords do not match", async () => {
