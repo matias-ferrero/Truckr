@@ -6,8 +6,8 @@
         "test": "deno run -A npm:vitest",
         "test:run": "deno run -A npm:vitest run",
         "test:coverage": "deno run -A npm:vitest run --coverage",
-        "test:e2e": "deno run -A npm:@playwright/test test --project=chromium",
-        "test:e2e:all": "deno run -A npm:@playwright/test test",
+        "test:e2e": "node ./node_modules/@playwright/test/cli.js test --project=chromium",
+        "test:e2e:all": "node ./node_modules/@playwright/test/cli.js test",
         "test:e2e:install": "deno run -A npm:playwright install --with-deps"
     },
     "imports": {
