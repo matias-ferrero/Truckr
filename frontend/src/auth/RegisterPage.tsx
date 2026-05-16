@@ -95,11 +95,11 @@ export function RegisterPage() {
     return (
         <main
             id="main"
-            className="flex-1 flex items-start justify-center px-5 py-12"
+            className="flex-1 flex items-center justify-center px-5 py-6"
         >
             <section
                 aria-labelledby="register-title"
-                className="w-full max-w-[440px] bg-paper border border-stroke rounded-md p-8 shadow-[0_4px_18px_color-mix(in_oklab,var(--color-ink)_8%,transparent)]"
+                className="w-full max-w-[440px] bg-paper border border-stroke rounded-md p-6 sm:p-7 shadow-[0_4px_18px_color-mix(in_oklab,var(--color-ink)_8%,transparent)]"
             >
                 <h1
                     id="register-title"
@@ -107,7 +107,7 @@ export function RegisterPage() {
                 >
                     Crear cuenta
                 </h1>
-                <p className="text-sm text-ink-soft mb-6 max-w-[65ch] leading-relaxed">
+                <p className="text-sm text-ink-soft mb-5 max-w-[65ch] leading-relaxed">
                     Sumate a Truckr® como expedidor o transportista.
                 </p>
 
@@ -117,7 +117,7 @@ export function RegisterPage() {
                     </Alert>
                 ) : null}
 
-                <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
+                <form className="flex flex-col gap-3.5" onSubmit={onSubmit} noValidate>
                     <FormField
                         id="name"
                         label="Nombre completo"
@@ -206,7 +206,7 @@ export function RegisterPage() {
                     </Button>
                 </form>
 
-                <p className="mt-6 text-sm text-ink-soft text-center">
+                <p className="mt-5 text-sm text-ink-soft text-center">
                     ¿Ya tenés cuenta?{" "}
                     <Link to="/login" className="text-ink font-semibold underline underline-offset-2">
                         Iniciar sesión
