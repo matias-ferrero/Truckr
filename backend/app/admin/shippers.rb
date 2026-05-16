@@ -1,6 +1,5 @@
 ActiveAdmin.register Shipper do
-  actions :index, :show
-  config.batch_actions = false
+  permit_params :user_id, :company_name, :tax_id, :billing_address
 
   filter :user_email, as: :string, label: "User email"
   filter :company_name
@@ -27,5 +26,15 @@ ActiveAdmin.register Shipper do
       row :created_at
       row :updated_at
     end
+  end
+
+  form do |f|
+    f.inputs do
+      f.input :user
+      f.input :company_name
+      f.input :tax_id
+      f.input :billing_address
+    end
+    f.actions
   end
 end

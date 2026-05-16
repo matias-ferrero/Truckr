@@ -1,5 +1,6 @@
 ActiveAdmin.register TransportWindow do
-  actions :index, :show
+  permit_params :vehicle_id, :origin_zone, :destination_zone, :price_per_km,
+                :max_km, :active, :available_from, :available_to
 
   filter :vehicle
   filter :origin_zone
@@ -38,5 +39,19 @@ ActiveAdmin.register TransportWindow do
       row :created_at
       row :updated_at
     end
+  end
+
+  form do |f|
+    f.inputs do
+      f.input :vehicle
+      f.input :origin_zone
+      f.input :destination_zone
+      f.input :price_per_km, min: 0
+      f.input :max_km
+      f.input :active
+      f.input :available_from
+      f.input :available_to
+    end
+    f.actions
   end
 end

@@ -1,6 +1,6 @@
 ActiveAdmin.register Carrier do
-  actions :index, :show
-  config.batch_actions = false
+  permit_params :user_id, :legal_name, :tax_id, :base_city, :province, :description,
+                :rating_avg, :reviews_count, :completed_shipments
 
   filter :user_email, as: :string, label: "User email"
   filter :legal_name
@@ -44,5 +44,20 @@ ActiveAdmin.register Carrier do
         column :gps_enabled
       end
     end
+  end
+
+  form do |f|
+    f.inputs do
+      f.input :user
+      f.input :legal_name
+      f.input :tax_id
+      f.input :base_city
+      f.input :province
+      f.input :description
+      f.input :rating_avg
+      f.input :reviews_count
+      f.input :completed_shipments
+    end
+    f.actions
   end
 end

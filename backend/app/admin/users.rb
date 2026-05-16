@@ -1,6 +1,6 @@
 ActiveAdmin.register User do
-  actions :index, :show
-  config.batch_actions = false
+  permit_params :email, :full_name, :phone, :verified_at,
+                :password, :password_confirmation
 
   filter :email
   filter :full_name
@@ -43,6 +43,30 @@ ActiveAdmin.register User do
       row :updated_at
       row :carrier
       row :shipper
+    end
+  end
+
+  form do |f|
+    f.inputs do
+      f.input :email
+      f.input :full_name
+      f.input :phone
+      f.input :verified_at
+      f.input :password, hint: f.object.persisted? ? "Leave blank to keep current password" : nil
+      f.input :password_confirmation
+    end
+    f.actions
+  end
+
+  # Devise requires a password on create but not on update; drop blank password
+  # fields so editing a user without changing their password works.
+  controller do
+    def update
+      if params[:user][:password].blank?
+        params[:user].delete(:password)
+        params[:user].delete(:password_confirmation)
+      end
+      super
     end
   end
 

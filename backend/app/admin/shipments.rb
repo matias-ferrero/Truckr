@@ -1,5 +1,6 @@
 ActiveAdmin.register Shipment do
-  actions :index, :show
+  permit_params :quote_id, :status, :picked_up_at, :delivered_at, :settled_at,
+                :cancelled_at, :cancellation_reason, :discarded_at
   config.sort_order = "created_at_desc"
 
   filter :status, as: :select, collection: Shipment::STATUSES
@@ -58,5 +59,19 @@ ActiveAdmin.register Shipment do
         para "No route calculated yet."
       end
     end
+  end
+
+  form do |f|
+    f.inputs do
+      f.input :quote
+      f.input :status, as: :select, collection: Shipment::STATUSES
+      f.input :picked_up_at
+      f.input :delivered_at
+      f.input :settled_at
+      f.input :cancelled_at
+      f.input :cancellation_reason
+      f.input :discarded_at
+    end
+    f.actions
   end
 end
