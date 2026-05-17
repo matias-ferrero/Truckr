@@ -41,6 +41,27 @@ export const handlers: RequestHandler[] = [
         return HttpResponse.json(meBody("me@example.com", "Test User", ["shipper"]));
     }),
 
+    // Default PATCH /me: echoes the patched fields onto a shipper Me.
+    // Individual tests override this with server.use() for richer
+    // scenarios (422 duplicate email, verified_at reset, etc.).
+    http.patch(`${API}/api/auth/me`, async ({ request }) => {
+        if (!request.headers.get("Authorization")) {
+            return HttpResponse.json(
+                { error: { code: "unauthorized", message: "Autenticación requerida" } },
+                { status: 401 },
+            );
+        }
+        const body = (await request.json()) as Partial<{
+            name: string;
+            email: string;
+            phone: string;
+        }>;
+        return HttpResponse.json({
+            ...meBody(body.email ?? "me@example.com", body.name ?? "Test User", ["shipper"]),
+            phone: body.phone ?? null,
+        });
+    }),
+
     http.post(`${API}/api/auth/login`, async ({ request }) => {
         const body = (await request.json()) as LoginBody;
         const { email, password } = body.user ?? {};

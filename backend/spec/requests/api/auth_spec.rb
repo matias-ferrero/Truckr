@@ -119,5 +119,110 @@ RSpec.describe "Api::Auth", type: :request do
         end
       end
     end
+
+    patch "Updates the current user's personal data (US3)" do
+      tags "Auth"
+      consumes "application/json"
+      produces "application/json"
+      security [ bearer_auth: [] ]
+      parameter name: :Authorization, in: :header, type: :string, required: true
+      parameter name: :payload, in: :body, schema: {
+        type: :object,
+        properties: {
+          name:  { type: :string },
+          email: { type: :string },
+          phone: { type: :string }
+        }
+      }
+
+      # rswag writes the *last* description for each status code into the yaml.
+      # Keep this ordering: the final 200 and final 422 descriptions must
+      # match what is committed in swagger.yaml verbatim.
+
+      response "200", "name and phone updated — verified_at unchanged" do
+        let(:user) { create(:user, :verified, full_name: "Old Name", phone: "+5491100000000", password: "Password1") }
+        let(:Authorization) { "Bearer #{Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first}" }
+        let(:payload) { { name: "New Name", phone: "+5491111111111" } }
+        schema "$ref" => "#/components/schemas/Me"
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body["full_name"]).to eq("New Name")
+          expect(body["phone"]).to eq("+5491111111111")
+          # `verified_at` must NOT reset when only name/phone change.
+          expect(body["verified_at"]).not_to be_nil
+
+          user.reload
+          expect(user.full_name).to eq("New Name")
+          expect(user.phone).to eq("+5491111111111")
+        end
+      end
+
+      response "200", "same email submitted — verified_at unchanged" do
+        let(:user) { create(:user, :verified, email: "same@example.com", password: "Password1") }
+        let(:Authorization) { "Bearer #{Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first}" }
+        let(:payload) { { email: "SAME@example.com", name: "Same Person" } }
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body["email"]).to eq("same@example.com")
+          expect(body["verified_at"]).not_to be_nil
+        end
+      end
+
+      # Last 200 — its description is written to swagger.yaml verbatim.
+      response "200", "ok — returns updated user (email change also resets verified_at)" do
+        let(:user) { create(:user, :verified, email: "old@example.com", password: "Password1") }
+        let(:Authorization) { "Bearer #{Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first}" }
+        let(:payload) { { email: "new@example.com" } }
+        schema "$ref" => "#/components/schemas/Me"
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body["email"]).to eq("new@example.com")
+          expect(body["verified_at"]).to be_nil
+          expect(user.reload.verified_at).to be_nil
+        end
+      end
+
+      response "422", "invalid email format" do
+        let(:user) { create(:user, password: "Password1") }
+        let(:Authorization) { "Bearer #{Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first}" }
+        let(:payload) { { email: "not-an-email" } }
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body["error"]["code"]).to eq("unprocessable")
+          expect(body["error"]["details"]).to have_key("email")
+        end
+      end
+
+      # Last 422 — its description is written to swagger.yaml verbatim.
+      response "422", "validation error — duplicate email or invalid format" do
+        before { create(:user, email: "taken@example.com") }
+        let(:user) { create(:user, email: "mine@example.com", password: "Password1") }
+        let(:Authorization) { "Bearer #{Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first}" }
+        let(:payload) { { email: "taken@example.com" } }
+        schema "$ref" => "#/components/schemas/ErrorEnvelope"
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body["error"]["code"]).to eq("unprocessable")
+          expect(body["error"]["details"]).to have_key("email")
+          # Email is unchanged on the record.
+          expect(user.reload.email).to eq("mine@example.com")
+        end
+      end
+
+      response "401", "anonymous" do
+        let(:Authorization) { "" }
+        let(:payload) { { name: "X" } }
+        schema "$ref" => "#/components/schemas/ErrorEnvelope"
+
+        run_test! do |response|
+          expect(JSON.parse(response.body)["error"]["code"]).to eq("unauthorized")
+        end
+      end
+    end
   end
 end

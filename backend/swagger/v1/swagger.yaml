@@ -72,6 +72,49 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorEnvelope"
+    patch:
+      summary: Updates the current user's personal data (US3)
+      tags:
+      - Auth
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ok — returns updated user (email change also resets verified_at)
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Me"
+        '422':
+          description: validation error — duplicate email or invalid format
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorEnvelope"
+        '401':
+          description: anonymous
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorEnvelope"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                phone:
+                  type: string
   "/api/carriers/me/transport_windows":
     get:
       summary: list my transport windows

@@ -56,8 +56,8 @@ describe("Header", () => {
         renderHeader("/");
         await waitFor(() => expect(screen.getByText("Logged")).toBeInTheDocument());
         expect(screen.getByRole("button", { name: /salir/i })).toBeInTheDocument();
-        // Shippers see a non-interactive name chip (no profile screen exists for them yet)
-        expect(screen.queryByRole("link", { name: /perfil de logged/i })).toBeNull();
+        // Shippers see a non-interactive name chip (no public profile exists for them yet)
+        expect(screen.queryByRole("link", { name: /perfil público de logged/i })).toBeNull();
         expect(screen.queryByRole("link", { name: /sesión como logged/i })).toBeNull();
     });
 
@@ -79,7 +79,7 @@ describe("Header", () => {
 
         renderHeader("/");
         await waitFor(() => expect(screen.getByText("Carrier User")).toBeInTheDocument());
-        expect(screen.getByRole("link", { name: /perfil de carrier user/i }))
+        expect(screen.getByRole("link", { name: /perfil público de carrier user/i }))
             .toHaveAttribute("href", "/carriers/me");
     });
 

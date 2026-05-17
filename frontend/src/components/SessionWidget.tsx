@@ -32,7 +32,7 @@ export function SessionWidget() {
                     <Link
                         to="/carriers/me"
                         className="appHeaderProfile"
-                        aria-label={`Perfil de ${displayName}`}
+                        aria-label={`Perfil público de ${displayName}`}
                     >
                         {displayName}
                     </Link>
@@ -44,6 +44,9 @@ export function SessionWidget() {
                         {displayName}
                     </span>
                 )}
+                <Link to="/profile" className="appHeaderLink">
+                    Mi perfil
+                </Link>
                 <Button variant="ghost" size="sm" onClick={onLogout}>
                     Salir
                 </Button>

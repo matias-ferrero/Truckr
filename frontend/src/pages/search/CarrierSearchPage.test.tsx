@@ -65,7 +65,14 @@ describe("CarrierSearchPage", () => {
         window.history.pushState({}, "", "/transport_windows/search");
         render(<AppRoutes />);
 
-        const originInput = await screen.findByLabelText("Zona de origen");
+        // CarrierSearchPage is a React.lazy() route in routes.tsx, so the
+        // first label query needs to outlast Vite's on-demand transform
+        // of the chunk. The default 1000ms findBy* timeout is enough on
+        // CI Linux but not on WSL2 with the repo mounted from NTFS, where
+        // module transforms take ~1.3s and the test fails before the
+        // <Suspense> fallback resolves. Bump only this first probe — the
+        // chunk is warm in cache for everything after it.
+        const originInput = await screen.findByLabelText("Zona de origen", undefined, { timeout: 5000 });
         const destinationInput = await screen.findByLabelText("Zona de destino");
         const dateFromInput = await screen.findByLabelText("Retiro desde");
         const dateToInput = await screen.findByLabelText("Retiro hasta");
@@ -104,7 +111,10 @@ describe("CarrierSearchPage", () => {
         );
         render(<AppRoutes />);
 
-        const originInput = await screen.findByLabelText("Zona de origen");
+        // Same lazy-chunk caveat as the first test; the chunk happens to
+        // be warm here because the previous test loaded it, but don't
+        // rely on test ordering — keep the generous timeout.
+        const originInput = await screen.findByLabelText("Zona de origen", undefined, { timeout: 5000 });
         expect(originInput).toHaveValue("Tigre");
         expect(await screen.findByLabelText("Zona de destino")).toHaveValue("Belgrano");
         expect(await screen.findByText("Fletes del Centro")).toBeInTheDocument();

@@ -4,6 +4,7 @@ import LandingPage from "./App";
 import { AuthProvider } from "./auth/AuthContext";
 import { Header } from "./components/Header";
 import RequireCarrier from "./auth/RequireCarrier";
+import RequireAuth from "./auth/RequireAuth";
 import { useCurrentUser } from "./auth/useCurrentUser";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
 
@@ -17,6 +18,7 @@ const TransportWindowList   = lazy(() => import("./pages/carrier/TransportWindow
 const TransportWindowForm   = lazy(() => import("./pages/carrier/TransportWindowForm"));
 const CarrierDetail = lazy(() => import("./pages/public/CarrierDetail"));
 const CarrierMeRedirect = lazy(() => import("./pages/public/CarrierMeRedirect"));
+const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
 
 function AuthShell({ children }: { children: React.ReactNode }) {
     return (
@@ -127,6 +129,16 @@ export function AppRoutes() {
                         <Route path="/carriers/me" element={<CarrierMeRedirect />} />
                         <Route path="/carriers/:id" element={<CarrierDetail />} />
                     </Route>
+                    <Route
+                        path="/profile"
+                        element={
+                            <RequireAuth>
+                                <AuthShell>
+                                    <ProfilePage />
+                                </AuthShell>
+                            </RequireAuth>
+                        }
+                    />
                     <Route path="*" element={<IndexRoute />} />
                 </Routes>
             </AuthProvider>

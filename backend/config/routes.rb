@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   namespace :api do
     post "auth/register", to: "auth#register"
     get  "auth/me",       to: "auth#me"
+    patch "auth/me",      to: "auth#update_me"
 
     # Sessions inherit from Devise::SessionsController and so must live
     # inside a devise_scope block — Warden + devise-jwt need the scope to

@@ -70,6 +70,10 @@ export function DashboardPage() {
                             <IconArrowRight />
                         </Link>
                     )}
+                    <Link to="/profile" className="dashboardHeroLink">
+                        Editar mi perfil
+                        <IconArrowRight />
+                    </Link>
                 </header>
 
                 {!isCarrier && <TransportWindowSearchSection />}

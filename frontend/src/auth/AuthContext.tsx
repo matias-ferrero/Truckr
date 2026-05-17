@@ -23,12 +23,19 @@ export type RegisterInput = {
 
 export type LoginInput = { email: string; password: string };
 
+export type UpdateProfileInput = {
+    name?: string;
+    email?: string;
+    phone?: string;
+};
+
 export type AuthState = {
     me: Me | null;
     loading: boolean;
     register: (input: RegisterInput) => Promise<void>;
     login: (input: LoginInput) => Promise<void>;
     logout: () => Promise<void>;
+    updateMe: (input: UpdateProfileInput) => Promise<Me>;
 };
 
 export const AuthContext = createContext<AuthState | undefined>(undefined);
@@ -93,8 +100,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const updateMe: AuthState["updateMe"] = async (input) => {
+        // PATCH /api/auth/me — wire shape mirrors register (`name` instead
+        // of `full_name`). The backend echoes back a full MeResource, so
+        // we refresh local state from the response rather than merging
+        // optimistically: roles, verified_at, and nested carrier/shipper
+        // can change as a side-effect of the patch (email reset, etc.).
+        const next = await apiFetch<Me>("/api/auth/me", {
+            method: "PATCH",
+            body: input,
+        });
+        setMe(next);
+        return next;
+    };
+
     return (
-        <AuthContext.Provider value={{ me, loading, register, login, logout }}>
+        <AuthContext.Provider value={{ me, loading, register, login, logout, updateMe }}>
             {children}
         </AuthContext.Provider>
     );
