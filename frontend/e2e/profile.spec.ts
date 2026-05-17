@@ -20,12 +20,16 @@ test("user edits their name on /profile and the change persists across reload", 
     await page.fill("#passwordConfirm", password);
     await page.check("#role-shipper");
     await page.getByRole("button", { name: /^crear cuenta$/i }).click();
-    // Wait until the dashboard recognises us — the email chip shows up
-    // once /api/auth/me resolves with the just-issued JWT.
-    await expect(page.getByText(email)).toBeVisible();
+    // Wait until the dashboard recognises us — the header profile link
+    // (labelled "Mi perfil — <name>") shows up once /api/auth/me resolves
+    // with the just-issued JWT.
+    const headerProfileLink = page
+        .getByRole("banner")
+        .getByRole("link", { name: /^mi perfil — original name$/i });
+    await expect(headerProfileLink).toBeVisible();
 
-    // 2. Navigate to /profile via the header link.
-    await page.getByRole("banner").getByRole("link", { name: /^mi perfil$/i }).click();
+    // 2. Navigate to /profile via the single header profile entry point.
+    await headerProfileLink.click();
     await expect(page).toHaveURL(/\/profile/);
     await expect(page.getByRole("heading", { name: /^mi perfil$/i })).toBeVisible();
 

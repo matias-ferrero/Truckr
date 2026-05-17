@@ -10,6 +10,7 @@ export const publicContent = {
         notFoundTitle: "Transportista no encontrado",
         notFoundLead: "El perfil que buscás no existe o ya no está disponible.",
         backToSearch: "Volver a la búsqueda",
+        editProfile: "Editar mi perfil",
         ratingLabel: (avg: string, count: number) =>
             count === 0
                 ? "Sin reseñas todavía"

@@ -61,19 +61,6 @@ export function DashboardPage() {
                             ? "Acá vas a ver tus viajes, tu disponibilidad y los vehículos que tenés cargados."
                             : "Acá vas a ver tus viajes y solicitudes de cotización."}
                     </p>
-                    <span className="dashboardHeroAccount" aria-label={`Sesión iniciada como ${me.email}`}>
-                        <IconUser /> {me.email}
-                    </span>
-                    {isCarrier && (
-                        <Link to="/carriers/me" className="dashboardHeroLink">
-                            Ver mi perfil público
-                            <IconArrowRight />
-                        </Link>
-                    )}
-                    <Link to="/profile" className="dashboardHeroLink">
-                        Editar mi perfil
-                        <IconArrowRight />
-                    </Link>
                 </header>
 
                 {!isCarrier && <TransportWindowSearchSection />}
@@ -269,15 +256,6 @@ function IconPlus() {
     return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M12 5v14M5 12h14" />
-        </svg>
-    );
-}
-
-function IconUser() {
-    return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="8" r="3.5" />
-            <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
         </svg>
     );
 }

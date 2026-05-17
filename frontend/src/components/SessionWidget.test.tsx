@@ -46,14 +46,14 @@ describe("SessionWidget", () => {
         const user = userEvent.setup();
         renderWidget();
 
-        // Carrier display name shown as a link to their public profile
+        // Carrier display name is the single profile entry point and
+        // points at the public profile (which links to /profile to edit).
         const profileLink = await screen.findByRole("link", { name: /perfil público de wanda/i });
         expect(profileLink).toHaveAttribute("href", "/carriers/me");
         expect(profileLink).toHaveTextContent("Wanda");
 
-        // Account settings link is shown for any authenticated user.
-        const accountLink = screen.getByRole("link", { name: /mi perfil/i });
-        expect(accountLink).toHaveAttribute("href", "/profile");
+        // No redundant "Mi perfil" link — the name button is the entry point.
+        expect(screen.queryByRole("link", { name: /^mi perfil$/i })).toBeNull();
 
         await user.click(screen.getByRole("button", { name: /salir/i }));
         await waitFor(() =>
@@ -61,7 +61,7 @@ describe("SessionWidget", () => {
         );
     });
 
-    it("renders a non-link chip for shippers (no public profile)", async () => {
+    it("points the shipper's name link straight at /profile (no public show page)", async () => {
         server.use(
             http.get(`${API}/api/auth/me`, () =>
                 HttpResponse.json({
@@ -79,12 +79,10 @@ describe("SessionWidget", () => {
 
         renderWidget();
 
-        await waitFor(() => expect(screen.getByText("Sam")).toBeInTheDocument());
+        const nameLink = await screen.findByRole("link", { name: /mi perfil — sam/i });
+        expect(nameLink).toHaveAttribute("href", "/profile");
+        expect(nameLink).toHaveTextContent("Sam");
+        // Shippers have no public profile, so no carrier link should render.
         expect(screen.queryByRole("link", { name: /perfil público de sam/i })).toBeNull();
-        expect(screen.getByLabelText(/sesión como sam/i)).toBeInTheDocument();
-
-        // Shippers also get a Mi perfil link to /profile.
-        const accountLink = screen.getByRole("link", { name: /mi perfil/i });
-        expect(accountLink).toHaveAttribute("href", "/profile");
     });
 });

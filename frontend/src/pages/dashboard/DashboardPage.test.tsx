@@ -103,17 +103,20 @@ describe("DashboardPage", () => {
         expect(container.firstChild).toBeNull();
     });
 
-    it("renders the shipper view: greeting, role eyebrow, account email, carrier-search section, and trips — no carrier-only sections", () => {
+    it("renders the shipper view: greeting, role eyebrow, carrier-search section, and trips — no carrier-only sections, no redundant profile CTAs in the hero", () => {
         mockMe(fakeMe({ roles: ["shipper"], full_name: "Ana García", email: "ana@example.com" }));
         renderPage();
 
         expect(screen.getByRole("heading", { level: 1, name: /hola, ana/i })).toBeInTheDocument();
         expect(screen.getByText(/panel · expedidor/i)).toBeInTheDocument();
-        expect(screen.getByText("ana@example.com")).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /encontrá un transportista/i })).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mis viajes/i })).toBeInTheDocument();
         expect(screen.queryByRole("heading", { level: 2, name: /mi disponibilidad/i })).toBeNull();
         expect(screen.queryByRole("heading", { level: 2, name: /mi flota/i })).toBeNull();
+        // Profile entry lives in the header now; the hero must not duplicate it.
+        expect(screen.queryByText("ana@example.com")).toBeNull();
+        expect(screen.queryByRole("link", { name: /editar mi perfil/i })).toBeNull();
+        expect(screen.queryByRole("link", { name: /ver mi perfil público/i })).toBeNull();
     });
 
     it("does not render the carrier-search section in the carrier view", async () => {

@@ -11,15 +11,18 @@ const API = "http://localhost:3000";
 
 // Helper that mounts ProfilePage with a pre-seeded JWT, so the auth
 // bootstrap inside AuthProvider succeeds and the page actually
-// hydrates from the GET /me handler.
+// hydrates from the GET /me handler. The "/previous" entry sits below
+// "/profile" in history so a Cancel click (navigate(-1)) lands on a
+// recognisable sentinel route.
 function renderProfile() {
     window.localStorage.setItem("truckr.jwt", "header.payload.signature");
     return render(
-        <MemoryRouter initialEntries={["/profile"]}>
+        <MemoryRouter initialEntries={["/previous", "/profile"]} initialIndex={1}>
             <AuthProvider>
                 <Routes>
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/carrier/vehicles" element={<div>vehicles</div>} />
+                    <Route path="/previous" element={<div>previous page</div>} />
                 </Routes>
             </AuthProvider>
         </MemoryRouter>,
@@ -191,22 +194,31 @@ describe("ProfilePage", () => {
         expect(await screen.findByText(/ya está en uso/i)).toBeInTheDocument();
     });
 
-    it("Descartar resets the form back to the server values", async () => {
+    it("Cancelar navigates back to the previous page without saving", async () => {
         server.use(http.get(`${API}/api/auth/me`, () => HttpResponse.json(shipperMe())));
 
         const user = userEvent.setup();
         renderProfile();
 
+        // Type a change so we can prove Cancel doesn't persist it.
         const nameInput = await screen.findByLabelText(/nombre completo/i);
         await user.clear(nameInput);
         await user.type(nameInput, "Otro Nombre");
-        expect(nameInput).toHaveValue("Otro Nombre");
 
-        await user.click(screen.getByRole("button", { name: /descartar/i }));
-        expect(nameInput).toHaveValue("Ana Pérez");
+        await user.click(screen.getByRole("button", { name: /^cancelar$/i }));
 
-        // Save is back to disabled because there's nothing dirty anymore.
-        expect(screen.getByRole("button", { name: /^guardar cambios$/i })).toBeDisabled();
+        // History rewinds to the previous entry — the profile form is gone.
+        await waitFor(() => expect(screen.getByText("previous page")).toBeInTheDocument());
+        expect(screen.queryByLabelText(/nombre completo/i)).toBeNull();
+    });
+
+    it("Cancelar is enabled even when the form has no unsaved changes", async () => {
+        server.use(http.get(`${API}/api/auth/me`, () => HttpResponse.json(shipperMe())));
+
+        renderProfile();
+
+        const cancelBtn = await screen.findByRole("button", { name: /^cancelar$/i });
+        expect(cancelBtn).toBeEnabled();
     });
 
     it("shows the carrier-vehicle link block only for carriers", async () => {

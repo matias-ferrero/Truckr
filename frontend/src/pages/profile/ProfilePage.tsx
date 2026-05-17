@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ApiError } from "../../api";
 import { useCurrentUser } from "../../auth/useCurrentUser";
 import { Alert } from "../../components/ui/alert";
@@ -63,10 +63,11 @@ function diff(initial: Draft, current: Draft) {
 
 export default function ProfilePage() {
     const { me, loading, updateMe } = useCurrentUser();
+    const navigate = useNavigate();
 
     // `initial` is the last server-confirmed snapshot; `draft` is what
-    // the user has typed. Dirty-state and Discard both compare against
-    // `initial`, so a successful save re-baselines both.
+    // the user has typed. Dirty-state compares against `initial`, so a
+    // successful save re-baselines both.
     const [initial, setInitial] = useState<Draft | null>(null);
     const [draft, setDraft] = useState<Draft | null>(null);
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -126,11 +127,11 @@ export default function ProfilePage() {
         }
     };
 
-    const handleDiscard = () => {
-        setDraft(initial);
-        setFieldErrors({});
-        setServerError(null);
-        setSavedMessage(null);
+    const handleCancel = () => {
+        // Walk back to wherever the user came from (carrier show page,
+        // dashboard, etc.). The header is the only entry point for the
+        // edit form, so there's always a prior history entry to return to.
+        navigate(-1);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -148,8 +149,8 @@ export default function ProfilePage() {
         try {
             const next = await updateMe(patch);
             // Re-baseline from the server response (canonicalised email,
-            // trimmed strings, etc.) so future Discard/dirty checks are
-            // honest about what's persisted.
+            // trimmed strings, etc.) so future dirty checks are honest
+            // about what's persisted.
             const persisted = draftFromMe(next);
             setInitial(persisted);
             setDraft(persisted);
@@ -311,10 +312,10 @@ export default function ProfilePage() {
                         <Button
                             type="button"
                             variant="ghost"
-                            onClick={handleDiscard}
-                            disabled={!dirty || submitting}
+                            onClick={handleCancel}
+                            disabled={submitting}
                         >
-                            {c.submit.discard}
+                            {c.submit.cancel}
                         </Button>
                     </div>
                 </form>

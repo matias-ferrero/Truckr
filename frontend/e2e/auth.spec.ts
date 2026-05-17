@@ -25,16 +25,21 @@ test("register → reload → logout → reload → login → reload", async ({ 
     await page.fill("#passwordConfirm", password);
     await page.check("#role-shipper");
     await page.getByRole("button", { name: /^crear cuenta$/i }).click();
-    await expect(page.getByText(email)).toBeVisible();
+    // The header's "Salir" button is the SessionWidget's authenticated-state
+    // signal — name-independent and survives future header refactors. (The
+    // old email-pill probe broke when the dashboard CTAs were consolidated
+    // into the single header name button.)
+    const salirBtn = page.getByRole("button", { name: /salir/i });
+    await expect(salirBtn).toBeVisible();
 
-    // 2. Token survives a full reload — SessionWidget still shows the email.
+    // 2. Token survives a full reload — Salir is still there.
     await page.reload();
-    await expect(page.getByText(email)).toBeVisible();
+    await expect(salirBtn).toBeVisible();
     const jwtAfterRegister = await page.evaluate(() => localStorage.getItem("truckr.jwt"));
     expect(jwtAfterRegister).toMatch(/^[\w-]+\.[\w-]+\.[\w-]+$/);
 
     // 3. Logout — redirected to /login; token gone from storage.
-    await page.getByRole("button", { name: /salir/i }).click();
+    await salirBtn.click();
     await expect(page).toHaveURL(/\/login/);
     const jwtAfterLogout = await page.evaluate(() => localStorage.getItem("truckr.jwt"));
     expect(jwtAfterLogout).toBeNull();
@@ -48,11 +53,11 @@ test("register → reload → logout → reload → login → reload", async ({ 
     await page.fill("#email", email);
     await page.fill("#password", password);
     await page.getByRole("button", { name: /^iniciar sesión$/i }).click();
-    await expect(page.getByText(email)).toBeVisible();
+    await expect(salirBtn).toBeVisible();
 
     // 6. Token from the new login survives a reload too.
     await page.reload();
-    await expect(page.getByText(email)).toBeVisible();
+    await expect(salirBtn).toBeVisible();
     const jwtAfterLogin = await page.evaluate(() => localStorage.getItem("truckr.jwt"));
     expect(jwtAfterLogin).toMatch(/^[\w-]+\.[\w-]+\.[\w-]+$/);
 });

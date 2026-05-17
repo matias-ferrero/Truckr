@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CarrierDetail as CarrierDetailDto, getCarrier } from "../../api/carriers";
 import { ApiError } from "../../api";
 import { publicContent } from "./publicContent";
 import { Button, buttonVariants } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
+import { AuthContext } from "../../auth/AuthContext";
 
 const t = publicContent.carrierDetail;
 
@@ -28,6 +29,11 @@ type CarrierState =
 export default function CarrierDetail() {
     const params = useParams<{ id: string }>();
     const carrierId = Number(params.id);
+    // Read context directly (not via the throwing hook) so the page
+    // works when rendered without an AuthProvider — e.g. unit tests
+    // and public visitors who haven't logged in yet.
+    const auth = useContext(AuthContext);
+    const myCarrierId = (auth?.me?.carrier as { id?: number } | null | undefined)?.id;
 
     const [state, setState] = useState<CarrierState>({ status: "loading" });
     const [reloadKey, setReloadKey] = useState(0);
@@ -109,6 +115,7 @@ export default function CarrierDetail() {
 
     const { carrier } = state;
     const ratingNum = Number(carrier.rating_avg);
+    const isOwner = myCarrierId === carrier.id;
 
     return (
         <main className="page publicMain" id="main">
@@ -118,6 +125,14 @@ export default function CarrierDetail() {
                         <h1 id="carrier-name" className="sectionTitle">
                             {carrier.legal_name ?? `#${carrier.id}`}
                         </h1>
+                        {isOwner && (
+                            <Link
+                                to="/profile"
+                                className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "w-fit")}
+                            >
+                                {t.editProfile}
+                            </Link>
+                        )}
                         <div className="carrierHeroMeta">
                             <Stars rating={ratingNum} />
                             <span className="carrierHeroRating">

@@ -56,9 +56,12 @@ describe("Header", () => {
         renderHeader("/");
         await waitFor(() => expect(screen.getByText("Logged")).toBeInTheDocument());
         expect(screen.getByRole("button", { name: /salir/i })).toBeInTheDocument();
-        // Shippers see a non-interactive name chip (no public profile exists for them yet)
+        // Shippers' name button is the single profile entry point → /profile.
         expect(screen.queryByRole("link", { name: /perfil público de logged/i })).toBeNull();
-        expect(screen.queryByRole("link", { name: /sesión como logged/i })).toBeNull();
+        expect(screen.getByRole("link", { name: /mi perfil — logged/i }))
+            .toHaveAttribute("href", "/profile");
+        // No standalone "Mi perfil" link; the name button replaces it.
+        expect(screen.queryByRole("link", { name: /^mi perfil$/i })).toBeNull();
     });
 
     it("points the profile chip at /carriers/me for carriers", async () => {

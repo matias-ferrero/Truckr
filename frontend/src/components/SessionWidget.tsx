@@ -4,10 +4,10 @@ import { Button } from "./ui/button";
 
 /**
  * Auth-state chip used by both the dashboard `Header` and the landing
- * topbar. Renders the user's display name + logout when signed in, or
- * login / register links otherwise. Carriers get a link to their public
- * profile; shippers see a non-interactive name chip (no profile screen
- * exists for them yet).
+ * topbar. The user's name acts as the single profile entry point:
+ * carriers go to their public profile (which links to /profile for
+ * edit), shippers go directly to /profile (no public show page exists).
+ * Anonymous users see login / register links instead.
  */
 export function SessionWidget() {
     const { me, loading, logout } = useCurrentUser();
@@ -26,26 +26,19 @@ export function SessionWidget() {
 
     if (me) {
         const displayName = me.full_name || me.email;
+        const isCarrier = me.roles.includes("carrier");
+        const profileHref = isCarrier ? "/carriers/me" : "/profile";
+        const profileLabel = isCarrier
+            ? `Perfil público de ${displayName}`
+            : `Mi perfil — ${displayName}`;
         return (
             <div className="appHeaderActions">
-                {me.roles.includes("carrier") ? (
-                    <Link
-                        to="/carriers/me"
-                        className="appHeaderProfile"
-                        aria-label={`Perfil público de ${displayName}`}
-                    >
-                        {displayName}
-                    </Link>
-                ) : (
-                    <span
-                        className="appHeaderProfile"
-                        aria-label={`Sesión como ${displayName}`}
-                    >
-                        {displayName}
-                    </span>
-                )}
-                <Link to="/profile" className="appHeaderLink">
-                    Mi perfil
+                <Link
+                    to={profileHref}
+                    className="appHeaderProfile"
+                    aria-label={profileLabel}
+                >
+                    {displayName}
                 </Link>
                 <Button variant="ghost" size="sm" onClick={onLogout}>
                     Salir

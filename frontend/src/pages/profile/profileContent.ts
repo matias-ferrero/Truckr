@@ -46,7 +46,7 @@ export const profileContent = {
     submit: {
         save: "Guardar cambios",
         saving: "Guardando…",
-        discard: "Descartar cambios",
+        cancel: "Cancelar",
     },
     feedback: {
         saved: "Datos actualizados correctamente.",
