@@ -62,6 +62,10 @@ frontend-build:
 frontend-preview:
     cd frontend && deno task preview
 
+# Lint frontend CSS against the DESIGN.md design-system rules (stylelint)
+frontend-lint-css:
+    cd frontend && deno task lint:css
+
 # Run frontend unit/component tests (Vitest, single run)
 frontend-test:
     cd frontend && deno task test:run

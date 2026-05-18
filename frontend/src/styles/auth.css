@@ -5,19 +5,10 @@
    own: the page wrapper, the suspense fallback shell, and the header. */
 
 .authPage {
-    --brand-primary: oklch(89% 0.06 235);
-    --brand-secondary: oklch(91% 0.07 95);
-    --brand-tertiary: oklch(75% 0.005 240);
-    --brand-error: oklch(72% 0.16 25);
-    --paper: oklch(99% 0.005 240);
-
-    --ink: oklch(18% 0.02 240);
-    --ink-2: color-mix(in oklab, var(--ink) 78%, white);
-    --ink-3: color-mix(in oklab, var(--ink) 62%, white);
-    --surface: var(--paper);
-    --surface-2: color-mix(in oklab, var(--paper) 92%, var(--brand-tertiary));
-    --page-bg: color-mix(in oklab, var(--brand-primary) 14%, var(--paper));
-    --border: color-mix(in oklab, var(--brand-tertiary) 70%, var(--paper));
+    /* Auth = the warm welcome. Cream surface holds the page; auth cards
+       float on the deeper Surface 2 so they have a tonal edge without
+       needing a heavy border. Tokens come from :root in global.css. */
+    --page-bg: var(--surface-2);
 
     background: var(--page-bg);
     color: var(--ink);
@@ -35,10 +26,11 @@
     padding: var(--space-7) var(--space-5);
 }
 
-/* Header */
+/* Header — deeper cream stamp, ink-tinted bottom rule keeps it grounded
+   instead of dissolving into the page surface below. */
 .appHeader {
-    background: color-mix(in oklab, var(--brand-primary, #bee4fa) 60%, var(--paper, #fff));
-    border-bottom: 1px solid var(--border, rgba(15, 23, 42, 0.12));
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -91,7 +83,7 @@
 }
 
 .appHeaderLink:hover {
-    background: color-mix(in oklab, var(--brand-primary) 50%, var(--paper));
+    background: color-mix(in oklab, var(--brand-primary) 28%, transparent);
 }
 
 @media (max-width: 480px) {
@@ -117,17 +109,19 @@
 }
 
 .appHeaderProfile {
-    color: var(--text, #000);
+    color: var(--ink);
     text-decoration: none;
-    font-weight: 500;
-    border: 2px solid var(--text, #000);
-    padding: 0.25rem 0.75rem;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    border: 1px solid var(--ink);
+    padding: 6px 14px;
     border-radius: 999px;
     margin-right: 0.5rem;
     display: inline-block;
+    transition: background-color 200ms var(--ease-out), color 200ms var(--ease-out);
 }
 
 .appHeaderProfile:hover {
-    background: var(--text, #000);
-    color: var(--surface-1, #fff);
+    background: var(--ink);
+    color: var(--brand-neutral);
 }

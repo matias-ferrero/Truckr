@@ -2,25 +2,33 @@
    Scoped on .dashboardPage so the sticky header inherits the brand vars. */
 
 .dashboardPage {
-    --brand-primary: oklch(89% 0.06 235);
-    --brand-secondary: oklch(91% 0.07 95);
-    --brand-tertiary: oklch(75% 0.005 240);
+    /* Dashboard = both voices, weighted to the user's role. Sky speaks for
+       the shipper search; cream speaks for the carrier inventory (mi flota,
+       mi disponibilidad). The page ground is a diagonal two-wash — sky from
+       the top-right, cream from the bottom-left — so the carrier sections
+       always sit on warmth and the shipper sections always sit on sky. The
+       per-section variants below pick up the matching voice. Status
+       semantics stay page-local; brand tokens inherit from :root. */
     --brand-success: oklch(72% 0.13 150);
     --brand-warning: oklch(78% 0.13 80);
-    --brand-error: oklch(72% 0.16 25);
-    --paper: oklch(99% 0.005 240);
+    --ink-4: color-mix(in oklab, var(--ink) 38%, var(--brand-neutral));
+    --page-bg: var(--surface);
+    --border-strong: color-mix(in oklab, var(--brand-primary) 55%, var(--ink));
 
-    --ink: oklch(18% 0.02 240);
-    --ink-2: color-mix(in oklab, var(--ink) 78%, white);
-    --ink-3: color-mix(in oklab, var(--ink) 62%, white);
-    --ink-4: color-mix(in oklab, var(--ink) 38%, white);
-    --surface: var(--paper);
-    --surface-2: color-mix(in oklab, var(--paper) 92%, var(--brand-tertiary));
-    --page-bg: color-mix(in oklab, var(--brand-primary) 14%, var(--paper));
-    --border: color-mix(in oklab, var(--brand-tertiary) 70%, var(--paper));
-    --border-strong: color-mix(in oklab, var(--brand-tertiary) 40%, var(--ink));
-
-    background: var(--page-bg);
+    background:
+        radial-gradient(
+            70% 55% at 92% -4%,
+            color-mix(in oklab, var(--brand-primary) 32%, transparent) 0%,
+            color-mix(in oklab, var(--brand-primary) 12%, transparent) 38%,
+            transparent 78%
+        ),
+        radial-gradient(
+            68% 60% at -4% 96%,
+            color-mix(in oklab, var(--brand-secondary) 38%, transparent) 0%,
+            color-mix(in oklab, var(--brand-secondary) 14%, transparent) 42%,
+            transparent 80%
+        ),
+        var(--page-bg);
     color: var(--ink);
     min-height: 100vh;
     display: flex;
@@ -51,11 +59,29 @@
 }
 
 .dashboardHeroEyebrow {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px 6px 10px;
+    border-radius: 999px;
+    background: var(--tint-cream);
+    border: 1px solid var(--border-cream);
+    font-family: var(--font-display);
     font-size: var(--text-xs);
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--ink-3);
+    color: var(--ink);
+}
+
+.dashboardHeroEyebrow::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 22%, transparent);
 }
 
 .dashboardHeroTitle {
@@ -105,8 +131,14 @@
     align-items: center;
     justify-content: center;
     border-radius: var(--radius-sm);
-    background: color-mix(in oklab, var(--brand-primary) 35%, var(--paper));
+    background: var(--tint-sky);
     color: var(--ink);
+}
+
+/* Carrier-voice variant — used on "Mi disponibilidad" and "Mi flota":
+   the carrier's own inventory deserves the honey stamp. */
+.dashboardSectionIcon--cream {
+    background: var(--tint-cream);
 }
 
 .dashboardSectionIcon svg {
@@ -176,7 +208,7 @@
 }
 
 .dashboardFilters button:focus-visible {
-    outline: 2px solid color-mix(in oklab, var(--brand-primary) 70%, white);
+    outline: 2px solid color-mix(in oklab, var(--brand-primary) 70%, var(--brand-neutral));
     outline-offset: 2px;
 }
 
@@ -195,10 +227,10 @@
     flex-direction: column;
     gap: var(--space-3);
     padding: var(--space-4);
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--brand-neutral);
+    border: 1px solid var(--border-sky);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 14px color-mix(in oklab, var(--brand-primary) 12%, transparent);
     text-decoration: none;
     color: inherit;
     transition: border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out),
@@ -207,13 +239,27 @@
 
 a.dashboardCard:hover,
 a.dashboardCard:focus-visible {
-    border-color: var(--border-strong);
-    box-shadow: var(--shadow-md);
+    border-color: color-mix(in oklab, var(--brand-primary) 80%, var(--ink));
+    box-shadow: 0 12px 28px color-mix(in oklab, var(--brand-primary) 22%, transparent);
     transform: translateY(-1px);
 }
 
+/* Carrier-voice card — used inside the carrier inventory sections
+   (Mi disponibilidad, Mi flota). Cream border + honey ambient lift,
+   so the carrier's own stuff visually lives on their voice. */
+.dashboardCard--cream {
+    border-color: var(--border-cream);
+    box-shadow: 0 4px 14px color-mix(in oklab, var(--brand-secondary) 16%, transparent);
+}
+
+a.dashboardCard--cream:hover,
+a.dashboardCard--cream:focus-visible {
+    border-color: color-mix(in oklab, var(--brand-secondary) 92%, var(--ink));
+    box-shadow: 0 12px 28px color-mix(in oklab, var(--brand-secondary) 28%, transparent);
+}
+
 a.dashboardCard:focus-visible {
-    outline: 2px solid color-mix(in oklab, var(--brand-primary) 70%, white);
+    outline: 2px solid color-mix(in oklab, var(--brand-primary) 70%, var(--brand-neutral));
     outline-offset: 2px;
 }
 
@@ -313,15 +359,15 @@ a.dashboardCard:focus-visible {
 }
 
 .statusBadge.pendiente {
-    background: color-mix(in oklab, var(--brand-warning) 20%, var(--paper));
-    color: color-mix(in oklab, var(--brand-warning) 30%, var(--ink));
-    border-color: color-mix(in oklab, var(--brand-warning) 35%, var(--border));
+    background: color-mix(in oklab, var(--brand-warning) 24%, var(--brand-neutral));
+    color: color-mix(in oklab, var(--brand-warning) 35%, var(--ink));
+    border-color: color-mix(in oklab, var(--brand-warning) 50%, var(--border));
 }
 
 .statusBadge.aceptado {
-    background: color-mix(in oklab, var(--brand-success) 18%, var(--paper));
-    color: color-mix(in oklab, var(--brand-success) 30%, var(--ink));
-    border-color: color-mix(in oklab, var(--brand-success) 35%, var(--border));
+    background: color-mix(in oklab, var(--brand-success) 22%, var(--brand-neutral));
+    color: color-mix(in oklab, var(--brand-success) 35%, var(--ink));
+    border-color: color-mix(in oklab, var(--brand-success) 50%, var(--border));
 }
 
 .statusBadge.pasado {
@@ -343,9 +389,17 @@ a.dashboardCard:focus-visible {
 
 .dashboardCardNew:hover,
 .dashboardCardNew:focus-visible {
-    border-color: color-mix(in oklab, var(--brand-primary) 60%, var(--ink));
-    background: color-mix(in oklab, var(--brand-primary) 8%, var(--paper));
+    border-color: color-mix(in oklab, var(--brand-primary) 70%, var(--ink));
+    background: color-mix(in oklab, var(--brand-primary) 18%, var(--brand-neutral));
     color: var(--ink);
+}
+
+/* Carrier-voice "new" tile — pairs with .dashboardCard--cream so the
+   carrier's add-actions stay in their own voice. */
+.dashboardCardNew--cream:hover,
+.dashboardCardNew--cream:focus-visible {
+    border-color: color-mix(in oklab, var(--brand-secondary) 90%, var(--ink));
+    background: color-mix(in oklab, var(--brand-secondary) 22%, var(--brand-neutral));
 }
 
 .dashboardCardNewIcon {
@@ -355,9 +409,18 @@ a.dashboardCard:focus-visible {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: color-mix(in oklab, var(--brand-primary) 30%, var(--paper));
+    background: var(--tint-sky);
     color: var(--ink);
     transition: background 180ms var(--ease-out);
+}
+
+.dashboardCardNewIcon--cream {
+    background: var(--tint-cream);
+}
+
+.dashboardCardNew--cream:hover .dashboardCardNewIcon,
+.dashboardCardNew--cream:focus-visible .dashboardCardNewIcon {
+    background: color-mix(in oklab, var(--brand-secondary) 88%, var(--brand-neutral));
 }
 
 .dashboardCardNewIcon svg {
@@ -376,7 +439,7 @@ a.dashboardCard:focus-visible {
 
 .dashboardCardNew:hover .dashboardCardNewIcon,
 .dashboardCardNew:focus-visible .dashboardCardNewIcon {
-    background: color-mix(in oklab, var(--brand-primary) 55%, var(--paper));
+    background: color-mix(in oklab, var(--brand-primary) 75%, var(--brand-neutral));
 }
 
 /* ---- Empty state ----------------------------------------------------- */
@@ -387,10 +450,18 @@ a.dashboardCard:focus-visible {
     align-items: center;
     gap: var(--space-4);
     padding: var(--space-4) var(--space-5);
-    background: var(--surface);
-    border: 1px dashed var(--border);
+    background: var(--brand-neutral);
+    border: 1px dashed var(--border-sky);
     border-radius: var(--radius-md);
     color: var(--ink-2);
+}
+
+/* When the empty state lives inside a carrier-voiced section, the
+   dashed border switches to cream so it doesn't fight the surrounding
+   honey card grid. */
+.dashboardSection:has(.dashboardCard--cream) .dashboardEmpty {
+    border-color: var(--border-cream);
+    background: color-mix(in oklab, var(--brand-neutral) 92%, var(--brand-secondary));
 }
 
 .dashboardEmptyIcon {

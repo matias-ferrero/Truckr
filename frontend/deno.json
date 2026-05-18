@@ -8,7 +8,8 @@
         "test:coverage": "deno run -A npm:vitest run --coverage",
         "test:e2e": "node ./node_modules/@playwright/test/cli.js test --project=chromium",
         "test:e2e:all": "node ./node_modules/@playwright/test/cli.js test",
-        "test:e2e:install": "deno run -A npm:playwright install --with-deps"
+        "test:e2e:install": "deno run -A npm:playwright install --with-deps",
+        "lint:css": "deno run -A npm:stylelint \"src/**/*.css\""
     },
     "imports": {
         "react": "npm:react@18.2.0",
@@ -30,7 +31,8 @@
         "@testing-library/jest-dom": "npm:@testing-library/jest-dom@6.6.3",
         "@testing-library/user-event": "npm:@testing-library/user-event@14.5.2",
         "msw": "npm:msw@2.7.0",
-        "@playwright/test": "npm:@playwright/test@1.49.1"
+        "@playwright/test": "npm:@playwright/test@1.49.1",
+        "stylelint": "npm:stylelint@16.10.0"
     },
     "nodeModulesDir": "auto"
 }

@@ -2,20 +2,12 @@
    the .carrierPage scope so headers and components stay visually consistent. */
 
 .publicPage {
-    --brand-primary: oklch(89% 0.06 235);
-    --brand-secondary: oklch(91% 0.07 95);
-    --brand-tertiary: oklch(75% 0.005 240);
-    --brand-error: oklch(72% 0.16 25);
-    --paper: oklch(99% 0.005 240);
-
-    --ink: oklch(18% 0.02 240);
-    --ink-2: color-mix(in oklab, var(--ink) 78%, white);
-    --ink-3: color-mix(in oklab, var(--ink) 62%, white);
-    --surface: var(--paper);
-    --surface-2: color-mix(in oklab, var(--paper) 92%, var(--brand-tertiary));
-    --page-bg: color-mix(in oklab, var(--brand-primary) 14%, var(--paper));
-    --border: color-mix(in oklab, var(--brand-tertiary) 70%, var(--paper));
-    --star: oklch(78% 0.16 85);
+    /* Public carrier profile = the visitor's lens. A shipper is evaluating
+       this carrier, so the page ground is Surface Cool (sky); the carrier's
+       hero card sits on the cream voice — their stamp inside the visitor's
+       sky frame. Brand tokens inherit from :root in global.css. */
+    --page-bg: var(--surface-cool);
+    --star: var(--brand-secondary);
 
     background: var(--page-bg);
     color: var(--ink);
@@ -35,14 +27,15 @@
 }
 
 .carrierHero {
-    background: var(--surface);
+    background: var(--surface-2);
+    border: 1px solid var(--border-cream);
     border-radius: 24px;
     padding: 28px;
     margin: 24px 0 16px;
     display: grid;
     gap: 16px;
     grid-template-columns: 1fr;
-    box-shadow: 0 8px 24px color-mix(in oklab, var(--ink) 8%, transparent);
+    box-shadow: 0 12px 32px color-mix(in oklab, var(--brand-secondary) 26%, transparent);
 }
 
 @media (min-width: 720px) {
@@ -86,13 +79,15 @@
     color: var(--star);
 }
 
-/* Sections */
+/* Sections — Paper White panels float on the sky page-bg so each block of
+   profile content reads as a discrete fact card the visitor is collecting. */
 .carrierSection {
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--brand-neutral);
+    border: 1px solid var(--border-sky);
     border-radius: 16px;
     padding: 20px;
     margin: 0 0 16px;
+    box-shadow: 0 4px 16px color-mix(in oklab, var(--brand-primary) 10%, transparent);
 }
 
 .carrierDescription {
@@ -122,7 +117,8 @@
     align-items: center;
     padding: 12px 14px;
     border-radius: 12px;
-    background: var(--surface-2);
+    background: var(--surface-cool);
+    border: 1px solid var(--border-sky);
     gap: 12px;
     flex-wrap: wrap;
 }

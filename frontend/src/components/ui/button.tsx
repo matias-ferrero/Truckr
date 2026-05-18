@@ -12,15 +12,18 @@ const buttonVariants = cva(
         variants: {
             variant: {
                 primary:
-                    "bg-ink text-paper border border-ink shadow-[0_8px_24px_color-mix(in_oklab,var(--color-ink)_18%,transparent)] " +
-                    "hover:-translate-y-px hover:shadow-[0_12px_28px_color-mix(in_oklab,var(--color-ink)_24%,transparent)] " +
-                    "hover:bg-[color-mix(in_oklab,var(--color-ink)_86%,var(--color-stamp))]",
+                    "bg-[color-mix(in_oklab,var(--color-brand-warm)_58%,var(--color-paper))] text-ink " +
+                    "border border-[color-mix(in_oklab,var(--color-brand-warm)_62%,var(--color-ink))] " +
+                    "shadow-[0_8px_24px_color-mix(in_oklab,var(--color-brand-warm)_22%,transparent)] " +
+                    "hover:-translate-y-px hover:shadow-[0_12px_28px_color-mix(in_oklab,var(--color-brand-warm)_30%,transparent)] " +
+                    "hover:bg-[color-mix(in_oklab,var(--color-brand-warm)_70%,var(--color-paper))] " +
+                    "hover:border-[color-mix(in_oklab,var(--color-brand-warm)_70%,var(--color-ink))]",
                 ghost:
                     "bg-transparent text-ink border border-ink " +
                     "hover:bg-[color-mix(in_oklab,var(--color-ink)_6%,transparent)]",
                 danger:
                     "bg-brand-error text-paper border border-brand-error " +
-                    "hover:bg-[color-mix(in_oklab,var(--color-brand-error)_88%,black)]",
+                    "hover:bg-[color-mix(in_oklab,var(--color-brand-error)_88%,var(--color-ink))]",
                 outline:
                     "bg-paper text-ink border border-stroke hover:bg-surface-warm",
             },

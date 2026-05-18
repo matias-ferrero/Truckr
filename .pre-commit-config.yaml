@@ -16,3 +16,9 @@ repos:
         language: system
         types: [file]
         files: \.typ$
+      - id: stylelint
+        name: stylelint (design-system enforcement)
+        entry: bash -c 'cd frontend && deno task lint:css'
+        language: system
+        files: ^frontend/src/.*\.css$
+        pass_filenames: false

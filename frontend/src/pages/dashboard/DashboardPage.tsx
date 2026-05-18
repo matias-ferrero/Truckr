@@ -90,7 +90,7 @@ export function DashboardPage() {
                         <section className="dashboardSection" aria-labelledby="section-availability">
                             <div className="dashboardSectionHeader">
                                 <div className="dashboardSectionHeading">
-                                    <span className="dashboardSectionIcon" aria-hidden="true"><IconCalendar /></span>
+                                    <span className="dashboardSectionIcon dashboardSectionIcon--cream" aria-hidden="true"><IconCalendar /></span>
                                     <h2 id="section-availability">Mi disponibilidad</h2>
                                     <span className="dashboardSectionCount" aria-label={`${windowsTotal} ventanas`}>
                                         {windowsTotal}
@@ -116,7 +116,7 @@ export function DashboardPage() {
                                         <Link
                                             key={w.id}
                                             to={`/carrier/availability/${w.id}`}
-                                            className="dashboardCard"
+                                            className="dashboardCard dashboardCard--cream"
                                         >
                                             <div className="dashboardCardHead">
                                                 <span className="dashboardCardEyebrow">{w.active ? "Publicada" : "Sin publicar"}</span>
@@ -132,8 +132,8 @@ export function DashboardPage() {
                                         </Link>
                                     ))
                                 )}
-                                <Link to="/carrier/availability/new" className="dashboardCard dashboardCardNew" aria-label="Nueva disponibilidad">
-                                    <span className="dashboardCardNewIcon" aria-hidden="true"><IconPlus /></span>
+                                <Link to="/carrier/availability/new" className="dashboardCard dashboardCard--cream dashboardCardNew dashboardCardNew--cream" aria-label="Nueva disponibilidad">
+                                    <span className="dashboardCardNewIcon dashboardCardNewIcon--cream" aria-hidden="true"><IconPlus /></span>
                                     <span className="dashboardCardNewLabel">Nueva disponibilidad</span>
                                 </Link>
                             </div>
@@ -142,7 +142,7 @@ export function DashboardPage() {
                         <section className="dashboardSection" aria-labelledby="section-vehicles">
                             <div className="dashboardSectionHeader">
                                 <div className="dashboardSectionHeading">
-                                    <span className="dashboardSectionIcon" aria-hidden="true"><IconVehicle /></span>
+                                    <span className="dashboardSectionIcon dashboardSectionIcon--cream" aria-hidden="true"><IconVehicle /></span>
                                     <h2 id="section-vehicles">Mi flota</h2>
                                     <span className="dashboardSectionCount" aria-label={`${vehicles.length} vehículos`}>
                                         {vehicles.length}
@@ -168,7 +168,7 @@ export function DashboardPage() {
                                         <Link
                                             key={v.id}
                                             to={`/carrier/vehicle/${v.id}`}
-                                            className="dashboardCard"
+                                            className="dashboardCard dashboardCard--cream"
                                         >
                                             <div className="dashboardCardHead">
                                                 <span className="dashboardCardEyebrow">Patente</span>
@@ -184,8 +184,8 @@ export function DashboardPage() {
                                         </Link>
                                     ))
                                 )}
-                                <Link to="/carrier/vehicle/new" className="dashboardCard dashboardCardNew" aria-label="Agregar vehículo">
-                                    <span className="dashboardCardNewIcon" aria-hidden="true"><IconPlus /></span>
+                                <Link to="/carrier/vehicle/new" className="dashboardCard dashboardCard--cream dashboardCardNew dashboardCardNew--cream" aria-label="Agregar vehículo">
+                                    <span className="dashboardCardNewIcon dashboardCardNewIcon--cream" aria-hidden="true"><IconPlus /></span>
                                     <span className="dashboardCardNewLabel">Agregar vehículo</span>
                                 </Link>
                             </div>

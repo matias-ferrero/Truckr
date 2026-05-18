@@ -13,7 +13,8 @@ import { Input } from "../../components/ui/input";
 import { FormField } from "../../components/ui/form-field";
 import { Alert } from "../../components/ui/alert";
 import { cn } from "../../lib/utils";
-import "./carrier.css";
+import "../../styles/landing.css";
+import "../../styles/carrier.css";
 
 type SearchState =
     | { status: "idle" }

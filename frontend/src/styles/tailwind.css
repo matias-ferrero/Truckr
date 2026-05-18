@@ -10,25 +10,27 @@
     --font-body: "Alegreya Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     --font-sans: "Alegreya Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
-    /* Color — OKLCH only, never #000/#fff in ink/interactive states. */
+    /* Color — committed two-voice palette (mirrors :root in global.css and
+       landing.css). OKLCH only, never #000/#fff in ink/interactive states. */
     --color-ink: oklch(18% 0.02 240);
     --color-ink-soft: oklch(35% 0.02 240);
     --color-ink-faint: oklch(52% 0.02 240);
-    --color-paper: oklch(99% 0.005 240);
-    --color-surface: oklch(98% 0.012 95);
-    --color-surface-warm: oklch(96% 0.022 95);
-    --color-surface-cool: oklch(98% 0.014 230);
-    --color-brand: oklch(91% 0.05 230);
-    --color-brand-warm: oklch(93% 0.06 95);
-    --color-brand-tertiary: oklch(76% 0.005 240);
-    --color-brand-error: oklch(72% 0.16 25);
+    --color-paper: #ffffff;
+    --color-brand: #46aadc;        /* Open-Sky Blue — shipper voice (committed cerulean) */
+    --color-brand-warm: #e1be5a;   /* Honey Saffron — carrier voice (committed warm) */
+    --color-brand-tertiary: #9ca0a8;
+    --color-brand-error: #e26464;
+    /* Committed surfaces — calibrated against the saturated brand source. */
+    --color-surface: color-mix(in oklab, white 96%, var(--color-brand-warm));
+    --color-surface-warm: color-mix(in oklab, white 90%, var(--color-brand-warm));
+    --color-surface-cool: color-mix(in oklab, white 88%, var(--color-brand));
     --color-stamp: oklch(45% 0.09 220);
-    --color-stroke: color-mix(in oklab, oklch(76% 0.005 240) 70%, oklch(99% 0.005 240));
-    --color-stroke-strong: color-mix(in oklab, oklch(18% 0.02 240) 24%, transparent);
-    --color-ring: color-mix(in oklab, oklch(18% 0.02 240) 15%, transparent);
-    --color-banner-error: color-mix(in oklab, oklch(72% 0.16 25) 14%, oklch(99% 0.005 240));
-    --color-banner-error-ink: color-mix(in oklab, oklch(72% 0.16 25) 30%, oklch(18% 0.02 240));
-    --color-banner-error-edge: color-mix(in oklab, oklch(72% 0.16 25) 60%, oklch(18% 0.02 240));
+    --color-stroke: color-mix(in oklab, var(--color-brand-tertiary) 55%, white);
+    --color-stroke-strong: color-mix(in oklab, var(--color-ink) 24%, transparent);
+    --color-ring: color-mix(in oklab, var(--color-ink) 15%, transparent);
+    --color-banner-error: color-mix(in oklab, var(--color-brand-error) 16%, var(--color-paper));
+    --color-banner-error-ink: color-mix(in oklab, var(--color-brand-error) 40%, var(--color-ink));
+    --color-banner-error-edge: color-mix(in oklab, var(--color-brand-error) 65%, var(--color-ink));
 
     /* Radii — Pill-or-Container Rule: pill (999) for interactive, 10/16/24 for containers. */
     --radius-sm: 10px;

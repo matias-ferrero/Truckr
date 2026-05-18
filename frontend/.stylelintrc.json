@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json.schemastore.org/stylelintrc.json",
+  "rules": {
+    "color-no-hex": [
+      true,
+      {
+        "message": "Hex literals are reserved for the five brand source colors in src/styles/global.css, landing.css, and tailwind.css. Use a brand token (var(--brand-*)) or oklch() elsewhere."
+      }
+    ],
+    "color-named": [
+      "never",
+      {
+        "message": "Named colors like 'white' or 'black' violate DESIGN.md §No-Pure-Neutral. Use var(--ink), var(--brand-neutral), or an oklch() value. 'transparent' / 'currentColor' are not named colors and are allowed."
+      }
+    ],
+    "function-disallowed-list": [
+      ["rgb", "rgba", "hsl", "hsla"],
+      {
+        "message": "Use oklch() or color-mix(in oklab, …) — DESIGN.md picks OKLCH as the perceptual-uniform working space."
+      }
+    ],
+    "declaration-property-value-disallowed-list": {
+      "border-left": ["/(^|\\s)[2-9]\\d*px\\s+solid/"],
+      "border-right": ["/(^|\\s)[2-9]\\d*px\\s+solid/"],
+      "background-clip": ["text"],
+      "-webkit-background-clip": ["text"]
+    }
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/styles/global.css",
+        "src/styles/landing.css",
+        "src/styles/tailwind.css"
+      ],
+      "rules": {
+        "color-no-hex": null,
+        "color-named": null
+      }
+    }
+  ]
+}

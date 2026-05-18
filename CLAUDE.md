@@ -113,7 +113,7 @@ These are real installed skills (impeccable plugin). Invoke them with the slash 
 
 **Then, before pushing the branch and opening the PR:**
 
-1. `just lint` — pre-commit hooks (typstyle, formatting, basic checks). Must be clean. (Note: the recipe shells out to `pre-commit`; if only `prek` is on PATH via mise, run `prek run --all-files` directly.)
+1. `just lint` — pre-commit hooks (typstyle, formatting, **stylelint design-system enforcement**, basic checks). Must be clean. (Note: the recipe shells out to `pre-commit`; if only `prek` is on PATH via mise, run `prek run --all-files` directly.) The `stylelint` hook is the machine-enforced version of DESIGN.md's absolute bans — no raw `#000`/`#fff`/`white`/`black`/`rgb*`, no `border-left|right > 1px` side-stripes, no `background-clip: text` gradient-text — scoped to `frontend/src/**/*.css`. Token-source files (`global.css`, `landing.css`, `tailwind.css`) are exempted so the five brand source hexes stay declarative. To run standalone: `just frontend-lint-css`.
 2. `just frontend-test-coverage` — Vitest with v8 coverage. **Hard threshold: 80% lines / functions / branches / statements** (configured in `frontend/vitest.config.ts`). The command exits non-zero if any threshold is missed; do not open the PR until it passes.
 3. `just frontend-test-e2e` — Playwright (chromium). New UI elements must have an E2E spec covering the golden path; run e2e before pushing.
 4. `just backend-test` — RSpec, if the branch touches `backend/`. SimpleCov reports under `backend/coverage/`; maintain or improve the existing coverage percentage.
