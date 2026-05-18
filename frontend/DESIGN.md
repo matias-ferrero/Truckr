@@ -2,18 +2,20 @@
 name: Truckr® Landing
 description: Plain-spoken Argentine freight marketplace — calm, paper-feeling, trust-forward.
 colors:
-  open-sky-blue: "oklch(91% 0.05 230)"
-  manifest-cream: "oklch(93% 0.06 95)"
-  warm-concrete: "oklch(76% 0.005 240)"
-  soft-alarm: "oklch(78% 0.13 25)"
+  open-sky-blue: "oklch(70% 0.14 232)"       # #46aadc — committed cerulean
+  manifest-cream: "oklch(80% 0.13 82)"       # #e1be5a — honey saffron
+  cool-concrete: "oklch(67% 0.01 260)"       # #9ca0a8 — structural neutral
+  signal-coral: "oklch(64% 0.18 25)"         # #e26464 — reserved error
   paper-white: "#ffffff"
   deep-harbor: "oklch(45% 0.09 220)"
   tinted-ink: "oklch(18% 0.02 240)"
   tinted-ink-2: "oklch(35% 0.02 240)"
   tinted-ink-3: "oklch(52% 0.02 240)"
-  surface-warm: "oklch(98% 0.012 95)"
-  surface-warm-2: "oklch(96% 0.022 95)"
-  surface-cool: "oklch(98% 0.014 230)"
+  surface-warm: "oklch(97% 0.025 82)"        # white 96% + manifest-cream
+  surface-warm-2: "oklch(94% 0.05 82)"       # white 90% + manifest-cream
+  surface-warm-3: "oklch(89% 0.09 82)"       # white 82% + manifest-cream
+  surface-cool: "oklch(94% 0.05 232)"        # white 88% + open-sky-blue
+  surface-cool-2: "oklch(85% 0.11 232)"      # white 72% + open-sky-blue
 typography:
   display:
     fontFamily: "Unbounded, ui-sans-serif, system-ui, sans-serif"
@@ -108,16 +110,18 @@ components:
 ## 1. Overview
 
 **Creative North Star: "The Plain-Spoken Dispatch"**
+**Color strategy: Committed (two-voice), drenched at the final CTA.**
 
-Truckr®'s landing reads like an honest freight-office desk: paper-cream surfaces, plain-spoken typography, and one deep teal-navy that earns its rare appearances. The system is light-first and editorial — closer to a well-set printed dispatch sheet than a SaaS template. Every surface is tinted (toward warm cream for the carrier voice, toward open sky for the shipper voice), so the page feels human instead of clinical. The display face (Unbounded) does the load-bearing personality work — geometric but not corporate, with negative letterspacing that gives headlines weight — while Alegreya Sans body keeps reading effortless.
+Truckr®'s landing reads like an honest freight-office desk under daylight: paper-cream and open-sky surfaces carry real coverage now instead of whispering. The system is light-first and editorial — closer to a well-set printed dispatch sheet than a SaaS template — but the cream and sky tints are the page's voice, not a background hum. Two voices share the surface (Manifest Cream for the carrier side, Open-Sky Blue for the shipper side); a deep teal-navy stamp (Deep Harbor) earns its rare appearances. The display face (Unbounded) does the load-bearing personality work — geometric but not corporate, with negative letterspacing that gives headlines weight — while Alegreya Sans body keeps reading effortless.
 
-The system explicitly rejects what trucking-tech usually defaults to: no "Uber for trucks" neon-on-black, no SaaS-cream-with-gradient-headline template, no logistics stock photography. Trust here is built by clarity (no hidden charges), real numbers (verifications, history), and restraint — not by exclamation. The single editorial accent (Deep Harbor) is the visual equivalent of a stamp: rare, deliberate, never decorative.
+The system explicitly rejects what trucking-tech usually defaults to: no "Uber for trucks" neon-on-black, no SaaS-cream-with-gradient-headline template, no logistics stock photography. Trust here is built by clarity (no hidden charges), real numbers (verifications, history), and a deliberate palette — not by exclamation. The Committed strategy means surfaces can be 30–60% saturated brand color (the para-quien split, the audience cards, the final CTA band); the One-Stamp Rule still constrains Deep Harbor to under ~5% per screen.
 
 **Key Characteristics:**
-- Light-first, warm-cream surfaces with cool-blue counterpoint for the shipper voice.
-- Asymmetric two-up audience layout — shipper and carrier never look identical.
+- Light-first, **committed** two-voice surfaces — Manifest Cream for the carrier voice, Open-Sky Blue for the shipper voice — each carrying real chromatic coverage, not a faint wash.
+- Asymmetric two-up audience layout; shipper card sits in sky, carrier card sits in cream, and the para-quien section ground is a vertical split echoing the same two voices.
 - Pill is the dominant radius for interactive elements; rectangles with 16–24px corners for containers.
-- One editorial accent, used sparingly (kicker dots, section eyebrows, step numerals, bullet ticks).
+- One editorial accent (Deep Harbor), used sparingly as a stamp (kicker dots, section eyebrows, step numerals, bullet ticks, the third feature card's icon dot, the chromatic ribbon at the foot of the commitments band).
+- The final CTA band is **drenched** — Open-Sky Blue runs corner-to-corner with a Manifest Cream radial bleed, type stays solid ink, no inner panel.
 - Hover lift is small (`translateY(-1px)` to `-2px`), never a scale transform.
 
 ## 2. Colors
@@ -125,32 +129,38 @@ The system explicitly rejects what trucking-tech usually defaults to: no "Uber f
 A two-voice palette — warm cream for the carrier side, open-sky blue for the shipper side — pinned to a near-black tinted ink and one deep teal-navy accent.
 
 ### Primary
-- **Open-Sky Blue** (`oklch(91% 0.05 230)`, source token `--brand-primary` / `#bee4fa`): the shipper voice. Used to tint the shipper audience card, the kicker dot's diffused ring, the icon dots in the feature grid, and a hero ambient wash. Soft, daylit, trustworthy — never used at full strength as a fill.
-- **Manifest Cream** (`oklch(93% 0.06 95)`, source token `--brand-secondary` / `#f1e3aa`): the carrier voice. Used to tint the carrier audience card, surface base (mixed with white), the kicker chip background, and the secondary hero wash. Paper-feeling, ledger-warm.
+- **Open-Sky Blue** (`oklch(70% 0.14 232)`, source token `--brand-primary` / `#46aadc`): the shipper voice. A committed cerulean — not a wash. Carries real coverage at the source, so mixes work at higher white percentages without going monochrome. Tints the shipper audience card (white 70% + sky), the left half of the para-quien split, the second feature card and its icon dot, the upper-right hero wash, and **drenches** the final CTA band (white 30–55% + sky across the full surface). Used at full strength only inside the chromatic ribbon segment under the commitments band.
+- **Manifest Cream** (`oklch(80% 0.13 82)`, source token `--brand-secondary` / `#e1be5a`): the carrier voice. A committed honey saffron — ledger-warm without going washed-out. Tints the carrier audience card (white 68% + cream), the right half of the para-quien split, the steps section ground, the first feature card and its icon dot, the kicker chip, the lower-left hero wash, the footer surface, and the warm radial bleed in the final CTA. The page background is white mixed with cream throughout.
 
 ### Secondary
-- **Deep Harbor** (`oklch(45% 0.09 220)`, source token `--accent`): the single editorial accent. Appears on the kicker dot, the eyebrow kickers above each section, the step numerals (`01`, `02`, `03`), and the audience-bullet check icons. Rare on purpose.
+- **Deep Harbor** (`oklch(45% 0.09 220)`, source token `--accent`): the single editorial accent. A deep teal-navy that stays distinct from the now-richer Open-Sky by sitting much darker and slightly cooler in hue. Appears on the kicker dot, the eyebrow kickers above each section, the step numerals (`01`, `02`, `03`), the audience-bullet check icons, the third feature card's icon dot fill (the "trazabilidad" stamp), and the rightmost 1/3 segment of the commitments band's chromatic ribbon. Rare on purpose.
 
 ### Tertiary
-- **Warm Concrete** (`oklch(76% 0.005 240)`, source token `--brand-tertiary` / `#b4b4b4`): structural neutral. Used inside `color-mix` formulas to build borders (`var(--border)`) and rule-lines. Never a fill.
-- **Soft Alarm** (`oklch(78% 0.13 25)`, source token `--brand-error` / `#ff9999`): error-state hint only. Currently held in reserve for form validation. Never used decoratively.
+- **Cool Concrete** (`oklch(67% 0.01 260)`, source token `--brand-tertiary` / `#9ca0a8`): structural neutral. Used inside `color-mix` formulas to build borders (`var(--border)`) and rule-lines. Cooler than the prior warm-concrete to keep border tones from leaning into the now-saturated honey hue. Never a fill.
+- **Signal Coral** (`oklch(64% 0.18 25)`, source token `--brand-error` / `#e26464`): error-state hint only. A confident coral — pairs with the saturated brand voices rather than reading as a pink wash. Currently held in reserve for form validation. Never used decoratively.
 
 ### Neutral
-- **Tinted Ink** (`oklch(18% 0.02 240)`, source token `--ink`): body text, primary button fill, commitments band background. A near-black tinted toward the brand-primary hue — never `#000`.
+- **Tinted Ink** (`oklch(18% 0.02 240)`, source token `--ink`): body text, primary button fill. A near-black tinted toward the brand-primary hue — never `#000`. No longer used as a section or band surface; the page is fully light-first now.
 - **Tinted Ink 2** (`oklch(35% 0.02 240)`, source token `--ink-2`): secondary text, nav links, audience-card lead copy.
 - **Tinted Ink 3** (`oklch(52% 0.02 240)`, source token `--ink-3`): tertiary text, captions, footer legal line.
-- **Surface Warm** (`oklch(98% 0.012 95)`, source token `--surface`): default page background — white mixed 96% with Manifest Cream.
-- **Surface Warm 2** (`oklch(96% 0.022 95)`, source token `--surface-2`): stepped surface for the "Cómo funciona" section and footer.
-- **Surface Cool** (`oklch(98% 0.014 230)`, source token `--surface-cool`): white mixed with Open-Sky Blue. Used inside the shipper audience card.
-- **Paper White** (`#ffffff`, source token `--brand-neutral`): used for the "¿Para quién es Truckr®?" and "Confianza" section backgrounds — a tonal step lighter than the page surface for clear sectioning without shadow.
+- **Surface Warm** (`--surface`): default page background — white mixed 94% with Manifest Cream.
+- **Surface Warm 2** (`--surface-2`): white mixed 84% with cream — the cream-side ground of the para-quien split.
+- **Surface Warm 3** (`--surface-3`): white mixed 70% with cream — the steps section ground, the carrier card's denser cream neighbor.
+- **Surface Cool** (`--surface-cool`): white mixed 80% with Open-Sky Blue — the sky-side ground of the para-quien split.
+- **Surface Cool 2** (`--surface-cool-2`): white mixed 62% with Open-Sky Blue — the high-coverage sky band used inside the final CTA gradient stops.
+- **Tint Sky** (`--tint-sky`): white mixed 50% with Open-Sky Blue — reserved for inline emphasis chips and large coverage moments inside the shipper voice.
+- **Tint Cream** (`--tint-cream`): white mixed 48% with Manifest Cream — reserved for inline emphasis chips and large coverage moments inside the carrier voice.
+- **Paper White** (`#ffffff`, `--brand-neutral`): reserved for the inverted ghost button surface on the drenched CTA — never as ink, never as a section ground. Every section now sits on a tinted committed surface.
 
 ### Named Rules
 
-**The One Stamp Rule.** Deep Harbor is the accent's only job. It appears on the kicker dot, section eyebrows, step numerals, and bullet ticks — and nowhere else. If it ever covers more than ~5% of any screen, it has been misused; recolor to ink or a tinted neutral instead.
+**The One Stamp Rule.** Deep Harbor is the accent's only job. It appears on the kicker dot, section eyebrows, step numerals, bullet ticks, and the third feature card's icon dot fill (with a small accent-tinted shadow) — and nowhere else. If it ever covers more than ~5% of any screen, it has been misused; recolor to ink or a tinted neutral instead. The third feature card's surface is sky (not ink); only its icon dot carries the accent.
 
-**The Two-Voice Rule.** Open-Sky Blue speaks for shippers; Manifest Cream speaks for carriers. Never mix them on a single component. The shipper audience card is sky-tinted; the carrier card is cream-tinted; chips and stamps for each role inherit that tint.
+**The Two-Voice Rule.** Open-Sky Blue speaks for shippers; Manifest Cream speaks for carriers. Never mix them on a single role-paired component. The shipper audience card is sky-tinted; the carrier card is cream-tinted; chips and stamps for each role inherit that tint. Where the two voices coexist on the same surface (the para-quien vertical split, the final CTA's sky-with-cream-bleed, the commitments chromatic ribbon), the split is geometric and deliberate — not a blend.
 
-**The No-Pure-Neutral Rule.** No `#000`, no `#fff` in text or interactive states. Every neutral is tinted toward the brand-primary hue (chroma 0.005–0.02). `#ffffff` is used as a sectioning surface only, never as ink.
+**The Committed-Coverage Rule.** Brand colors carry real coverage at the source — Open-Sky is a committed cerulean (`#46aadc`, `oklch 70% 0.14 232`), not a pale wash; Manifest Cream is a honey saffron (`#e1be5a`, `oklch 80% 0.13 82`), not an ivory tint. Because the source has real chroma, surface mixes use higher white percentages (audience cards 68–70%, feature cards 84%) than would be needed for a pale-source palette and still read as confident hues. The para-quien section is a sky-and-cream split (not paper-white); the final CTA is drenched corner-to-corner. If a surface reads monochrome, the fix is at the source — bump the brand hex, not the mix ratio.
+
+**The No-Pure-Neutral Rule.** No `#000`, no `#fff` in text or interactive states. Every neutral is tinted toward the brand-primary hue (chroma 0.005–0.02). `#ffffff` is reserved for the Confianza section ground and the inverted ghost button on the drenched CTA — never as ink.
 
 ## 3. Typography
 
@@ -178,7 +188,7 @@ A two-voice palette — warm cream for the carrier side, open-sky blue for the s
 
 ## 4. Elevation
 
-Flat-by-default with two deliberate softnesses: an ambient drop on the primary button, and a low ambient lift on feature-card hover. The commitments band creates depth tonally instead — Tinted Ink fill on a cream surface — not with shadow. Sectioning happens through tonal stepping (surface → paper-white → surface-2) and 1px rule-lines, never through floating cards.
+Flat-by-default with two deliberate softnesses: an ambient drop on the primary button, and a low ambient lift on feature-card hover. The commitments band creates depth chromatically — a deep honey saffron sitting on the lighter cream Confianza ground — supported by an ambient cream-tinted shadow. Sectioning happens through tonal stepping of committed surfaces and 1px rule-lines, never through floating cards.
 
 ### Shadow Vocabulary
 - **Button shadow** (`box-shadow: 0 8px 24px color-mix(in oklab, var(--ink) 18%, transparent)`): the primary button at rest. Reinforces "this is the action."
@@ -211,41 +221,57 @@ Components are described in the order they appear on the page.
 - **Text link** (`.textLink`): underline-only with a 1px Tinted-Ink-30% bottom border. Hover fully colors the border and the text to Tinted Ink. Used for the secondary CTA on rows where two pill buttons would compete.
 
 ### Kicker chip
-- **Shape:** pill, `padding: 6px 12px 6px 10px`, 1px tinted border.
-- **Background:** white mixed 80% with Manifest Cream.
-- **Type:** Unbounded 600, 0.8125rem, uppercase, `letter-spacing: 0.06em`, Tinted Ink 2.
+- **Shape:** pill, `padding: 6px 12px 6px 10px`, 1px Border-Cream.
+- **Background:** white mixed 56% with Manifest Cream — a committed cream chip, not a wash.
+- **Type:** Unbounded 600, 0.8125rem, uppercase, `letter-spacing: 0.06em`, Tinted Ink.
 - **Stamp dot:** 8×8 Deep Harbor circle with a 3px softened ring (`box-shadow: 0 0 0 3px color-mix(--accent 22%, transparent)`). The system's smallest editorial moment; never recolor.
+
+### Hero (signature)
+- **Layout:** kicker → display headline (cap 18ch) → subhead → aside → CTA row → proof chips rule. Padding `clamp(56px, 8vw, 112px) 0 clamp(48px, 6vw, 80px)`.
+- **Background:** two diffused radial washes carry the two-voice story — Open-Sky 82% upper-right (deeply cyan now that the source is committed), Manifest Cream 86% lower-left (honey saffron now that the source is committed) — plus a tonal floor radial keeping the center from going flat. No hard-edged ribbon at the right; the saturated washes do all the work without a separate accent block.
+
+### Para-quien section (the two-voice split)
+- **Layout:** the section ground is a vertical split — Surface Cool on the left (sky voice) from 0–46%, Surface Warm 2 on the right (cream voice) from 54–100%, with a soft transition between. The shipper audience card sits on the cool half; the carrier card sits on the warm half.
+- **Mobile:** under `max-width: 899px`, the split collapses to Surface Warm 2; the audience cards still carry their own committed tints.
+- **Why:** the page ground itself enacts the two-voice rule before the cards reinforce it.
 
 ### Audience cards (signature — two-up, asymmetric)
 - **Layout:** 2-up grid, `1.05fr / 0.95fr` ratio at `min-width: 900px`; stacked under that. The carrier card carries `margin-top: var(--space-7)` at md+ so the two cards never align top-to-top.
 - **Shape:** `border-radius: var(--radius-lg)` (24px), `padding: clamp(28px, 3vw, 44px)`.
-- **Shipper card** (`.audienceCard--shipper`): white mixed 80% with Open-Sky Blue, border tints toward Open-Sky Blue.
-- **Carrier card** (`.audienceCard--carrier`): white mixed 78% with Manifest Cream, border tints toward Manifest Cream.
+- **Shipper card** (`.audienceCard--shipper`): white mixed **70%** with Open-Sky Blue, Border-Sky border, ambient sky shadow (`0 18px 50px sky-32%`). Sits on the Surface Cool half of the para-quien split. (Percentage is calibrated against the saturated brand source — the resulting surface is a confident sky-cyan, not a wash.)
+- **Carrier card** (`.audienceCard--carrier`): white mixed **68%** with Manifest Cream, Border-Cream border, ambient cream shadow (`0 18px 50px cream-34%`). Sits on the Surface Warm 2 half. (Same calibration: a confident honey, not an ivory variation.)
 - **Label:** Unbounded 600 eyebrow, uppercase, 0.8125rem, Tinted Ink 2.
 - **Bullets:** custom list with a 22px column for the check SVG (Deep Harbor stroke) and a 1fr text column.
 - **CTA:** text-link style — no pill button inside the card. Hover increases the icon gap from 8px to 14px.
 
 ### Step list
-- **Layout:** 3-up grid at md+, stacked under. Each step is its own grid with a top rule (1px, Tinted Ink 14%).
+- **Layout:** 3-up grid at md+, stacked under. Each step is its own grid with a top rule (1px, Tinted Ink 14%). Section ground is Surface Warm 3 (deep cream).
 - **Numeral:** Unbounded 700, `clamp(2.4rem, 5vw, 3.6rem)`, Deep Harbor, `font-variant-numeric: tabular-nums`. The largest the accent ever appears.
 - **Title:** Title scale (Unbounded 700, 1.35rem).
-- **Role tag:** inline pill (`padding: 2px 8px`, pill radius), Unbounded 600 0.7rem uppercase. Shipper role uses Open-Sky Blue 70/white; carrier role uses Manifest Cream 80/white.
+- **Role tag:** inline pill (`padding: 2px 8px`, pill radius), Unbounded 600 0.7rem uppercase. Shipper role uses Open-Sky Blue 92/white; carrier role uses Manifest Cream 95/white — saturated chips, not whispers.
 
-### Feature grid
+### Feature grid (two-voice trio, sky-weighted)
 - **Layout:** `repeat(auto-fit, minmax(260px, 1fr))`.
-- **Card** (`.featureItem`): 16px radius, padding `var(--space-5)`, Surface Warm background, Warm-Concrete-tinted border.
-- **Icon dot:** 40×40 pill, white mixed 55% with Open-Sky Blue, 1px border, Tinted Ink icon stroke.
-- **Hover** (only when `hover: hover`): `translateY(-2px)`, Feature hover ambient shadow, border darkens toward Tinted Ink 24%.
+- **Card 1 — "Tarifas claras":** white mixed 84% with Manifest Cream surface, Border-Cream border, saturated cream icon dot (cream 92/white). Carrier-voice tinted (pricing is the carrier-side conversation).
+- **Card 2 — "Trato directo":** white mixed 84% with Open-Sky Blue surface, Border-Sky border, saturated sky icon dot (sky 88/white). Shipper-voice tinted (the conversation is the shipper's first reach).
+- **Card 3 — "Trazabilidad real":** Surface Cool 2 (white 72% + sky) — a deeper saturation of the shipper voice. Border tints further toward full sky. Ink text on a confident sky ground, with a **Deep Harbor icon dot** carrying a soft 4-px accent shadow as the trust stamp. The trio reads as cream / sky / deeper-sky, weighted toward the shipper voice because data/trust is a shipper-side concern.
+- **Hover** (only when `hover: hover`): `translateY(-2px)`, ambient shadow at `ink-14%`, border darkens. The deep-sky card's hover deepens to a near-full Open-Sky border with a sky-tinted shadow.
 
 ### Commitments band
 - **Layout:** full-width within container, 24px radius, `padding: clamp(24px, 3vw, 40px)`, 3-up grid of commitments under md+.
-- **Surface:** Tinted Ink fill. The only dark-mode surface in the system, and it's bounded — it does not bleed past the container.
-- **Lead text:** Unbounded 600, color is white mixed 70% with Manifest Cream — cream-warmed white on dark, never pure white.
-- **Body text:** white mixed 78% with Warm Concrete (cool-warmed soft white).
-- **Dividers:** 1px top-rule on each commitment, `color-mix(white 22%, transparent)`.
+- **Surface:** white mixed 35% with Manifest Cream — a deep honey saffron, the deepest carrier-voice moment on the page. Carries a 1px ink-tinted cream border and an ambient cream shadow (`0 20px 50px cream-38%`) lifting it off the lighter Confianza ground. Bounded — does not bleed past the container.
+- **Lead text:** Unbounded 600, Tinted Ink. Dark-on-honey is the stamp's "ledger ink" feel.
+- **Body text:** Tinted Ink 2 (`oklch 35% 0.02 240`), ~7:1 against the honey ground.
+- **Dividers:** 1px top-rule on each commitment, `color-mix(in oklab, var(--ink) 22%, transparent)` — visible ink rule on cream, not a faint white rule on dark.
+
+### Final CTA (drenched)
+- **Layout:** full-bleed section, `padding: clamp(64px, 8vw, 120px) 0`, 1px top/bottom borders.
+- **Surface:** drenched — a 135° linear gradient from sky 70-mix → sky 48-mix → cream 40-mix across the corner-to-corner expanse, with a 70%-diameter radial of Manifest Cream bleeding from the bottom-right edge. The surface IS the color. No inner panel.
+- **Type:** Tinted Ink for the headline (`--ink`), Tinted Ink for the kicker (`--ink-on-sky`), Tinted-Ink-on-Sky for lead and login text. The two CTA buttons sit directly on the sky: primary (ink fill, larger ambient shadow), ghost-invert (Paper White fill, ink border).
+- **Why:** the final CTA is the page's single Drenched moment — Open-Sky carries the surface because the call-to-action is a shipper-side ask (request a quote). Cream radiates from the carrier corner so neither voice is silenced.
 
 ### Footer
-- **Surface:** Surface Warm 2, 1px top border.
+- **Surface:** white mixed 76% with Manifest Cream — a deeper cream tone, 1px top border. Continues the committed two-voice ground onto the page's foot.
 - **Layout:** 3-col grid at md+ (`1.4fr 1fr auto`) with brand, nav, legal.
 - **Type:** small caption scale; legal uses tabular numerals.
 
@@ -261,13 +287,62 @@ The landing page itself has no form fields; the auth and carrier flows do (see `
 
 **The Pill-or-Container Rule.** Pill radius (`999px`) is reserved for interactive elements (buttons, chips, nav links, role tags, icon dots). Containers (cards, sections, the commitments band) use the 16px/24px square-radius scale. Never use pill on a container.
 
-## 6. Do's and Don'ts
+## 6. Motion
+
+One orchestrated entrance carries the page; afterwards motion is feedback, not decoration.
+
+### Tokens
+- `--motion-entry: 620ms` — base duration for the hero entrance and scroll reveals.
+- `--motion-stagger: 140ms` — default stagger step between siblings (steps, features, audience cards).
+- `--motion-ease: cubic-bezier(0.22, 1, 0.36, 1)` — ease-out-quint. Used for all reveal transitions and `@keyframes`. Confident, decisive, no overshoot.
+- `--motion-ease-soft: cubic-bezier(0.16, 1, 0.3, 1)` — ease-out-expo. Used for button hover and the topbar elevation. Slightly slower-feeling at the end for atmospheric settling.
+
+### Hero entrance (on mount)
+- Pure CSS `@keyframes hero-rise` (opacity + translateY 24 → 0) on every immediate child of `.hero > .container`, sequenced by `animation-delay`:
+  - Kicker: 80ms
+  - Headline: 200ms
+  - Subhead: 360ms
+  - CTA row: 500ms
+  - Proof chips: 680ms
+- The radial washes (`.hero::before`) ride a separate `hero-wash` keyframe — slight zoom-out (scale 1.06 → 1) over 1100ms — so the page literally "develops" before the type lands.
+- Total choreography clears in ~1.3s. After that the hero is static; no parallax, no autoplay video, no scroll-jacking.
+
+### Scroll reveals (per section)
+- Each revealable element carries `data-reveal`. A single `IntersectionObserver` mounted in `LandingPage` toggles `data-revealed` once the element crosses **18% threshold with a -6% bottom rootMargin** (fires slightly before the element enters the viewport).
+- Elements start `opacity: 0` + `translateY(22px)` and animate to neutral over `--motion-entry` with optional per-element delay via `--reveal-delay` (CSS custom property set inline).
+- Stagger pattern within a section: kicker (0ms) → title (100ms) → first-child (220ms) → stagger by 140ms.
+- Audience cards reveal with **asymmetric start vectors** — shipper translates from `-14px, 22px`, carrier from `+14px, 22px` — so the two voices converge on landing instead of fading in identically.
+- Step numerals get an extra `+80ms` delay and travel an additional 10px upward — they feel "stamped into place" against their step body.
+- The observer disconnects after each element fires; reveals don't replay.
+
+### Topbar elevation (scroll-driven)
+- The topbar starts with a transparent bottom border and no shadow. A scroll listener on `window` toggles `data-scrolled="true"` on `.page` whenever `scrollY > 24`.
+- When elevated: background opacity rises from 82% → 94%, border-bottom becomes visible, a soft ink-tinted shadow (`0 6px 24px ink-8%`) appears. Transition runs 280ms with `--motion-ease-soft`.
+- This is the only scroll-driven UI change. No parallax, no scroll-linked color shifts.
+
+### In-page navigation
+- `html { scroll-behavior: smooth }` lets nav anchor jumps (`#para-quien`, `#como-funciona`, `#confianza`) glide instead of teleport.
+
+### Accessibility
+- `prefers-reduced-motion: reduce` cancels all entrance animations and reveal transitions — elements appear in their landed state immediately. The hero washes appear without zoom; cards appear without translate. The smooth scroll behavior also collapses to `auto`.
+- The global rule in `global.css` collapses `animation-duration` and `transition-duration` to `0.01ms`; the landing CSS additionally strips the `opacity: 0` and `transform` initial states under reduced motion so users never see the "not yet revealed" frame.
+- The IntersectionObserver path also explicitly checks `matchMedia('(prefers-reduced-motion: reduce)')` and marks every reveal target as `data-revealed` immediately when set, so even before CSS kicks in the elements render.
+
+### Named Rules
+
+**The One-Entrance Rule.** The page has exactly one orchestrated load sequence — the hero — and one reveal idiom per section. No element animates twice on its own. No bouncing icons, no looping pulses, no autoplaying carousels. If a motion can't be explained by "I'm appearing" or "you scrolled past me," it doesn't belong here.
+
+**The Asymmetric-Stagger Rule.** The audience-card pair must reveal with mirrored-but-opposite start vectors. They are the layout's signature; their motion has to reinforce the two-voice metaphor, not flatten it.
+
+**The Reveal-Once Rule.** Reveal targets fire exactly once on first intersection and the observer disconnects. Re-entering the viewport doesn't replay; the page is meant to feel "set" after the first read-through, not a kinetic loop.
+
+## 7. Do's and Don'ts
 
 ### Do:
-- **Do** keep the page light-first with warm cream-tinted surfaces. The only dark surface is the bounded commitments band.
+- **Do** keep the page **light-first throughout** with committed cream and sky surfaces. The single drenched moment is the final CTA; the deepest committed moment is the honey commitments band. No section, band, or card uses a dark fill — Tinted Ink is reserved for text and the primary button.
 - **Do** tint every neutral toward the brand hue. Use `color-mix(in oklab, …)` against `--brand-primary` or `--brand-secondary`.
-- **Do** treat Deep Harbor as a stamp — kicker dot, section eyebrow, step numeral, bullet tick. Nowhere else.
-- **Do** keep the shipper voice in Open-Sky Blue and the carrier voice in Manifest Cream, always paired with role-specific copy.
+- **Do** treat Deep Harbor as a stamp — kicker dot, section eyebrow, step numeral, bullet tick, third feature card's icon dot, and the rightmost ribbon segment under the commitments band. Nowhere else.
+- **Do** keep the shipper voice in Open-Sky Blue and the carrier voice in Manifest Cream, always paired with role-specific copy. When the two voices coexist on a single surface (para-quien split, drenched CTA, chromatic ribbon), the split is geometric — not a blend.
 - **Do** use Unbounded 700 with tight negative letterspacing (`-0.025em` to `-0.045em`) for headlines, and `text-wrap: balance` to control wrap.
 - **Do** make hover a 1–2px lift and a soft shadow change. No scale, no spring, no bounce.
 - **Do** respect `prefers-reduced-motion`; the global rule already collapses animations to `0.01ms`.
@@ -278,10 +353,11 @@ The landing page itself has no form fields; the auth and carrier flows do (see `
 - **Don't** ship the generic SaaS-cream landing template (pastel hero illustration, three identical icon-heading-text cards in a row, gradient-text headline). PRODUCT.md rejects this by name.
 - **Don't** use logistics stock photography — forklifts, container ports, blurred trucks. Visually loud, semantically empty.
 - **Don't** apply `background-clip: text` with a gradient to any headline. Solid Tinted Ink, always.
-- **Don't** add a colored side-stripe (`border-left: 4px solid …`) to any card, callout, or list item. Full borders or tonal fills only.
+- **Don't** add a colored **side-stripe** (`border-left: 4px solid …`) to any card, callout, or list item. The bottom-side chromatic ribbon under the commitments band is the only intentional thick-stripe in the system, and it sits at the foot — not on a side.
 - **Don't** put glassmorphism (heavy blur, glass card) anywhere except the topbar's earned `backdrop-filter`.
 - **Don't** use `#000` or `#fff` as ink or as a focus state. Every neutral is tinted (chroma ≥ 0.005 toward 240).
 - **Don't** make the audience cards identical mirrors. The asymmetric pair (size + vertical offset + tint) is the layout's point.
 - **Don't** add pill radius to containers, or square radius to interactive chips. The Pill-or-Container Rule is load-bearing.
 - **Don't** raise Deep Harbor's coverage on a screen above ~5%. If it spreads, recolor to Tinted Ink or a tinted neutral.
+- **Don't** drench any surface other than the final CTA. Committed coverage (30–60%) is allowed throughout; Drenched coverage (corner-to-corner) is the final CTA's signature alone.
 - **Don't** introduce a second display face. Unbounded is the only display family; substitutions break the "Plain-Spoken Dispatch" character.

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { landingContent } from "./landingContent";
 import { SessionWidget } from "./components/SessionWidget";
@@ -77,10 +77,57 @@ export default function LandingPage() {
         } satisfies React.CSSProperties;
     }, []);
 
+    const pageRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const root = pageRef.current;
+        if (!root) return;
+
+        const reducedMotion =
+            typeof window.matchMedia === "function" &&
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        const targets = root.querySelectorAll<HTMLElement>("[data-reveal]");
+
+        if (reducedMotion || typeof IntersectionObserver === "undefined") {
+            targets.forEach((el) => el.setAttribute("data-revealed", "true"));
+            return;
+        }
+
+        // Arm targets only once the JS path is confirmed running — keeps a
+        // no-JS visitor from staring at empty space.
+        targets.forEach((el) => el.setAttribute("data-reveal-armed", "true"));
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting) {
+                        entry.target.setAttribute("data-revealed", "true");
+                        observer.unobserve(entry.target);
+                    }
+                }
+            },
+            { threshold: 0.18, rootMargin: "0px 0px -6% 0px" },
+        );
+
+        targets.forEach((el) => observer.observe(el));
+
+        const onScroll = () => {
+            root.setAttribute("data-scrolled", window.scrollY > 24 ? "true" : "false");
+        };
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+
+        return () => {
+            observer.disconnect();
+            window.removeEventListener("scroll", onScroll);
+        };
+    }, []);
+
     const { hero, audiences, steps, features, commitments, finalCta } = landingContent;
 
     return (
-        <div className="page" style={themeVars}>
+        <div ref={pageRef} className="page" style={themeVars}>
             <a className="skipLink" href="#main">
                 Saltar al contenido
             </a>
@@ -112,7 +159,6 @@ export default function LandingPage() {
                         </p>
                         <h1 className="headline">{hero.title}</h1>
                         <p className="subhead">{hero.subtitle}</p>
-                        <p className="subheadAside">{hero.description}</p>
 
                         <div className="ctaRow">
                             <Link className="button buttonPrimary" to="/signup?role=shipper">
@@ -145,13 +191,19 @@ export default function LandingPage() {
 
                 <section id="para-quien" className="section section--paraQuien">
                     <div className="container">
-                        <p className="sectionKicker">Para quién</p>
-                        <h2 className="sectionTitle">
+                        <p className="sectionKicker" data-reveal>
+                            Para quién
+                        </p>
+                        <h2 className="sectionTitle" data-reveal style={{ "--reveal-delay": "100ms" } as React.CSSProperties}>
                             Una plataforma, dos lados. Ningún intermediario.
                         </h2>
 
                         <div className="audienceSplit">
-                            <article className="audienceCard audienceCard--shipper">
+                            <article
+                                className="audienceCard audienceCard--shipper"
+                                data-reveal
+                                style={{ "--reveal-delay": "240ms" } as React.CSSProperties}
+                            >
                                 <p className="audienceLabel">{audiences.shipper.label}</p>
                                 <h3 className="audienceTitle">{audiences.shipper.title}</h3>
                                 <p className="audienceLead">{audiences.shipper.description}</p>
@@ -168,7 +220,11 @@ export default function LandingPage() {
                                 </Link>
                             </article>
 
-                            <article className="audienceCard audienceCard--carrier">
+                            <article
+                                className="audienceCard audienceCard--carrier"
+                                data-reveal
+                                style={{ "--reveal-delay": "400ms" } as React.CSSProperties}
+                            >
                                 <p className="audienceLabel">{audiences.carrier.label}</p>
                                 <h3 className="audienceTitle">{audiences.carrier.title}</h3>
                                 <p className="audienceLead">{audiences.carrier.description}</p>
@@ -190,12 +246,21 @@ export default function LandingPage() {
 
                 <section id="como-funciona" className="section section--steps">
                     <div className="container">
-                        <p className="sectionKicker">Cómo funciona</p>
-                        <h2 className="sectionTitle">Tres pasos. Sin formularios eternos.</h2>
+                        <p className="sectionKicker" data-reveal>
+                            Cómo funciona
+                        </p>
+                        <h2 className="sectionTitle" data-reveal style={{ "--reveal-delay": "100ms" } as React.CSSProperties}>
+                            Tres pasos. Sin formularios eternos.
+                        </h2>
 
                         <ol className="stepList" aria-label="Pasos del proceso">
-                            {steps.map((step) => (
-                                <li key={step.n} className="stepItem">
+                            {steps.map((step, i) => (
+                                <li
+                                    key={step.n}
+                                    className="stepItem"
+                                    data-reveal
+                                    style={{ "--reveal-delay": `${220 + i * 140}ms` } as React.CSSProperties}
+                                >
                                     <span className="stepNumber" aria-hidden="true">
                                         {step.n}
                                     </span>
@@ -220,12 +285,21 @@ export default function LandingPage() {
 
                 <section id="confianza" className="section section--confianza">
                     <div className="container">
-                        <p className="sectionKicker">Por qué Truckr®</p>
-                        <h2 className="sectionTitle">Honesto en el precio. Claro en la información. Humano en el trato.</h2>
+                        <p className="sectionKicker" data-reveal>
+                            Por qué Truckr®
+                        </p>
+                        <h2 className="sectionTitle" data-reveal style={{ "--reveal-delay": "100ms" } as React.CSSProperties}>
+                            Honesto en el precio. Claro en la información. Humano en el trato.
+                        </h2>
 
                         <div className="featureGrid" aria-label="Características">
-                            {features.map((feature) => (
-                                <article key={feature.id} className="featureItem">
+                            {features.map((feature, i) => (
+                                <article
+                                    key={feature.id}
+                                    className="featureItem"
+                                    data-reveal
+                                    style={{ "--reveal-delay": `${220 + i * 140}ms` } as React.CSSProperties}
+                                >
                                     <div className="featureTop">
                                         <span className="iconDot">
                                             <FeatureIcon name={feature.icon} />
@@ -237,7 +311,12 @@ export default function LandingPage() {
                             ))}
                         </div>
 
-                        <div className="commitments" aria-label="Compromisos">
+                        <div
+                            className="commitments"
+                            aria-label="Compromisos"
+                            data-reveal
+                            style={{ "--reveal-delay": "120ms" } as React.CSSProperties}
+                        >
                             <p className="commitmentsLead">
                                 Nuestros tres compromisos, sin asteriscos:
                             </p>
@@ -256,12 +335,21 @@ export default function LandingPage() {
                 <section id="empezar" className="section section--cta" aria-labelledby="empezar-title">
                     <div className="container">
                         <div className="ctaPanel">
-                            <p className="sectionKicker sectionKicker--invert">{finalCta.kicker}</p>
-                            <h2 className="sectionTitle sectionTitle--cta" id="empezar-title">
+                            <p className="sectionKicker sectionKicker--invert" data-reveal>
+                                {finalCta.kicker}
+                            </p>
+                            <h2
+                                className="sectionTitle sectionTitle--cta"
+                                id="empezar-title"
+                                data-reveal
+                                style={{ "--reveal-delay": "100ms" } as React.CSSProperties}
+                            >
                                 {finalCta.title}
                             </h2>
-                            <p className="ctaPanelLead">{finalCta.subtitle}</p>
-                            <div className="ctaPanelRow">
+                            <p className="ctaPanelLead" data-reveal style={{ "--reveal-delay": "220ms" } as React.CSSProperties}>
+                                {finalCta.subtitle}
+                            </p>
+                            <div className="ctaPanelRow" data-reveal style={{ "--reveal-delay": "340ms" } as React.CSSProperties}>
                                 <Link className="button buttonPrimary buttonPrimary--invert" to="/signup?role=shipper">
                                     {finalCta.shipper}
                                 </Link>
@@ -269,7 +357,7 @@ export default function LandingPage() {
                                     {finalCta.carrier}
                                 </Link>
                             </div>
-                            <p className="ctaPanelLogin">
+                            <p className="ctaPanelLogin" data-reveal style={{ "--reveal-delay": "460ms" } as React.CSSProperties}>
                                 {finalCta.loginPrompt}{" "}
                                 <Link to="/login">{finalCta.loginLabel}</Link>
                             </p>

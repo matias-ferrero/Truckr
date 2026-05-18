@@ -4,7 +4,6 @@ export interface LandingData {
         brand: string;
         kicker: string;
         subtitle: string;
-        description: string;
         cta_primary: string;
         cta_secondary: string;
     };
@@ -69,8 +68,6 @@ export const landingContent: LandingData = {
         kicker: "Marketplace de transporte · Argentina",
         subtitle:
             "Un lugar donde transportistas independientes y expedidores se encuentran con información clara, tarifas honestas y trato humano.",
-        description:
-            "Pensado para quienes mueven cosas todos los días: del flete urgente al envío programado, sin intermediarios opacos.",
         cta_primary: "Tengo un envío",
         cta_secondary: "Tengo un camión",
     },
@@ -173,10 +170,10 @@ export const landingContent: LandingData = {
         loginLabel: "Iniciar sesión",
     },
     color_palette: {
-        primary: "#bee4fa",
-        secondary: "#f1e3aa",
-        tertiary: "#b4b4b4",
-        error: "#ff9999",
+        primary: "#46aadc",
+        secondary: "#e1be5a",
+        tertiary: "#9ca0a8",
+        error: "#e26464",
         neutral: "#ffffff",
     },
 };

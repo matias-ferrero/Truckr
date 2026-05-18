@@ -1,26 +1,180 @@
-/* Landing page styles. Editorial-typographic, light, warm. */
+/* Landing page styles. Editorial-typographic, light, two-voice committed palette.
+   Motion: one orchestrated entrance (hero) + scroll-triggered reveals per section. */
+
+/* ---------- Motion tokens ---------- */
 
 .page {
-  --brand-primary: #bee4fa;
-  --brand-secondary: #f1e3aa;
-  --brand-tertiary: #b4b4b4;
-  --brand-error: #ff9999;
-  --brand-neutral: #ffffff;
+  --motion-entry: 620ms;
+  --motion-stagger: 140ms;
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1); /* ease-out-quint */
+  --motion-ease-soft: cubic-bezier(0.16, 1, 0.3, 1); /* ease-out-expo (matches button) */
+}
 
-  /* Tinted neutrals (chroma low, hue toward primary blue) */
+/* ---------- Hero load choreography (pure CSS, on mount) ---------- */
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hero-wash {
+  from {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero::before {
+  animation: hero-wash 1100ms var(--motion-ease) both;
+}
+
+.hero > .container > * {
+  animation: hero-rise var(--motion-entry) var(--motion-ease) both;
+}
+
+.hero .kicker {
+  animation-delay: 80ms;
+}
+
+.hero .headline {
+  animation-delay: 200ms;
+}
+
+.hero .subhead {
+  animation-delay: 360ms;
+}
+
+.hero .ctaRow {
+  animation-delay: 500ms;
+}
+
+.hero .proofRow {
+  animation-delay: 680ms;
+}
+
+/* ---------- Scroll reveal contract (JS toggles data-revealed) ---------- */
+
+[data-reveal-armed] {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0);
+  transition:
+    opacity var(--motion-entry) var(--motion-ease),
+    transform var(--motion-entry) var(--motion-ease);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+[data-reveal-armed][data-revealed] {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+/* Audience cards reveal as gentle shifts — the asymmetric pair gets
+   different start vectors so the staggered entrance reads as two voices
+   converging, not a copy-paste fade. */
+.audienceCard--shipper[data-reveal-armed] {
+  transform: translate3d(-14px, 22px, 0);
+}
+
+.audienceCard--carrier[data-reveal-armed] {
+  transform: translate3d(14px, 22px, 0);
+}
+
+.audienceCard[data-reveal-armed][data-revealed] {
+  transform: none;
+}
+
+/* Step numerals get a small extra lift so the digit feels like it's
+   being stamped into place. */
+.stepItem[data-reveal-armed] .stepNumber {
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  transition:
+    opacity calc(var(--motion-entry) + 120ms) var(--motion-ease),
+    transform calc(var(--motion-entry) + 120ms) var(--motion-ease);
+  transition-delay: calc(var(--reveal-delay, 0ms) + 80ms);
+}
+
+.stepItem[data-reveal-armed][data-revealed] .stepNumber {
+  opacity: 1;
+  transform: none;
+}
+
+/* Reduced motion: collapse the entrance to a static reveal. The global
+   `prefers-reduced-motion` rule already kills transition-duration; we
+   strip the initial translate so users don't see the start state. */
+@media (prefers-reduced-motion: reduce) {
+  .hero::before,
+  .hero > .container > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-reveal-armed],
+  [data-reveal-armed][data-revealed],
+  .audienceCard[data-reveal-armed],
+  .stepItem[data-reveal-armed] .stepNumber {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---------- Smooth scroll for in-page nav links ---------- */
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+
+
+.page {
+  --brand-primary: #46aadc;        /* Open-Sky Blue — shipper voice (committed cerulean) */
+  --brand-secondary: #e1be5a;      /* Honey Saffron — carrier voice (committed warm) */
+  --brand-tertiary: #9ca0a8;       /* Cool Concrete — structural neutral */
+  --brand-error: #e26464;          /* Signal Coral — reserved */
+  --brand-neutral: #ffffff;        /* Paper White — sectioning surface */
+
+  /* Tinted neutrals — never pure black/white */
   --ink: oklch(18% 0.02 240);
   --ink-2: color-mix(in oklab, var(--ink) 78%, white);
   --ink-3: color-mix(in oklab, var(--ink) 58%, white);
+  --ink-on-sky: oklch(20% 0.04 230);
 
-  /* Layered surfaces, warm cream-tinted off-white */
+  /* Two-voice surfaces — Committed strategy: cream and sky carry real coverage
+     (mixes calibrated against the saturated brand source, not pale washes) */
   --surface: color-mix(in oklab, white 96%, var(--brand-secondary));
   --surface-2: color-mix(in oklab, white 90%, var(--brand-secondary));
   --surface-3: color-mix(in oklab, white 82%, var(--brand-secondary));
-  --surface-cool: color-mix(in oklab, white 92%, var(--brand-primary));
+  --surface-cool: color-mix(in oklab, white 88%, var(--brand-primary));
+  --surface-cool-2: color-mix(in oklab, white 72%, var(--brand-primary));
+  --tint-sky: color-mix(in oklab, white 60%, var(--brand-primary));
+  --tint-cream: color-mix(in oklab, white 58%, var(--brand-secondary));
+
   --border: color-mix(in oklab, var(--brand-tertiary) 55%, white);
   --border-2: color-mix(in oklab, var(--ink) 14%, transparent);
+  --border-sky: color-mix(in oklab, var(--brand-primary) 78%, var(--border));
+  --border-cream: color-mix(in oklab, var(--brand-secondary) 82%, var(--border));
 
-  /* Editorial accent (deeper, deliberate use only) */
+  /* Editorial accent — stamp only, never decoration */
   --accent: oklch(45% 0.09 220);
 
   background: var(--surface);
@@ -38,9 +192,19 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  backdrop-filter: saturate(140%) blur(8px);
-  background: color-mix(in oklab, var(--surface) 78%, transparent);
-  border-bottom: 1px solid var(--border);
+  backdrop-filter: saturate(160%) blur(10px);
+  background: color-mix(in oklab, var(--surface) 82%, transparent);
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color 280ms var(--motion-ease-soft),
+    border-bottom-color 280ms var(--motion-ease-soft),
+    box-shadow 280ms var(--motion-ease-soft);
+}
+
+.page[data-scrolled="true"] .topbar {
+  background: color-mix(in oklab, var(--surface) 94%, transparent);
+  border-bottom-color: var(--border);
+  box-shadow: 0 6px 24px color-mix(in oklab, var(--ink) 8%, transparent);
 }
 
 .topbarInner {
@@ -85,7 +249,7 @@
 }
 
 .nav a:hover {
-  background: color-mix(in oklab, var(--brand-primary) 30%, transparent);
+  background: color-mix(in oklab, var(--brand-primary) 55%, transparent);
   color: var(--ink);
 }
 
@@ -108,15 +272,25 @@
   position: absolute;
   inset: 0;
   background:
+    /* shipper sky — upper right, full-bleed wash */
     radial-gradient(
-      80% 60% at 90% 0%,
-      color-mix(in oklab, var(--brand-primary) 38%, transparent) 0%,
-      transparent 60%
+      95% 80% at 96% -12%,
+      color-mix(in oklab, var(--brand-primary) 82%, transparent) 0%,
+      color-mix(in oklab, var(--brand-primary) 32%, transparent) 38%,
+      transparent 72%
     ),
+    /* carrier cream — lower left, paper warmth */
     radial-gradient(
-      60% 40% at 0% 10%,
-      color-mix(in oklab, var(--brand-secondary) 50%, transparent) 0%,
-      transparent 60%
+      75% 65% at -8% 95%,
+      color-mix(in oklab, var(--brand-secondary) 86%, transparent) 0%,
+      color-mix(in oklab, var(--brand-secondary) 30%, transparent) 42%,
+      transparent 74%
+    ),
+    /* tonal floor — keeps page from going flat in the middle */
+    radial-gradient(
+      130% 110% at 50% 60%,
+      transparent 0%,
+      color-mix(in oklab, var(--brand-secondary) 10%, transparent) 100%
     );
   pointer-events: none;
   z-index: 0;
@@ -134,14 +308,14 @@
   margin: 0 0 var(--space-5) 0;
   padding: 6px 12px 6px 10px;
   border-radius: 999px;
-  background: color-mix(in oklab, white 80%, var(--brand-secondary));
-  border: 1px solid var(--border);
+  background: color-mix(in oklab, white 72%, var(--brand-secondary));
+  border: 1px solid var(--border-cream);
   font-family: var(--font-display);
   font-weight: 600;
   font-size: var(--text-xs);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--ink-2);
+  color: var(--ink);
 }
 
 .kickerDot {
@@ -169,13 +343,6 @@
   color: var(--ink);
   max-width: 56ch;
   line-height: 1.45;
-}
-
-.subheadAside {
-  margin: var(--space-3) 0 0 0;
-  color: var(--ink-3);
-  max-width: 60ch;
-  font-size: var(--text-sm);
 }
 
 .ctaRow {
@@ -319,18 +486,31 @@
 }
 
 .section--paraQuien {
-  background: var(--brand-neutral);
+  position: relative;
+  background: linear-gradient(
+    to right,
+    var(--surface-cool) 0%,
+    var(--surface-cool) 46%,
+    var(--surface-2) 54%,
+    var(--surface-2) 100%
+  );
   border-top: 1px solid var(--border);
 }
 
+@media (max-width: 899px) {
+  .section--paraQuien {
+    background: var(--surface-2);
+  }
+}
+
 .section--steps {
-  background: var(--surface-2);
+  background: var(--surface-3);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
 
 .section--confianza {
-  background: var(--brand-neutral);
+  background: var(--surface);
 }
 
 .sectionKicker {
@@ -387,13 +567,15 @@
 }
 
 .audienceCard--shipper {
-  background: color-mix(in oklab, white 80%, var(--brand-primary));
-  border: 1px solid color-mix(in oklab, var(--brand-primary) 60%, var(--border));
+  background: color-mix(in oklab, white 70%, var(--brand-primary));
+  border: 1px solid var(--border-sky);
+  box-shadow: 0 18px 50px color-mix(in oklab, var(--brand-primary) 32%, transparent);
 }
 
 .audienceCard--carrier {
-  background: color-mix(in oklab, white 78%, var(--brand-secondary));
-  border: 1px solid color-mix(in oklab, var(--brand-secondary) 70%, var(--border));
+  background: color-mix(in oklab, white 68%, var(--brand-secondary));
+  border: 1px solid var(--border-cream);
+  box-shadow: 0 18px 50px color-mix(in oklab, var(--brand-secondary) 34%, transparent);
 }
 
 @media (min-width: 900px) {
@@ -539,7 +721,7 @@
   margin-right: 8px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: color-mix(in oklab, var(--brand-primary) 70%, white);
+  background: color-mix(in oklab, var(--brand-primary) 92%, white);
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 0.7rem;
@@ -549,7 +731,7 @@
 }
 
 .stepRole--carrier {
-  background: color-mix(in oklab, var(--brand-secondary) 80%, white);
+  background: color-mix(in oklab, var(--brand-secondary) 95%, white);
 }
 
 /* ---------- Confianza: features + commitments ---------- */
@@ -570,11 +752,40 @@
     border-color 240ms var(--ease-out);
 }
 
+.featureItem:nth-child(1) {
+  background: color-mix(in oklab, white 84%, var(--brand-secondary));
+  border-color: var(--border-cream);
+}
+
+.featureItem:nth-child(2) {
+  background: color-mix(in oklab, white 84%, var(--brand-primary));
+  border-color: var(--border-sky);
+}
+
+.featureItem:nth-child(3) {
+  background: var(--surface-cool-2);
+  border-color: color-mix(in oklab, var(--brand-primary) 60%, var(--border));
+  color: var(--ink);
+}
+
+.featureItem:nth-child(3) h3 {
+  color: var(--ink);
+}
+
+.featureItem:nth-child(3) p {
+  color: var(--ink-2);
+}
+
 @media (hover: hover) {
   .featureItem:hover {
     transform: translateY(-2px);
-    box-shadow: 0 16px 40px color-mix(in oklab, var(--ink) 10%, transparent);
-    border-color: color-mix(in oklab, var(--ink) 24%, var(--border));
+    box-shadow: 0 18px 44px color-mix(in oklab, var(--ink) 14%, transparent);
+    border-color: color-mix(in oklab, var(--ink) 30%, var(--border));
+  }
+
+  .featureItem:nth-child(3):hover {
+    box-shadow: 0 22px 50px color-mix(in oklab, var(--brand-primary) 36%, transparent);
+    border-color: color-mix(in oklab, var(--brand-primary) 90%, var(--ink));
   }
 }
 
@@ -596,6 +807,23 @@
   flex-shrink: 0;
 }
 
+.featureItem:nth-child(1) .iconDot {
+  background: color-mix(in oklab, var(--brand-secondary) 92%, white);
+  border-color: color-mix(in oklab, var(--brand-secondary) 95%, var(--border));
+}
+
+.featureItem:nth-child(2) .iconDot {
+  background: color-mix(in oklab, var(--brand-primary) 88%, white);
+  border-color: color-mix(in oklab, var(--brand-primary) 95%, var(--border));
+}
+
+.featureItem:nth-child(3) .iconDot {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: oklch(98% 0.008 95);
+  box-shadow: 0 4px 12px color-mix(in oklab, var(--accent) 38%, transparent);
+}
+
 .featureItem h3 {
   margin: 0;
   font-family: var(--font-display);
@@ -611,11 +839,14 @@
 }
 
 .commitments {
+  position: relative;
   margin-top: var(--space-8);
   padding: clamp(24px, 3vw, 40px);
   border-radius: var(--radius-lg);
-  background: var(--ink);
-  color: oklch(95% 0.01 240);
+  background: color-mix(in oklab, white 35%, var(--brand-secondary));
+  color: var(--ink);
+  border: 1px solid color-mix(in oklab, var(--brand-secondary) 90%, var(--ink));
+  box-shadow: 0 20px 50px color-mix(in oklab, var(--brand-secondary) 38%, transparent);
 }
 
 .commitmentsLead {
@@ -624,7 +855,7 @@
   font-weight: 600;
   letter-spacing: -0.02em;
   font-size: 1.05rem;
-  color: color-mix(in oklab, white 70%, var(--brand-secondary));
+  color: var(--ink);
 }
 
 .commitments ul {
@@ -646,7 +877,7 @@
   display: grid;
   gap: var(--space-2);
   padding-top: var(--space-3);
-  border-top: 1px solid color-mix(in oklab, white 22%, transparent);
+  border-top: 1px solid color-mix(in oklab, var(--ink) 22%, transparent);
 }
 
 .commitments h3 {
@@ -655,23 +886,52 @@
   font-weight: 700;
   font-size: 1.1rem;
   letter-spacing: -0.02em;
-  color: oklch(98% 0.005 240);
+  color: var(--ink);
 }
 
 .commitments p {
   margin: 0;
-  color: color-mix(in oklab, white 78%, var(--brand-tertiary));
+  color: var(--ink-2);
   font-size: var(--text-sm);
   line-height: 1.55;
 }
 
 /* ---------- Final CTA band ---------- */
 
+/* Drenched final CTA: the surface IS the color */
 .section--cta {
-  background: var(--surface-cool);
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, white 30%, var(--brand-primary)) 0%,
+    color-mix(in oklab, white 52%, var(--brand-primary)) 60%,
+    color-mix(in oklab, white 60%, var(--brand-secondary)) 100%
+  );
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  padding: clamp(56px, 7vw, 96px) 0;
+  padding: clamp(64px, 8vw, 120px) 0;
+  overflow: hidden;
+}
+
+.section--cta::before {
+  content: "";
+  position: absolute;
+  inset: auto -10% -40% auto;
+  width: 70%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    color-mix(in oklab, var(--brand-secondary) 60%, transparent) 0%,
+    color-mix(in oklab, var(--brand-secondary) 20%, transparent) 45%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.section--cta > .container {
+  position: relative;
+  z-index: 1;
 }
 
 .ctaPanel {
@@ -681,16 +941,17 @@
 }
 
 .sectionKicker--invert {
-  color: var(--ink);
+  color: var(--ink-on-sky);
 }
 
 .sectionTitle--cta {
   max-width: 22ch;
+  color: var(--ink);
 }
 
 .ctaPanelLead {
   margin: 0;
-  color: var(--ink-2);
+  color: var(--ink-on-sky);
   font-size: 1.0625rem;
   max-width: 52ch;
   line-height: 1.5;
@@ -704,7 +965,11 @@
 }
 
 .buttonPrimary--invert {
-  /* Same dark primary on light blue band — contrast carries it. */
+  box-shadow: 0 12px 32px color-mix(in oklab, var(--ink) 28%, transparent);
+}
+
+.buttonPrimary--invert:hover {
+  box-shadow: 0 16px 38px color-mix(in oklab, var(--ink) 36%, transparent);
 }
 
 .buttonGhost--invert {
@@ -720,7 +985,7 @@
 .ctaPanelLogin {
   margin: var(--space-3) 0 0 0;
   font-size: var(--text-sm);
-  color: var(--ink-3);
+  color: var(--ink-on-sky);
 }
 
 .ctaPanelLogin a {
@@ -741,7 +1006,7 @@
 .footer {
   padding: var(--space-8) 0 max(var(--space-7), env(safe-area-inset-bottom));
   border-top: 1px solid var(--border);
-  background: var(--surface-2);
+  background: color-mix(in oklab, white 76%, var(--brand-secondary));
 }
 
 .footerInner {
