@@ -10,7 +10,6 @@ author: Claude Code
 github_issue: 82
 github_project_item: PVTI_lAHOAm1mPc4BWhiVzgrs6pk
 github_repo: tcorzo/fiuba-gestion-tp
-last_synced: 2026-05-09T13:35:40.076571+00:00Z
 labels:
 - BE
 - REQ
@@ -37,8 +36,8 @@ Tratado como una sola pieza, cualquier issue se vuelve inestimable y se contamin
 
 - Gem `mercadopago-sdk` (o equivalente oficial) instalada y configurada en `backend/`.
 - Credenciales en variables de entorno: `MP_ACCESS_TOKEN_TEST`, `MP_ACCESS_TOKEN_PROD`. El controller selecciona según `Rails.env`.
-- Modelo `Payment` (definido por `REQ-BE-00005`) guarda `mp_preference_id`, `mp_payment_id`, `status` (`pending`, `approved`, `rejected`, `refunded`), `external_reference` (= `Quote.id`).
-- Endpoint `POST /api/payments` que toma un `quote_id`, crea una `Preference` en MP, devuelve `{ init_point: <url>, preference_id }` para que el frontend redirija al checkout MP.
+- Modelo `Payment` (definido por `REQ-BE-00005`) guarda `mp_preference_id`, `mp_payment_id`, `status` (`pending`, `approved`, `rejected`, `refunded`), `external_reference` (= `CargoOffer.id`).
+- Endpoint `POST /api/payments` que toma un `cargo_offer_id`, crea una `Preference` en MP, devuelve `{ init_point: <url>, preference_id }` para que el frontend redirija al checkout MP.
 - Endpoint webhook `POST /api/webhooks/mercadopago` que recibe notificaciones de pago, valida origen (firma o IP), actualiza `Payment.status`. Idempotente.
 - Logging tagged: `Rails.logger.tagged("mp")`.
 - Job de fallback `MercadoPagoReconcileJob` (cada hora) que consulta el estado de Payments `pending` para casos donde el webhook se perdió.
@@ -54,18 +53,23 @@ Tratado como una sola pieza, cualquier issue se vuelve inestimable y se contamin
 ## Related
 
 - US fuente: US8 (cliente) y US15 (transportista). Este issue habilita la pieza compartida (integración SDK).
-- Issue dependiente: `REQ-BE-00005` (modelo de dominio define `Payment`).
+- Issue dependiente: `REQ-BE-00005` (modelo de dominio define `Payment` y `CargoOffer`).
 - Issues hermanos: `REQ-BE-00007` (flujo de checkout sobre offer-accept), `REQ-BE-00008` (revelar contacto post-pago).
 - Issue gemelo: `REQ-BE-00011` (payout al transportista — usa la misma integración pero el flujo opuesto).
 
 ## Acceptance Criteria
 
 - [ ] SDK de Mercado Pago instalado, gem en `Gemfile`, configurado vía `Rails.application.credentials` o ENV.
-- [ ] Modelo `Payment` con migración aplicada (columnas mínimas: `quote_id`, `mp_preference_id`, `mp_payment_id`, `status`, `amount`, `currency`, `external_reference`, timestamps).
-- [ ] `POST /api/payments` crea Preference y devuelve `init_point` + `preference_id`.
+- [ ] Modelo `Payment` con migración aplicada (columnas mínimas: `cargo_offer_id`, `mp_preference_id`, `mp_payment_id`, `status`, `amount`, `currency`, `external_reference`, timestamps). `external_reference` es string y guarda `CargoOffer.id`.
+- [ ] FK `payments.cargo_offer_id` referencia `cargo_offers(id)` con índice.
+- [ ] `POST /api/payments` recibe `cargo_offer_id`, crea Preference y devuelve `init_point` + `preference_id`.
 - [ ] `POST /api/webhooks/mercadopago` valida firma, actualiza `Payment.status`, es idempotente.
 - [ ] `MercadoPagoReconcileJob` programado y testeado.
 - [ ] README de la integración en `docs/05-appendices/payments.md` (cómo configurar sandbox, cómo testear).
 - [ ] Tests: request specs para `POST /api/payments` y `POST /api/webhooks/mercadopago`; job spec con MP API mockeada.
 - [ ] Log tags: cada operación contra MP queda con `tagged("mp")`.
-- [ ] Identifiers en inglés (`Payment`, `mp_preference_id`).
+- [ ] Identifiers en inglés (`Payment`, `CargoOffer`, `mp_preference_id`, `cargo_offer_id`). Nunca `Quote` ni `cotización`.
+
+## Rename memo
+
+Body refreshed 2026-05-19 — Quote→CargoOffer rename. Source of truth: `docs/05-appendices/glossary.md`, `domain-model.md` § 3.

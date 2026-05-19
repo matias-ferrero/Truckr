@@ -142,6 +142,39 @@ REQ-BE-00009 + REQ-BE-00010 + REQ-BE-00022 + REQ-FE-00009/10
        └─▶ REQ-BE-00031  (US24 chained orders — sequential routes)
 ```
 
+### Cargo rename + Cargo-scoped flow (added 2026-05-19)
+
+After the `Quote → CargoOffer` and `CargoOffer → Cargo` rename, the US flow is reframed to be **Cargo-scoped**: a Shipper publishes a `Cargo` (US27), which feeds the matches view (US4), narrows via filters (US5), drills into Carrier details (US6), and finally spawns one or more `pending` `CargoOffer`s through the offer wizard (US7). One `Cargo` can spawn many `pending` `CargoOffer`s against different `Window`s; the first Carrier accept wins and siblings are auto-`rejected` in the same DB transaction (US12).
+
+> **External blocker**: PR #193 (codebase rename merge resolution) blocks `REF-BE-00002`. Not a graph node — tracked outside `.gdsi-sdlc/issues/`.
+
+```
+[PR #193 merge] ─▶ REF-BE-00002  (codebase rename: Quote→CargoOffer, CargoOffer→Cargo)
+                     ├─▶ REQ-BE-00032  (US27 Cargo model + endpoints + "Mis cargas" UI)
+                     │     └─enables ▶ REQ-FE-00006  (US4 — matches feed at GET /api/cargos/:id/matches)
+                     │           └─▶ REQ-FE-00013  (US5 filter)
+                     │                 └─▶ REQ-FE-00014  (US6 carrier details)
+                     │                       └─▶ REQ-FE-00015  (US7 offer wizard — spawns pending CargoOffers)
+                     │                             └─▶ REQ-BE-00024 (US12 accept — first wins, siblings auto-rejected)
+                     ├─▶ REQ-BE-00024  (US12 accept — references renamed CargoOffer/Cargo)
+                     ├─▶ REQ-BE-00007  (US8 checkout — references renamed entities)
+                     ├─▶ REQ-BE-00008  (US8 contact reveal — references renamed entities)
+                     ├─▶ REQ-BE-00006  (US8 MP checkout — references renamed entities)
+                     ├─▶ REQ-FE-00015  (US7 wizard — UI consumes renamed JSON keys)
+                     ├─▶ REQ-FE-00017  (US10 inbox — lists renamed CargoOffers)
+                     └─▶ REQ-FE-00018  (US11 inbox filter — filters over renamed CargoOffers)
+
+INF-BE-00006  (CargoOfferExpirationJob — Solid Queue 48h auto-expire + Window flip)
+   ·.associated.·▶ REQ-FE-00015 (US7)   ·.associated.·▶ REQ-BE-00024 (US12)
+   (soft / non-blocking: lifecycle support for the 48h auto-expire path)
+```
+
+| TAG | Title | Blocks |
+|-----|-------|--------|
+| `REF-BE-00002` | Rename `Quote`/`CargoOffer` across models, tables, AA, specs, seeds (Ready, waits on PR #193 merge) | `REQ-BE-00032`, `REQ-BE-00024`, `REQ-BE-00007`, `REQ-BE-00008`, `REQ-BE-00006`, `REQ-FE-00015`, `REQ-FE-00017`, `REQ-FE-00018` — any issue whose AC mention the renamed entities |
+| `REQ-BE-00032` | US27 fullstack: `Cargo` model + endpoints + "Mis cargas" UI (Backlog) | Enables `REQ-FE-00006` (US4 matches feed) |
+| `INF-BE-00006` | `CargoOfferExpirationJob` — Solid Queue 48h auto-expire + Window flip (Backlog) | Non-blocking; soft-associated with US7 (`REQ-FE-00015`) and US12 (`REQ-BE-00024`) |
+
 ## Visual (Mermaid)
 
 ```mermaid
@@ -227,8 +260,29 @@ graph TD
   MP10 --> CT30
   CT30 --> CT31[REQ-BE-00031<br/>US24 chained]
 
+  %% Cargo rename + Cargo-scoped flow (added 2026-05-19)
+  PR193[PR #193<br/>rename merge]:::ext
+  REF02[REF-BE-00002<br/>Rename Quote/CargoOffer]:::ref
+  CG32[REQ-BE-00032<br/>US27 Cargo fullstack]:::ref
+  EXP06[INF-BE-00006<br/>CargoOfferExpirationJob]:::xc
+
+  PR193 --> REF02
+  REF02 --> CG32
+  REF02 --> Q24
+  REF02 --> MP07
+  REF02 --> MP08
+  REF02 --> MP06
+  REF02 --> S15
+  REF02 --> C17
+  REF02 --> C18
+  CG32 -.enables.-> S06
+  EXP06 -.associated.-> S15
+  EXP06 -.associated.-> Q24
+
   classDef ir fill:#fff3cd,stroke:#856404,color:#000
   classDef xc fill:#d1ecf1,stroke:#0c5460,color:#000
+  classDef ref fill:#e7d6ff,stroke:#5a32a3,color:#000
+  classDef ext fill:#f5f5f5,stroke:#666,color:#000,stroke-dasharray: 4 2
 ```
 
 ## Parallelization plan (6 people)
@@ -295,6 +349,8 @@ The split is rough — adjust based on team strengths.
 
 - `─▶` blocks (dep arrow).
 - `─.consumes.─▶` reads from / displays data of (soft dependency, not blocking).
+- `─enables─▶` upstream ships an API/UI the downstream consumes (hard, but only the consumer part is blocked).
+- `·.associated.·▶` logically related lifecycle support; non-blocking.
 - **Tier 0** — must merge before any Tier 1.
 - **Cross-cutting** — no Tier 1 dependency; pick up any time.
 

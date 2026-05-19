@@ -27,7 +27,7 @@ entity "insurance_policies" as ip {
   policy_number : string
   coverage_amount_cents : integer
   premium_cents : integer
-  status : string [quoted, active, expired, claimed]
+  status : string [active, expired, claimed]
   * created_at : datetime
   * updated_at : datetime
 }

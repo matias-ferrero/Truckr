@@ -33,7 +33,7 @@ US24 difiere de US23 en que **la carga no coexiste**: el carrier hace pickup →
 ### Backend
 - Modelo `ChainedTrip` (o reusar `CompositeTrip` con flag `mode: composite|chained` — decisión de implementación).
 - Endpoints:
-  - `GET /api/carriers/me/chain_suggestions?from_shipment_id=X` — devuelve `Quote`s `pending` cuyo origen está cerca del destino del shipment X (matching geográfico). Limitado a las top-N por proximidad.
+  - `GET /api/carriers/me/chain_suggestions?from_shipment_id=X` — devuelve `CargoOffer`s `pending` cuyo origen está cerca del destino del shipment X (matching geográfico). Limitado a las top-N por proximidad.
   - `POST /api/carriers/me/chained_trips` — crea con orden secuencial de shipments.
   - `GET /api/carriers/me/chained_trips/:id` — detalle con orden, ETA de cada parada según la cadena.
 - ETAs calculadas en cascada: ETA de la parada N = ETA de la parada N-1 + duration entre N-1 y N.

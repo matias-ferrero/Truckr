@@ -1,5 +1,5 @@
 @startuml erd-marketplace
-title Entity Relationships — Marketplace (Draft v1)
+title Entity Relationships — Marketplace (Draft v2)
 
 entity "transport_windows" as tw {
   * id : bigint <<PK>>
@@ -16,12 +16,13 @@ entity "transport_windows" as tw {
   * end_at : datetime
   available_capacity_kg : integer
   price_reference : decimal
-  status : string [open, matched, expired, cancelled]
+  pickup_radius_km : decimal
+  status : string [open, pending_offer, reserved, closed]
   * created_at : datetime
   * updated_at : datetime
 }
 
-entity "cargo_offers" as co {
+entity "cargos" as c {
   * id : bigint <<PK>>
   --
   * shipper_id : bigint <<FK>>
@@ -35,17 +36,16 @@ entity "cargo_offers" as co {
   * weight_kg : integer
   goods_description : text
   special_handling : string
-  max_price : decimal
-  status : string [open, quoted, accepted, cancelled]
+  status : string [open, accepted, cancelled]
   * created_at : datetime
   * updated_at : datetime
 }
 
-entity "quotes" as q {
+entity "cargo_offers" as co {
   * id : bigint <<PK>>
   --
-  * cargo_offer_id : bigint <<FK>>
-  transport_window_id : bigint <<FK>>
+  * cargo_id : bigint <<FK>>
+  * transport_window_id : bigint <<FK>>
   * carrier_id : bigint <<FK>>
   * vehicle_id : bigint <<FK>>
   * price_cents : integer
@@ -53,24 +53,35 @@ entity "quotes" as q {
   message : text
   status : string [pending, accepted, rejected, expired]
   accepted_at : datetime
-  expires_at : datetime
+  * expires_at : datetime
   * created_at : datetime
   * updated_at : datetime
 }
 
-tw }o--o{ q : "referenced by (optional)"
-co ||--o{ q : "receives"
+c ||--o{ co : "receives"
+tw ||--o{ co : "targeted by"
 
 note bottom
-  Lat / lng stored as DECIMAL(9,6) columns (ADR-010); no spatial index
-  Phase 0/1. PKs are bigint (ADR-007). Currency stored as ISO 4217 string,
+  Lat / lng stored as DECIMAL(9,6) columns (ADR-010); no spatial index.
+  PKs are bigint (ADR-007). Currency stored as ISO 4217 string,
   default 'ARS'. Hard-deleted (ADR-009).
 
-  Cross-context FK: quotes.vehicle_id → vehicles.id (Identity). The Carrier
-  commits a specific Vehicle when quoting; if transport_window_id is set,
-  quotes.vehicle_id MUST equal transport_windows.vehicle_id. The vehicle is
-  copied into shipments.vehicle_id at acceptance (Fulfilment § 4.1) and
-  frozen there. See erd-overview.puml for the cross-context wiring.
+  Authorship: the Shipper authors `cargo_offers` against a chosen
+  `transport_window`. The Carrier accepts or rejects. On accept, the
+  `cargo` is locked to that Carrier + Vehicle; sibling pending offers
+  for the same `cargo` are auto-rejected in the same transaction and
+  their `transport_windows` auto-flip pending_offer → open.
+
+  Window-locks-on-Offer (MVP): at most one `pending` `cargo_offer`
+  per `transport_window_id`. SQLite has no EXCLUDE constraint; the
+  guard lives in the application layer.
+
+  Cross-context FK: cargo_offers.vehicle_id → vehicles.id (Identity).
+  Invariant: cargo_offers.vehicle_id == transport_windows.vehicle_id
+  AND cargo_offers.carrier_id == transport_windows.carrier_id (the
+  Shipper transitively pins both by picking the Window). The vehicle
+  is copied into shipments.vehicle_id at acceptance (Fulfilment § 4.1)
+  and frozen there. See erd-overview.puml for the cross-context wiring.
 end note
 
 @enduml

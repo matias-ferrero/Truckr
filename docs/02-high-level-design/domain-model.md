@@ -27,8 +27,8 @@ Four contexts. Identity is the owner of accounts; Marketplace publishes supply /
 │      Identity     │  │     Marketplace    │  │     Fulfilment     │
 │                   │  │                    │  │                    │
 │ User              │  │ TransportWindow    │  │ Shipment (FSM)     │
-│ Carrier           │  │ CargoOffer         │  │ TrackingEvent      │
-│ Shipper           │  │ Quote              │  │ Route              │
+│ Carrier           │  │ Cargo              │  │ TrackingEvent      │
+│ Shipper           │  │ CargoOffer         │  │ Route              │
 │ Vehicle           │  │                    │  │                    │
 └───────────────────┘  └────────────────────┘  └────────────────────┘
          ▲                       ▲                       ▲
@@ -47,9 +47,9 @@ Four contexts. Identity is the owner of accounts; Marketplace publishes supply /
 Cross-context relationships rendered in `erd-overview.puml`. The most important arrows:
 
 - `User` 1:0..1 `Carrier`, 1:0..1 `Shipper` — a user may have either, both, or neither profile (ADR-008).
-- `Carrier` 1:N `Vehicle`; `Carrier` 1:N `TransportWindow`; `Shipper` 1:N `CargoOffer`.
-- `CargoOffer` 1:N `Quote`; `Carrier` 1:N `Quote` (one carrier can quote many offers).
-- `Quote` 1:0..1 `Shipment` (an accepted quote produces exactly one shipment).
+- `Carrier` 1:N `Vehicle`; `Carrier` 1:N `TransportWindow`; `Shipper` 1:N `Cargo`.
+- `Cargo` 1:N `CargoOffer`; `TransportWindow` 1:N `CargoOffer` (one window can receive many offers over its lifetime, but only one `pending` at a time in MVP).
+- `CargoOffer` 1:0..1 `Shipment` (an accepted offer produces exactly one shipment).
 - `Shipment` 1:N `TrackingEvent`, 1:1 `Route`, 1:1 `Payment`, 1:0..1 `InsurancePolicy`, 1:0..1 `ArcaInvoice`.
 
 ### 1.1 Persona ↔ Model Mapping (derived from the glossary)
@@ -63,8 +63,8 @@ Cross-context relationships rendered in `erd-overview.puml`. The most important 
 | Expedidor                              | `Shipper`         | `shippers` | Identity |
 | Camión / Vehículo                      | `Vehicle`         | `vehicles` | Identity |
 | Ventana de transporte                  | `TransportWindow` | `transport_windows` | Marketplace |
-| Carga (oferta)                         | `CargoOffer`      | `cargo_offers` | Marketplace |
-| Cotización                             | `Quote`           | `quotes` | Marketplace |
+| Carga                                  | `Cargo`           | `cargos` | Marketplace |
+| Oferta de carga                        | `CargoOffer`      | `cargo_offers` | Marketplace |
 | Envío                                  | `Shipment`        | `shipments` | Fulfilment |
 | Evento de tracking                     | `TrackingEvent`   | `tracking_events` | Fulfilment |
 | Ruta                                   | `Route`           | `routes` | Fulfilment |
@@ -194,7 +194,7 @@ Do **NOT** denormalise these into boolean columns on `users`. The relation row i
 - `plate` presence, uniqueness, format (length 6–8).
 - `capacity_kg` > 0.
 
-**Used by** (cross-context): `TransportWindow.vehicle_id` (the truck offered for that supply slot, Marketplace § 3.1); `Quote.vehicle_id` (the truck the Carrier commits when quoting, Marketplace § 3.3); `Shipment.vehicle_id` (the truck physically performing the move, frozen at acceptance, Fulfilment § 4.1). A Vehicle therefore appears in three relations, one per context — see `erd-overview.puml` for the cross-context wiring.
+**Used by** (cross-context): `TransportWindow.vehicle_id` (the truck offered for that supply slot, Marketplace § 3.1); `CargoOffer.vehicle_id` (the truck transitively pinned by the `TransportWindow` the Shipper targets when offering, Marketplace § 3.3); `Shipment.vehicle_id` (the truck physically performing the move, frozen at acceptance, Fulfilment § 4.1). A Vehicle therefore appears in three relations, one per context — see `erd-overview.puml` for the cross-context wiring.
 
 ### 2.5 Identity ↔ AdminUser (ActiveAdmin)
 
@@ -214,30 +214,47 @@ Flat namespace (no per-context modules) for now: 13 models is well below the thr
 
 ## 3. Marketplace (CONCEPTUAL)
 
-The Marketplace context publishes supply (`TransportWindow`) and demand (`CargoOffer`) and matches them via `Quote`s. Identity (`Carrier`, `Shipper`, `Vehicle`) is referenced by FK; nothing is duplicated.
+The Marketplace context publishes supply (`TransportWindow`) and demand (`Cargo`) and matches them via `CargoOffer`s authored by the Shipper. Identity (`Carrier`, `Shipper`, `Vehicle`) is referenced by FK; nothing is duplicated.
 
 ### 3.1 `TransportWindow` (supply — published by a Carrier)
 
-Key attributes: `carrier_id`, `vehicle_id`, `origin_city`, `origin_lat`, `origin_lng`, `destination_city`, `destination_lat`, `destination_lng`, `start_at`, `end_at`, `available_capacity_kg`, `price_reference`, `status` (`open` / `matched` / `expired` / `cancelled`).
+Key attributes: `carrier_id`, `vehicle_id`, `origin_city`, `origin_lat`, `origin_lng`, `destination_city`, `destination_lat`, `destination_lng`, `start_at`, `end_at`, `available_capacity_kg`, `price_reference`, `pickup_radius_km`, `status` (`open` / `pending_offer` / `reserved` / `closed`).
 
 Cardinalities: `Carrier` 1:N `TransportWindow`; `Vehicle` 1:N `TransportWindow`. Lat / lng pair stored per-end (ADR-010).
 
-### 3.2 `CargoOffer` (demand — published by a Shipper)
+**Status transitions** (MVP — Window-locks-on-Offer):
 
-Key attributes: `shipper_id`, `origin_city`, `origin_lat`, `origin_lng`, `destination_city`, `destination_lat`, `destination_lng`, `pickup_at`, `weight_kg`, `goods_description`, `special_handling`, `max_price`, `status` (`open` / `quoted` / `accepted` / `cancelled`).
+- `open → pending_offer`: a Shipper authors a `CargoOffer` against this Window. Only one pending offer at a time in MVP.
+- `pending_offer → open`: the Carrier rejects the `CargoOffer`, or the 48 h expiration fires. Auto-flipped in the same DB transaction as the reject/expire — no manual Carrier step. Window immediately re-appears in other Shippers' search results.
+- `pending_offer → reserved`: the Carrier accepts the `CargoOffer`. Window is locked to that Cargo + Vehicle.
+- `reserved → closed`: the resulting `Shipment` reaches `delivered` (or `cancelled`); Window is retired.
 
-Cardinalities: `Shipper` 1:N `CargoOffer`.
+**Product scope evolution** (post-MVP target, not infra deferral): move to Both-sides-parallel where a Window can hold multiple `pending_offer`s simultaneously and the Carrier picks one. The `pending_offer` state is intentionally named to survive that evolution.
 
-### 3.3 `Quote`
+### 3.2 `Cargo` (demand — published by a Shipper)
 
-Key attributes: `cargo_offer_id`, `carrier_id`, `vehicle_id` (NOT NULL — the specific truck the Carrier commits when quoting), `transport_window_id` (nullable — a carrier can quote without a window), `price_cents`, `currency` (`ARS` default), `message`, `status` (`pending` / `accepted` / `rejected` / `expired`), `accepted_at`, `expires_at`.
+Key attributes: `shipper_id`, `origin_city`, `origin_lat`, `origin_lng`, `destination_city`, `destination_lat`, `destination_lng`, `pickup_at`, `weight_kg`, `goods_description`, `special_handling`, `status` (`open` / `accepted` / `cancelled`).
 
-Cardinalities: `CargoOffer` 1:N `Quote`; `Carrier` 1:N `Quote`; `Vehicle` 1:N `Quote`. An `accepted` quote is the trigger that creates a `Shipment` (§ 4.1).
+Cardinalities: `Shipper` 1:N `Cargo`; `Cargo` 1:N `CargoOffer` (a Cargo may spawn many offers across different Windows — see § 3.3).
 
-**Invariants**:
+**Status transitions**:
 
-- If `transport_window_id` is set, `Quote.vehicle_id` MUST equal `TransportWindow.vehicle_id` (a Carrier cannot quote a window with one truck and commit a different one). Enforced in AR validation.
-- `Quote.vehicle_id` MUST belong to `Quote.carrier_id` (i.e. `Vehicle.carrier_id == Quote.carrier_id`). Enforced in AR validation.
+- `open`: Cargo is published and accepting offers. The Shipper may have zero, one, or many `pending` `CargoOffer`s against compatible Windows; Cargo stays `open` regardless.
+- `open → accepted`: a Carrier accepts one of the Cargo's `CargoOffer`s. In the same DB transaction, all sibling `pending` `CargoOffer`s for this Cargo are auto-`rejected`, and their respective Windows auto-flip `pending_offer → open` (see § 3.1).
+- `open → cancelled`: the Shipper cancels before any offer is accepted.
+
+### 3.3 `CargoOffer` (Shipper-authored bid against a `TransportWindow`)
+
+Key attributes: `cargo_id`, `transport_window_id` (NOT NULL — Shipper-authored offers always target a specific Window), `carrier_id` (denormalised from the Window for query convenience and FK integrity at accept-time), `vehicle_id` (NOT NULL — transitively pinned by the Window), `price_cents`, `currency` (`ARS` default), `message`, `status` (`pending` / `accepted` / `rejected` / `expired`), `accepted_at`, `expires_at` (48 h from creation).
+
+Cardinalities: `Cargo` 1:N `CargoOffer`; `TransportWindow` 1:N `CargoOffer`; `Carrier` 1:N `CargoOffer`. An `accepted` `CargoOffer` is the trigger that creates a `Shipment` (§ 4.1).
+
+**Invariants** (enforced in AR validation):
+
+- `CargoOffer.vehicle_id` MUST equal `TransportWindow.vehicle_id` (Shipper selects a Window which transitively pins the truck — they cannot author an offer that points at a different truck than the Window advertises).
+- `CargoOffer.carrier_id` MUST equal `TransportWindow.carrier_id` (same transitive pin, for the Carrier).
+- `CargoOffer.vehicle_id` MUST belong to `CargoOffer.carrier_id` (i.e. `Vehicle.carrier_id == CargoOffer.carrier_id`).
+- At most one `pending` `CargoOffer` per `transport_window_id` at any time (MVP Window-locks-on-Offer); enforced by application-layer guard since SQLite has no `EXCLUDE` constraint.
 
 ---
 
@@ -245,26 +262,26 @@ Cardinalities: `CargoOffer` 1:N `Quote`; `Carrier` 1:N `Quote`; `Vehicle` 1:N `Q
 
 ### 4.1 `Shipment` finite-state machine
 
-Schema (key attributes): `quote_id` (unique), `carrier_id`, `shipper_id`, `vehicle_id` (NOT NULL — frozen at acceptance, copied from the accepted `Quote.vehicle_id`; this is the truck that physically performs the shipment, immutable for traceability), `status` (see FSM), `pickup_at`, `delivered_at`, `settled_at`, `cancelled_at`, `deleted_at` (soft-delete, ADR-009).
+Schema (key attributes): `cargo_offer_id` (unique), `carrier_id`, `shipper_id`, `vehicle_id` (NOT NULL — frozen at acceptance, copied from the accepted `CargoOffer.vehicle_id`; this is the truck that physically performs the shipment, immutable for traceability), `status` (see FSM), `pickup_at`, `delivered_at`, `settled_at`, `cancelled_at`, `deleted_at` (soft-delete, ADR-009).
 
-States: `draft → quoted → accepted → in_transit → delivered → settled`. Branch: `cancelled`. Modelled by hand (no `aasm` / `state_machines` gem) until the complexity warrants one. Soft-deleted (ADR-009).
+States: `draft → offered → accepted → in_transit → delivered → settled`. Branch: `cancelled`. Modelled by hand (no `aasm` / `state_machines` gem) until the complexity warrants one. Soft-deleted (ADR-009).
 
 | From → To | Guard | Side effect |
 |-----------|-------|-------------|
-| `draft → quoted` | At least one `Quote.status = 'pending'` exists for the linked `CargoOffer`. | Append `TrackingEvent('quoted')`. |
-| `quoted → accepted` | The Shipper confirms one `Quote` (transitions it to `accepted`). | Append `TrackingEvent('accepted')`. **Copy `Quote.vehicle_id` into `Shipment.vehicle_id`** (frozen from this point on). Open a `Payment` row in `escrowed` status (Commerce). Other pending quotes for the same offer are auto-rejected. |
+| `draft → offered` | At least one `CargoOffer.status = 'pending'` exists for the linked `Cargo`. | Append `TrackingEvent('offered')`. |
+| `offered → accepted` | The Carrier confirms one `CargoOffer` (transitions it to `accepted`). | Append `TrackingEvent('accepted')`. **Copy `CargoOffer.vehicle_id` into `Shipment.vehicle_id`** (frozen from this point on). Open a `Payment` row in `escrowed` status (Commerce). Sibling pending `CargoOffer`s for the same `Cargo` are auto-rejected; their Windows auto-flip back to `open` (§ 3.1). |
 | `accepted → in_transit` | The Carrier signals pickup. | Append `TrackingEvent('picked_up')`. |
 | `in_transit → delivered` | The Carrier signals delivery. | Append `TrackingEvent('delivered')`. |
 | `delivered → settled` | Either the Shipper confirms, or N hours elapse without dispute. | Append `TrackingEvent('settled')`. Release `Payment` from escrow. Emit `ArcaInvoice` (asynchronous job). |
 | `{any except settled} → cancelled` | Per-state guard: pre-`accepted` cancellations are free; post-`accepted` may incur fees. | Append `TrackingEvent('cancelled')`. Refund or partially refund `Payment` according to the guard rules. |
 
-**Vehicle reassignment**: NOT supported in Phase 0/1. `Shipment.vehicle_id` is frozen at `quoted → accepted` and never changes. If a Carrier needs to swap trucks (breakdown, scheduling conflict), the only path is to **cancel the Shipment and generate a new Quote** with the replacement Vehicle. Treating mid-flight vehicle swap as a state-change side effect (with its own tracking event, payment implication, and ARCA fiscal impact) is deliberately out of scope; revisit when the operational data demands it.
+**Vehicle reassignment**: NOT supported in Phase 0/1. `Shipment.vehicle_id` is frozen at `offered → accepted` and never changes. If a Carrier needs to swap trucks (breakdown, scheduling conflict), the only path is to **cancel the Shipment and have the Shipper author a new `CargoOffer`** against a different Window with the replacement Vehicle. Treating mid-flight vehicle swap as a state-change side effect (with its own tracking event, payment implication, and ARCA fiscal impact) is deliberately out of scope; revisit when the operational data demands it.
 
 Implementation note: every transition lives in a method on `Shipment` (e.g. `Shipment#accept!`, `#cancel!`) that is wrapped in a transaction with the side-effect writes. No domain event bus yet — direct calls suffice for Phase 0/1.
 
 ### 4.2 `TrackingEvent` (append-only log)
 
-Key attributes: `shipment_id`, `event_type` (`quoted`, `accepted`, `picked_up`, `waypoint`, `position`, `delay`, `delivered`, `settled`, `cancelled`, `exception`), `occurred_at`, `lat`, `lng`, `note`. Hard-deleted only via `Shipment` cascade — and only because `Shipment` is soft-deleted, so `TrackingEvent` rows are functionally retained.
+Key attributes: `shipment_id`, `event_type` (`offered`, `accepted`, `picked_up`, `waypoint`, `position`, `delay`, `delivered`, `settled`, `cancelled`, `exception`), `occurred_at`, `lat`, `lng`, `note`. Hard-deleted only via `Shipment` cascade — and only because `Shipment` is soft-deleted, so `TrackingEvent` rows are functionally retained.
 
 ### 4.3 `Route`
 
@@ -282,7 +299,7 @@ Key attributes: `shipment_id`, `shipper_id`, `carrier_id`, `amount_cents`, `curr
 
 ### 5.2 `InsurancePolicy`
 
-Key attributes: `shipment_id` (unique), `provider`, `policy_number`, `coverage_amount_cents`, `premium_cents`, `status` (`quoted` / `active` / `expired` / `claimed`).
+Key attributes: `shipment_id` (unique), `provider`, `policy_number`, `coverage_amount_cents`, `premium_cents`, `status` (`active` / `expired` / `claimed`).
 
 ### 5.3 `ArcaInvoice`
 
@@ -299,14 +316,14 @@ This table maps USM / `backlog-us.typ` user stories to the entities they exercis
 | US1 — Registro de cuenta (expedidor o transportista) | `User`, `Carrier`, `Shipper` | Identity |
 | US2 — Login | `User` | Identity |
 | US3 — Edición de perfil (expedidor o transportista) | `User`, `Carrier`, `Shipper` | Identity |
-| US4 — Búsqueda de transportistas | `Carrier`, `TransportWindow` | Marketplace |
-| US5 — Visualizar detalles de transportista | `Carrier`, `Vehicle` | Identity / Marketplace |
-| US6 — Publicar oferta (cargo) | `CargoOffer` | Marketplace |
-| US7 — Recibir y comparar cotizaciones | `Quote`, `CargoOffer` | Marketplace |
+| US4 — Búsqueda de ventanas compatibles con mi carga | `Cargo`, `TransportWindow` | Marketplace |
+| US5 — Refinar ventanas compatibles | `Cargo`, `TransportWindow` | Marketplace |
+| US6 — Detalles de transportista (perfil público + CTA ofertar) | `Carrier`, `Vehicle`, `TransportWindow`, `Cargo` | Identity / Marketplace |
+| US7 — Ofertar retiro de un producto (autoría de `CargoOffer` contra una ventana) | `CargoOffer`, `Cargo`, `TransportWindow` | Marketplace |
 | US8 — Realizar pago (expedidor) | `Payment`, `Shipment` | Commerce / Fulfilment |
 | US9 — Publicar disponibilidad (transportista) | `TransportWindow`, `Vehicle` | Marketplace |
-| US10 — Listado de ofertas para transportistas | `CargoOffer`, `TransportWindow` | Marketplace |
-| US11 — Aceptar viaje | `Quote`, `Shipment` | Marketplace / Fulfilment |
+| US10 — Listado de ofertas para transportistas | `Cargo`, `TransportWindow` | Marketplace |
+| US11 — Aceptar viaje | `CargoOffer`, `Shipment` | Marketplace / Fulfilment |
 | US12 — Registrar vehículo | `Vehicle`, `Carrier` | Identity |
 | US13 — Notificaciones de estado | `TrackingEvent`, `Shipment` | Fulfilment |
 | US14 — Historial de viajes | `Shipment` | Fulfilment |
@@ -317,8 +334,14 @@ This table maps USM / `backlog-us.typ` user stories to the entities they exercis
 | US19 — Viajes encadenados | `Shipment`, `Route` | Fulfilment |
 | US20 — Seguro | `InsurancePolicy`, `Shipment` | Commerce |
 | US21 — Editar reseñas | (TBD — `Review`) | Identity |
+| US22 — Verificación de cuenta por email | `User` | Identity |
+| US23 — Viajes compuestos (multi-pickup / multi-delivery) | `Shipment`, `Route`, `TrackingEvent` | Fulfilment |
+| US24 — Encadenado de pedidos (rutas secuenciales) | `Shipment`, `Route` | Fulfilment |
+| US25 — Seguros (cotización por valor y distancia) | `InsurancePolicy`, `Shipment`, `Cargo` | Commerce |
+| US26 — Editar y eliminar reseña | (TBD — `Review`) | Identity |
+| US27 — Publicar carga (Shipper) | `Cargo`, `Shipper` | Marketplace |
 
-The two TBD slots (`Review` US17 / US21) are intentional gaps — see § 9.
+The TBD slots (`Review` US17 / US21 / US26) are intentional gaps — see § 9.
 
 ---
 
@@ -341,7 +364,7 @@ The two TBD slots (`Review` US17 / US21) are intentional gaps — see § 9.
 |---------|-------|--------|
 | `docs/04-database-diagrams/erd-overview.puml` | All four contexts at high level | Draft v1 |
 | `docs/04-database-diagrams/erd-identity.puml` | `users`, `carriers`, `shippers`, `vehicles` (ready-to-migrate) | Draft v1 |
-| `docs/04-database-diagrams/erd-marketplace.puml` | `transport_windows`, `cargo_offers`, `quotes` | Draft v1 (conceptual) |
+| `docs/04-database-diagrams/erd-marketplace.puml` | `transport_windows`, `cargos`, `cargo_offers` | Draft v1 (conceptual) |
 | `docs/04-database-diagrams/erd-fulfilment.puml` | `shipments`, `tracking_events`, `routes` | Draft v1 (conceptual) |
 | `docs/04-database-diagrams/erd-commerce.puml` | `payments`, `insurance_policies`, `arca_invoices` | Draft v1 (conceptual) |
 
@@ -352,10 +375,10 @@ The two TBD slots (`Review` US17 / US21) are intentional gaps — see § 9.
 Out of scope for this issue, but blocked on it:
 
 - **First Identity migrations** — `User`, `Carrier`, `Shipper`, `Vehicle` migrations + AR models + minimal RSpec specs.
-- **First real endpoint** — `Api::QuoteRequestsController#create` once Marketplace entities exist.
+- **First real endpoint** — `Api::CargoOffersController#create` once Marketplace entities exist (Shipper authors a `CargoOffer` against a chosen `TransportWindow`).
 - **Auth strategy** — `has_secure_password` integration; Pundit policies scoped via `User#carrier?` / `User#shipper?` predicates (which read the `has_one :carrier` / `has_one :shipper` relations — see ADR-008).
 - **Review entity** — US17 / US21 (reseñas) are not yet modelled. Adding `Review` (FK `shipment_id`, `author_user_id`, `rating`, `body`, soft-delete?) is a small follow-up issue.
-- **`Match`** — the USM mentions matching as a distinct concept; in this draft it is collapsed into `Quote`. Promote to a separate entity only if matching algorithms grow stateful.
+- **`Match`** — the USM mentions matching as a distinct concept; in this draft it is collapsed into `CargoOffer`. Promote to a separate entity only if matching algorithms grow stateful.
 - **`Shipment` chained trips (US19)** — viajes encadenados may need a `ShipmentChain` aggregate. Punted to Phase 2.
 - **PostGIS migration** — Phase 2 trigger (ADR-010).
 

@@ -31,7 +31,7 @@ US18 AC: botón para marcar como retirado, cliente ve estado actualizado, fecha 
 ## Expected Behavior
 
 ### Backend
-- `POST /api/carriers/me/shipments/:id/mark_picked_up` — solo carrier dueño + solo si `Shipment.status == accepted` (que implica Quote pagado).
+- `POST /api/carriers/me/shipments/:id/mark_picked_up` — solo carrier dueño + solo si `Shipment.status == accepted` (que implica CargoOffer pagado).
 - `Shipment.transition_to!(:in_transit)` (de `REQ-BE-00022`), set `picked_up_at`, emite `TrackingEvent`.
 - Notifica al cliente (in-app + email) con el cambio de estado.
 

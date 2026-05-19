@@ -83,61 +83,65 @@ para completar y mantener actualizados mis datos personales.
 
 // ── Plataforma del Expedidor ────────────────────────────────────────────────
 
-== US4: Búsqueda de Ventanas de Transporte
+== US4: Búsqueda de Ventanas Compatibles con mi Carga
 
 *Release:* MVP \
 *Prioridad:* Alta \
-*Épica:* Ver Ventanas de Transporte Disponibles
+*Épica:* Buscar Transporte para mi Carga
 
 *Descripción:*
 Como expedidor,
-quiero buscar ventanas de transporte (`TransportWindow`) que coincidan con mi necesidad,
-para identificar qué transportistas están dispuestos a realizar mi viaje en la fecha y zona requeridas.
+quiero ver el listado de ventanas de transporte compatibles con una carga que publiqué,
+para identificar qué transportistas están en condiciones de realizar mi viaje y poder enviarles una oferta de carga.
 
 *Criterios de Aceptación:*
-+ Al ingresar una ubicación origen y una destino, aparecen las ventanas de transporte que cubren ese par origen → destino.
-+ Al ingresar un rango de fecha, solo aparecen las ventanas cuya franja temporal se solapa con ese rango.
-+ Cada resultado muestra origen, destino, franja de fechas, y un resumen del transportista responsable y del vehículo asociado.
-+ El listado de resultados permite scrollear entre todas las ventanas disponibles.
-+ En caso de existir muchas ventanas disponibles, se muestran en páginas distintas (paginado).
-+ Al hacer click en una ventana, se navega a los detalles del transportista responsable (US6) con el contexto de la ventana seleccionada.
-+ Se puede seleccionar un criterio de ordenamiento (ascendente/descendente) para ordenar los resultados.
++ Se accede a esta pantalla desde la pantalla de detalle de una carga publicada (US27).
++ El listado muestra únicamente las ventanas en estado abierta cuya fecha de retiro de la carga cae dentro de su franja temporal.
++ El listado muestra únicamente las ventanas cuyo origen está a una distancia menor o igual al radio de retiro declarado por el transportista respecto del origen de la carga, y cuyo destino también está dentro del mismo radio respecto del destino de la carga.
++ El listado muestra únicamente las ventanas cuyo vehículo asociado tiene capacidad disponible mayor o igual al peso de la carga.
++ Cada resultado muestra origen, destino, franja de fechas, resumen del transportista responsable y del vehículo asociado, precio por kilómetro de referencia y costo estimado total para la carga (precio por kilómetro × distancia estimada).
++ En caso de existir muchas ventanas compatibles, los resultados se muestran paginados.
++ Al hacer click sobre el resumen de una ventana, se navega al detalle del transportista responsable (US6) preservando el contexto de la carga y de la ventana seleccionada.
++ Cada fila incluye una acción "Ofertar" que lleva directamente a US7 con la carga y la ventana ya en contexto.
++ Si la carga ya tiene ofertas pendientes contra otras ventanas, se muestra un contador visible ("Ofertas pendientes: N") para que el expedidor recuerde sus propuestas en curso.
++ Si no hay ventanas compatibles, se muestra un mensaje claro indicándolo y se sugiere revisar la fecha o el origen/destino de la carga.
 
-== US5: Filtrado de Ventanas de Transporte
+== US5: Refinar Ventanas Compatibles
 
 *Release:* MVP \
 *Prioridad:* Media \
-*Épica:* Ver Ventanas de Transporte Disponibles
+*Épica:* Buscar Transporte para mi Carga
 
 *Descripción:*
 Como expedidor,
-quiero filtrar las ventanas de transporte disponibles,
-para encontrar más rápido aquella que mejor se ajuste a mi carga y presupuesto.
+quiero refinar el listado de ventanas compatibles con mi carga (US4),
+para priorizar las opciones que mejor se ajustan a mi presupuesto o urgencia.
 
 *Criterios de Aceptación:*
-+ Se puede filtrar por precio por kilómetro, mostrando solo las ventanas dentro del rango indicado.
-+ Se puede filtrar por peso, mostrando solo las ventanas cuyo vehículo asociado pueda cargar dicho peso.
-+ Se puede filtrar por volumen/dimensiones, mostrando solo las ventanas cuyo vehículo pueda alojar dicho tamaño de producto.
-+ Se puede filtrar por capacidad del vehículo.
-+ Al borrar un filtro seleccionado, se resetea la búsqueda y aparecen todas las ventanas disponibles.
-+ Los filtros se pueden combinar entre sí.
++ Se puede filtrar por precio por kilómetro máximo, ocultando las ventanas cuyo precio por kilómetro supere el valor indicado.
++ Se puede ordenar por precio estimado total (ascendente / descendente).
++ Se puede ordenar por fecha de inicio de la ventana (más próxima primero).
++ Se puede ordenar por distancia entre el origen de la carga y el origen de la ventana (más cercano primero).
++ Los filtros y el orden seleccionado se pueden combinar entre sí.
++ Al borrar un filtro seleccionado se reinicia el listado al conjunto completo de ventanas compatibles (sin abandonar el contexto de la carga).
 
 == US6: Detalles de Transportista
 
 *Release:* MVP \
 *Prioridad:* Media \
-*Épica:* Ver Ventanas de Transporte Disponibles
+*Épica:* Buscar Transporte para mi Carga
 
 *Descripción:*
 Como expedidor,
-quiero entrar a los detalles del transportista responsable de una ventana de transporte que me interesó,
-para decidir si es el indicado para realizar mi viaje antes de ofertarle.
+quiero entrar al detalle del transportista responsable de una ventana compatible con mi carga,
+para decidir si es el indicado antes de enviarle una oferta de carga.
 
 *Criterios de Aceptación:*
-+ Se accede a esta pantalla desde un resultado de búsqueda de ventanas (US4) y se conserva el contexto de la ventana seleccionada (origen, destino, fechas).
++ Se accede a esta pantalla desde un resultado de US4 y se conserva el contexto de la carga y de la ventana seleccionada.
 + Se muestran fotos y una descripción detallada del/los vehículos del transportista.
-+ Se indica el costo estimado de realizar el viaje buscado, calculado a partir del precio por kilómetro de la ventana seleccionada.
-+ Se muestra un botón o enlace claro para iniciar una oferta de retiro contra la ventana seleccionada desde esta pantalla.
++ Se muestra el resumen de la ventana seleccionada (origen, destino, franja de fechas, precio por kilómetro, capacidad disponible, radio de retiro).
++ Se indica el costo estimado del viaje, calculado como precio por kilómetro × distancia estimada para la carga en contexto (mismo cálculo que la fila de US4).
++ Se muestra un botón claro "Ofertar contra esta ventana" que navega a US7 con la carga y la ventana ya en contexto.
 + La información se carga correctamente y se presenta de forma clara y organizada.
 
 == US7: Ofertar Retiro de un Producto
@@ -148,16 +152,23 @@ para decidir si es el indicado para realizar mi viaje antes de ofertarle.
 
 *Descripción:*
 Como expedidor,
-quiero ofertar un retiro de un producto a un transportista,
-para que realice el viaje y me lo entregue en destino.
+quiero enviar una oferta de carga al transportista responsable de una ventana compatible con mi carga,
+para proponerle un precio y que decida si acepta realizar el viaje.
 
 *Criterios de Aceptación:*
-+ Se puede indicar la fecha en la que se debe retirar el producto.
-+ Se puede indicar la dirección completa de retiro del producto.
-+ Se puede indicar la dirección completa de entrega del producto.
-+ Una vez completados los datos necesarios, se puede confirmar la oferta.
-+ Al confirmar, la oferta aparece en el listado de ofertas del transportista correspondiente.
-+ Se validan los campos obligatorios antes de permitir confirmar.
++ El acceso a esta pantalla requiere tener una carga en estado abierta y una ventana en estado abierta ya seleccionadas; los datos de origen, destino y fecha de retiro provienen de la carga (no se vuelven a pedir).
++ El monto propuesto se precarga automáticamente con precio por kilómetro × distancia estimada de la ventana seleccionada y puede ser editado libremente por el expedidor antes de confirmar.
++ Se puede ingresar un mensaje opcional dirigido al transportista (por ejemplo, detalles de la carga, condiciones de retiro).
++ Se informa visiblemente que la oferta expira automáticamente a las 48 horas de enviada si el transportista no responde.
++ Se valida que el monto propuesto sea mayor a cero antes de confirmar.
++ Al confirmar, se crea una oferta de carga en estado pendiente asociada a la carga, a la ventana, al transportista y al vehículo de la ventana.
++ Al confirmar, la ventana seleccionada pasa de abierta a con oferta pendiente (otros expedidores dejan de verla en su búsqueda mientras la oferta siga pendiente).
++ La carga permanece en estado abierta mientras existan ofertas pendientes; sólo pasa a aceptada cuando algún transportista acepta una de las ofertas.
++ El transportista correspondiente es notificado de la nueva oferta recibida.
++ Tras confirmar, el expedidor regresa al detalle de la carga, donde la nueva oferta aparece en el listado de ofertas de la carga con su estado actual.
++ El expedidor puede repetir US7 contra otras ventanas compatibles de la misma carga mientras existan ventanas abiertas disponibles; cada confirmación produce una oferta independiente.
++ Si entre que el expedidor abre la pantalla y confirma la oferta la ventana fue tomada por otra propuesta, se muestra un mensaje claro ("esta ventana ya recibió una oferta, elegí otra") y no se crea la oferta.
++ Si el transportista rechaza la oferta o ésta expira a las 48 horas, la ventana vuelve automáticamente a estado abierta y queda disponible para otros expedidores.
 
 == US8: Realizar Pago (Expedidor)
 
@@ -188,7 +199,7 @@ para reservar el servicio y cumplir con mi parte del trato.
 
 *Descripción:*
 Como transportista,
-quiero publicar una ventana de transporte (`TransportWindow`) en la plataforma,
+quiero publicar una ventana de transporte en la plataforma,
 para que los expedidores cuya carga coincida con mi ruta y fecha me encuentren y me ofrezcan viajes.
 
 *Criterios de Aceptación:*
@@ -307,6 +318,28 @@ para cobrar por mi servicio de forma segura y en tiempo.
 + Una vez concretado el viaje (producto entregado), se efectúa la transferencia del pago al transportista.
 + El transportista puede ver el detalle de cada pago recibido (monto, viaje asociado, fecha).
 + Si hay algún problema con la transferencia, se notifica al transportista.
+
+== US27: Publicar Carga
+
+*Release:* MVP \
+*Prioridad:* Alta \
+*Épica:* Gestionar Cargas
+
+*Descripción:*
+Como expedidor,
+quiero publicar una carga con su origen, destino, fecha de retiro, peso y descripción,
+para luego poder buscar ventanas de transporte compatibles y enviar ofertas de carga a los transportistas que las publicaron.
+
+*Criterios de Aceptación:*
++ Se pueden ingresar los datos de la dirección de origen y de la dirección de destino (calle, número, código postal, ciudad y provincia).
++ Se puede ingresar la fecha de retiro estimada (debe ser igual o posterior al día actual).
++ Se puede ingresar el peso de la carga en kilogramos (debe ser mayor a cero).
++ Se puede ingresar una descripción del producto a transportar.
++ Se pueden ingresar instrucciones de manipulación especial (opcional, por ejemplo "frágil", "refrigerado").
++ Los campos obligatorios están claramente marcados y se validan antes de enviar el formulario; si falta uno o un valor es inválido se muestra un mensaje claro por campo.
++ Solo los expedidores autenticados pueden publicar una carga; un transportista logueado no ve la opción.
++ Al publicar exitosamente, la carga queda en estado abierta (sin ofertas asociadas todavía) y el expedidor es redirigido a la pantalla de detalle de la carga, desde donde puede iniciar la búsqueda de ventanas de transporte compatibles (US4).
++ El expedidor puede ver el listado de sus cargas publicadas, con su estado actual (abierta / aceptada / cancelada), desde una sección "Mis cargas".
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Post MVP — Release 2

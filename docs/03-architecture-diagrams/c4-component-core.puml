@@ -20,7 +20,7 @@ Container_Boundary(api, "Backend API (Rails)") {
 
   Component(health_c, "Rails::HealthController", "rails/health", "Liveness endpoint at /up.")
 
-  Component(models, "Domain models", "ActiveRecord", "User, Carrier, Shipper, Vehicle, TransportWindow, CargoOffer, Quote, Shipment, TrackingEvent, Route, Payment, InsurancePolicy, ArcaInvoice (planned — see docs/02-high-level-design/domain-model.md).")
+  Component(models, "Domain models", "ActiveRecord", "User, Carrier, Shipper, Vehicle, TransportWindow, Cargo, CargoOffer, Shipment, TrackingEvent, Route, Payment, InsurancePolicy, ArcaInvoice (planned — see docs/02-high-level-design/domain-model.md).")
   Component(jobs, "Background jobs", "ApplicationJob → solid_queue", "TrackingIngestJob, InvoiceEmissionJob, PaymentSettlementJob (planned).")
   Component(cors, "Rack::Cors middleware", "rack-cors", "Allow-list for dev origins (localhost:5173).")
 }

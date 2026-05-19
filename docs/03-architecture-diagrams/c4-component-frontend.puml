@@ -11,7 +11,7 @@ Container_Boundary(spa, "Frontend SPA (React + Vite)") {
   Component(content, "landingContent.ts", "TS module", "Static landing copy (hero, features, stats) + brand color_palette. Bundled at build time; no runtime fetch.")
   Component(api_const, "api.ts", "TS module", "Exports API_BASE_URL constant. Placeholder — no caller yet.")
   Component(theme, "themeVars memo", "useMemo", "Maps landingContent.color_palette → CSS custom properties (--brand-*).")
-  Component(quote_state, "quote / quoteErrors state", "React state", "Local-only quote form; no network POST yet.")
+  Component(cargo_offer_state, "quote / quoteErrors state", "React state", "Local-only quote form; no network POST yet.")
   Component(validator, "validateQuote()", "sync fn", "Checks required fields, sets inline errors.")
 
   Component(icon_map, "iconFor()", "pure fn", "Maps 'truck' | 'package' | 'shield' to emoji.")

@@ -50,6 +50,8 @@ El roadmap (`docs/onboarding/06-roadmap.md`) ya identifica esto como tech debt p
 ### Split de App.tsx actual
 - La landing se mueve a `pages/Landing.tsx`.
 - El quote-form local-state se mueve a `features/quote-form/QuoteForm.tsx` (placeholder, será reemplazado por US7 cuando exista).
+
+> Note: bajo el rename `Quote → CargoOffer`, este folder pasará a llamarse `features/cargo-offer/` (y el componente `CargoOfferForm.tsx`). El rename de la carpeta y del componente se hace en el PR de implementación de US7, no en este issue de bootstrap de routing — acá se preserva `quote-form` como placeholder para que el grep siga encontrándolo.
 - Los datos hardcoded de la landing (`landingContent.ts`) se mueven a `features/landing/content.ts`.
 
 ### Providers

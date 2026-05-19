@@ -32,7 +32,7 @@ Tras la búsqueda (US4), el cliente necesita un lugar donde decidir si contratar
 
 ### Backend
 - `GET /api/carriers/:id` devuelve: datos básicos del Carrier, sus `Vehicle`s con fotos (URLs públicas via ActiveStorage), `TransportWindow`s activas, `rating_avg` + `reviews_count` (cuando existan, pueden ser null por ahora).
-- `GET /api/carriers/:id/quote_estimate?cargo_offer_id=X` o con params (`origin`, `destination`, `weight`, `volume`) devuelve `{ estimated_amount_cents, currency, breakdown }`.
+- `GET /api/carriers/:id/cargo_estimate?cargo_id=X` o con params (`origin`, `destination`, `weight`, `volume`) devuelve `{ estimated_amount_cents, currency, breakdown }`.
 
 ### Frontend
 - Ruta `/carriers/:id`.
@@ -52,7 +52,7 @@ Tras la búsqueda (US4), el cliente necesita un lugar donde decidir si contratar
 ## Acceptance Criteria
 
 - [ ] `GET /api/carriers/:id` con request spec; expone vehicles + windows + rating fields.
-- [ ] `GET /api/carriers/:id/quote_estimate` con cálculo determinístico documentado.
+- [ ] `GET /api/carriers/:id/cargo_estimate` con cálculo determinístico documentado.
 - [ ] Página `/carriers/:id` con hero, galería, descripción, costo estimado, CTA.
 - [ ] Sin auth requirement (pantalla pública).
 - [ ] E2E: navegar desde búsqueda, ver detalle, click en CTA dispara navegación a oferta.

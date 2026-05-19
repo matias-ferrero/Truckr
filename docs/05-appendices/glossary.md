@@ -19,8 +19,8 @@ The `English model / table` column lists the canonical Rails identifier for each
 | **Usuario (cuenta de auth)** | `User` / `users` | Base account record (email, password digest, common profile fields). A single `User` may have a `Carrier` profile, a `Shipper` profile, or both — role state is derived from the relation rows via `User.carriers` / `User.shippers` scopes and `user.carrier?` / `user.shipper?` predicates (no denormalised flags; see ADR-008). |
 | **Camión / Vehículo** | `Vehicle` / `vehicles` | Truck registered by a Transportista. Plate, capacity, type, GPS-capable flag. **UI canon (es-AR):** the collection in the carrier UI is **"Mi flota"** (never "Mis vehículos" / "Mis camiones"); the CTA to register a new one is **"Agregar vehículo"** (never "Registrar" / "Nuevo vehículo" / "Sumar camión"). Plural label "Flota" for any list view aria-label. |
 | **Ventana de transporte** | `TransportWindow` / `transport_windows` | Block of availability published by a Transportista (origin, destination, time range, vehicle). |
-| **Carga (oferta)** | `CargoOffer` / `cargo_offers` | "Cargo offer / load" — goods published by an Expedidor for transport. |
-| **Cotización** | `Quote` / `quotes` | Price offer from a Transportista against a specific `CargoOffer`. The frontend's "Solicitar cotización" form captures a request locally but does not yet POST to the API. |
+| **Carga** | `Cargo` / `cargos` | Goods published by an Expedidor for transport. A published `Cargo` is the unit Expedidores can search against and bid on (via a `CargoOffer`). Lifecycle: `open / accepted / cancelled`. |
+| **Oferta de carga** | `CargoOffer` / `cargo_offers` | Targeted offer authored by an Expedidor against a specific `TransportWindow` to move one of their `Cargo`s for a proposed price. The Transportista accepts or rejects; on accept, the `Cargo` is locked to that Carrier + Vehicle. Lifecycle: `pending / accepted / rejected / expired`. |
 | **Envío** | `Shipment` / `shipments` | Active or completed transport contract between a Transportista and an Expedidor. State machine: `draft → quoted → accepted → in_transit → delivered → settled` (+ `cancelled`). Soft-deleted (audit). |
 | **Evento de tracking** | `TrackingEvent` / `tracking_events` | Append-only log entry for a Shipment: position, status change. |
 | **Ruta** | `Route` / `routes` | Planned polyline + waypoints for a Shipment. |
@@ -36,6 +36,7 @@ The `English model / table` column lists the canonical Rails identifier for each
 |------|--------|-------|
 | **Cliente** | deprecated 2026-05-03 — folded into `Expedidor` | The word "cliente" remains valid in two narrow contexts: (a) **cliente fiscal** when referring to the ARCA invoice counter-party (`ArcaInvoice` references the `Shipper` as the fiscal customer); (b) **clientes externos** as a generic word for "external customers" of the platform (rare; prefer "usuarios" or "expedidores" when possible). Any other use is a defect. |
 | **Productor** | deprecated 2026-05-03 — folded into `Expedidor` | Was a sub-persona of Cliente (agricultural / industrial producer). Modelled as `Shipper` with no specialised subtype in Phase 0/1. |
+| **Cotización** | deprecated 2026-05-19 — folded into `Oferta de carga` | Earlier model framed the Carrier as the price author ("cotiza" the Cargo). Locked rename: the Expedidor authors the offer against a `TransportWindow`, the Carrier accepts/rejects. Use **"oferta de carga"** (`CargoOffer`). Any new use of "cotización" / "cotizar" / "Mis cotizaciones" in code, UI or new artifacts is a defect. |
 
 ## AI Harness Terms
 

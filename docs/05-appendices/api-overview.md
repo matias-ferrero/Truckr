@@ -46,9 +46,10 @@ Drawn from the product backlog (`docs/artifacts/backlog-us.typ`). Names are indi
 | GET | `/api/users/me` | Current user profile. |
 | GET, POST | `/api/transport_windows` | List/create transportista availability. |
 | GET, PATCH, DELETE | `/api/transport_windows/:id` | Show/update/cancel. |
-| GET, POST | `/api/cargo_offers` | List/create expedidor cargo. |
-| GET, POST | `/api/quotes` | List/send quotes. |
-| POST | `/api/quotes/:id/accept` | Expedidor accepts a quote → creates a Shipment. |
+| GET, POST | `/api/cargos` | List/create Shipper Cargo publications (US27). |
+| POST | `/api/cargos/:id/offers` | Shipper authors a CargoOffer against a TransportWindow (US7). |
+| GET | `/api/carriers/me/cargo-offers` | Carrier inbox — CargoOffers received. |
+| POST | `/api/carriers/me/cargo-offers/:id/accept` | Carrier accepts a CargoOffer → creates a Shipment; cascades sibling-reject and flips the TransportWindow (REQ-BE-00024). |
 | GET, POST | `/api/shipments` | List/show active shipments. |
 | POST | `/api/shipments/:id/tracking_events` | Append tracking event (transportista or provider webhook). |
 | POST | `/api/payments` | Initiate charge on quote acceptance. |

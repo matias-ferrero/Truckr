@@ -4,7 +4,7 @@ title Entity Relationships — Fulfilment (Draft v1)
 entity "shipments" as s {
   * id : bigint <<PK>>
   --
-  * quote_id : bigint <<FK,unique>>
+  * cargo_offer_id : bigint <<FK,unique>>
   * carrier_id : bigint <<FK>>
   * shipper_id : bigint <<FK>>
   * vehicle_id : bigint <<FK>>
@@ -53,7 +53,7 @@ note bottom
   docs/02-high-level-design/domain-model.md § 4.1.
 
   Cross-context FK: shipments.vehicle_id → vehicles.id (Identity). The
-  vehicle is copied from the accepted Quote at the quoted→accepted
+  vehicle is copied from the accepted CargoOffer at the offered→accepted
   transition and frozen for the rest of the Shipment lifecycle —
   reassignment is not supported in Phase 0/1 (cancel + re-quote instead).
   See erd-overview.puml for the cross-context wiring.
