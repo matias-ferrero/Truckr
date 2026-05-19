@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
-import { createQuote, type Quote, type QuoteDraft } from "../../api/quotes";
+import { createCargoOffer, type CargoOffer, type CargoOfferDraft } from "../../api/quotes";
 import type { CarrierDetail, TransportWindow } from "../../api/carriers";
 import { ApiError } from "../../api";
 import { offerContent } from "./offerContent";
@@ -94,7 +94,7 @@ export default function CreateOfferPage() {
 
     const [draft, setDraft] = useState<FormDraft>(emptyDraft);
     const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
-    const [confirmed, setConfirmed] = useState<Quote | null>(null);
+    const [confirmed, setConfirmed] = useState<CargoOffer | null>(null);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -153,7 +153,7 @@ export default function CreateOfferPage() {
         setIsSubmitting(true);
         setSubmitError(null);
         try {
-            const payload: QuoteDraft = {
+            const payload: CargoOfferDraft = {
                 transport_window_id: selectedWindow.id,
                 pickup_address: buildAddress(draft.pickup),
                 delivery_address: buildAddress(draft.delivery),
@@ -166,8 +166,8 @@ export default function CreateOfferPage() {
                 ).toString(),
                 estimated_km: draft.estimated_km,
             };
-            const quote = await createQuote(payload);
-            setConfirmed(quote);
+            const cargoOffer = await createCargoOffer(payload);
+            setConfirmed(cargoOffer);
         } catch (err) {
             if (err instanceof ApiError && err.details) {
                 setServerErrors(err.details as Record<string, string[]>);

@@ -32,7 +32,7 @@ RSpec.describe TransportWindow, type: :model do
 
   describe "associations" do
     it { is_expected.to belong_to(:vehicle) }
-    it { is_expected.to have_many(:quotes).dependent(:restrict_with_error) }
+    it { is_expected.to have_many(:cargo_offers).dependent(:restrict_with_error) }
   end
 
   describe "#carrier delegation" do

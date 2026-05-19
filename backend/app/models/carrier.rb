@@ -6,7 +6,7 @@ class Carrier < ApplicationRecord
   belongs_to :user
   has_many   :vehicles, dependent: :destroy
   has_many   :transport_windows, through: :vehicles
-  has_many   :quotes, dependent: :restrict_with_error, inverse_of: :carrier
+  has_many   :cargo_offers, dependent: :restrict_with_error, inverse_of: :carrier
 
   validates :user_id, uniqueness: true
   validates :tax_id,  uniqueness: { allow_blank: true }
@@ -30,6 +30,6 @@ class Carrier < ApplicationRecord
   end
 
   def self.ransackable_associations(_auth_object = nil)
-    %w[user vehicles transport_windows quotes]
+    %w[user vehicles transport_windows cargo_offers]
   end
 end

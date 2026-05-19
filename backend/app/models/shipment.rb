@@ -4,11 +4,11 @@
 #
 # State machine (hand-rolled, no gem — Decision F in domain-model.md):
 #
-#   ┌───────┐   ┌────────┐   ┌──────────┐   ┌────────────┐   ┌───────────┐   ┌──────────┐
-#   │ draft │──▶│ quoted │──▶│ accepted │──▶│ in_transit │──▶│ delivered │──▶│ settled  │
-#   └───────┘   └────┬───┘   └────┬─────┘   └─────┬──────┘   └───────────┘   └──────────┘
-#                    │            │               │
-#                    ▼            ▼               ▼
+#   ┌───────┐   ┌─────────┐   ┌──────────┐   ┌────────────┐   ┌───────────┐   ┌──────────┐
+#   │ draft │──▶│ offered │──▶│ accepted │──▶│ in_transit │──▶│ delivered │──▶│ settled  │
+#   └───────┘   └────┬────┘   └────┬─────┘   └─────┬──────┘   └───────────┘   └──────────┘
+#                    │             │               │
+#                    ▼             ▼               ▼
 #               ┌─────────────────────────────────────┐
 #               │             cancelled               │
 #               └─────────────────────────────────────┘
@@ -19,8 +19,8 @@ class Shipment < ApplicationRecord
   class IllegalTransition < StandardError; end
 
   ALLOWED_TRANSITIONS = {
-    draft:      [ :quoted ],
-    quoted:     [ :accepted, :cancelled ],
+    draft:      [ :offered ],
+    offered:    [ :accepted, :cancelled ],
     accepted:   [ :in_transit, :cancelled ],
     in_transit: [ :delivered, :cancelled ],
     delivered:  [ :settled ],
@@ -49,13 +49,13 @@ class Shipment < ApplicationRecord
   end
 
   # ── Associations ──────────────────────────────────────────────────────
-  belongs_to :quote, inverse_of: :shipment
+  belongs_to :cargo_offer, inverse_of: :shipment
   has_many   :tracking_events, dependent: :destroy, inverse_of: :shipment
   has_one    :route, dependent: :destroy, inverse_of: :shipment
 
   # ── Validations ───────────────────────────────────────────────────────
-  validates :quote_id, presence: true, uniqueness: true
-  validates :status,   presence: true, inclusion: { in: STATUSES }
+  validates :cargo_offer_id, presence: true, uniqueness: true
+  validates :status,         presence: true, inclusion: { in: STATUSES }
   validates :cancellation_reason,
             presence: true,
             if: -> { status_cancelled? }
@@ -102,12 +102,12 @@ class Shipment < ApplicationRecord
   end
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[id quote_id status picked_up_at delivered_at settled_at cancelled_at
+    %w[id cargo_offer_id status picked_up_at delivered_at settled_at cancelled_at
        cancellation_reason discarded_at created_at updated_at]
   end
 
   def self.ransackable_associations(_auth_object = nil)
-    %w[quote tracking_events route]
+    %w[cargo_offer tracking_events route]
   end
 
   private

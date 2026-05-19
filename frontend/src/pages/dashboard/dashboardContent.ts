@@ -47,7 +47,7 @@ export const dashboardContent = {
     },
 } as const;
 
-export const QUOTE_STATUS_LABEL: Record<string, string> = {
+export const CARGO_OFFER_STATUS_LABEL: Record<string, string> = {
     pending:   "Pendiente",
     accepted:  "Aceptada",
     paid:      "Pagada",
@@ -55,8 +55,8 @@ export const QUOTE_STATUS_LABEL: Record<string, string> = {
     cancelled: "Cancelada",
 };
 
-/** Maps quote status values to the CSS modifier class on `.statusBadge`. */
-export const QUOTE_STATUS_BADGE_CLASS: Record<string, string> = {
+/** Maps cargo offer status values to the CSS modifier class on `.statusBadge`. */
+export const CARGO_OFFER_STATUS_BADGE_CLASS: Record<string, string> = {
     pending:   "pendiente",
     accepted:  "aceptado",
     paid:      "pagado",

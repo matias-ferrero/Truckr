@@ -38,7 +38,7 @@ RSpec.describe Vehicle, type: :model do
   end
 
   describe "before_destroy guard (no live commitments)" do
-    it "destroys cleanly when no Quote model is loaded" do
+    it "destroys cleanly when no CargoOffer model is loaded" do
       vehicle = create(:vehicle)
       expect { vehicle.destroy }.to change(Vehicle, :count).by(-1)
     end

@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { useCurrentUser } from "../../auth/useCurrentUser";
 import { listMyVehicles, Vehicle } from "../../api/vehicles";
 import { listMyTransportWindows, TransportWindow } from "../../api/transport_windows";
-import { listMyQuotes, Quote } from "../../api/quotes";
-import { dashboardContent, QUOTE_STATUS_LABEL, QUOTE_STATUS_BADGE_CLASS } from "./dashboardContent";
+import { listMyCargoOffers, CargoOffer } from "../../api/quotes";
+import { dashboardContent, CARGO_OFFER_STATUS_LABEL, CARGO_OFFER_STATUS_BADGE_CLASS } from "./dashboardContent";
 import { TransportWindowSearchSection } from "./TransportWindowSearchSection";
 import "../../styles/dashboard.css";
 
@@ -43,8 +43,8 @@ export function DashboardPage() {
     const [windows, setWindows]           = useState<TransportWindow[]>([]);
     const [windowsTotal, setWindowsTotal] = useState(0);
 
-    const [quotes, setQuotes]           = useState<Quote[]>([]);
-    const [quotesTotal, setQuotesTotal] = useState(0);
+    const [cargoOffers, setCargoOffers]           = useState<CargoOffer[]>([]);
+    const [cargoOffersTotal, setCargoOffersTotal] = useState(0);
 
     const isCarrier = me?.roles.includes("carrier");
 
@@ -55,8 +55,8 @@ export function DashboardPage() {
                 .then(res => { setWindows(res.items); setWindowsTotal(res.meta.total); })
                 .catch(console.error);
         } else {
-            listMyQuotes(1)
-                .then(res => { setQuotes(res.items); setQuotesTotal(res.meta.total); })
+            listMyCargoOffers(1)
+                .then(res => { setCargoOffers(res.items); setCargoOffersTotal(res.meta.total); })
                 .catch(console.error);
         }
     }, [isCarrier]);
@@ -99,13 +99,13 @@ export function DashboardPage() {
                             <div className="dashboardSectionHeading">
                                 <span className="dashboardSectionIcon" aria-hidden="true"><IconOffer /></span>
                                 <h2 id="section-offers">{dc.shipper.offers.heading}</h2>
-                                <span className="dashboardSectionCount" aria-label={`${quotesTotal} ofertas`}>
-                                    {quotesTotal}
+                                <span className="dashboardSectionCount" aria-label={`${cargoOffersTotal} ofertas`}>
+                                    {cargoOffersTotal}
                                 </span>
                             </div>
                         </div>
                         <div className="dashboardCardList">
-                            {quotes.length === 0 ? (
+                            {cargoOffers.length === 0 ? (
                                 <div className="dashboardEmpty" role="status">
                                     <span className="dashboardEmptyIcon" aria-hidden="true"><IconOffer /></span>
                                     <div>
@@ -116,38 +116,38 @@ export function DashboardPage() {
                                     </div>
                                 </div>
                             ) : (
-                                quotes.map(q => (
-                                    <div key={q.id} className="dashboardCard">
+                                cargoOffers.map(co => (
+                                    <div key={co.id} className="dashboardCard">
                                         <div className="dashboardCardHead">
-                                            <span className={`statusBadge ${QUOTE_STATUS_BADGE_CLASS[q.status] ?? "pasado"}`}>
-                                                {QUOTE_STATUS_LABEL[q.status] ?? q.status}
+                                            <span className={`statusBadge ${CARGO_OFFER_STATUS_BADGE_CLASS[co.status] ?? "pasado"}`}>
+                                                {CARGO_OFFER_STATUS_LABEL[co.status] ?? co.status}
                                             </span>
                                         </div>
                                         <h3
                                             className="dashboardCardTitle"
-                                            aria-label={q.cargo_offer
-                                                ? `${formatAddress(q.cargo_offer.pickup_address)} a ${formatAddress(q.cargo_offer.delivery_address)}`
-                                                : dc.shipper.offers.fallbackCard(q.id)}
+                                            aria-label={co.cargo
+                                                ? `${formatAddress(co.cargo.pickup_address)} a ${formatAddress(co.cargo.delivery_address)}`
+                                                : dc.shipper.offers.fallbackCard(co.id)}
                                         >
-                                            {q.cargo_offer ? (
+                                            {co.cargo ? (
                                                 <>
-                                                    {formatAddress(q.cargo_offer.pickup_address)}
+                                                    {formatAddress(co.cargo.pickup_address)}
                                                     <span aria-hidden="true"> → </span>
-                                                    {formatAddress(q.cargo_offer.delivery_address)}
+                                                    {formatAddress(co.cargo.delivery_address)}
                                                 </>
-                                            ) : dc.shipper.offers.fallbackCard(q.id)}
+                                            ) : dc.shipper.offers.fallbackCard(co.id)}
                                         </h3>
                                         <div className="dashboardCardMeta">
                                             <IconCalendar />
                                             <span>
-                                                {q.cargo_offer
-                                                    ? formatDate(q.cargo_offer.pickup_date)
-                                                    : formatDate(q.created_at)}
+                                                {co.cargo
+                                                    ? formatDate(co.cargo.pickup_date)
+                                                    : formatDate(co.created_at)}
                                             </span>
                                         </div>
                                         <div className="dashboardCardMeta">
                                             <IconMoney />
-                                            <span>{formatARS(q.amount_cents)}</span>
+                                            <span>{formatARS(co.amount_cents)}</span>
                                         </div>
                                     </div>
                                 ))

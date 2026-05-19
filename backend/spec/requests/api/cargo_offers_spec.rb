@@ -2,10 +2,10 @@
 
 require "swagger_helper"
 
-RSpec.describe "Api::Quotes", type: :request do
-  path "/api/quotes" do
-    get("list quotes for the authenticated shipper or carrier") do
-      tags "Quotes"
+RSpec.describe "Api::CargoOffers", type: :request do
+  path "/api/cargo_offers" do
+    get("list cargo offers for the authenticated shipper or carrier") do
+      tags "Cargo Offers"
       produces "application/json"
       security [ bearer_auth: [] ]
 
@@ -20,34 +20,34 @@ RSpec.describe "Api::Quotes", type: :request do
                available_from: 2.days.from_now, available_to: 10.days.from_now)
       end
 
-      let!(:my_quote) do
-        offer = create(:cargo_offer, shipper: shipper_user.shipper)
-        create(:quote, cargo_offer: offer, carrier: carrier_user.carrier, transport_window: window)
+      let!(:my_offer) do
+        cargo = create(:cargo, shipper: shipper_user.shipper)
+        create(:cargo_offer, cargo: cargo, carrier: carrier_user.carrier, transport_window: window)
       end
 
-      let!(:other_quote) do
-        offer = create(:cargo_offer, shipper: other_shipper.shipper)
-        create(:quote, cargo_offer: offer, carrier: carrier_user.carrier, transport_window: window)
+      let!(:other_offer) do
+        cargo = create(:cargo, shipper: other_shipper.shipper)
+        create(:cargo_offer, cargo: cargo, carrier: carrier_user.carrier, transport_window: window)
       end
 
-      response(200, "shipper sees only their own quotes with cargo_offer embedded") do
+      response(200, "shipper sees only their own offers with cargo embedded") do
         run_test! do |response|
           body = JSON.parse(response.body)
           expect(body).to be_an(Array)
-          expect(body.map { |q| q["id"] }).to contain_exactly(my_quote.id)
-          expect(body.first["cargo_offer"]).to include(
+          expect(body.map { |co| co["id"] }).to contain_exactly(my_offer.id)
+          expect(body.first["cargo"]).to include(
             "pickup_address", "delivery_address", "pickup_date", "cargo_description"
           )
         end
       end
 
-      response(200, "carrier sees only quotes directed at them") do
+      response(200, "carrier sees only offers directed at them") do
         let(:Authorization) { "Bearer #{jwt_for(carrier_user)}" }
 
         run_test! do |response|
           body = JSON.parse(response.body)
-          ids = body.map { |q| q["id"] }
-          expect(ids).to include(my_quote.id, other_quote.id)
+          ids = body.map { |co| co["id"] }
+          expect(ids).to include(my_offer.id, other_offer.id)
         end
       end
 
@@ -61,8 +61,8 @@ RSpec.describe "Api::Quotes", type: :request do
       end
     end
 
-    post("create a cargo offer + quote (US7 — Shipper creates offer)") do
-      tags "Quotes"
+    post("publish a cargo and bid it against a transport window (US7 — Shipper creates offer)") do
+      tags "Cargo Offers"
       consumes "application/json"
       produces "application/json"
       security [ bearer_auth: [] ]
@@ -70,7 +70,7 @@ RSpec.describe "Api::Quotes", type: :request do
       parameter name: :payload, in: :body, schema: {
         type: :object,
         properties: {
-          quote: {
+          cargo_offer: {
             type: :object,
             required: %w[transport_window_id pickup_address delivery_address
                          pickup_date cargo_description weight_kg volume_cm3
@@ -88,7 +88,7 @@ RSpec.describe "Api::Quotes", type: :request do
             }
           }
         },
-        required: %w[quote]
+        required: %w[cargo_offer]
       }
 
       # ── helpers ──────────────────────────────────────────────────────────────
@@ -111,7 +111,7 @@ RSpec.describe "Api::Quotes", type: :request do
 
       let(:valid_payload) do
         {
-          quote: {
+          cargo_offer: {
             transport_window_id:  window.id,
             pickup_address:       "Av. Corrientes 1234, CABA",
             delivery_address:     "Av. Colón 500, Córdoba",
@@ -140,9 +140,9 @@ RSpec.describe "Api::Quotes", type: :request do
           expect(body["transport_window_id"]).to eq(window.id)
           expect(body["expires_at"]).to be_present
 
-          # Atomically created CargoOffer
+          # Atomically created Cargo + CargoOffer
+          expect(Cargo.count).to eq(1)
           expect(CargoOffer.count).to eq(1)
-          expect(Quote.count).to eq(1)
         end
       end
 
@@ -178,7 +178,7 @@ RSpec.describe "Api::Quotes", type: :request do
                  available_from: 2.days.from_now, available_to: 10.days.from_now)
         end
         let(:payload) do
-          valid_payload.deep_merge(quote: { transport_window_id: inactive_window.id })
+          valid_payload.deep_merge(cargo_offer: { transport_window_id: inactive_window.id })
         end
 
         run_test! do |response|
@@ -191,7 +191,7 @@ RSpec.describe "Api::Quotes", type: :request do
 
       response(422, "pickup_date before window opens") do
         let(:payload) do
-          valid_payload.deep_merge(quote: { pickup_date: 1.day.from_now.to_date.iso8601 })
+          valid_payload.deep_merge(cargo_offer: { pickup_date: 1.day.from_now.to_date.iso8601 })
         end
 
         run_test! do |response|
@@ -205,7 +205,7 @@ RSpec.describe "Api::Quotes", type: :request do
 
       response(422, "malformed pickup_date is rejected with field-level error") do
         let(:payload) do
-          valid_payload.deep_merge(quote: { pickup_date: "not-a-date" })
+          valid_payload.deep_merge(cargo_offer: { pickup_date: "not-a-date" })
         end
 
         run_test! do |response|
@@ -219,7 +219,7 @@ RSpec.describe "Api::Quotes", type: :request do
 
       response(422, "cargo weight exceeds vehicle max_load_kg") do
         let(:payload) do
-          valid_payload.deep_merge(quote: { weight_kg: "9999" })
+          valid_payload.deep_merge(cargo_offer: { weight_kg: "9999" })
         end
 
         run_test! do |response|
@@ -243,7 +243,7 @@ RSpec.describe "Api::Quotes", type: :request do
                  available_from: 2.days.from_now, available_to: 10.days.from_now)
         end
         let(:payload) do
-          valid_payload.deep_merge(quote: {
+          valid_payload.deep_merge(cargo_offer: {
             transport_window_id: window_with_dims.id,
             volume_cm3: "999999999"
           })
@@ -268,7 +268,7 @@ RSpec.describe "Api::Quotes", type: :request do
                  available_from: 2.days.from_now, available_to: 10.days.from_now)
         end
         let(:payload) do
-          valid_payload.deep_merge(quote: {
+          valid_payload.deep_merge(cargo_offer: {
             transport_window_id: window_no_dims.id,
             volume_cm3: "999999999"
           })
@@ -285,7 +285,7 @@ RSpec.describe "Api::Quotes", type: :request do
 
       response(422, "estimated_km must be greater than zero") do
         let(:payload) do
-          valid_payload.deep_merge(quote: { estimated_km: "0" })
+          valid_payload.deep_merge(cargo_offer: { estimated_km: "0" })
         end
 
         run_test! do |response|
@@ -299,7 +299,7 @@ RSpec.describe "Api::Quotes", type: :request do
 
       response(422, "model validation failure — blank pickup_address") do
         let(:payload) do
-          valid_payload.deep_merge(quote: { pickup_address: "" })
+          valid_payload.deep_merge(cargo_offer: { pickup_address: "" })
         end
 
         run_test! do |response|

@@ -1,5 +1,5 @@
 ActiveAdmin.register Shipment do
-  permit_params :quote_id, :status, :picked_up_at, :delivered_at, :settled_at,
+  permit_params :cargo_offer_id, :status, :picked_up_at, :delivered_at, :settled_at,
                 :cancelled_at, :cancellation_reason, :discarded_at
   config.sort_order = "created_at_desc"
 
@@ -9,7 +9,7 @@ ActiveAdmin.register Shipment do
   index do
     selectable_column
     id_column
-    column :quote_id
+    column :cargo_offer_id
     column :status
     column :picked_up_at
     column :delivered_at
@@ -22,7 +22,7 @@ ActiveAdmin.register Shipment do
   show do
     attributes_table do
       row :id
-      row :quote_id
+      row :cargo_offer_id
       row :status
       row :picked_up_at
       row :delivered_at
@@ -63,7 +63,7 @@ ActiveAdmin.register Shipment do
 
   form do |f|
     f.inputs do
-      f.input :quote
+      f.input :cargo_offer
       f.input :status, as: :select, collection: Shipment::STATUSES
       f.input :picked_up_at
       f.input :delivered_at

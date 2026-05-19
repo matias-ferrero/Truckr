@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_11_230129) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_19_120003) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -66,6 +66,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_11_230129) do
   end
 
   create_table "cargo_offers", force: :cascade do |t|
+    t.integer "amount_cents", null: false
+    t.integer "cargo_id", null: false
+    t.integer "carrier_id", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "ARS", null: false
+    t.datetime "expires_at", null: false
+    t.string "status", default: "pending", null: false
+    t.integer "transport_window_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cargo_id"], name: "index_cargo_offers_on_cargo_id"
+    t.index ["carrier_id"], name: "index_cargo_offers_on_carrier_id"
+    t.index ["expires_at"], name: "index_cargo_offers_on_expires_at"
+    t.index ["status"], name: "index_cargo_offers_on_status"
+    t.index ["transport_window_id"], name: "index_cargo_offers_on_transport_window_id"
+  end
+
+  create_table "cargos", force: :cascade do |t|
     t.text "cargo_description", null: false
     t.datetime "created_at", null: false
     t.integer "declared_value_cents", null: false
@@ -76,8 +93,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_11_230129) do
     t.datetime "updated_at", null: false
     t.integer "volume_cm3", null: false
     t.decimal "weight_kg", precision: 10, scale: 2, null: false
-    t.index ["pickup_date"], name: "index_cargo_offers_on_pickup_date"
-    t.index ["shipper_id"], name: "index_cargo_offers_on_shipper_id"
+    t.index ["pickup_date"], name: "index_cargos_on_pickup_date"
+    t.index ["shipper_id"], name: "index_cargos_on_shipper_id"
   end
 
   create_table "carriers", force: :cascade do |t|
@@ -97,23 +114,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_11_230129) do
     t.index ["user_id"], name: "index_carriers_on_user_id", unique: true
   end
 
-  create_table "quotes", force: :cascade do |t|
-    t.integer "amount_cents", null: false
-    t.integer "cargo_offer_id", null: false
-    t.integer "carrier_id", null: false
-    t.datetime "created_at", null: false
-    t.string "currency", default: "ARS", null: false
-    t.datetime "expires_at", null: false
-    t.string "status", default: "pending", null: false
-    t.integer "transport_window_id", null: false
-    t.datetime "updated_at", null: false
-    t.index ["cargo_offer_id"], name: "index_quotes_on_cargo_offer_id"
-    t.index ["carrier_id"], name: "index_quotes_on_carrier_id"
-    t.index ["expires_at"], name: "index_quotes_on_expires_at"
-    t.index ["status"], name: "index_quotes_on_status"
-    t.index ["transport_window_id"], name: "index_quotes_on_transport_window_id"
-  end
-
   create_table "routes", force: :cascade do |t|
     t.datetime "calculated_at"
     t.datetime "created_at", null: false
@@ -129,18 +129,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_11_230129) do
   create_table "shipments", force: :cascade do |t|
     t.string "cancellation_reason"
     t.datetime "cancelled_at"
+    t.integer "cargo_offer_id", null: false
     t.datetime "created_at", null: false
     t.datetime "delivered_at"
     t.datetime "discarded_at"
     t.datetime "picked_up_at"
-    t.integer "quote_id", null: false
     t.datetime "settled_at"
     t.string "status", default: "draft", null: false
     t.datetime "updated_at", null: false
+    t.index ["cargo_offer_id"], name: "index_shipments_on_cargo_offer_id", unique: true
     t.index ["discarded_at"], name: "index_shipments_on_discarded_at"
-    t.index ["quote_id"], name: "index_shipments_on_quote_id", unique: true
     t.index ["status"], name: "index_shipments_on_status"
-    t.check_constraint "status IN ('draft','quoted','accepted','in_transit','delivered','settled','cancelled')", name: "shipments_status_check"
+    t.check_constraint "status IN ('draft','offered','accepted','in_transit','delivered','settled','cancelled')", name: "shipments_status_check"
   end
 
   create_table "shippers", force: :cascade do |t|
@@ -228,13 +228,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_11_230129) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "cargo_offers", "shippers"
+  add_foreign_key "cargo_offers", "cargos"
+  add_foreign_key "cargo_offers", "carriers"
+  add_foreign_key "cargo_offers", "transport_windows"
+  add_foreign_key "cargos", "shippers"
   add_foreign_key "carriers", "users"
-  add_foreign_key "quotes", "cargo_offers"
-  add_foreign_key "quotes", "carriers"
-  add_foreign_key "quotes", "transport_windows"
   add_foreign_key "routes", "shipments", on_delete: :cascade
-  add_foreign_key "shipments", "quotes", on_delete: :restrict
+  add_foreign_key "shipments", "cargo_offers", on_delete: :restrict
   add_foreign_key "shippers", "users"
   add_foreign_key "tracking_events", "shipments", on_delete: :cascade
   add_foreign_key "transport_windows", "vehicles", on_delete: :cascade

@@ -61,9 +61,9 @@ const fakeCarrier = (vehicles: Vehicle[] = [fakeVehicle()]): CarrierDetail => ({
     updated_at: "",
 });
 
-const fakeQuote = (): quotesApi.Quote => ({
+const fakeCargoOffer = (): quotesApi.CargoOffer => ({
     id: 42,
-    cargo_offer_id: 1,
+    cargo_id: 1,
     carrier_id: 1,
     transport_window_id: 5,
     amount_cents: 1_050_000_000,
@@ -242,8 +242,8 @@ describe("CreateOfferPage", () => {
         expect(screen.getByRole("button", { name: "Siguiente" })).toBeDisabled();
     });
 
-    it("calls createQuote with correct payload and shows confirmation on success", async () => {
-        vi.mocked(quotesApi.createQuote).mockResolvedValueOnce(fakeQuote());
+    it("calls createCargoOffer with correct payload and shows confirmation on success", async () => {
+        vi.mocked(quotesApi.createCargoOffer).mockResolvedValueOnce(fakeCargoOffer());
         const user = userEvent.setup();
         mount();
 
@@ -270,7 +270,7 @@ describe("CreateOfferPage", () => {
         });
         expect(screen.getByText("Referencia de oferta: #42")).toBeInTheDocument();
 
-        expect(quotesApi.createQuote).toHaveBeenCalledWith(
+        expect(quotesApi.createCargoOffer).toHaveBeenCalledWith(
             expect.objectContaining({
                 transport_window_id: 5,
                 pickup_address: "Av. Corrientes 1234, C1043 CABA, Ciudad Autónoma de Buenos Aires",
@@ -284,9 +284,9 @@ describe("CreateOfferPage", () => {
         );
     });
 
-    it("shows a top-level error alert when createQuote fails", async () => {
+    it("shows a top-level error alert when createCargoOffer fails", async () => {
         const { ApiError } = await import("../../api");
-        vi.mocked(quotesApi.createQuote).mockRejectedValueOnce(
+        vi.mocked(quotesApi.createCargoOffer).mockRejectedValueOnce(
             new ApiError(422, "unprocessable", "unprocessable", {}),
         );
         const user = userEvent.setup();

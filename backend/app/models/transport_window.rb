@@ -4,7 +4,7 @@
 # Carrier is reachable via vehicle.carrier (no denormalised carrier_id, see plan §4.1).
 class TransportWindow < ApplicationRecord
   belongs_to :vehicle, inverse_of: :transport_windows
-  has_many :quotes, dependent: :restrict_with_error, inverse_of: :transport_window
+  has_many :cargo_offers, dependent: :restrict_with_error, inverse_of: :transport_window
 
   delegate :carrier, to: :vehicle, allow_nil: true
 
@@ -30,7 +30,7 @@ class TransportWindow < ApplicationRecord
   end
 
   def self.ransackable_associations(_auth_object = nil)
-    %w[vehicle quotes]
+    %w[vehicle cargo_offers]
   end
 
   private

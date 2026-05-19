@@ -2,16 +2,16 @@ require "rails_helper"
 
 RSpec.describe Shipment, type: :model do
   describe "associations" do
-    it { is_expected.to belong_to(:quote) }
+    it { is_expected.to belong_to(:cargo_offer) }
     it { is_expected.to have_many(:tracking_events).dependent(:destroy) }
     it { is_expected.to have_one(:route).dependent(:destroy) }
   end
 
   describe "validations" do
-    it { is_expected.to validate_presence_of(:quote_id) }
+    it { is_expected.to validate_presence_of(:cargo_offer_id) }
 
     it "STATUSES contains the canonical 7 states" do
-      expect(described_class::STATUSES).to eq(%w[draft quoted accepted in_transit delivered settled cancelled])
+      expect(described_class::STATUSES).to eq(%w[draft offered accepted in_transit delivered settled cancelled])
     end
 
     it "rejects unknown status assignments via the enum" do
@@ -20,7 +20,7 @@ RSpec.describe Shipment, type: :model do
     end
 
     it "requires cancellation_reason when cancelled" do
-      s = create(:shipment, :quoted)
+      s = create(:shipment, :offered)
       expect { s.transition_to!(:cancelled) }.to raise_error(ActiveRecord::RecordInvalid)
     end
   end
@@ -29,8 +29,8 @@ RSpec.describe Shipment, type: :model do
     it "is frozen and contains the canonical map" do
       expect(described_class::ALLOWED_TRANSITIONS).to be_frozen
       expect(described_class::ALLOWED_TRANSITIONS).to eq(
-        draft:      [ :quoted ],
-        quoted:     [ :accepted, :cancelled ],
+        draft:      [ :offered ],
+        offered:    [ :accepted, :cancelled ],
         accepted:   [ :in_transit, :cancelled ],
         in_transit: [ :delivered, :cancelled ],
         delivered:  [ :settled ],
@@ -42,9 +42,9 @@ RSpec.describe Shipment, type: :model do
 
   describe "#transition_to! — permitted transitions" do
     permitted = [
-      [ :draft,      :quoted,     {} ],
-      [ :quoted,     :accepted,   {} ],
-      [ :quoted,     :cancelled,  { reason: "buyer changed mind" } ],
+      [ :draft,      :offered,    {} ],
+      [ :offered,    :accepted,   {} ],
+      [ :offered,    :cancelled,  { reason: "buyer changed mind" } ],
       [ :accepted,   :in_transit, {} ],
       [ :accepted,   :cancelled,  { reason: "carrier no-show" } ],
       [ :in_transit, :delivered,  {} ],
@@ -73,7 +73,7 @@ RSpec.describe Shipment, type: :model do
     rejected = [
       [ :delivered,  :in_transit ],
       [ :settled,    :in_transit ],
-      [ :cancelled,  :quoted ],
+      [ :cancelled,  :offered ],
       [ :draft,      :delivered ],
       [ :delivered,  :cancelled ] # explicit: no rollback after delivery
     ]
@@ -91,7 +91,7 @@ RSpec.describe Shipment, type: :model do
 
   describe "#transition_to! — locking" do
     it "wraps the transition in a row lock" do
-      s = create(:shipment, :quoted)
+      s = create(:shipment, :offered)
       expect(s).to receive(:with_lock).and_call_original
       s.transition_to!(:accepted)
     end

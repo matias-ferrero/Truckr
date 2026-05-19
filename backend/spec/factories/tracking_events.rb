@@ -3,7 +3,7 @@ FactoryBot.define do
     association :shipment
     kind         { "status_change" }
     from_status  { "draft" }
-    to_status    { "quoted" }
+    to_status    { "offered" }
     recorded_at  { Time.current }
     metadata     { {} }
 

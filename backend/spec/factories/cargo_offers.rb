@@ -1,12 +1,20 @@
 FactoryBot.define do
   factory :cargo_offer do
-    association :shipper
-    pickup_address       { "Av. Corrientes 1234, CABA" }
-    delivery_address     { "Av. Colón 500, Córdoba" }
-    pickup_date          { 2.days.from_now }
-    cargo_description    { "Pallets de electrodomésticos" }
-    weight_kg            { 1500.0 }
-    volume_cm3           { 4_000_000 }
-    declared_value_cents { 5_000_000 }
+    association :carrier
+    # Coordinate cargo.pickup_date with the transport_window's range so
+    # CargoOffer's pickup_date_within_window cross-validation passes by default.
+    transport_window { association :transport_window, available_from: 1.day.from_now, available_to: 10.days.from_now }
+    cargo            { association :cargo, pickup_date: 3.days.from_now.to_date }
+
+    amount_cents { 2_500_000 }
+    currency     { "ARS" }
+    status       { "pending" }
+    expires_at   { 24.hours.from_now }
+
+    trait(:pending)   { status { "pending" } }
+    trait(:accepted)  { status { "accepted" } }
+    trait(:paid)      { status { "paid" } }
+    trait(:expired)   { status { "expired" } }
+    trait(:cancelled) { status { "cancelled" } }
   end
 end

@@ -1,8 +1,8 @@
 es:
   hello: "Hola mundo"
-  quote_mailer:
+  cargo_offer_mailer:
     notify_carrier:
-      subject: "Nueva oferta recibida — Truckr®"
+      subject: "Nueva oferta de carga recibida — Truckr®"
   errors:
     unauthorized: "Autenticación requerida"
     invalid_credentials: "Email o contraseña inválidos"
@@ -18,7 +18,7 @@ es:
   activerecord:
     errors:
       models:
-        quote:
+        cargo_offer:
           attributes:
             estimated_km:
               must_be_positive: "debe ser mayor que 0"

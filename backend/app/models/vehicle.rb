@@ -84,15 +84,15 @@ class Vehicle < ApplicationRecord
   end
 
   # Refuses to hard-delete if any TransportWindow on this Vehicle has a live
-  # (non-terminal) Quote tied to it. Tolerates Quote being absent at boot —
-  # REQ-BE-00021 introduces it.
+  # (non-terminal) CargoOffer tied to it. Tolerates CargoOffer being absent at
+  # boot — REQ-BE-00021 introduces it.
   def ensure_no_active_commitments
-    return unless defined?(Quote) && defined?(TransportWindow)
+    return unless defined?(CargoOffer) && defined?(TransportWindow)
 
-    has_live_quote = Quote.joins(:transport_window)
-                          .where(transport_windows: { vehicle_id: id })
-                          .where.not(status: %w[expired cancelled])
-                          .exists?
-    throw(:abort) if has_live_quote
+    has_live_offer = CargoOffer.joins(:transport_window)
+                               .where(transport_windows: { vehicle_id: id })
+                               .where.not(status: %w[expired cancelled])
+                               .exists?
+    throw(:abort) if has_live_offer
   end
 end

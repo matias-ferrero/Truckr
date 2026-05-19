@@ -1,35 +1,35 @@
 ActiveAdmin.register CargoOffer do
-  permit_params :shipper_id, :pickup_address, :delivery_address, :pickup_date,
-                :cargo_description, :weight_kg, :volume_cm3, :declared_value_cents
+  permit_params :cargo_id, :carrier_id, :transport_window_id, :amount_cents,
+                :currency, :status, :expires_at
 
-  filter :shipper
-  filter :pickup_date
-  filter :weight_kg
+  filter :cargo
+  filter :carrier
+  filter :status, as: :select, collection: CargoOffer::STATES
+  filter :expires_at
 
   index do
     selectable_column
     id_column
-    column :shipper
-    column :pickup_address
-    column :delivery_address
-    column :pickup_date
-    column :weight_kg
-    column :volume_cm3
-    column :declared_value_cents
+    column :cargo
+    column :carrier
+    column :transport_window
+    column :amount_cents
+    column :currency
+    column :status
+    column :expires_at
     actions
   end
 
   show do
     attributes_table do
       row :id
-      row :shipper
-      row :pickup_address
-      row :delivery_address
-      row :pickup_date
-      row :cargo_description
-      row :weight_kg
-      row :volume_cm3
-      row :declared_value_cents
+      row :cargo
+      row :carrier
+      row :transport_window
+      row :amount_cents
+      row :currency
+      row :status
+      row :expires_at
       row :created_at
       row :updated_at
     end
@@ -37,14 +37,13 @@ ActiveAdmin.register CargoOffer do
 
   form do |f|
     f.inputs do
-      f.input :shipper
-      f.input :pickup_address
-      f.input :delivery_address
-      f.input :pickup_date
-      f.input :cargo_description
-      f.input :weight_kg, min: 0
-      f.input :volume_cm3
-      f.input :declared_value_cents
+      f.input :cargo
+      f.input :carrier
+      f.input :transport_window
+      f.input :amount_cents
+      f.input :currency
+      f.input :status, as: :select, collection: CargoOffer::STATES
+      f.input :expires_at
     end
     f.actions
   end

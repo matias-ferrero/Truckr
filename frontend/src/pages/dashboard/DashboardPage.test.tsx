@@ -84,10 +84,10 @@ function fakeVehicle(over: Partial<vehiclesApi.Vehicle> = {}): vehiclesApi.Vehic
     };
 }
 
-function fakeQuote(over: Partial<quotesApi.Quote> = {}): quotesApi.Quote {
+function fakeCargoOffer(over: Partial<quotesApi.CargoOffer> = {}): quotesApi.CargoOffer {
     return {
         id: 1,
-        cargo_offer_id: 1,
+        cargo_id: 1,
         carrier_id: 1,
         transport_window_id: 1,
         amount_cents: 105_000_000,
@@ -96,7 +96,7 @@ function fakeQuote(over: Partial<quotesApi.Quote> = {}): quotesApi.Quote {
         expires_at: "2026-06-01T00:00:00Z",
         created_at: "2026-05-20T10:00:00Z",
         updated_at: "2026-05-20T10:00:00Z",
-        cargo_offer: {
+        cargo: {
             pickup_address: "Av. Corrientes 1234, C1043 CABA, Ciudad Autónoma de Buenos Aires",
             delivery_address: "Av. Colón 500, X5000 Córdoba, Córdoba",
             pickup_date: "2026-05-25",
@@ -106,8 +106,8 @@ function fakeQuote(over: Partial<quotesApi.Quote> = {}): quotesApi.Quote {
     };
 }
 
-function mockEmptyQuotes() {
-    (quotesApi.listMyQuotes as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+function mockEmptyCargoOffers() {
+    (quotesApi.listMyCargoOffers as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
         items: [],
         meta: { total: 0, page: 1, perPage: 20, totalPages: 0 },
     });
@@ -124,7 +124,7 @@ describe("DashboardPage", () => {
     beforeEach(() => {
         vi.resetAllMocks();
         // Default: never-resolving promise so sync tests don't get spurious state updates.
-        (quotesApi.listMyQuotes as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        (quotesApi.listMyCargoOffers as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
             new Promise(() => {}),
         );
     });
@@ -243,14 +243,14 @@ describe("DashboardPage", () => {
         );
     });
 
-    it("shows shipper quotes with status, address summary and amount", async () => {
+    it("shows shipper cargo offers with status, address summary and amount", async () => {
         mockMe(fakeMe({ roles: ["shipper"], full_name: "Ana" }));
-        (quotesApi.listMyQuotes as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+        (quotesApi.listMyCargoOffers as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
             items: [
-                fakeQuote({ status: "pending", amount_cents: 105_000_000 }),
-                fakeQuote({
+                fakeCargoOffer({ status: "pending", amount_cents: 105_000_000 }),
+                fakeCargoOffer({
                     id: 2, status: "accepted", amount_cents: 50_000_000,
-                    cargo_offer: {
+                    cargo: {
                         pickup_address: "Belgrano 100, 5500 Mendoza, Mendoza",
                         delivery_address: "San Martín 200, 8300 Neuquén, Neuquén",
                         pickup_date: "2026-06-01",
@@ -269,12 +269,12 @@ describe("DashboardPage", () => {
         });
         expect(screen.getAllByText(/c1043 caba/i).length).toBeGreaterThan(0);
         expect(screen.getAllByText(/córdoba/i).length).toBeGreaterThan(0);
-        expect(quotesApi.listMyQuotes).toHaveBeenCalledWith(1);
+        expect(quotesApi.listMyCargoOffers).toHaveBeenCalledWith(1);
     });
 
-    it("shows the empty offers state when shipper has no quotes", async () => {
+    it("shows the empty offers state when shipper has no cargo offers", async () => {
         mockMe(fakeMe({ roles: ["shipper"], full_name: "Ana" }));
-        mockEmptyQuotes();
+        mockEmptyCargoOffers();
 
         renderPage();
 

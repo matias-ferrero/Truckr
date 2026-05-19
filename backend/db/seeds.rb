@@ -57,9 +57,11 @@ identity_users.each do |spec|
   end
 end
 
-# Marketplace fixtures — REQ-BE-00021.
-# 2 TransportWindows, 2 CargoOffers, 2 Quotes. Idempotent. Skips silently when
-# the dependent Identity rows have not been seeded yet.
+# Marketplace fixtures — REQ-BE-00021 (post-rename REF-BE-00002).
+# Seeds Cargo publications + CargoOffer bids with Window+Cargo composition,
+# including one Cargo with multiple pending offers to demo the parallel-offers
+# case. Idempotent. Skips silently when the dependent Identity rows have not
+# been seeded yet.
 if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
    Carrier.any? && Shipper.any? && Vehicle.any?
 
@@ -88,7 +90,17 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
       w.active         = true
     end
 
-    co1 = CargoOffer.find_or_create_by!(
+    tw3 = TransportWindow.find_or_create_by!(
+      vehicle: vehicle, origin_zone: "La Plata", destination_zone: "Mar del Plata"
+    ) do |w|
+      w.price_per_km   = 1400.0
+      w.max_km         = 500
+      w.available_from = 2.days.from_now
+      w.available_to   = 9.days.from_now
+      w.active         = true
+    end
+
+    cargo1 = Cargo.find_or_create_by!(
       shipper: shipper, cargo_description: "Pallets de granos"
     ) do |c|
       c.pickup_address       = "Puerto de Buenos Aires"
@@ -99,7 +111,7 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
       c.declared_value_cents = 150_000_000
     end
 
-    co2 = CargoOffer.find_or_create_by!(
+    cargo2 = Cargo.find_or_create_by!(
       shipper: shipper, cargo_description: "Materiales de construcción"
     ) do |c|
       c.pickup_address       = "Parque industrial Rosario"
@@ -110,30 +122,39 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
       c.declared_value_cents = 90_000_000
     end
 
-    Quote.find_or_create_by!(cargo_offer: co1, carrier: carrier, transport_window: tw1) do |q|
-      q.amount_cents = 18_000_000
-      q.currency     = "ARS"
-      q.status       = "pending"
-      q.expires_at   = 24.hours.from_now
+    # Parallel-offers demo: cargo1 collects pending bids against two distinct
+    # windows so the shipper UI has data for the comparison view (US10/US12).
+    CargoOffer.find_or_create_by!(cargo: cargo1, carrier: carrier, transport_window: tw1) do |co|
+      co.amount_cents = 18_000_000
+      co.currency     = "ARS"
+      co.status       = "pending"
+      co.expires_at   = 24.hours.from_now
     end
 
-    Quote.find_or_create_by!(cargo_offer: co2, carrier: carrier, transport_window: tw2) do |q|
-      q.amount_cents = 15_300_000
-      q.currency     = "ARS"
-      q.status       = "pending"
-      q.expires_at   = 24.hours.from_now
+    CargoOffer.find_or_create_by!(cargo: cargo1, carrier: carrier, transport_window: tw3) do |co|
+      co.amount_cents = 16_500_000
+      co.currency     = "ARS"
+      co.status       = "pending"
+      co.expires_at   = 24.hours.from_now
+    end
+
+    CargoOffer.find_or_create_by!(cargo: cargo2, carrier: carrier, transport_window: tw2) do |co|
+      co.amount_cents = 15_300_000
+      co.currency     = "ARS"
+      co.status       = "pending"
+      co.expires_at   = 24.hours.from_now
     end
   end
 end
 
 # Fulfilment fixtures — REQ-BE-00022.
-# One Shipment per state for any available Quote rows. Idempotent.
-if defined?(Quote) && defined?(Shipment) && Quote.exists?
+# One Shipment per state for any available CargoOffer rows. Idempotent.
+if defined?(CargoOffer) && defined?(Shipment) && CargoOffer.exists?
   Shipment::STATUSES.each_with_index do |state, i|
-    quote = Quote.offset(i).first or next
-    next if Shipment.with_discarded.exists?(quote_id: quote.id)
+    cargo_offer = CargoOffer.offset(i).first or next
+    next if Shipment.with_discarded.exists?(cargo_offer_id: cargo_offer.id)
 
-    attrs = { quote: quote, status: state }
+    attrs = { cargo_offer: cargo_offer, status: state }
     case state
     when "in_transit" then attrs[:picked_up_at] = 1.hour.ago
     when "delivered"  then attrs.merge!(picked_up_at: 4.hours.ago, delivered_at: 30.minutes.ago)

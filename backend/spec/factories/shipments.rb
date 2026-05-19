@@ -1,10 +1,10 @@
 FactoryBot.define do
   factory :shipment do
-    association :quote
+    association :cargo_offer
     status { "draft" }
 
     trait :draft      do; status { "draft" } end
-    trait :quoted     do; status { "quoted" } end
+    trait :offered    do; status { "offered" } end
     trait :accepted   do; status { "accepted" } end
     trait :in_transit do
       status        { "in_transit" }
