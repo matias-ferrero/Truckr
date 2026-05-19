@@ -45,7 +45,7 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REQ-FE-00012 | Modificar perfil de usuario (US3) | NEW | FE | 2026-05-03 | - |
 | REQ-FE-00013 | Filtrado multi-criterio en búsqueda de ventanas de transporte (US5) | NEW | FE | 2026-05-03 | - |
 | REQ-FE-00014 | Página de detalle de transportista — perfil público + CTA ofertar (US6) | NEW | FE | 2026-05-03 | - |
-| REQ-FE-00015 | Ofertar carga contra ventana del transportista — wizard de creación de CargoOffer (US7) | NEW | FE | 2026-05-03 | - |
+| REQ-FE-00015 | Ofertar carga contra ventana del transportista — wizard de creación de CargoOffer (US7) | IR | FE | 2026-05-03 | PR #193 |
 | REQ-FE-00016 | Publicar ventana de transporte — TransportWindow CRUD (US9) | IR | FE | 2026-05-03 | [plan](REQ/REQ-FE-00016/REQ-FE-00016-transport-window-crud.plan.md) |
 | REQ-FE-00017 | Bandeja de ofertas recibidas por el transportista (US10) | NEW | FE | 2026-05-03 | - |
 | REQ-FE-00018 | Filtrado de ofertas de carga en bandeja del transportista (US11) | NEW | FE | 2026-05-03 | - |
@@ -63,7 +63,7 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REF-BE-00001 | Migrar Api::AuthController a Devise + devise-jwt (login/logout/me con JWT); mantener register custom | RDY | BE | 2026-05-11 | [plan](REF/REF-BE-00001/REF-BE-00001-migrar-sessions-auth-a-herencia-devise.plan.md) |
 | REF-BE-00002 | Rename Quote → CargoOffer y CargoOffer → Cargo en el backend (modelos, tablas, AA, specs, seeds) | RDY | BE | 2026-05-19 | [plan](REF/REF-BE-00002/REF-BE-00002-rename-quote-cargooffer-y-cargooffer-cargo-en-backend.plan.md) |
 | REQ-BE-00032 | Cargo fullstack — modelo, endpoints, FSM + "Mis cargas" UI (US27) | NEW | BE | 2026-05-19 | - |
-| INF-BE-00006 | CargoOfferExpirationJob — auto-expira `pending` a las 48 h y flipea Window a `open` (mismo tx) | NEW | BE | 2026-05-19 | - |
+| INF-BE-00006 | CargoOfferExpirationJob — auto-expira `pending` a las 48 h y flipea Window a `open` (mismo tx) | NEW | BE | 2026-05-19 | [#200](https://github.com/tcorzo/fiuba-gestion-tp/issues/200) |
 
 ## Legend
 

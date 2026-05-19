@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { DashboardPage } from "./DashboardPage";
@@ -6,11 +6,13 @@ import * as authHook from "../../auth/useCurrentUser";
 import * as vehiclesApi from "../../api/vehicles";
 import * as transportWindowsApi from "../../api/transport_windows";
 import * as carriersApi from "../../api/carriers";
+import * as quotesApi from "../../api/quotes";
 
 vi.mock("../../auth/useCurrentUser");
 vi.mock("../../api/vehicles");
 vi.mock("../../api/transport_windows");
 vi.mock("../../api/carriers");
+vi.mock("../../api/quotes");
 
 type MeShape = Parameters<typeof authHook.useCurrentUser>[0] extends never ? object : never;
 const _typeOnly: MeShape | undefined = undefined;
@@ -82,6 +84,35 @@ function fakeVehicle(over: Partial<vehiclesApi.Vehicle> = {}): vehiclesApi.Vehic
     };
 }
 
+function fakeQuote(over: Partial<quotesApi.Quote> = {}): quotesApi.Quote {
+    return {
+        id: 1,
+        cargo_offer_id: 1,
+        carrier_id: 1,
+        transport_window_id: 1,
+        amount_cents: 105_000_000,
+        currency: "ARS",
+        status: "pending",
+        expires_at: "2026-06-01T00:00:00Z",
+        created_at: "2026-05-20T10:00:00Z",
+        updated_at: "2026-05-20T10:00:00Z",
+        cargo_offer: {
+            pickup_address: "Av. Corrientes 1234, C1043 CABA, Ciudad Autónoma de Buenos Aires",
+            delivery_address: "Av. Colón 500, X5000 Córdoba, Córdoba",
+            pickup_date: "2026-05-25",
+            cargo_description: "Pallets",
+        },
+        ...over,
+    };
+}
+
+function mockEmptyQuotes() {
+    (quotesApi.listMyQuotes as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+        items: [],
+        meta: { total: 0, page: 1, perPage: 20, totalPages: 0 },
+    });
+}
+
 const renderPage = () =>
     render(
         <MemoryRouter>
@@ -90,6 +121,14 @@ const renderPage = () =>
     );
 
 describe("DashboardPage", () => {
+    beforeEach(() => {
+        vi.resetAllMocks();
+        // Default: never-resolving promise so sync tests don't get spurious state updates.
+        (quotesApi.listMyQuotes as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+            new Promise(() => {}),
+        );
+    });
+
     it("renders a skeleton while bootstrapping", () => {
         mockMe(null, true);
         const { container } = renderPage();
@@ -110,6 +149,7 @@ describe("DashboardPage", () => {
         expect(screen.getByRole("heading", { level: 1, name: /hola, ana/i })).toBeInTheDocument();
         expect(screen.getByText(/panel · expedidor/i)).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /encontrá un transportista/i })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 2, name: /mis ofertas/i })).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mis viajes/i })).toBeInTheDocument();
         expect(screen.queryByRole("heading", { level: 2, name: /mi disponibilidad/i })).toBeNull();
         expect(screen.queryByRole("heading", { level: 2, name: /mi flota/i })).toBeNull();
@@ -176,8 +216,8 @@ describe("DashboardPage", () => {
         expect(screen.getByRole("heading", { level: 2, name: /mi flota/i })).toBeInTheDocument();
 
         await waitFor(() => {
-            expect(screen.getByText("Centro → Pilar")).toBeInTheDocument();
-            expect(screen.getByText("San Isidro → CABA")).toBeInTheDocument();
+            expect(screen.getByRole("heading", { level: 3, name: "Centro a Pilar" })).toBeInTheDocument();
+            expect(screen.getByRole("heading", { level: 3, name: "San Isidro a CABA" })).toBeInTheDocument();
             expect(screen.getByText("AAA111")).toBeInTheDocument();
         });
         expect(screen.getByText(/mb sprinter/i)).toBeInTheDocument();
@@ -200,6 +240,48 @@ describe("DashboardPage", () => {
 
         await waitFor(() =>
             expect(screen.getByText(/aún no cargaste un vehículo/i)).toBeInTheDocument()
+        );
+    });
+
+    it("shows shipper quotes with status, address summary and amount", async () => {
+        mockMe(fakeMe({ roles: ["shipper"], full_name: "Ana" }));
+        (quotesApi.listMyQuotes as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+            items: [
+                fakeQuote({ status: "pending", amount_cents: 105_000_000 }),
+                fakeQuote({
+                    id: 2, status: "accepted", amount_cents: 50_000_000,
+                    cargo_offer: {
+                        pickup_address: "Belgrano 100, 5500 Mendoza, Mendoza",
+                        delivery_address: "San Martín 200, 8300 Neuquén, Neuquén",
+                        pickup_date: "2026-06-01",
+                        cargo_description: "Maquinaria",
+                    },
+                }),
+            ],
+            meta: { total: 2, page: 1, perPage: 20, totalPages: 1 },
+        });
+
+        renderPage();
+
+        await waitFor(() => {
+            expect(screen.getByText("Pendiente")).toBeInTheDocument();
+            expect(screen.getByText("Aceptada")).toBeInTheDocument();
+        });
+        expect(screen.getAllByText(/c1043 caba/i).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/córdoba/i).length).toBeGreaterThan(0);
+        expect(quotesApi.listMyQuotes).toHaveBeenCalledWith(1);
+    });
+
+    it("shows the empty offers state when shipper has no quotes", async () => {
+        mockMe(fakeMe({ roles: ["shipper"], full_name: "Ana" }));
+        mockEmptyQuotes();
+
+        renderPage();
+
+        await waitFor(() =>
+            expect(
+                screen.getByText(/todavía no enviaste ofertas/i),
+            ).toBeInTheDocument(),
         );
     });
 

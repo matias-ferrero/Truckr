@@ -9,6 +9,7 @@ export type FormFieldProps = {
     help?: React.ReactNode;
     children: React.ReactNode;
     className?: string;
+    required?: boolean;
     /** Render the label as a <legend> instead — for radio/checkbox groupings. */
     asFieldset?: boolean;
 };
@@ -16,11 +17,11 @@ export type FormFieldProps = {
 // Field shell for label + control + error/help. Forwards aria-invalid and
 // aria-describedby onto the child control so callers don't have to wire it.
 export function FormField(
-    { id, label, error, help, children, className, asFieldset }: FormFieldProps,
+    { id, label, error, help, children, className, required, asFieldset }: FormFieldProps,
 ) {
     const errorId = `${id}-error`;
     const helpId = `${id}-help`;
-    const describedBy = error ? errorId : help ? helpId : undefined;
+    const describedBy = [error && errorId, !error && help && helpId].filter(Boolean).join(" ") || undefined;
 
     let control: React.ReactNode = children;
     if (!asFieldset && isValidElement(children)) {
@@ -29,6 +30,7 @@ export function FormField(
             {
                 "aria-invalid": error ? "true" : undefined,
                 "aria-describedby": describedBy,
+                ...(required ? { required: true } : {}),
             } as Record<string, unknown>,
         );
     }
@@ -39,7 +41,9 @@ export function FormField(
                 className={cn("flex flex-col gap-2 min-w-0 border-0 p-0 m-0", className)}
                 aria-describedby={describedBy}
             >
-                <legend className="text-sm font-semibold text-ink mb-2">{label}</legend>
+                <legend className={cn("text-sm font-semibold text-ink mb-2", required && "after:content-['*'] after:ml-0.5 after:text-[color-mix(in_oklab,var(--color-brand-error)_60%,var(--color-ink))]")}>
+                    {label}
+                </legend>
                 {control}
                 <FieldFootnote error={error} errorId={errorId} help={help} helpId={helpId} />
             </fieldset>
@@ -48,7 +52,12 @@ export function FormField(
 
     return (
         <div className={cn("flex flex-col gap-2 min-w-0", className)}>
-            <Label htmlFor={id}>{label}</Label>
+            <Label
+                htmlFor={id}
+                className={cn(required && "after:content-['*'] after:ml-0.5 after:text-[color-mix(in_oklab,var(--color-brand-error)_60%,var(--color-ink))]")}
+            >
+                {label}
+            </Label>
             {control}
             <FieldFootnote error={error} errorId={errorId} help={help} helpId={helpId} />
         </div>

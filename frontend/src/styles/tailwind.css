@@ -1,6 +1,25 @@
 /* Tailwind v4 entry — bridges DESIGN.md tokens into utility classes.
    Imported first by main.tsx so legacy CSS still cascades on top until
-   the migration to shadcn/ui primitives finishes everywhere. */
+   the migration to shadcn/ui primitives finishes everywhere.
+
+   TWO-TIER TOKEN SYSTEM
+   ─────────────────────
+   This file defines GLOBAL tokens via @theme (--color-*, --font-*, --radius-*,
+   --ease-out-*). These are available everywhere and consumed by shadcn/ui
+   primitives and Tailwind utility classes (e.g. text-ink, bg-brand).
+
+   Page-scoped CSS (public.css → .publicPage, dashboard.css → .dashboardPage)
+   defines a PARALLEL set of LOCAL tokens (--brand-primary, --ink, --paper, …)
+   scoped to their container. These are consumed by legacy CSS rules in those
+   same files. The values are deliberately close but not identical — the scoped
+   tokens allow per-page palette overrides without touching the global theme.
+
+   Rule for new code: use Tailwind utilities / @theme tokens for shared
+   components; use the scoped custom properties only inside the legacy CSS
+   rules in the corresponding page stylesheet. Do not cross-reference
+   (e.g. `var(--color-ink)` inside dashboard.css or `var(--ink)` inside a
+   Tailwind class). If a component needs to span both tiers, promote the token
+   to the global @theme and reference `var(--color-*)` consistently. */
 
 @import "tailwindcss";
 

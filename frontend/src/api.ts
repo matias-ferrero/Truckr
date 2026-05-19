@@ -68,10 +68,13 @@ export type ApiOpts = {
  *
  * Returns the parsed JSON body or undefined on 204 No Content.
  */
-export async function apiFetch<T = unknown>(path: string, opts: ApiOpts = {}): Promise<T> {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
+export function buildAuthHeaders(): Record<string, string> {
     const token = getJwt();
-    if (token) headers["Authorization"] = `Bearer ${token}`;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export async function apiFetch<T = unknown>(path: string, opts: ApiOpts = {}): Promise<T> {
+    const headers: Record<string, string> = { "Content-Type": "application/json", ...buildAuthHeaders() };
 
     const res = await fetch(`${API_BASE_URL}${path}`, {
         method: opts.method ?? "GET",

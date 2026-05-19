@@ -184,8 +184,8 @@
 .dashboardFilters button {
     border: none;
     background: transparent;
-    padding: 8px 14px;
-    min-height: 36px;
+    padding: 10px 16px;
+    min-height: 44px;
     border-radius: 999px;
     font-family: var(--font-body);
     font-size: var(--text-xs);
@@ -364,7 +364,8 @@ a.dashboardCard:focus-visible {
     border-color: color-mix(in oklab, var(--brand-warning) 50%, var(--border));
 }
 
-.statusBadge.aceptado {
+.statusBadge.aceptado,
+.statusBadge.pagado {
     background: color-mix(in oklab, var(--brand-success) 22%, var(--brand-neutral));
     color: color-mix(in oklab, var(--brand-success) 35%, var(--ink));
     border-color: color-mix(in oklab, var(--brand-success) 50%, var(--border));

@@ -75,6 +75,93 @@ Order of work to close the testing gap:
 5. **First domain component test** — quote-form `validateQuote()` once it's extracted from `App.tsx`.
 6. **First real E2E journey** — quote form happy path (POST round-trip), once the backend `Api::QuoteRequestsController#create` exists.
 
+## Manual Full-Stack Smoke Test
+
+Use this when automated tests aren't enough — new E2E specs are skipped pending fixtures, or you need to verify the real browser + real API together.
+
+### 1. Start the stack
+
+```sh
+# Terminal 1 — backend API (http://localhost:3000)
+just backend-dev
+
+# Terminal 2 — frontend dev server (http://localhost:5173)
+just frontend-dev
+```
+
+### 2. Seed the database
+
+Idempotent — safe to re-run against an existing database.
+
+```sh
+cd backend && bin/rails db:seed
+```
+
+Key fixtures created:
+
+| Resource | Credentials / Value |
+|---|---|
+| Shipper | `shipper1@truckr.test` / `Password123` |
+| Carrier | `carrier1@truckr.test` / `Password123` |
+| Vehicle | Mercedes-Benz Sprinter, max 5 000 kg, no volume limit |
+| Transport Window 1 | Buenos Aires → Córdoba, ARS 1 500/km, active for ~10 days from seed time |
+| Transport Window 2 | Rosario → Mendoza, ARS 1 700/km, active 11–18 days from seed time |
+
+> Window dates are relative to when the seed was last run. Pickup dates must fall within the window's `available_from..available_to` range.
+
+### 3. Offer-creation flow (US7 — REQ-FE-00015)
+
+1. Log in as `shipper1@truckr.test` at `http://localhost:5173`.
+2. Go to `http://localhost:5173/carriers/1` → click **Ofertar** on the Buenos Aires → Córdoba window.
+3. **Step 1 — Addresses**: fill origin (Av. Corrientes 1234, C1043, CABA, Ciudad Autónoma de Buenos Aires) and destination (Av. Colón 500, X5000, Córdoba, Córdoba). Click **Siguiente**.
+4. **Step 2 — Cargo**: description = "Pallets de electrodomésticos", weight = 1 500 kg (limit hint: 5 000 kg), volume = 3 000 000 cm³ (no-limit hint), declared value = 50 000. Try 6 000 kg to verify the capacity error blocks advancement. Click **Siguiente**.
+5. **Step 3 — Date + Budget**: pick a date within Window 1's range, enter 700 km. Verify the cost estimate shows ~ARS 1 050 000 (700 × 1 500). Click **Enviar oferta**.
+6. Confirm the `data-testid="confirmation-screen"` panel appears with a `Referencia de oferta: #N` chip.
+7. Navigate to `/` (dashboard) — the **Mis ofertas** section should show the new quote with a "Pendiente" badge, the route, pickup date, and ARS amount.
+
+### 4. API-level smoke (optional)
+
+```sh
+# Authenticate as shipper
+TOKEN=$(curl -s -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"user":{"email":"shipper1@truckr.test","password":"Password123"}}' \
+  | jq -r '.token')
+
+# Create a quote (adjust pickup_date to a date within 10 days from now)
+curl -s -X POST http://localhost:3000/api/quotes \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "quote": {
+      "transport_window_id": 1,
+      "pickup_address": "Av. Corrientes 1234, C1043 CABA, Ciudad Autónoma de Buenos Aires",
+      "delivery_address": "Av. Colón 500, X5000 Córdoba, Córdoba",
+      "pickup_date": "'"$(date -d '+3 days' +%Y-%m-%d 2>/dev/null || date -v+3d +%Y-%m-%d)"'",
+      "cargo_description": "Pallets de electrodomésticos",
+      "weight_kg": "1500",
+      "volume_cm3": "3000000",
+      "declared_value_cents": "5000000",
+      "estimated_km": "700"
+    }
+  }' | jq .
+
+# List the shipper's quotes
+curl -s http://localhost:3000/api/quotes \
+  -H "Authorization: Bearer $TOKEN" | jq '.[] | {id, status, amount_cents}'
+```
+
+Expected: `POST` returns the created quote with `"status": "pending"` and `"amount_cents": 105000000`.
+
+### 5. Un-skip the E2E spec
+
+`frontend/e2e/carrier-offer.spec.ts` is skipped pending seeded fixtures. To run it:
+
+1. Run the seed (step 2 above).
+2. Remove the `test.skip(true, …)` line.
+3. Update the hardcoded `pickup_date` to a date within Window 1's current range.
+4. Run `just frontend-test-e2e`.
+
 ## Known Gaps
 
 - Only smoke specs exist on both sides — refactors of real code are unverified.

@@ -27,6 +27,9 @@ Rails.application.routes.draw do
     # Filters by diacritic-insensitive substring match on normalized zones and availability date range.
     resources :transport_windows, only: :index
 
+    # Shipper creates a cargo offer + quote against a transport window (US7 / REQ-FE-00015).
+    resources :quotes, only: %i[index create]
+
     # Authenticated CRUD on the current carrier's fleet (REQ-BE-00009 / REQ-BE-00010).
     # Declared before the public `:carrier_id` resource so `/carriers/me/...` wins
     # over the wildcard.

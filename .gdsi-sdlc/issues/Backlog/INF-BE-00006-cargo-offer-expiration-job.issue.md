@@ -1,227 +1,83 @@
 ---
 tag: INF-BE-00006
-title: CargoOfferExpirationJob — auto-expira `pending` a las 48 h y flipea Window
-  a `open` (mismo tx)
-priority: P2
+title: CargoOfferExpirationJob — auto-expira `pending` a las 48 h y flipea Window a `open` (mismo tx)
+priority: P1
 status: backlog
 created: '2026-05-19'
 source: manual
-source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/196
+source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/200
 author: Claude Code
-github_issue: 196
-github_project_item: PVTI_lAHOAm1mPc4BWhiVzgtNI9M
+github_issue: 200
 github_repo: tcorzo/fiuba-gestion-tp
-last_synced: 2026-05-19T16:06:12.103834+00:00Z
 labels:
 - INF
 - BE
 - marketplace
-- job
-- solid-queue
+- mvp
+- us7
 ---
 
 ## Summary
 
-Job recurrente de Solid Queue que, cada cierto intervalo corto, identifica `CargoOffer`s en estado `pending` cuya `expires_at` ya pasó (48 h desde su creación) y las marca como `expired`, **flippeando en la misma transacción de DB el `TransportWindow` asociado de `pending_offer → open`** para que otros Shippers vean la Window reaparecer inmediatamente. Cierra el loop de la decisión bloqueada del 2026-05-19 sobre auto-flip de Windows.
+ActiveJob que, 48 horas después de la creación de una `CargoOffer` con status `pending`, marca la oferta como `expired` y revierte la `TransportWindow` destino de `pending_offer` a `open` en la misma transacción. Cubre la mitad asíncrona del comportamiento Window-locks-on-Offer (el flip síncrono `open → pending_offer` en `POST /api/cargos/:cargo_id/offers` queda con `REQ-FE-00015` / `REF-BE-00002`).
 
-## Problem Statement
+## Problem Statement / Current Behavior
 
-El dominio renombrado del 2026-05-19 introduce dos lifecycles acoplados:
+`REQ-FE-00015` AC original incluía dos comportamientos del lock de Window:
 
-- `CargoOffer.status: pending` tiene TTL de 48 h. Si el Carrier no acepta ni rechaza, expira automáticamente.
-- `TransportWindow.status: pending_offer` (Window-lock-on-Offer del MVP) tiene que volver a `open` cuando la Offer expira, **sin intervención manual del Carrier**, para que el Window quede otra vez visible al resto de los Shippers.
+1. **Síncrono** (en creación): `Window.open → pending_offer` en la misma DB tx que crear el `CargoOffer`.
+2. **Asíncrono** (en timeout): si el Carrier no responde en 48h, el `CargoOffer` pasa a `expired` y la Window vuelve a `open`.
 
-Sin este job, las Windows quedan en `pending_offer` indefinidamente cuando un Carrier nunca responde una Offer, bloqueando el inventario para otros Shippers. Es una garantía de **vida** del sistema de matching.
+El segundo comportamiento requiere un job programado (ActiveJob + scheduler) que no encaja en el alcance del wizard de creación. Vale la pena tratarlo como issue separado para no inflar PR #193 ni demorar US7 mientras se diseña el scheduler.
 
-`domain-model.md` § 8 (jobs) ya referencia este job conceptualmente; esta issue lo aterriza en código.
+> **Importante**: este issue es el complemento del flip síncrono. Ambos deben coexistir antes de poder cerrar formalmente la AC "Window-locks-on-Offer" de US7.
 
 ## Expected Behavior
 
-### Job
+### Backend
 
-- Clase: `CargoOfferExpirationJob < ApplicationJob`.
-- Queue: `default` (o `low` si el setup tiene split — alinear con `INF-BE-00005`).
-- Lookup: `CargoOffer.where(status: :pending).where("expires_at <= ?", Time.current)`.
-- Para cada offer:
-  - Misma DB transaction:
-    1. `offer.update!(status: :expired)`.
-    2. `offer.transport_window.update!(status: :open)` solo si la Window estaba en `pending_offer` y la offer expirada es la que la tenía bloqueada. Si la Window ya cambió (race con otro accept/reject), no-op + log warning.
-  - Hook opcional: emitir evento `cargo_offer.expired` (a definir con `INF-BE-00005` o el event-bus que termine usándose; out-of-scope estricto si todavía no existe).
-- Idempotente: si una offer ya está `expired`, skip (no double-flip de Window).
+- **Job**: `CargoOfferExpirationJob`. Recibe un `cargo_offer_id`. Idempotente: re-encolarlo después de que ya expiró debe ser un no-op.
+- **Scheduling**: al crear un `CargoOffer` con status `pending`, encolar el job con `wait: 48.hours` (o `wait_until: cargo_offer.created_at + 48.hours` para resiliencia ante retries).
+- **Transición**: dentro de un `ActiveRecord::Base.transaction`:
+  - Re-cargar el `CargoOffer` con lock (`lock!`) — si su status ya no es `pending`, retornar.
+  - `cargo_offer.update!(status: "expired")`.
+  - `transport_window.update!(status: "open")` (solo si su status es `pending_offer` y el `CargoOffer` expirado es el último que la bloqueaba).
+- **Notificación**: enviar mail al Shipper ("Tu oferta expiró sin respuesta del transportista") — stub aceptable hasta `INF-BE-00005`.
+- **Cancelación temprana**: si el Carrier acepta o rechaza antes de las 48h, el job debe encontrar el `CargoOffer` ya no `pending` y ser no-op. No requiere `Job#cancel` explícito.
 
-### Scheduling
+### Concurrencia
 
-- Solid Queue `recurring` config: cada 5 minutos en prod, cada 1 minuto en dev/test (configurable via ENV `CARGO_OFFER_EXPIRATION_INTERVAL_MIN`).
-- Documentado en `config/recurring.yml` (o el archivo que esté usando Solid Queue tras `INF-BE-00005`).
-- Una sola instancia corriendo a la vez (Solid Queue locks por job class — confirmar setup).
+- El backend ya garantiza (vía `REQ-FE-00015` / `REF-BE-00002`) que solo un `CargoOffer` `pending` puede existir contra una Window a la vez. Por lo tanto la transición `pending_offer → open` en el job no necesita coordinar con otros offers — basta con verificar que la Window apunta al `CargoOffer` que acaba de expirar.
 
-### `expires_at` column
+### Frontend
 
-- `CargoOffer.expires_at` (datetime, NOT NULL) set on create a `created_at + 48.hours`.
-- Indexar `(status, expires_at)` para que el scan del job sea cheap (B-tree compatible con SQLite per CLAUDE.md DB policy).
-- Esta columna se agrega via migración en esta issue si `REF-BE-00002` no la trajo; coordinar con el plan.
-
-### Configuración de TTL
-
-- Constant: `CargoOffer::EXPIRATION_WINDOW = 48.hours` en el modelo. NO usar un ENV var para esto — es una decisión de producto fija (decisión bloqueada 2026-05-19).
-- Si en el futuro se quiere acortar para tests, override en `spec_helper` con `stub_const`.
-
-## Current Behavior
-
-`CargoOffer` post-`REF-BE-00002` no tiene `expires_at` y no hay job recurrente que lo procese. Una Offer `pending` queda `pending` para siempre.
-
-## Reproduction Steps
-
-Post-`REF-BE-00002`:
-
-1. Crear una `Cargo` + una `TransportWindow` matching.
-2. Shipper autorea una `CargoOffer` contra la Window → Window queda en `pending_offer`.
-3. Esperar 48 h sin Carrier action.
-4. Observar que la Offer sigue `pending` y la Window sigue `pending_offer` indefinidamente → BUG / vida del sistema.
-
-## Impact
-
-**Quién**: indirecto pero crítico — Shippers (no ven Windows que deberían estar disponibles) y Carriers (no se les libera capacidad cuando perdieron una oportunidad).
-
-**Cómo**: garantiza vida del matching. Sin este job, el sistema se vuelve un graveyard de Windows bloqueadas con cada Carrier inactivo. Es el complemento simétrico de los siguientes paths:
-
-- Carrier acepta → Window `pending_offer → reserved` (parte de `REQ-BE-00024`).
-- Carrier rechaza → Window `pending_offer → open` (parte de `REQ-BE-00024`).
-- **48 h sin acción → Window `pending_offer → open` (esta issue).**
-
-**Riesgos**:
-
-- Race condition: si el job corre exactamente cuando un Carrier presiona accept/reject, podría doble-flippear la Window. Mitigación: el job usa `with_lock` sobre la offer y compara `transport_window.status` antes de update — si no es `pending_offer`, skip.
-- Performance: con N offers `pending` y el job corriendo cada 5 min, esperamos N pequeño (MVP). Si crece, optimizar con scope batched.
-- Solid Queue recurring deduplication: confirmar que el setup default de Rails 8 + Solid Queue no dispare múltiples instancias del mismo job en paralelo. Si lo hace, lock global vía advisory lock o table flag.
+- No hay UI nueva en este issue. La pantalla "Esperando respuesta" de US7 hace polling y eventualmente verá el status `expired` cuando el job corra.
 
 ## Technical Notes
 
-### Migración
-
-```ruby
-# db/migrate/<timestamp>_add_expires_at_to_cargo_offers.rb
-add_column :cargo_offers, :expires_at, :datetime
-add_index :cargo_offers, [:status, :expires_at]
-# Backfill para registros existentes (si los hay): created_at + 48.hours
-CargoOffer.where(expires_at: nil).find_each do |offer|
-  offer.update_column(:expires_at, offer.created_at + 48.hours)
-end
-change_column_null :cargo_offers, :expires_at, false
-```
-
-Coordinar con `REF-BE-00002`: si la migración del rename ya incluye `expires_at`, esta issue solo trae el job (no la columna).
-
-### Modelo
-
-```ruby
-# app/models/cargo_offer.rb
-EXPIRATION_WINDOW = 48.hours
-
-before_validation :set_expires_at, on: :create
-
-private
-
-def set_expires_at
-  self.expires_at ||= Time.current + EXPIRATION_WINDOW
-end
-```
-
-### Job
-
-```ruby
-# app/jobs/cargo_offer_expiration_job.rb
-class CargoOfferExpirationJob < ApplicationJob
-  queue_as :default
-
-  def perform
-    CargoOffer.where(status: :pending)
-              .where("expires_at <= ?", Time.current)
-              .find_each do |offer|
-      ActiveRecord::Base.transaction do
-        offer.lock!
-        next unless offer.status == "pending"
-
-        offer.update!(status: :expired)
-
-        window = offer.transport_window
-        if window.status == "pending_offer"
-          window.update!(status: :open)
-        else
-          Rails.logger.warn(
-            "[CargoOfferExpirationJob] Window #{window.id} not in pending_offer (#{window.status}); skipping flip"
-          )
-        end
-      end
-    end
-  end
-end
-```
-
-### Recurring config (Solid Queue)
-
-```yaml
-# config/recurring.yml
-production:
-  cargo_offer_expiration:
-    class: CargoOfferExpirationJob
-    schedule: every 5 minutes
-development:
-  cargo_offer_expiration:
-    class: CargoOfferExpirationJob
-    schedule: every 1 minute
-```
-
-(Confirmar formato real contra Solid Queue docs cuando se implemente.)
-
-### Specs
-
-- Job spec (`spec/jobs/cargo_offer_expiration_job_spec.rb`):
-  - Offers `pending` con `expires_at` pasado → marcadas `expired` + Window `open`.
-  - Offers `pending` con `expires_at` futuro → no-op.
-  - Offers ya `expired` → no-op (idempotencia).
-  - Window que ya cambió (`reserved` o `closed`) → offer `expired` pero Window no se toca; warning log.
-  - Transacción rollback: si el Window update falla, la offer queda `pending` (no half-state).
-- Model spec: `set_expires_at` callback corre on create.
-- Travel time con `ActiveSupport::Testing::TimeHelpers#travel_to`.
-
-### Observabilidad
-
-- Job loggea conteo de offers procesadas por run (`INFO`).
-- Métrica: tag-eable cuando aterrice un setup de métricas. Out-of-scope estricto para esta issue.
-
-### Sequencing
-
-Depende de:
-
-1. **`REF-BE-00002`** — el modelo `CargoOffer` debe existir con la semántica nueva (bid).
-2. **`INF-BE-00005`** — Solid Queue scaffolded.
-
-No bloquea US27 (`REQ-BE-00032`) — esa issue puede mergear sin el job, solo es marginalmente broken en el TTL. Pero idealmente aterriza dentro del mismo sprint para cerrar el loop.
-
-## Origin
-
-Identificado durante la sesión de grilling del 2026-05-19 que bloqueó la decisión de Window auto-flip en expiración + mismo-tx. `domain-model.md` § 8 referencia el job pero no había issue creada — esta cierra el gap.
+- **Stack**: ActiveJob backed por el queue adapter actual (por ahora el default; cuando aparezca un backend real como `solid_queue` o `good_job`, este job lo hereda — no diseñar el job alrededor de un backend específico).
+- **Test strategy**: `perform_now` con `ActiveSupport::Testing::TimeHelpers.travel_to` para simular la ventana de 48h; aserciones sobre status del `CargoOffer` + status de la Window + mail enviado.
+- **Regression spec**: cubrir el AC "En reject del Carrier o expiración a 48h, la Window vuelve a `open` automáticamente" — incluye los dos paths (Carrier rechaza, y 48h timeout).
+- **SQLite-friendly**: usar `lock!` (que en SQLite produce un `BEGIN EXCLUSIVE`) o un re-check + `update!` con guardas. No requiere PostgreSQL.
+- **Window state**: lifecycle `open / pending_offer / reserved / closed`. Solo `pending_offer → open` aplica acá.
 
 ## Related
 
-- Issue gemela conceptual: `REQ-BE-00024` (US12 — acceptance/rejection del Carrier; también flippea Window pero por path manual).
-- Bloquea en: `REF-BE-00002` (modelo `CargoOffer` post-rename), `INF-BE-00005` (Solid Queue).
-- Beneficia: `REQ-BE-00032` (US27), `REQ-FE-00015` (US7), `REQ-FE-00017` (US10), `REQ-BE-00024` (US12) — todos asumen que la Window se libera "sola" tras 48 h.
-- Docs: `docs/02-high-level-design/domain-model.md` § 8 (job conventions).
-- Docs: `docs/05-appendices/glossary.md` — `Oferta de carga`, `TransportWindow`.
+- **Blocks**: cierre formal de US7 (`REQ-FE-00015` / #121).
+- **Blocked by**: `REF-BE-00002` (#197) — el rename `Quote → CargoOffer` debe aterrizar antes para que este job opere sobre el nombre canónico. (Si entra antes del rename, se puede llamar `QuoteExpirationJob` y renombrar en bloque con REF-BE-00002.)
+- **Sibling**: el flip síncrono `Window.open → pending_offer` en `POST /api/cargos/:cargo_id/offers` — vive en `REQ-FE-00015` / `REF-BE-00002`, no acá.
+- **Hijos**: `INF-BE-00005` (template real del mailer; este issue manda stub).
 
 ## Acceptance Criteria
 
-- [ ] `REF-BE-00002` mergeada (`CargoOffer` con semántica de bid existe).
-- [ ] `INF-BE-00005` mergeada (Solid Queue scaffolded).
-- [ ] Columna `cargo_offers.expires_at` (NOT NULL, indexada con `(status, expires_at)`) presente. Migración nueva (no editar las del 2026-05-09) si `REF-BE-00002` no la trajo.
-- [ ] `CargoOffer::EXPIRATION_WINDOW = 48.hours` constant + callback `before_validation :set_expires_at, on: :create`.
-- [ ] `CargoOfferExpirationJob` implementado, con tx que cubre offer `expired` + Window `open` juntos.
-- [ ] Job es idempotente para offers ya `expired`.
-- [ ] Job NO toca la Window si está en estado distinto de `pending_offer` (race-safe); loggea warning.
-- [ ] Recurring config registra el job cada 5 min en prod (1 min en dev). Confirmar single-instance (Solid Queue lock).
-- [ ] Specs cubren: happy path, future expires_at no-op, ya-expired no-op, Window in non-pending_offer state, transaction rollback en falla.
-- [ ] `just backend-test` verde; cobertura mantiene o supera baseline.
-- [ ] Brakeman + bundler-audit + rubocop verdes.
-- [ ] PR title: `feat(marketplace): cargo offer expiration job (48h auto-expire + window flip)`. Body referencia `INF-BE-00006` y `Closes #N`.
+- [ ] Clase `CargoOfferExpirationJob < ApplicationJob` con método `perform(cargo_offer_id)` implementada.
+- [ ] `CargoOffersController#create` (o equivalente post-rename) encola el job con `set(wait_until: cargo_offer.created_at + 48.hours).perform_later(cargo_offer.id)`.
+- [ ] El job, ejecutado a las 48h, marca el `CargoOffer` como `expired` **solo si** sigue `pending` (idempotente).
+- [ ] El job, en la misma transacción, revierte la `TransportWindow` de `pending_offer → open` solo si seguía bloqueada por este `CargoOffer`.
+- [ ] El job envía un mail al Shipper notificando expiración (stub, `INF-BE-00005`).
+- [ ] Spec del job cubre: (a) happy path expiration, (b) no-op si el Carrier ya respondió, (c) Window no se toca si su status ya no es `pending_offer`.
+- [ ] Regression spec compartida con `REQ-FE-00015`: "En reject del Carrier o expiración a 48h, la Window vuelve a `open` automáticamente".
+
+## Origin
+
+Split de `REQ-FE-00015` (#121) en review de PR #193 (2026-05-19). La AC original "En reject del Carrier o expiración a 48h, la Window vuelve a `open` automáticamente (regression spec)" se separa acá para tratar el job asíncrono como pieza independiente, dado que requiere scheduler y vive en un horizonte temporal distinto al wizard de creación.

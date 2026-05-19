@@ -389,6 +389,76 @@ paths:
                 "$ref": "#/components/schemas/CarrierDetail"
         '404':
           description: carrier not found
+  "/api/quotes":
+    get:
+      summary: list quotes for the authenticated shipper or carrier
+      tags:
+      - Quotes
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: carrier sees only quotes directed at them
+        '401':
+          description: unauthenticated
+    post:
+      summary: create a cargo offer + quote (US7 — Shipper creates offer)
+      tags:
+      - Quotes
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '201':
+          description: vehicle without registered volume accepts any cargo volume
+        '401':
+          description: unauthenticated
+        '403':
+          description: carrier role cannot create offers
+        '404':
+          description: transport window not found or inactive
+        '422':
+          description: model validation failure — blank pickup_address
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quote:
+                  type: object
+                  required:
+                  - transport_window_id
+                  - pickup_address
+                  - delivery_address
+                  - pickup_date
+                  - cargo_description
+                  - weight_kg
+                  - volume_cm3
+                  - declared_value_cents
+                  - estimated_km
+                  properties:
+                    transport_window_id:
+                      type: integer
+                    pickup_address:
+                      type: string
+                    delivery_address:
+                      type: string
+                    pickup_date:
+                      type: string
+                      format: date
+                    cargo_description:
+                      type: string
+                    weight_kg:
+                      type: string
+                    volume_cm3:
+                      type: string
+                    declared_value_cents:
+                      type: string
+                    estimated_km:
+                      type: string
+              required:
+              - quote
   "/api/auth/login":
     post:
       summary: Authenticates with email + password and returns a JWT
@@ -661,6 +731,49 @@ components:
       type: array
       items:
         "$ref": "#/components/schemas/TransportWindow"
+    Quote:
+      type: object
+      properties:
+        id:
+          type: integer
+        cargo_offer_id:
+          type: integer
+        carrier_id:
+          type: integer
+        transport_window_id:
+          type: integer
+        amount_cents:
+          type: integer
+        currency:
+          type: string
+          enum:
+          - ARS
+        status:
+          type: string
+          enum:
+          - pending
+          - accepted
+          - paid
+          - expired
+          - cancelled
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - cargo_offer_id
+      - carrier_id
+      - transport_window_id
+      - amount_cents
+      - currency
+      - status
+      - expires_at
     CarrierDetail:
       type: object
       properties:

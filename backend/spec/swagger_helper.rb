@@ -130,6 +130,22 @@ RSpec.configure do |config|
             type: :array,
             items: { "$ref" => "#/components/schemas/TransportWindow" }
           },
+          Quote: {
+            type: :object,
+            properties: {
+              id:                   { type: :integer },
+              cargo_offer_id:       { type: :integer },
+              carrier_id:           { type: :integer },
+              transport_window_id:  { type: :integer },
+              amount_cents:         { type: :integer },
+              currency:             { type: :string, enum: %w[ARS] },
+              status:               { type: :string, enum: %w[pending accepted paid expired cancelled] },
+              expires_at:           { type: :string, format: "date-time" },
+              created_at:           { type: :string, format: "date-time" },
+              updated_at:           { type: :string, format: "date-time" }
+            },
+            required: %w[id cargo_offer_id carrier_id transport_window_id amount_cents currency status expires_at]
+          },
           CarrierDetail: {
             type: :object,
             properties: {

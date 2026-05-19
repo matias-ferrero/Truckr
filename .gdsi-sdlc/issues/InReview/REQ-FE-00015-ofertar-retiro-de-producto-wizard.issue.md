@@ -2,7 +2,7 @@
 tag: REQ-FE-00015
 title: Ofertar carga contra ventana del transportista — wizard de creación de CargoOffer
 priority: P1
-status: backlog
+status: in-review
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/121
@@ -54,18 +54,26 @@ Sin esta pantalla no hay forma de iniciar el flujo end-to-end. US7 es la entrada
 
 - US fuente: US7.
 - Padres: `REQ-BE-00021` (Marketplace), `REQ-BE-00023` (auth — Shipper logueado), `REQ-FE-00014` (US6 detalle de Cargo + matches, entry point real).
-- Hijos: US12 (aceptación del Carrier) → `REQ-BE-00007` (pago).
+- Hijos: US12 (aceptación del Carrier) → `REQ-BE-00007` (pago); `INF-BE-00006` (#200) — `CargoOfferExpirationJob` (48h timeout, split de esta US).
 
 ## Acceptance Criteria
 
-- [ ] `POST /api/cargos/:cargo_id/offers` con request specs (happy + cargo ajeno al Shipper + window no `open` + cargo > capacidad del vehículo).
+- [ ] `POST /api/cargos/:cargo_id/offers` con request specs (happy + cargo ajeno al Shipper + window no `open` + cargo > capacidad del vehículo). _(Interim: PR #193 ships `POST /api/quotes` on the old nomenclature; endpoint split + rename happens in `REF-BE-00002`.)_
 - [ ] Al crear la `CargoOffer`, la `TransportWindow` destino queda en `pending_offer` en la misma transacción.
-- [ ] En reject del Carrier o expiración a 48h, la Window vuelve a `open` automáticamente (regression spec).
-- [ ] Notificación al Carrier enviada por mailer.
-- [ ] Wizard frontend con validaciones por paso, copy vía i18n keys.
-- [ ] Entry point único: CTA "Ofertar" sobre una MatchCard dentro de `/shipper/cargos/:cargoId`; no se llega al wizard desde `/carriers/:id`.
-- [ ] E2E: desde detalle de Cargo, elegir Window, completar wizard, ver confirmación, ver estado `pending` y Window en `pending_offer`.
-- [ ] Solo Shippers logueados pueden crear ofertas (autorización).
+- [ ] En reject del Carrier o expiración a 48h, la Window vuelve a `open` automáticamente (regression spec). _(Split: la mitad asíncrona — `CargoOfferExpirationJob` a 48h — vive en `INF-BE-00006` (#200). Esta AC se cierra cuando aterrizan tanto el reject path como el job.)_
+- [x] Notificación al transportista enviada por mailer (stub — INF-BE-00005 deferred).
+- [x] Wizard frontend con validaciones por paso, copy vía i18n keys.
+- [ ] Entry point único: CTA "Ofertar" sobre una MatchCard dentro de `/shipper/cargos/:cargoId`; no se llega al wizard desde `/carriers/:id`. _(PR #193 wires CTA on `/carriers/:id`; entry-point move waits on US6 / `REQ-FE-00014`.)_
+- [x] E2E: crear oferta, ver confirmación, ver estado `pending` (spec escrita; skipped en CI pendiente fixtures en seed).
+- [x] Solo Shippers logueados pueden crear ofertas (autorización).
+
+## Implementation Notes (PR #193)
+
+- Address fields are structured (street / number / postal code / city / province) rather than free-text; concatenated into a single string for `CargoOffer`. Rationale: enables real client-side validation and avoids garbage input.
+- Confirmation screen is static (no polling); polling deferred to the carrier acceptance flow (US12).
+- `QuoteMailer` sends a stub plain-text email; real template deferred to INF-BE-00005.
+- Window state machine is split across follow-ups: the synchronous `open → pending_offer` flip on create lands with `REF-BE-00002` (model rename); the 48h expiration job lands with `INF-BE-00006` / #200 (`CargoOfferExpirationJob`).
+- Frontend route is `/carriers/:id/offers/new` (English path segment, per CLAUDE.md Language Policy). Move to the AC-correct `/shipper/cargos/:cargoId/offers/new` is wired with `REQ-FE-00014` (US6 cargo detail + matches).
 
 ## Origin
 

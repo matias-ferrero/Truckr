@@ -39,5 +39,7 @@ export const publicContent = {
         reviewsTitle: "Reseñas",
         reviewsPlaceholder:
             "Próximamente vas a poder leer las reseñas de otros expedidores.",
+        offerCta: "Ofertar",
+        offerCtaAriaLabel: (zone: string) => `Crear oferta para la ruta ${zone}`,
     },
 } as const;

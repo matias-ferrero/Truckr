@@ -287,7 +287,63 @@ The landing page itself has no form fields; the auth and carrier flows do (see `
 
 **The Pill-or-Container Rule.** Pill radius (`999px`) is reserved for interactive elements (buttons, chips, nav links, role tags, icon dots). Containers (cards, sections, the commitments band) use the 16px/24px square-radius scale. Never use pill on a container.
 
-## 6. Motion
+## 6. Transactional Components (US7 — Offer Wizard)
+
+These components live in the shipper offer flow (`/carriers/:id/offers/new`) and inherit the Open-Sky Blue shipper voice throughout.
+
+### Wizard shell (`.wizard`, `.wizardPage`)
+
+- **`.wizardPage`**: A `680px`-capped grid wrapper with `padding: var(--space-6) 0 var(--space-8)` and `gap: var(--space-4)`. Houses the page `<h1>`, an optional error `Alert`, and the wizard itself.
+- **`.wizard`**: A `680px`-capped grid with `gap: var(--space-5)`. Contains the step indicator nav, the body card, and the nav row.
+
+### Step indicator (`.wizardSteps`, `.wizardStep`, `.wizardStepNumber`, `.wizardStepLabel`)
+
+- **Layout**: Horizontal flex strip. A single 1px connector line is drawn via `.wizardSteps::before` spanning from centre of first circle to centre of last circle. Step circles sit above it via `z-index: 1`.
+- **Circle (22×22px pill)**: Three states:
+  - *Upcoming*: border `color-mix(var(--ink) 30%, white)`, text `var(--ink-2)`, background `var(--page-bg)` (occludes the line).
+  - *Current*: background `var(--accent)` (Deep Harbor), text `var(--paper)`. The single high-contrast moment in the strip; Deep Harbor at full strength here is its only fill-use in the wizard.
+  - *Done*: number text replaced with `✓` via `::before`, light tinted fill.
+- **Labels (Unbounded 600, 0.6875rem)**: Upcoming → `var(--ink-2)` (≥4.5:1), Current → `var(--ink)`, Done → `var(--ink-2)` (≥4.5:1 — WCAG 1.4.3 AA floor for 12px text). Transitions at 200ms ease-out-expo.
+
+### Step body card (`.wizardBody`)
+
+- Surface: `var(--surface)`, 1px border, `var(--radius-lg)` (24px) radius.
+- Padding: 24px on mobile, 32px on ≥560px.
+
+### Step fieldset (`.wizardFieldset`, `.wizardLegend`)
+
+- **`.wizardFieldset`**: A grid with `gap: var(--space-5)`. Form fields stack vertically.
+- **`.wizardLegend`**: Unbounded 700, 1.05rem, `letter-spacing: -0.02em`. Acts as the step question or section title.
+
+### Window summary card (`.windowSummaryCard`)
+
+- Shipper-voice card: background tinted 18% with `var(--brand-primary)`, border 50% brand-primary.
+- Route (`.windowZone`): Unbounded 700, `0.9375rem`, tight letterspacing.
+- Rate (`.windowRate`): Alegreya Sans, `var(--text-sm)`, `var(--ink-2)`.
+- 16px radius (`.radius-md`), 16px/24px padding.
+
+### Cost estimate (`.costEstimate`)
+
+- The emotional anchor of step 3: a branded flex row on a 45% brand-secondary tinted surface.
+- Label span: Alegreya Sans sm, `var(--ink-2)`.
+- Amount `<strong>`: Unbounded 700, `clamp(1.5rem, 5vw, 2rem)`, `letter-spacing: -0.04em`, Deep Harbor — the largest number the shipper sees before submitting. Fluid sizing keeps it from overflowing on 320px viewports.
+
+### Confirmation panel (`.confirmationPanel`)
+
+- Centered grid, `max-width: 520px`, auto-margins, `var(--radius-lg)`, 16px gap.
+- `text-align: center`, `justify-items: center`.
+- Reference chip (`.confirmationRef`): Unbounded 700 uppercase, pill radius, 15% brand-primary background tint.
+- Status text (`.confirmationStatus`): Alegreya Sans sm, `var(--ink-2)`, `max-width: 44ch`.
+
+### Named Rules (wizard-specific)
+
+**The Shipper-Voice-Throughout Rule.** Every information surface in the offer wizard (summary card, cost estimate, connector line tint) uses Open-Sky Blue (`var(--brand-primary)`). The carrier voice (Manifest Cream) does not appear on any element the shipper directly interacts with in this flow.
+
+**The Constraint-as-Gift Rule.** Capacity hints (weight/volume) and date bounds are shown proactively in `FormField help` props, not only surfaced on error. The user should feel informed, not corrected.
+
+**The Anchor-the-Number Rule.** The cost estimate amount is in Unbounded 700 at `clamp(1.5rem, 5vw, 2rem)` — larger than any label in the form, scaling down gracefully on narrow viewports. The financial figure is the most important thing on step 3; style it accordingly.
+
+## 7. Motion
 
 One orchestrated entrance carries the page; afterwards motion is feedback, not decoration.
 
@@ -336,7 +392,7 @@ One orchestrated entrance carries the page; afterwards motion is feedback, not d
 
 **The Reveal-Once Rule.** Reveal targets fire exactly once on first intersection and the observer disconnects. Re-entering the viewport doesn't replay; the page is meant to feel "set" after the first read-through, not a kinetic loop.
 
-## 7. Do's and Don'ts
+## 8. Do's and Don'ts
 
 ### Do:
 - **Do** keep the page **light-first throughout** with committed cream and sky surfaces. The single drenched moment is the final CTA; the deepest committed moment is the honey commitments band. No section, band, or card uses a dark fill — Tinted Ink is reserved for text and the primary button.

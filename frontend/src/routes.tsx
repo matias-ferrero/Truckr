@@ -4,6 +4,7 @@ import LandingPage from "./App";
 import { AuthProvider } from "./auth/AuthContext";
 import { Header } from "./components/Header";
 import RequireCarrier from "./auth/RequireCarrier";
+import RequireShipper from "./auth/RequireShipper";
 import RequireAuth from "./auth/RequireAuth";
 import { useCurrentUser } from "./auth/useCurrentUser";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
@@ -18,6 +19,7 @@ const TransportWindowList   = lazy(() => import("./pages/carrier/TransportWindow
 const TransportWindowForm   = lazy(() => import("./pages/carrier/TransportWindowForm"));
 const CarrierDetail = lazy(() => import("./pages/public/CarrierDetail"));
 const CarrierMeRedirect = lazy(() => import("./pages/public/CarrierMeRedirect"));
+const CreateOfferPage = lazy(() => import("./pages/shipper/CreateOfferPage"));
 const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
 
 function AuthShell({ children }: { children: React.ReactNode }) {
@@ -128,6 +130,17 @@ export function AppRoutes() {
                         {/* Declared before `:id` so the literal segment wins over the wildcard. */}
                         <Route path="/carriers/me" element={<CarrierMeRedirect />} />
                         <Route path="/carriers/:id" element={<CarrierDetail />} />
+                        {/* US7 — offer wizard; requires a logged-in Shipper. */}
+                        <Route
+                            path="/carriers/:id/offers/new"
+                            element={
+                                <RequireShipper>
+                                    <Suspense fallback={<main className="publicMain" id="main" aria-busy="true" />}>
+                                        <CreateOfferPage />
+                                    </Suspense>
+                                </RequireShipper>
+                            }
+                        />
                     </Route>
                     <Route
                         path="/profile"

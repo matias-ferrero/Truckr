@@ -1,5 +1,8 @@
 es:
   hello: "Hola mundo"
+  quote_mailer:
+    notify_carrier:
+      subject: "Nueva oferta recibida — Truckr®"
   errors:
     unauthorized: "Autenticación requerida"
     invalid_credentials: "Email o contraseña inválidos"
@@ -12,3 +15,16 @@ es:
         upper: "debe contener al menos una mayúscula"
         lower: "debe contener al menos una minúscula"
         digit: "debe contener al menos un dígito"
+  activerecord:
+    errors:
+      models:
+        quote:
+          attributes:
+            estimated_km:
+              must_be_positive: "debe ser mayor que 0"
+            pickup_date:
+              out_of_window_range: "debe estar dentro de las fechas disponibles de la ventana de transporte"
+            weight_kg:
+              exceeds_vehicle_capacity: "excede la capacidad de carga del vehículo"
+            volume_cm3:
+              exceeds_vehicle_capacity: "excede la capacidad volumétrica del vehículo"

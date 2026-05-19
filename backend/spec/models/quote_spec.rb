@@ -19,7 +19,15 @@ RSpec.describe Quote, type: :model do
     it { is_expected.to validate_numericality_of(:amount_cents).only_integer.is_greater_than(0) }
     it { is_expected.to validate_inclusion_of(:currency).in_array(%w[ARS]) }
     it { is_expected.to validate_inclusion_of(:status).in_array(Quote::STATES) }
-    it { is_expected.to validate_presence_of(:expires_at) }
+
+    # `expires_at` is derived by a before_validation callback from the
+    # transport_window's available_to (capped at 72h). The shoulda matcher
+    # for presence can't see past the callback, so we test it directly.
+    it "requires expires_at (and derives it from the transport_window)" do
+      q = build(:quote, expires_at: nil)
+      expect(q).to be_valid
+      expect(q.expires_at).to be_present
+    end
   end
 
   describe "associations" do

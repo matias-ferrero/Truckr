@@ -9,7 +9,24 @@
     --page-bg: var(--surface-cool);
     --star: var(--brand-secondary);
 
-    background: var(--page-bg);
+    /* Two ambient "light sources": sky-blue top-left + amber bottom-right,
+       paper in the middle. Both at low saturation so the gradient reads as
+       natural light, not decoration. background-size: 100% 100% prevents
+       tiling when the page grows taller than the viewport. */
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(in oklab, var(--brand-primary) 42%, var(--paper)) 0%,
+            transparent 55%
+        ),
+        linear-gradient(
+            315deg,
+            color-mix(in oklab, var(--brand-secondary) 34%, var(--paper)) 0%,
+            transparent 55%
+        ),
+        var(--paper);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
     color: var(--ink);
     min-height: 100vh;
     display: flex;
@@ -145,6 +162,11 @@
     margin: 24px 0;
 }
 
+@keyframes skeleton {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
 .skeletonBlock {
     background: linear-gradient(
         90deg,
@@ -169,4 +191,375 @@
     .skeletonBlock {
         animation: none;
     }
+}
+
+/* ── Offer Wizard (US7) ──────────────────────────────────────────────────── */
+
+/* Wizard shell — constrained width so form lines stay readable */
+.wizard {
+    display: grid;
+    gap: var(--space-5);
+    max-width: 680px;
+    /* Don't center (left-aligns with the page h1 at its natural position) */
+}
+
+/* Vertical rhythm wrapper for the full wizard screen (h1 + error + wizard) */
+.wizardPage {
+    padding: var(--space-6) 0 var(--space-8);
+    display: grid;
+    gap: var(--space-4);
+    max-width: 680px;
+}
+
+/* Step indicator strip */
+.wizardSteps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* isolation: isolate creates a proper stacking context so the ::before
+       connector line (z-index: 0) always sits below the step circles (z-index: 1) */
+    position: relative;
+    isolation: isolate;
+}
+
+.wizardSteps::-webkit-scrollbar {
+    display: none;
+}
+
+/* Single continuous line connecting all step circles.
+   With column-direction steps, each circle is centred horizontally.
+   For 3 equal steps the circle centres sit at 1/6 and 5/6 of total width,
+   so left/right are calc(100%/6) to start and end exactly at those centres. */
+.wizardSteps::before {
+    content: "";
+    position: absolute;
+    top: 11px; /* vertically centred on the 22px circles */
+    left: calc(100% / (var(--step-count, 3) * 2));
+    right: calc(100% / (var(--step-count, 3) * 2));
+    height: 1px;
+    background: color-mix(in oklab, var(--brand-primary) 80%, var(--border));
+    z-index: 0;
+}
+
+.wizardStep {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+    flex: 1 0 0;
+    position: relative;
+    padding-bottom: var(--space-3);
+    min-width: 0;
+}
+
+.wizardStepNumber {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    border: 1.5px solid color-mix(in oklab, var(--brand-primary) 50%, var(--border));
+    color: var(--ink-2);
+    /* Slightly stronger sky-blue tint so upcoming circles read as connected */
+    background: color-mix(in oklab, var(--brand-primary) 30%, var(--page-bg));
+    transition: background 200ms var(--ease-out), border-color 200ms var(--ease-out), color 200ms var(--ease-out);
+    position: relative;
+    z-index: 1;
+}
+
+.wizardStep.wizardStepCurrent .wizardStepNumber {
+    /* Deep Harbor = the editorial stamp; "step numerals" is its canonical role */
+    background: var(--accent);
+    border-color: var(--accent);
+    /* Near-white on Deep Harbor: ≈4.7:1 contrast (large-text threshold is 3:1) */
+    color: var(--paper);
+}
+
+.wizardStep.wizardStepDone .wizardStepNumber {
+    /* Amber = completed; ink checkmark has ≈12:1 contrast on brand-secondary (91% L) */
+    background: var(--brand-secondary);
+    border-color: color-mix(in oklab, var(--brand-secondary) 60%, var(--ink));
+    font-size: 0; /* hide the number */
+}
+
+.wizardStep.wizardStepDone .wizardStepNumber::before {
+    content: "✓";
+    font-size: 0.65rem;
+    font-family: var(--font-body);
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.wizardStepLabel {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    line-height: 1.3;
+    /* var(--ink-2) ≈ 6.6:1 contrast against the near-white page background */
+    color: var(--ink-2);
+    transition: color 200ms var(--ease-out);
+}
+
+.wizardStep.wizardStepCurrent .wizardStepLabel {
+    color: var(--ink);
+}
+
+.wizardStep.wizardStepDone .wizardStepLabel {
+    /* ink-2 ≈ 6.6:1 — meets WCAG 1.4.3 AA for 12px/600-weight text */
+    color: var(--ink-2);
+}
+
+/* Step content body */
+.wizardBody {
+    background: color-mix(in oklab, var(--brand-primary) 8%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--brand-primary) 55%, var(--border));
+    border-radius: var(--radius-lg);
+    padding: var(--space-5) var(--space-5);
+}
+
+@media (min-width: 560px) {
+    .wizardBody {
+        padding: var(--space-6) var(--space-6);
+    }
+}
+
+/* Nav row — back left, next/submit right */
+.wizardNav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+/* Fieldset-style group inside each step */
+.wizardFieldset {
+    display: grid;
+    gap: var(--space-5);
+}
+
+/* Step lead question */
+.wizardLegend {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    margin: 0 0 var(--space-2);
+    line-height: 1.2;
+}
+
+/* ── Address groups (step 1) ────────────────────────────────────────────── */
+
+/* Coloured container that visually separates origin from destination.
+   Uses brand-secondary (amber/yellow) to warm up the address step. */
+.addressGroup {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+    background: color-mix(in oklab, var(--brand-secondary) 28%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--brand-secondary) 65%, var(--border));
+    border-radius: var(--radius-md);
+}
+
+/* Eyebrow label — Deep Harbor on amber background keeps the editorial tone */
+.addressGroupTitle {
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+}
+
+/* Side-by-side layout for short paired fields (street+number, postal+city) */
+.addressInlineGrid {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+
+/* ── Cargo metrics group (step 2) ──────────────────────────────────────── */
+
+/* Amber container that groups the three numeric cargo fields (weight, volume,
+   declared value), giving the cargo step the same warm warmth as the address
+   groups in step 1 and the cost estimate in step 3. */
+.cargoMetrics {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+    background: color-mix(in oklab, var(--brand-secondary) 28%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--brand-secondary) 65%, var(--border));
+    border-radius: var(--radius-md);
+}
+
+/* ── Transport window summary card (step 3) ─────────────────────────────── */
+
+.windowSummaryCard {
+    /* Full shipper-voice saturation — this card IS the selected window */
+    background: color-mix(in oklab, var(--brand-primary) 50%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--brand-primary) 85%, var(--border));
+    border-radius: var(--radius-md);
+    padding: var(--space-4) var(--space-5);
+    display: grid;
+    gap: var(--space-1);
+}
+
+.windowZone {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin: 0;
+}
+
+.windowRate {
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+    margin: 0;
+}
+
+/* ── Cost estimate (step 3) ─────────────────────────────────────────────── */
+
+.costEstimate {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-5);
+    /* Amber/yellow — money reads warm, this is the financial anchor of the form */
+    background: color-mix(in oklab, var(--brand-secondary) 45%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--brand-secondary) 80%, var(--border));
+    border-radius: var(--radius-md);
+    flex-wrap: wrap;
+}
+
+.costEstimate > span {
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+    white-space: nowrap;
+}
+
+.costEstimate > strong {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    /* Deep Harbor stamp on the financial anchor; ≥4.5:1 on the blue-tinted bg */
+    color: var(--accent);
+    line-height: 1;
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+
+@keyframes wizardStepEnter {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes confirmPop {
+    from { opacity: 0; transform: scale(0.96) translateY(12px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes stepDoneSnap {
+    from { transform: scale(0.75); opacity: 0.5; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+
+/* Page h1 entrance */
+.wizardPage > h1 {
+    animation: wizardStepEnter 360ms var(--ease-out) both;
+}
+
+/* Step body — remounts via key={current}, triggering entrance on every advance */
+.wizardBody {
+    animation: wizardStepEnter 260ms var(--ease-out) both;
+    transition: box-shadow 220ms var(--ease-out);
+}
+
+/* Focus-within glow: signals the active form region without demanding attention */
+.wizardBody:focus-within {
+    box-shadow:
+        0 0 0 2px color-mix(in oklab, var(--brand-primary) 35%, var(--paper)),
+        0 6px 28px color-mix(in oklab, var(--brand-primary) 18%, var(--paper));
+}
+
+/* Nav row appears after the body card settles */
+.wizardNav {
+    animation: wizardStepEnter 280ms 80ms var(--ease-out) both;
+}
+
+/* Done-circle snap: fires once on initial render when steps are pre-completed */
+.wizardStepDone .wizardStepNumber {
+    animation: stepDoneSnap 280ms var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wizardPage > h1,
+    .wizardBody,
+    .wizardNav,
+    .confirmationPanel,
+    .confirmationRef,
+    .wizardStepDone .wizardStepNumber {
+        animation: none;
+    }
+}
+
+/* ── Confirmation screen ────────────────────────────────────────────────── */
+
+.confirmationPanel {
+    /* Mix sky-blue + amber: success reads warm (mission accomplished), not cold */
+    background: color-mix(
+        in oklab,
+        color-mix(in oklab, var(--brand-secondary) 30%, var(--surface)) 50%,
+        color-mix(in oklab, var(--brand-primary) 30%, var(--surface))
+    );
+    border: 1px solid color-mix(in oklab, var(--brand-secondary) 60%, var(--border));
+    border-radius: var(--radius-lg);
+    padding: clamp(var(--space-6), 5vw, var(--space-8));
+    margin: var(--space-6) auto;
+    max-width: 520px;
+    display: grid;
+    gap: var(--space-4);
+    text-align: center;
+    justify-items: center;
+    box-shadow: 0 12px 40px color-mix(in oklab, var(--brand-secondary) 30%, transparent);
+    animation: confirmPop 380ms var(--ease-out) both;
+}
+
+.confirmationRef {
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    /* ink-2 on var(--brand-primary) direct: ≈6:1 contrast */
+    color: var(--ink-2);
+    margin: 0;
+    padding: var(--space-2) var(--space-4);
+    /* Full brand-primary as the chip — vivid sky-blue pill, unmistakable reference badge */
+    background: var(--brand-primary);
+    border: 1px solid color-mix(in oklab, var(--brand-primary) 80%, var(--ink));
+    border-radius: 999px;
+    animation: wizardStepEnter 320ms 110ms var(--ease-out) both;
+}
+
+.confirmationStatus {
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+    margin: 0;
+    max-width: 44ch;
 }

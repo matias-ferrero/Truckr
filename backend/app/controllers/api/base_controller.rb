@@ -51,6 +51,13 @@ module Api
              status: :forbidden
     end
 
+    def require_shipper!
+      return if current_shipper
+
+      render json: { error: { code: "forbidden", message: I18n.t("errors.shipper_role_required") } },
+             status: :forbidden
+    end
+
     private
 
     def pagy_response_headers

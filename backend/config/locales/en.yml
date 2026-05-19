@@ -1,14 +1,31 @@
 en:
   hello: "Hello world"
+  quote_mailer:
+    notify_carrier:
+      subject: "New quote received — Truckr®"
   errors:
     unauthorized: "Authentication required"
     invalid_credentials: "Invalid email or password"
     forbidden: "Access denied"
     not_found: "Resource not found"
     carrier_role_required: "Carrier role required"
+    shipper_role_required: "Shipper role required"
     rate_limited: "Too many attempts. Try again in 15 minutes."
     messages:
       password_complexity:
         upper: "must contain at least one uppercase letter"
         lower: "must contain at least one lowercase letter"
         digit: "must contain at least one digit"
+  activerecord:
+    errors:
+      models:
+        quote:
+          attributes:
+            estimated_km:
+              must_be_positive: "must be greater than 0"
+            pickup_date:
+              out_of_window_range: "must fall within the transport window's available dates"
+            weight_kg:
+              exceeds_vehicle_capacity: "exceeds the vehicle's load capacity"
+            volume_cm3:
+              exceeds_vehicle_capacity: "exceeds the vehicle's volume capacity"

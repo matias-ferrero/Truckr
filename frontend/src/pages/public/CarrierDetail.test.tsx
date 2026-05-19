@@ -5,6 +5,7 @@ import CarrierDetail from "./CarrierDetail";
 import { ApiError } from "../../api";
 import * as carriersApi from "../../api/carriers";
 import type { CarrierDetail as CarrierDetailDto } from "../../api/carriers";
+import { AuthProvider } from "../../auth/AuthContext";
 
 vi.mock("../../api/carriers", async (orig) => {
     const actual = await orig<typeof carriersApi>();
@@ -17,9 +18,11 @@ vi.mock("../../api/carriers", async (orig) => {
 function renderAt(url: string) {
     return render(
         <MemoryRouter initialEntries={[url]}>
-            <Routes>
-                <Route path="/carriers/:id" element={<CarrierDetail />} />
-            </Routes>
+            <AuthProvider>
+                <Routes>
+                    <Route path="/carriers/:id" element={<CarrierDetail />} />
+                </Routes>
+            </AuthProvider>
         </MemoryRouter>,
     );
 }
