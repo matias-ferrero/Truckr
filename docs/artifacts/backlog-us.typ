@@ -145,7 +145,7 @@ para decidir si es el indicado antes de enviarle una oferta de carga.
 + Se muestra un botón claro "Ofertar contra esta ventana" que navega a US7 con la carga y la ventana ya en contexto.
 + La información se carga correctamente y se presenta de forma clara y organizada.
 
-== US7: Ofertar Retiro de un Producto
+== US7: Ofertar Retiro de una Carga
 
 *Release:* MVP \
 *Prioridad:* Alta \
@@ -244,10 +244,10 @@ quiero poder filtrar las ofertas de viaje recibidas,
 para encontrar rápidamente las que mejor se ajusten a mi disponibilidad y preferencias.
 
 *Criterios de Aceptación:*
-+ Se puede filtrar por ubicación de origen del producto.
++ Se puede filtrar por ubicación de origen de la carga.
 + Se puede filtrar por rango de fecha de retiro.
-+ Se puede filtrar por peso del producto a transportar.
-+ Se puede filtrar por volumen del producto a transportar.
++ Se puede filtrar por peso de la carga a transportar.
++ Se puede filtrar por volumen de la carga a transportar.
 + Al borrar un filtro, se resetea y aparecen todas las ofertas disponibles.
 + Los filtros se pueden combinar entre sí.
 
@@ -319,7 +319,7 @@ para cobrar por mi servicio de forma segura y en tiempo.
 
 *Criterios de Aceptación:*
 + La plataforma se integra con Mercado Pago para gestionar los pagos.
-+ Una vez concretado el viaje (producto entregado), se efectúa la transferencia del pago al transportista.
++ Una vez concretado el viaje (carga entregada), se efectúa la transferencia del pago al transportista.
 + El transportista puede ver el detalle de cada pago recibido (monto, viaje asociado, fecha).
 + Si hay algún problema con la transferencia, se notifica al transportista.
 
@@ -338,7 +338,7 @@ para luego poder buscar ventanas de transporte compatibles y enviar ofertas de c
 + Se pueden ingresar los datos de la dirección de origen y de la dirección de destino (calle, número, código postal, ciudad y provincia).
 + Se puede ingresar el peso de la carga en kilogramos (debe ser mayor a cero).
 + Se puede ingresar la distancia estimada del viaje en kilómetros (debe ser mayor a cero); a futuro se calculará automáticamente mediante integración con Google Maps.
-+ Se puede ingresar una descripción del producto a transportar.
++ Se puede ingresar una descripción de la carga a transportar.
 + Se pueden ingresar instrucciones de manipulación especial (opcional, por ejemplo "frágil", "refrigerado").
 + Los campos obligatorios están claramente marcados y se validan antes de enviar el formulario; si falta uno o un valor es inválido se muestra un mensaje claro por campo.
 + Solo los expedidores autenticados pueden publicar una carga; un transportista logueado no ve la opción.
@@ -449,7 +449,7 @@ para tener un registro de toda mi actividad en la plataforma.
 + Se puede acceder al detalle de cada viaje desde el historial.
 + El historial de viajes del transportista es visible para los expedidores que consultan sus detalles.
 
-== US18: Actualización de Viaje — Producto Retirado
+== US18: Actualización de Viaje — Carga Retirada
 
 *Release:* Release 2 \
 *Prioridad:* Media \
@@ -457,16 +457,16 @@ para tener un registro de toda mi actividad en la plataforma.
 
 *Descripción:*
 Como transportista,
-quiero poder marcar un producto como retirado,
-para que el expedidor sepa que ya recogí su producto y el viaje está en curso.
+quiero poder marcar una carga como retirada,
+para que el expedidor sepa que ya recogí su carga y el viaje está en curso.
 
 *Criterios de Aceptación:*
-+ Al retirar el producto, el transportista puede marcarlo como "retirado" con un botón.
-+ Al expedidor se le muestra que el transportista ya recogió su producto en el estado del viaje.
++ Al retirar la carga, el transportista puede marcarla como "retirada" con un botón.
++ Al expedidor se le muestra que el transportista ya recogió su carga en el estado del viaje.
 + La fecha y hora del retiro quedan registradas en el sistema.
 + No se puede marcar como retirado un viaje que aún no fue aceptado y pagado.
 
-== US19: Actualización de Viaje — Producto Entregado
+== US19: Actualización de Viaje — Carga Entregada
 
 *Release:* Release 2 \
 *Prioridad:* Alta \
@@ -474,11 +474,11 @@ para que el expedidor sepa que ya recogí su producto y el viaje está en curso.
 
 *Descripción:*
 Como transportista,
-quiero poder marcar un producto como entregado,
+quiero poder marcar una carga como entregada,
 para que el expedidor lo sepa y se concrete el pago del servicio.
 
 *Criterios de Aceptación:*
-+ Al entregar el producto, el transportista puede marcarlo como "entregado" con un botón.
++ Al entregar la carga, el transportista puede marcarla como "entregada" con un botón.
 + Al expedidor se le muestra el estado del viaje como completado.
 + La confirmación de entrega dispara el proceso de transferencia de pago al transportista.
 + La fecha y hora de entrega quedan registradas en el sistema.
@@ -511,7 +511,7 @@ para compartir mi experiencia y consultar las de otros antes de contratar un ser
 *Descripción:*
 Como expedidor,
 quiero poder hacer seguimiento de mi envío en tiempo real,
-para saber dónde está mi producto y cuándo llegará.
+para saber dónde está mi carga y cuándo llegará.
 
 *Criterios de Aceptación:*
 + Se muestra la ubicación del transportista en un mapa en tiempo real mientras el viaje está en curso.
@@ -671,12 +671,12 @@ para optimizar la carga y maximizar los ingresos por recorrido.
 *Descripción:*
 Como transportista,
 quiero poder encadenar pedidos en una ruta continua,
-para realizar viajes largos recogiendo y entregando productos a lo largo del camino.
+para realizar viajes largos recogiendo y entregando cargas a lo largo del camino.
 
 *Criterios de Aceptación:*
 + El transportista puede seleccionar múltiples pedidos que se encadenan en una ruta secuencial.
 + Se muestra la ruta completa con todos los puntos de retiro y entrega en orden.
-+ Se estima la fecha de entrega de cada producto según la posición en la cadena.
++ Se estima la fecha de entrega de cada carga según la posición en la cadena.
 + El sistema sugiere pedidos compatibles con la ruta actual del transportista.
 + Cada expedidor es notificado de la fecha estimada de entrega según la cadena planificada.
 
@@ -689,7 +689,7 @@ para realizar viajes largos recogiendo y entregando productos a lo largo del cam
 *Descripción:*
 Como expedidor,
 quiero poder contratar un seguro para mi envío al momento de reservar el transporte,
-para proteger mi producto en caso de daño o pérdida durante el viaje.
+para proteger mi carga en caso de daño o pérdida durante el viaje.
 
 *Criterios de Aceptación:*
 + Al confirmar una oferta de retiro, se ofrece la opción de contratar un seguro para el envío.

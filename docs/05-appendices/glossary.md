@@ -37,6 +37,7 @@ The `English model / table` column lists the canonical Rails identifier for each
 | **Cliente** | deprecated 2026-05-03 — folded into `Expedidor` | The word "cliente" remains valid in two narrow contexts: (a) **cliente fiscal** when referring to the ARCA invoice counter-party (`ArcaInvoice` references the `Shipper` as the fiscal customer); (b) **clientes externos** as a generic word for "external customers" of the platform (rare; prefer "usuarios" or "expedidores" when possible). Any other use is a defect. |
 | **Productor** | deprecated 2026-05-03 — folded into `Expedidor` | Was a sub-persona of Cliente (agricultural / industrial producer). Modelled as `Shipper` with no specialised subtype in Phase 0/1. |
 | **Cotización** | deprecated 2026-05-19 — folded into `Oferta de carga` | Earlier model framed the Carrier as the price author ("cotiza" the Cargo). Locked rename: the Expedidor authors the offer against a `TransportWindow`, the Carrier accepts/rejects. Use **"oferta de carga"** (`CargoOffer`). Any new use of "cotización" / "cotizar" / "Mis cotizaciones" in code, UI or new artifacts is a defect. |
+| **Producto** | deprecated 2026-05-19 — folded into `Carga` | Casual synonym for the goods an Expedidor ships. The domain term is **"carga"** (`Cargo`). Note "carga" is feminine, so agreement follows (la carga, carga retirada / entregada). Any new use of "producto" in code, UI or new artifacts is a defect. |
 
 ## AI Harness Terms
 
