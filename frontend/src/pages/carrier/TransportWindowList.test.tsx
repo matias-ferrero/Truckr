@@ -35,9 +35,12 @@ function makeResult(windows: twApi.TransportWindow[]): twApi.TransportWindowList
     return { items: windows, meta: { total: windows.length, page: 1, perPage: 20, totalPages: 1 } };
 }
 
-function renderList() {
+function renderList(locationState?: Record<string, unknown>) {
+    const initialEntries = locationState
+        ? [{ pathname: "/carrier/availability", state: locationState }]
+        : ["/carrier/availability"];
     return render(
-        <MemoryRouter>
+        <MemoryRouter initialEntries={initialEntries}>
             <TransportWindowList />
         </MemoryRouter>
     );
@@ -64,7 +67,7 @@ describe("TransportWindowList", () => {
         mockApi.listMyTransportWindows.mockResolvedValue(emptyResult());
         renderList();
         await waitFor(() => {
-            expect(screen.getByText(/todavía no publicaste/i)).toBeInTheDocument();
+            expect(screen.getByText(/todavía no tenés ventanas/i)).toBeInTheDocument();
         });
     });
 
@@ -74,16 +77,16 @@ describe("TransportWindowList", () => {
         await waitFor(() => {
             expect(screen.getByText(/Buenos Aires → Córdoba/i)).toBeInTheDocument();
         });
-        expect(screen.getByText(/Publicada/i)).toBeInTheDocument();
+        expect(screen.getByText(/Visible/i)).toBeInTheDocument();
     });
 
-    it("shows inactive badge for inactive windows", async () => {
+    it("shows inactive badge for hidden windows", async () => {
         mockApi.listMyTransportWindows.mockResolvedValue(
             makeResult([makeWindow({ active: false })])
         );
         renderList();
         await waitFor(() => {
-            expect(screen.getByText(/Sin publicar/i)).toBeInTheDocument();
+            expect(screen.getByText(/Oculta/i)).toBeInTheDocument();
         });
     });
 
@@ -95,13 +98,13 @@ describe("TransportWindowList", () => {
         });
     });
 
-    it("calls deactivateTransportWindow when Despublicar is clicked", async () => {
+    it("calls deactivateTransportWindow when Ocultar is clicked", async () => {
         mockApi.listMyTransportWindows.mockResolvedValue(makeResult([makeWindow()]));
         mockApi.deactivateTransportWindow.mockResolvedValue(makeWindow({ active: false }));
         renderList();
 
-        await waitFor(() => screen.getByRole("button", { name: /Despublicar/i }));
-        await userEvent.click(screen.getByRole("button", { name: /Despublicar/i }));
+        await waitFor(() => screen.getByRole("button", { name: /Ocultar/i }));
+        await userEvent.click(screen.getByRole("button", { name: /Ocultar/i }));
         expect(mockApi.deactivateTransportWindow).toHaveBeenCalledWith(1);
     });
 
@@ -119,16 +122,59 @@ describe("TransportWindowList", () => {
         expect(mockApi.deleteTransportWindow).toHaveBeenCalledWith(1);
     });
 
-    it("calls updateTransportWindow when Publicar is clicked on an unpublished window", async () => {
+    it("calls updateTransportWindow when Mostrar is clicked on a hidden window", async () => {
         mockApi.listMyTransportWindows.mockResolvedValue(
             makeResult([makeWindow({ active: false })])
         );
         mockApi.updateTransportWindow.mockResolvedValue(makeWindow({ active: true }));
         renderList();
 
-        // aria-label includes route context: "Publicar: Buenos Aires → Córdoba"
-        await waitFor(() => screen.getByRole("button", { name: /Publicar/i }));
-        await userEvent.click(screen.getByRole("button", { name: /Publicar/i }));
+        // aria-label includes route context: "Mostrar: Buenos Aires → Córdoba"
+        await waitFor(() => screen.getByRole("button", { name: /Mostrar/i }));
+        await userEvent.click(screen.getByRole("button", { name: /Mostrar/i }));
         expect(mockApi.updateTransportWindow).toHaveBeenCalledWith(1, { active: true });
+    });
+
+    it("shows savedBanner when navigated back with justSaved state", async () => {
+        mockApi.listMyTransportWindows.mockResolvedValue(emptyResult());
+        renderList({ justSaved: true });
+        await waitFor(() => {
+            expect(screen.getByRole("status")).toHaveTextContent(/ventana guardada/i);
+        });
+    });
+
+    it("shows toggleMsg banner after Ocultar succeeds", async () => {
+        mockApi.listMyTransportWindows.mockResolvedValue(makeResult([makeWindow()]));
+        mockApi.deactivateTransportWindow.mockResolvedValue(makeWindow({ active: false }));
+        renderList();
+
+        await waitFor(() => screen.getByRole("button", { name: /Ocultar/i }));
+        await userEvent.click(screen.getByRole("button", { name: /Ocultar/i }));
+        await waitFor(() => {
+            expect(screen.getByRole("status")).toHaveTextContent(/ventana ocultada/i);
+        });
+    });
+
+    it("shows toggleMsg banner after Mostrar succeeds", async () => {
+        mockApi.listMyTransportWindows.mockResolvedValue(
+            makeResult([makeWindow({ active: false })])
+        );
+        mockApi.updateTransportWindow.mockResolvedValue(makeWindow({ active: true }));
+        renderList();
+
+        await waitFor(() => screen.getByRole("button", { name: /Mostrar/i }));
+        await userEvent.click(screen.getByRole("button", { name: /Mostrar/i }));
+        await waitFor(() => {
+            expect(screen.getByRole("status")).toHaveTextContent(/ventana visible/i);
+        });
+    });
+
+    it("hides header CTA when list is empty", async () => {
+        mockApi.listMyTransportWindows.mockResolvedValue(emptyResult());
+        renderList();
+        await waitFor(() => screen.getByText(/todavía no tenés ventanas/i));
+        // header-level "Publicar disponibilidad" link is suppressed; only the empty-state CTA shows
+        const ctas = screen.getAllByRole("link", { name: /publicar/i });
+        expect(ctas).toHaveLength(1);
     });
 });

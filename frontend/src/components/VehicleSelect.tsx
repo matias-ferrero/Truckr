@@ -50,8 +50,10 @@ export default function VehicleSelect({
 
     if (state.status === "loading") {
         return (
-            <FormField id="vehicle-select" label={label} help="Cargando tu flota…">
-                <span aria-hidden="true" className="hidden" />
+            <FormField id="vehicle-select" label={label}>
+                <Select id="vehicle-select" disabled value="" onChange={() => {}} aria-busy="true">
+                    <option>Cargando tu flota…</option>
+                </Select>
             </FormField>
         );
     }

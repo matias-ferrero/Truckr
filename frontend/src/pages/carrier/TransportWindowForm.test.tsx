@@ -94,8 +94,8 @@ describe("TransportWindowForm — new mode", () => {
         await userEvent.type(screen.getByLabelText(/zona de destino/i), "Córdoba");
         await userEvent.type(screen.getByLabelText(/precio por km/i), "1500");
         await userEvent.type(screen.getByLabelText(/kilómetros máximos/i), "1200");
-        await userEvent.type(screen.getByLabelText(/disponible desde/i), "2026-05-15T09:00");
-        await userEvent.type(screen.getByLabelText(/disponible hasta/i), "2026-05-25T18:00");
+        await userEvent.type(screen.getByLabelText(/disponible desde/i), "2026-06-01");
+        await userEvent.type(screen.getByLabelText(/disponible hasta/i), "2026-06-30");
 
         await userEvent.click(screen.getByRole("button", { name: /publicar disponibilidad/i }));
 
@@ -111,6 +111,38 @@ describe("TransportWindowForm — new mode", () => {
         await waitFor(() => {
             expect(screen.getByRole("alert")).toHaveTextContent(/vehículo/i);
         });
+    });
+
+    it("shows error when dates are empty on submit", async () => {
+        renderNewForm();
+        await userEvent.selectOptions(screen.getByRole("combobox", { name: /vehículo/i }), "10");
+        await userEvent.type(screen.getByLabelText(/zona de origen/i), "Buenos Aires");
+        await userEvent.type(screen.getByLabelText(/zona de destino/i), "Córdoba");
+        await userEvent.type(screen.getByLabelText(/precio por km/i), "1500");
+        await userEvent.type(screen.getByLabelText(/kilómetros máximos/i), "1200");
+        // leave dates empty
+        await userEvent.click(screen.getByRole("button", { name: /publicar disponibilidad/i }));
+        await waitFor(() => {
+            expect(screen.getByRole("alert")).toBeInTheDocument();
+        });
+        expect(mockTwApi.createTransportWindow).not.toHaveBeenCalled();
+    });
+
+    it("navigates with justSaved state after successful create", async () => {
+        mockTwApi.createTransportWindow.mockResolvedValue(makeWindow());
+        renderNewForm();
+
+        await userEvent.selectOptions(screen.getByRole("combobox", { name: /vehículo/i }), "10");
+        await userEvent.type(screen.getByLabelText(/zona de origen/i), "Buenos Aires");
+        await userEvent.type(screen.getByLabelText(/zona de destino/i), "Córdoba");
+        await userEvent.type(screen.getByLabelText(/precio por km/i), "1500");
+        await userEvent.type(screen.getByLabelText(/kilómetros máximos/i), "1200");
+        await userEvent.type(screen.getByLabelText(/disponible desde/i), "2026-06-01");
+        await userEvent.type(screen.getByLabelText(/disponible hasta/i), "2026-06-30");
+
+        await userEvent.click(screen.getByRole("button", { name: /publicar disponibilidad/i }));
+
+        await waitFor(() => expect(screen.getByText("list")).toBeInTheDocument());
     });
 });
 
@@ -133,7 +165,7 @@ describe("TransportWindowForm — edit mode", () => {
         });
     });
 
-    it("calls updateTransportWindow on submit", async () => {
+    it("calls updateTransportWindow on submit with datetime suffix in payload", async () => {
         mockTwApi.getMyTransportWindow.mockResolvedValue(makeWindow());
         mockTwApi.updateTransportWindow.mockResolvedValue(makeWindow({ origin_zone: "Rosario" }));
         renderEditForm(1);
@@ -146,7 +178,11 @@ describe("TransportWindowForm — edit mode", () => {
         await waitFor(() => {
             expect(mockTwApi.updateTransportWindow).toHaveBeenCalledWith(
                 1,
-                expect.objectContaining({ origin_zone: "Rosario" })
+                expect.objectContaining({
+                    origin_zone: "Rosario",
+                    available_from: "2026-05-15T00:00",
+                    available_to: "2026-05-25T23:59",
+                })
             );
         });
     });

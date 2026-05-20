@@ -38,11 +38,15 @@ const empty: Draft = {
     available_to:     "",
 };
 
-function toLocalDatetime(iso: string | null | undefined): string {
+function toLocalDate(iso: string | null | undefined): string {
     if (!iso) return "";
-    const d = new Date(iso);
+    return iso.slice(0, 10);
+}
+
+function todayDate(): string {
+    const d = new Date();
     const pad = (n: number) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 function fromWindow(tw: TransportWindow): Draft {
@@ -52,8 +56,8 @@ function fromWindow(tw: TransportWindow): Draft {
         destination_zone: tw.destination_zone,
         price_per_km:     tw.price_per_km,
         max_km:           String(tw.max_km),
-        available_from:   toLocalDatetime(tw.available_from),
-        available_to:     toLocalDatetime(tw.available_to),
+        available_from:   toLocalDate(tw.available_from),
+        available_to:     toLocalDate(tw.available_to),
     };
 }
 
@@ -105,6 +109,10 @@ export default function TransportWindowForm({ mode }: Props) {
             setError(f.vehicleRequired);
             return;
         }
+        if (!draft.available_from || !draft.available_to) {
+            setError(f.saveError);
+            return;
+        }
         setLoading(true);
         setError(null);
         setServerErrors({});
@@ -115,15 +123,15 @@ export default function TransportWindowForm({ mode }: Props) {
                 destination_zone: draft.destination_zone,
                 price_per_km:     draft.price_per_km,
                 max_km:           draft.max_km,
-                available_from:   draft.available_from,
-                available_to:     draft.available_to,
+                available_from:   draft.available_from + "T00:00",
+                available_to:     draft.available_to + "T23:59",
             };
             if (editingId) {
                 await updateTransportWindow(editingId, payload);
             } else {
                 await createTransportWindow(payload);
             }
-            navigate("/carrier/availability");
+            navigate("/carrier/availability", { state: { justSaved: true } });
         } catch (e: unknown) {
             const err = e as { body?: { error?: { details?: Record<string, string[]> } }; message?: string };
             const details = err?.body?.error?.details;
@@ -138,13 +146,25 @@ export default function TransportWindowForm({ mode }: Props) {
         }
     }
 
-    const todayMin = toLocalDatetime(new Date().toISOString());
+    const todayMin = todayDate();
 
     if (hydrating) {
         return (
             <main className="page carrierMain" id="main">
-                <div className="container">
-                    <p className="sectionLead" role="status" aria-busy="true">{f.hydrating}</p>
+                <div className="container" role="status" aria-busy="true" aria-label={f.hydrating}>
+                    <div className="formSkeleton">
+                        <div className="formSkeletonTitle" />
+                        <div className="formSkeletonBlock" />
+                        <div className="formSkeletonRow">
+                            <div className="formSkeletonField" />
+                            <div className="formSkeletonField" />
+                        </div>
+                        <div className="formSkeletonRow">
+                            <div className="formSkeletonField" />
+                            <div className="formSkeletonField" />
+                        </div>
+                        <div className="formSkeletonActions" />
+                    </div>
                 </div>
             </main>
         );
@@ -161,7 +181,7 @@ export default function TransportWindowForm({ mode }: Props) {
                 </header>
 
                 <form
-                    className="grid gap-6 bg-paper p-6 rounded-md shadow-[0_6px_24px_color-mix(in_oklab,var(--color-ink)_6%,transparent)]"
+                    className="windowForm"
                     aria-labelledby="form-title"
                     onSubmit={handleSubmit}
                     noValidate
@@ -188,9 +208,9 @@ export default function TransportWindowForm({ mode }: Props) {
                         </dl>
                     )}
 
-                    <p className="requiredNote">{f.allRequired}</p>
+                    {mode === "new" && <p className="requiredNote">{f.allRequired}</p>}
 
-                    <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
+                    <div className="windowFormFields">
                         <FormField
                             id="origin_zone"
                             label={f.fields.originZone}
@@ -222,6 +242,7 @@ export default function TransportWindowForm({ mode }: Props) {
                         <FormField
                             id="price_per_km"
                             label={f.fields.pricePerKm}
+                            help={f.fields.pricePerKmHelp}
                             error={fieldError("price_per_km")}
                         >
                             <Input
@@ -237,6 +258,7 @@ export default function TransportWindowForm({ mode }: Props) {
                         <FormField
                             id="max_km"
                             label={f.fields.maxKm}
+                            help={f.fields.maxKmHelp}
                             error={fieldError("max_km")}
                         >
                             <Input
@@ -251,44 +273,42 @@ export default function TransportWindowForm({ mode }: Props) {
                         </FormField>
                     </div>
 
-                    <fieldset className="border border-stroke rounded-sm p-4">
-                        <legend className="px-2 font-semibold text-ink">
-                            {f.periodLegend}
-                        </legend>
-                        <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
-                            <FormField
+                    <fieldset className="dateRange">
+                        <legend>{f.periodLegend}</legend>
+                        <FormField
+                            id="available_from"
+                            label={f.fields.availableFrom}
+                            help={f.fields.availableFromHelp}
+                            error={fieldError("available_from")}
+                        >
+                            <Input
                                 id="available_from"
-                                label={f.fields.availableFrom}
-                                error={fieldError("available_from")}
-                            >
-                                <Input
-                                    id="available_from"
-                                    type="datetime-local"
-                                    min={todayMin}
-                                    value={draft.available_from}
-                                    onChange={(e) => set("available_from", e.target.value)}
-                                    required
-                                />
-                            </FormField>
+                                type="date"
+                                min={todayMin}
+                                value={draft.available_from}
+                                onChange={(e) => set("available_from", e.target.value)}
+                                required
+                            />
+                        </FormField>
 
-                            <FormField
+                        <FormField
+                            id="available_to"
+                            label={f.fields.availableTo}
+                            help={f.fields.availableToHelp}
+                            error={fieldError("available_to")}
+                        >
+                            <Input
                                 id="available_to"
-                                label={f.fields.availableTo}
-                                error={fieldError("available_to")}
-                            >
-                                <Input
-                                    id="available_to"
-                                    type="datetime-local"
-                                    min={draft.available_from || todayMin}
-                                    value={draft.available_to}
-                                    onChange={(e) => set("available_to", e.target.value)}
-                                    required
-                                />
-                            </FormField>
-                        </div>
+                                type="date"
+                                min={draft.available_from || todayMin}
+                                value={draft.available_to}
+                                onChange={(e) => set("available_to", e.target.value)}
+                                required
+                            />
+                        </FormField>
                     </fieldset>
 
-                    <div className="flex flex-wrap gap-3">
+                    <div className="windowFormActions">
                         <Button type="submit" disabled={loading}>
                             {loading
                                 ? f.submit.saving

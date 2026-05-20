@@ -6,9 +6,30 @@
    vehicles, transport windows, and admin work all sit on the carrier's
    own ground. Brand tokens inherit from :root in global.css. */
 .carrierPage {
-    --page-bg: var(--surface-2);
-    --status-active-bg: color-mix(in oklab, oklch(72% 0.14 145) 18%, var(--surface));
-    --status-active-fg: oklch(30% 0.12 145);
+    /* Carrier voice: Manifest Cream (warm) — not sky blue.
+       --brand-primary stays sky for header token compat; --cream is the
+       carrier-side voice used for surfaces, badges, and form fills. */
+    --brand-primary: oklch(89% 0.06 235);
+    --brand-secondary: oklch(91% 0.07 95);
+    --brand-tertiary: oklch(75% 0.005 240);
+    --brand-error: oklch(72% 0.16 25);
+    --paper: oklch(99% 0.005 240);
+    --cream: oklch(80% 0.13 82);       /* Manifest Cream source */
+    --cream-deep: oklch(72% 0.11 78);  /* deep honey for contrast text */
+
+    /* "Visible" badge uses Manifest Cream — carrier voice, not traffic-light green. */
+    --status-active-bg: color-mix(in oklab, var(--cream) 22%, transparent);
+    --status-active-fg: var(--cream-deep);
+
+    --ink: oklch(18% 0.02 240);
+    --ink-2: color-mix(in oklab, var(--ink) 78%, var(--paper));
+    --ink-3: color-mix(in oklab, var(--ink) 62%, var(--paper));
+    --surface: var(--paper);
+    --surface-2: color-mix(in oklab, var(--paper) 92%, var(--brand-tertiary));
+    /* page-bg: white 94% + Manifest Cream — surface-warm from DESIGN.md. */
+    --page-bg: oklch(97% 0.025 82);
+    --surface-form: color-mix(in oklab, var(--cream) 8%, var(--paper));
+    --border: color-mix(in oklab, var(--brand-tertiary) 70%, var(--paper));
 
     background: var(--page-bg);
     color: var(--ink);
@@ -21,27 +42,20 @@
     flex: 1;
 }
 
-/* Inside the carrier admin scope, override the landing's ink-fill primary
-   button (which is the drenched-CTA signature, not a general action style)
-   with a paper-mixed Manifest Cream highlight. The carrier voice still
-   stamps, but the fill reads as a calm cream pill rather than full saffron.
-   Ink text on the paper-mixed cream still clears AA. */
-.carrierPage .buttonPrimary {
-    background: color-mix(in oklab, var(--brand-secondary) 58%, var(--brand-neutral));
-    color: var(--ink);
-    border-color: color-mix(in oklab, var(--brand-secondary) 62%, var(--ink));
-    box-shadow: 0 8px 24px color-mix(in oklab, var(--brand-secondary) 22%, transparent);
+/* Override landing's fluid sectionTitle with a fixed product-UI scale. */
+.carrierMain .sectionTitle {
+    font-size: 1.75rem;
+    letter-spacing: -0.025em;
+    max-width: 32ch;
 }
 
-.carrierPage .buttonPrimary:hover {
-    background: color-mix(in oklab, var(--brand-secondary) 70%, var(--brand-neutral));
-    border-color: color-mix(in oklab, var(--brand-secondary) 70%, var(--ink));
-    box-shadow: 0 12px 28px color-mix(in oklab, var(--brand-secondary) 30%, transparent);
-}
 
-.formHeader,
 .listHeader {
-    margin: 24px 0 16px;
+    margin: 24px 0 20px;
+}
+
+.formHeader {
+    margin: 32px 0 24px;
 }
 
 .listHeader {
@@ -141,8 +155,10 @@
 
 .emptyState {
     text-align: center;
-    padding: 48px 16px;
-    border: 2px dashed var(--border);
+    padding: clamp(40px, 6vw, 64px) 24px;
+    /* Carrier-voice surface: cream tint instead of generic dashed box */
+    background: color-mix(in oklab, var(--cream) 12%, var(--paper));
+    border: 1px solid color-mix(in oklab, var(--cream) 40%, transparent);
     border-radius: 16px;
     display: grid;
     gap: 16px;
@@ -151,8 +167,10 @@
 }
 
 .emptyStateTitle {
-    font-size: 16px;
-    font-weight: 600;
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
     color: var(--ink);
     margin: 0;
 }
@@ -230,11 +248,11 @@
     /* Tailwind preflight resets `dialog { margin: 0 }`, which kills the UA
        `margin: auto` that centers a `:modal` dialog. Restore it. */
     margin: auto;
-    border: 0;
+    border: 1px solid color-mix(in oklab, var(--cream) 40%, transparent);
     border-radius: 16px;
     padding: 0;
     max-width: min(420px, calc(100% - 32px));
-    background: var(--surface);
+    background: var(--surface-form);
     color: var(--ink);
     box-shadow: 0 24px 64px color-mix(in oklab, var(--ink) 24%, transparent);
 }
@@ -250,9 +268,23 @@
 }
 
 .confirmDialogTitle {
+    font-family: var(--font-display);
+    letter-spacing: -0.022em;
     margin: 0;
-    font-size: 18px;
+    font-size: 1.125rem;
     font-weight: 700;
+}
+
+.confirmDialogRoute {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin: 0;
+    padding: 8px 12px;
+    background: color-mix(in oklab, var(--cream) 20%, transparent);
+    border-radius: 8px;
 }
 
 .confirmDialogText {
@@ -487,8 +519,15 @@
 }
 
 .windowCard.isInactive {
-    background: color-mix(in oklab, var(--surface) 70%, var(--page-bg));
+    background: color-mix(in oklab, var(--page-bg) 80%, var(--surface));
     box-shadow: none;
+}
+
+/* Opacity only on content areas — cardActions stays at full opacity so
+   the Mostrar button is always easy to click on hidden windows. */
+.windowCard.isInactive .windowCardHeader,
+.windowCard.isInactive .windowCardBody {
+    opacity: 0.72;
 }
 
 .windowCard.isInactive .windowRoute {
@@ -501,17 +540,16 @@
     justify-content: space-between;
     gap: 8px;
     padding: 16px 16px 8px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border-cream);
-}
-
-.windowCard.isInactive .windowCardHeader {
-    background: transparent;
+    /* Cream strip on both active and inactive cards — consistent structure. */
+    background: color-mix(in oklab, var(--cream) 10%, var(--paper));
+    border-bottom: 1px solid color-mix(in oklab, var(--cream) 28%, transparent);
 }
 
 .windowRoute {
+    font-family: var(--font-display);
     font-weight: 700;
-    font-size: 15px;
+    font-size: 0.9375rem;   /* 15px → same size, now on display face */
+    letter-spacing: -0.02em;
     color: var(--ink);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -528,6 +566,7 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
     flex-shrink: 0;
+    transition: background-color 200ms ease, color 200ms ease;
 }
 
 .statusActive {
@@ -546,7 +585,7 @@
 
 .windowMeta {
     margin: 4px 0;
-    font-size: 13px;
+    font-size: 0.875rem;    /* 14px — WCAG 1.4.4 floor */
     color: var(--ink-2);
 }
 
@@ -558,6 +597,170 @@
     color: var(--ink);
     font-weight: 500;
     margin-top: 8px;
+}
+
+/* Form hydrating skeleton */
+.formSkeleton {
+    margin: 32px 0 24px;
+    display: grid;
+    gap: 24px;
+}
+
+.formSkeletonTitle {
+    height: 28px;
+    width: 220px;
+    border-radius: 6px;
+    background: color-mix(in oklab, var(--ink) 8%, transparent);
+    position: relative;
+    overflow: hidden;
+}
+
+.formSkeletonBlock {
+    height: 120px;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--ink) 5%, transparent);
+    position: relative;
+    overflow: hidden;
+}
+
+.formSkeletonRow {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.formSkeletonField {
+    height: 56px;
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--ink) 6%, transparent);
+    position: relative;
+    overflow: hidden;
+}
+
+.formSkeletonActions {
+    height: 40px;
+    width: 200px;
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--ink) 7%, transparent);
+    position: relative;
+    overflow: hidden;
+}
+
+.formSkeletonTitle::after,
+.formSkeletonBlock::after,
+.formSkeletonField::after,
+.formSkeletonActions::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        color-mix(in oklab, var(--paper) 55%, transparent) 50%,
+        transparent 100%
+    );
+    transform: translateX(-100%);
+    animation: skeleton-shimmer 1.4s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .formSkeletonTitle::after,
+    .formSkeletonBlock::after,
+    .formSkeletonField::after,
+    .formSkeletonActions::after {
+        animation: none;
+    }
+}
+
+/* Post-save success banner */
+.savedBanner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--cream) 28%, var(--paper));
+    border: 1px solid color-mix(in oklab, var(--cream) 55%, transparent);
+    color: var(--ink);
+    font-size: 0.875rem;
+    font-weight: 600;
+    animation: savedBannerIn 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.savedBannerClose {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-2);
+    font-size: 1.125rem;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.savedBannerClose:hover {
+    color: var(--ink);
+    background: color-mix(in oklab, var(--ink) 6%, transparent);
+}
+
+.savedBannerClose:focus-visible {
+    outline: 3px solid color-mix(in oklab, var(--ink) 15%, transparent);
+    outline-offset: 3px;
+}
+
+@keyframes savedBannerIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .savedBanner { animation: none; }
+}
+
+/* Window card action hierarchy — Edit leads (outline, flex-1) then secondary row */
+.cardEditBtn {
+    flex: 1;
+    min-width: 0;
+}
+
+.cardSecondaryActions {
+    display: flex;
+    gap: 4px;
+}
+
+.cardDeleteBtn {
+    color: color-mix(in oklab, var(--brand-error) 80%, var(--ink));
+}
+
+.cardDeleteBtn:hover {
+    color: var(--brand-error);
+    background: color-mix(in oklab, var(--brand-error) 8%, transparent);
+}
+
+/* Availability form card — replaces inline Tailwind on <form> */
+.windowForm {
+    display: grid;
+    gap: 1.5rem;
+    background: var(--surface-form);
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 6px 24px color-mix(in oklab, var(--ink) 6%, transparent);
+    border: 1px solid color-mix(in oklab, var(--cream) 40%, transparent);
+}
+
+.windowFormFields {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+}
+
+.windowFormActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
 }
 
 .fieldSection {
@@ -584,7 +787,7 @@
 }
 
 .requiredNote {
-    font-size: 12px;
+    font-size: 0.8125rem;   /* 13px — improved from 12px */
     color: var(--ink-2);
     margin: 0;
 }
@@ -595,8 +798,8 @@
 }
 
 .fieldReadonly dt {
-    font-weight: 400;
-    color: var(--ink);
+    font-weight: 600;
+    color: var(--ink-2);
     font-size: 14px;
 }
 

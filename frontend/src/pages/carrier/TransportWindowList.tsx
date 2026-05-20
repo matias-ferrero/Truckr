@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     deactivateTransportWindow,
     deleteTransportWindow,
@@ -8,6 +8,8 @@ import {
     TransportWindowListMeta,
     updateTransportWindow,
 } from "../../api/transport_windows";
+import { Button, buttonVariants } from "../../components/ui/button";
+import { cn } from "../../lib/utils";
 import { carrierContent } from "./carrierContent";
 
 const t = carrierContent.availability.list;
@@ -21,17 +23,38 @@ function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString("es-AR", {
         day: "2-digit",
         month: "2-digit",
-        year: "2-digit",
+        year: "numeric",
     });
 }
 
 export default function TransportWindowList() {
+    const location = useLocation();
+    const navigate = useNavigate();
+
     const [page, setPage]         = useState(1);
     const [state, setState]       = useState<LoadState>({ status: "loading" });
     const [toggling, setToggling] = useState<number | null>(null);
-    const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+    const [toggleMsg, setToggleMsg] = useState<string | null>(null);
+    const toggleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState<TransportWindow | null>(null);
     const [deleting, setDeleting] = useState<number | null>(null);
     const dialogRef = useRef<HTMLDialogElement>(null);
+
+    const justSaved = !!(location.state as { justSaved?: boolean } | null)?.justSaved;
+    const [showSaved, setShowSaved] = useState(false);
+
+    useEffect(() => {
+        if (!justSaved) return;
+        setShowSaved(true);
+        navigate(location.pathname, { replace: true, state: null });
+        const id = setTimeout(() => setShowSaved(false), 4000);
+        return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [justSaved]);
+
+    useEffect(() => () => {
+        if (toggleTimerRef.current) clearTimeout(toggleTimerRef.current);
+    }, []);
 
     useEffect(() => {
         const dialog = dialogRef.current;
@@ -42,6 +65,7 @@ export default function TransportWindowList() {
             dialog.close();
         }
     }, [confirmDelete]);
+
 
     const reload = useCallback(async (nextPage = page) => {
         setState({ status: "loading" });
@@ -62,10 +86,14 @@ export default function TransportWindowList() {
         try {
             if (tw.active) {
                 await deactivateTransportWindow(tw.id);
+                setToggleMsg(t.toggledHidden);
             } else {
                 await updateTransportWindow(tw.id, { active: true });
+                setToggleMsg(t.toggledVisible);
             }
             await reload(page);
+            if (toggleTimerRef.current) clearTimeout(toggleTimerRef.current);
+            toggleTimerRef.current = setTimeout(() => setToggleMsg(null), 3500);
         } finally {
             setToggling(null);
         }
@@ -82,17 +110,46 @@ export default function TransportWindowList() {
         }
     }
 
+    const confirmId = confirmDelete?.id ?? null;
+    const deleteTriggerRef = useRef<HTMLButtonElement | null>(null);
+
     return (
         <main className="page carrierMain" id="main">
             <div className="container">
+                {showSaved && (
+                    <div className="savedBanner" role="status" aria-live="polite">
+                        <span>{t.savedBanner}</span>
+                        <button
+                            className="savedBannerClose"
+                            aria-label={t.savedBannerDismiss}
+                            onClick={() => setShowSaved(false)}
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
+                {toggleMsg && (
+                    <div className="savedBanner" role="status" aria-live="polite">
+                        <span>{toggleMsg}</span>
+                        <button
+                            className="savedBannerClose"
+                            aria-label={t.savedBannerDismiss}
+                            onClick={() => setToggleMsg(null)}
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
                 <header className="listHeader">
                     <div>
                         <h1 className="sectionTitle">{t.title}</h1>
                         <p className="sectionLead">{t.lead}</p>
                     </div>
-                    <Link to="/carrier/availability/new" className="button buttonPrimary">
-                        {t.addCta}
-                    </Link>
+                    {!(state.status === "ready" && state.items.length === 0) && (
+                        <Link to="/carrier/availability/new" className={buttonVariants()}>
+                            {t.addCta}
+                        </Link>
+                    )}
                 </header>
 
                 {state.status === "loading" && (
@@ -102,7 +159,7 @@ export default function TransportWindowList() {
                         aria-label={t.loadingLabel}
                     >
                         {[0, 1, 2].map((i) => (
-                            <li key={i} className="windowCard skeletonCard" />
+                            <li key={i} className="windowCard skeletonCard" aria-hidden="true" />
                         ))}
                     </ul>
                 )}
@@ -110,13 +167,9 @@ export default function TransportWindowList() {
                 {state.status === "error" && (
                     <div className="errorPanel" role="alert">
                         <p>{t.loadError}: {state.message}</p>
-                        <button
-                            className="button buttonGhost"
-                            onClick={() => reload(page)}
-                            type="button"
-                        >
+                        <Button variant="ghost" onClick={() => reload(page)}>
                             {t.retry}
-                        </button>
+                        </Button>
                     </div>
                 )}
 
@@ -124,7 +177,7 @@ export default function TransportWindowList() {
                     <div className="emptyState">
                         <h2 className="emptyStateTitle">{t.emptyTitle}</h2>
                         <p className="sectionLead">{t.emptyLead}</p>
-                        <Link to="/carrier/availability/new" className="button buttonPrimary">
+                        <Link to="/carrier/availability/new" className={buttonVariants()}>
                             {t.emptyCta}
                         </Link>
                     </div>
@@ -142,7 +195,11 @@ export default function TransportWindowList() {
                                         >
                                             {tw.origin_zone} → {tw.destination_zone}
                                         </span>
-                                        <span className={`statusBadge${tw.active ? " statusActive" : " statusInactive"}`}>
+                                        <span
+                                            className={`statusBadge${tw.active ? " statusActive" : " statusInactive"}`}
+                                            title={tw.active ? t.activeTitle : t.inactiveTitle}
+                                            aria-label={tw.active ? t.activeTitle : t.inactiveTitle}
+                                        >
                                             {tw.active ? t.active : t.inactive}
                                         </span>
                                     </div>
@@ -159,61 +216,70 @@ export default function TransportWindowList() {
                                             {t.from} {formatDate(tw.available_from)} — {t.to} {formatDate(tw.available_to)}
                                         </p>
                                     </div>
+                                    {/* Action hierarchy: Edit leads (outline, full width) →
+                                        Toggle is secondary (ghost sm) →
+                                        Delete is danger-colored ghost (weight reserved for confirm dialog) */}
                                     <div className="cardActions">
                                         <Link
                                             to={`/carrier/availability/${tw.id}`}
-                                            className="button buttonGhost"
+                                            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "cardEditBtn")}
                                         >
                                             {t.edit}
                                         </Link>
-                                        <button
-                                            className={`button ${tw.active ? "buttonDanger" : "buttonGhost"}`}
-                                            type="button"
-                                            aria-label={tw.active
-                                                ? `${t.deactivate}: ${tw.origin_zone} → ${tw.destination_zone}`
-                                                : `${t.reactivate}: ${tw.origin_zone} → ${tw.destination_zone}`}
-                                            onClick={() => handleToggleActive(tw)}
-                                            disabled={toggling === tw.id || deleting === tw.id}
-                                        >
-                                            {toggling === tw.id
-                                                ? t.toggling
-                                                : tw.active ? t.deactivate : t.reactivate}
-                                        </button>
-                                        <button
-                                            className="button buttonDanger"
-                                            type="button"
-                                            onClick={() => setConfirmDelete(tw.id)}
-                                            disabled={deleting === tw.id}
-                                        >
-                                            {deleting === tw.id ? t.deleting : t.delete}
-                                        </button>
+                                        <div className="cardSecondaryActions">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                aria-label={tw.active
+                                                    ? `${t.deactivate}: ${tw.origin_zone} → ${tw.destination_zone}`
+                                                    : `${t.reactivate}: ${tw.origin_zone} → ${tw.destination_zone}`}
+                                                onClick={() => handleToggleActive(tw)}
+                                                disabled={toggling === tw.id || deleting === tw.id}
+                                            >
+                                                {toggling === tw.id
+                                                    ? t.toggling
+                                                    : tw.active ? t.deactivate : t.reactivate}
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="cardDeleteBtn"
+                                                onClick={(e) => {
+                                                    deleteTriggerRef.current = e.currentTarget as HTMLButtonElement;
+                                                    setConfirmDelete(tw);
+                                                }}
+                                                disabled={deleting === tw.id}
+                                            >
+                                                {deleting === tw.id ? t.deleting : t.delete}
+                                            </Button>
+                                        </div>
                                     </div>
                                 </li>
                             ))}
                         </ul>
                         {state.meta.totalPages > 1 && (
                             <nav className="paginator" aria-label={t.pagination.label}>
-                                <button
-                                    type="button"
-                                    className="button buttonGhost"
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
                                     disabled={page <= 1}
                                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                                 >
-                                    {t.pagination.previous}
-                                </button>
+                                    <span aria-hidden="true">← </span>{t.pagination.previous}
+                                </Button>
                                 <p>
                                     {t.pagination.page(state.meta.page, state.meta.totalPages)}
                                     {" · "}
                                     {t.pagination.count(state.meta.total)}
                                 </p>
-                                <button
-                                    type="button"
-                                    className="button buttonGhost"
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
                                     disabled={page >= state.meta.totalPages}
                                     onClick={() => setPage((p) => p + 1)}
                                 >
-                                    {t.pagination.next}
-                                </button>
+                                    {t.pagination.next}<span aria-hidden="true"> →</span>
+                                </Button>
                             </nav>
                         )}
                     </>
@@ -223,30 +289,34 @@ export default function TransportWindowList() {
             <dialog
                 ref={dialogRef}
                 className="confirmDialog"
-                onClose={() => setConfirmDelete(null)}
+                aria-modal="true"
+                onClose={() => {
+                    setConfirmDelete(null);
+                    deleteTriggerRef.current?.focus();
+                }}
                 aria-labelledby="confirm-delete-title"
             >
                 <div className="confirmDialogBody">
                     <h2 id="confirm-delete-title" className="confirmDialogTitle">
                         {t.deleteTitle}
                     </h2>
+                    {confirmDelete && (
+                        <p className="confirmDialogRoute">
+                            {confirmDelete.origin_zone} → {confirmDelete.destination_zone}
+                        </p>
+                    )}
                     <p className="confirmDialogText">{t.deleteConfirm}</p>
                     <div className="confirmDialogActions">
-                        <button
-                            className="button buttonGhost"
-                            type="button"
-                            onClick={() => setConfirmDelete(null)}
-                        >
+                        <Button variant="ghost" onClick={() => setConfirmDelete(null)}>
                             {t.deleteCancel}
-                        </button>
-                        <button
-                            className="button buttonDanger"
-                            type="button"
-                            onClick={() => { if (confirmDelete !== null) handleDelete(confirmDelete); }}
-                            disabled={deleting === confirmDelete}
+                        </Button>
+                        <Button
+                            variant="danger"
+                            onClick={() => { if (confirmId !== null) handleDelete(confirmId); }}
+                            disabled={deleting === confirmId}
                         >
-                            {deleting === confirmDelete ? t.deleting : t.delete}
-                        </button>
+                            {deleting === confirmId ? t.deleting : t.delete}
+                        </Button>
                     </div>
                 </div>
             </dialog>
