@@ -27,10 +27,10 @@ const mountAt = (path: string) =>
             <AuthProvider>
                 <Routes>
                     <Route
-                        path="/carriers/:id/offers/new"
+                        path="/shipper/cargos"
                         element={
                             <RequireShipper>
-                                <div>wizard-content</div>
+                                <div>cargos-content</div>
                             </RequireShipper>
                         }
                     />
@@ -43,18 +43,22 @@ const mountAt = (path: string) =>
 
 describe("RequireShipper", () => {
     it("redirects anonymous users to /login", async () => {
-        mountAt("/carriers/1/offers/new");
+        mountAt("/shipper/cargos");
         expect(await screen.findByText("login-screen")).toBeInTheDocument();
     });
 
-    it("redirects carrier-only users to /", async () => {
+    it("shows a visible 403 view for carrier-only users", async () => {
         server.use(
             http.get(`${API}/api/auth/me`, () =>
                 HttpResponse.json(meResponse(["carrier"])),
             ),
         );
-        mountAt("/carriers/1/offers/new");
-        expect(await screen.findByText("home-screen")).toBeInTheDocument();
+        mountAt("/shipper/cargos");
+        expect(
+            await screen.findByText("No tenés acceso a esta página"),
+        ).toBeInTheDocument();
+        // The denial is explicit — children never render.
+        expect(screen.queryByText("cargos-content")).not.toBeInTheDocument();
     });
 
     it("renders children for users with the shipper role", async () => {
@@ -63,7 +67,7 @@ describe("RequireShipper", () => {
                 HttpResponse.json(meResponse(["shipper"])),
             ),
         );
-        mountAt("/carriers/1/offers/new");
-        expect(await screen.findByText("wizard-content")).toBeInTheDocument();
+        mountAt("/shipper/cargos");
+        expect(await screen.findByText("cargos-content")).toBeInTheDocument();
     });
 });

@@ -22,8 +22,10 @@ es:
           attributes:
             estimated_km:
               must_be_positive: "debe ser mayor que 0"
-            pickup_date:
-              out_of_window_range: "debe estar dentro de las fechas disponibles de la ventana de transporte"
+            pickup_window:
+              out_of_window_range: "la ventana de retiro de la carga no se superpone con la disponibilidad del transporte"
+            transport_window:
+              already_taken: "la ventana de transporte ya tiene una oferta pendiente o aceptada"
             weight_kg:
               exceeds_vehicle_capacity: "excede la capacidad de carga del vehículo"
             volume_cm3:

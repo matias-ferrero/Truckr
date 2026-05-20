@@ -62,7 +62,7 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REQ-FE-00021 | Dashboard post-login + navegación global (Sprint 1 UX glue) | NEW | FE | 2026-05-10 | - |
 | REF-BE-00001 | Migrar Api::AuthController a Devise + devise-jwt (login/logout/me con JWT); mantener register custom | RDY | BE | 2026-05-11 | [plan](REF/REF-BE-00001/REF-BE-00001-migrar-sessions-auth-a-herencia-devise.plan.md) |
 | REF-BE-00002 | Rename Quote → CargoOffer y CargoOffer → Cargo en el backend (modelos, tablas, AA, specs, seeds) | IR | BE | 2026-05-19 | [plan](REF/REF-BE-00002/REF-BE-00002-rename-quote-cargooffer-y-cargooffer-cargo-en-backend.plan.md) |
-| REQ-BE-00032 | Cargo fullstack — modelo, endpoints, FSM + "Mis cargas" UI (US27) | NEW | BE | 2026-05-19 | - |
+| REQ-BE-00032 | Cargo fullstack — modelo, endpoints, FSM + "Mis cargas" UI (US27) | IR | BE | 2026-05-19 | [plan](REQ/REQ-BE-00032/REQ-BE-00032-cargo-fullstack-us27.plan.md) |
 | INF-BE-00006 | CargoOfferExpirationJob — auto-expira `pending` a las 48 h y flipea Window a `open` (mismo tx) | NEW | BE | 2026-05-19 | [#200](https://github.com/tcorzo/fiuba-gestion-tp/issues/200) |
 
 ## Legend

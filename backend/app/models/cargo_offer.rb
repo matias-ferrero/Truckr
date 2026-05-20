@@ -47,9 +47,18 @@ class CargoOffer < ApplicationRecord
   attr_accessor :estimated_km
 
   # Cross-record attributes the CargoOffer's validators report errors against.
-  # Declared here so `errors.add(:pickup_date, ...)` resolves to a real
-  # attribute reader and `errors.full_messages` doesn't blow up.
-  delegate :pickup_date, :weight_kg, :volume_cm3, to: :cargo, allow_nil: true
+  # Declared here so `errors.add(...)` resolves to a real attribute reader and
+  # `errors.full_messages` doesn't blow up.
+  delegate :weight_kg, :volume_cm3, to: :cargo, allow_nil: true
+
+  # Virtual readers so `errors.add(:pickup_window, ...)` /
+  # `errors.add(:transport_window, ...)` resolve. The transport_window
+  # association reader is overridden-free; pickup_window is purely a label.
+  def pickup_window
+    return nil unless cargo
+
+    [ cargo.pickup_window_start, cargo.pickup_window_end ]
+  end
 
   before_validation :derive_amount_and_expiration, on: :create
 
@@ -59,8 +68,9 @@ class CargoOffer < ApplicationRecord
   validates :expires_at, presence: true
 
   validate :estimated_km_positive, on: :create, if: -> { amount_cents.blank? }
-  validate :pickup_date_within_window
+  validate :pickup_window_overlaps_transport_window
   validate :within_vehicle_capacity
+  validate :transport_window_not_already_taken, on: :create
 
   scope :pending,     -> { where(status: "pending") }
   scope :accepted,    -> { where(status: "accepted") }
@@ -113,11 +123,15 @@ class CargoOffer < ApplicationRecord
     errors.add(:estimated_km, :must_be_positive)
   end
 
-  def pickup_date_within_window
-    return unless transport_window && cargo&.pickup_date
+  # The cargo's pickup window must overlap the transport window's availability:
+  #   cargo.pickup_window_start <= window.available_to AND
+  #   cargo.pickup_window_end   >= window.available_from
+  def pickup_window_overlaps_transport_window
+    return unless transport_window && cargo&.pickup_window_start && cargo&.pickup_window_end
 
-    range = transport_window.available_from.to_date..transport_window.available_to.to_date
-    errors.add(:pickup_date, :out_of_window_range) unless range.cover?(cargo.pickup_date)
+    overlaps = cargo.pickup_window_start <= transport_window.available_to &&
+               cargo.pickup_window_end   >= transport_window.available_from
+    errors.add(:pickup_window, :out_of_window_range) unless overlaps
   end
 
   def within_vehicle_capacity
@@ -128,8 +142,23 @@ class CargoOffer < ApplicationRecord
       errors.add(:weight_kg, :exceeds_vehicle_capacity)
     end
 
-    if vehicle.volume_cm3.present? && cargo.volume_cm3.to_i > vehicle.volume_cm3
+    # volume_cm3 is optional on a Cargo — a nil volume imposes no constraint.
+    if cargo.volume_cm3.present? && vehicle.volume_cm3.present? &&
+       cargo.volume_cm3.to_i > vehicle.volume_cm3
       errors.add(:volume_cm3, :exceeds_vehicle_capacity)
     end
+  end
+
+  # Window-lock (REQ-BE-00032 §2.7): the chosen TransportWindow must hold no
+  # other pending/accepted CargoOffer. SQLite serialises writes, so this check
+  # inside the create transaction is race-safe with no explicit row lock.
+  def transport_window_not_already_taken
+    return unless transport_window
+
+    contended = transport_window.cargo_offers
+                                .where(status: %w[pending accepted])
+                                .where.not(id: id)
+                                .exists?
+    errors.add(:transport_window, :already_taken) if contended
   end
 end

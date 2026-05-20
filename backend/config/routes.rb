@@ -27,7 +27,14 @@ Rails.application.routes.draw do
     # Filters by diacritic-insensitive substring match on normalized zones and availability date range.
     resources :transport_windows, only: :index
 
-    # Shipper publishes a cargo and bids it against a transport window (US7 / REQ-FE-00015).
+    # Shipper publishes a Cargo and manages its lifecycle (US27 / REQ-BE-00032).
+    # `matches` returns zone-compatible TransportWindows for a Cargo.
+    resources :cargos, only: %i[index show create update destroy] do
+      get :matches, on: :member
+    end
+
+    # A Carrier-directed bid against an existing Cargo (US7 / REQ-FE-00015).
+    # The request body carries a `cargo_id` — no inline Cargo creation.
     resources :cargo_offers, only: %i[index create]
 
     # Authenticated CRUD on the current carrier's fleet (REQ-BE-00009 / REQ-BE-00010).

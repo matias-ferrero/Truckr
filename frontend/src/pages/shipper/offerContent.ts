@@ -1,94 +1,45 @@
-/* Prototype-stage i18n bundle for the offer creation wizard (US7 / REQ-FE-00015).
-   Follows the carve-out in CLAUDE.md: content data acting as the i18n bundle
-   until a real i18n library replaces it. */
+/* Prototype-stage i18n bundle for the cargo-scoped offer confirm step
+   (US7 / REQ-FE-00015 remediation). Follows the carve-out in CLAUDE.md:
+   content data acting as the i18n bundle until a real i18n library lands.
+
+   Post-remediation the offer flow is a single confirm step: it bids an
+   already-published Cargo against a chosen TransportWindow. The old 3-step
+   wizard copy (addresses, cargo fields) is gone — that data lives on the
+   published Cargo. */
 
 export const offerContent = {
-    title: "Crear oferta de carga",
-    stepLabels: ["Direcciones", "Carga", "Fecha y presupuesto"] as const,
-    steps: {
-        addresses: {
-            heading: "¿Dónde retiramos y entregamos?",
-            pickupGroup: "Origen",
-            deliveryGroup: "Destino",
-            street: "Calle",
-            streetNumber: "Número",
-            floor: "Piso / depto",
-            floorPlaceholder: "3° A (opcional)",
-            postalCode: "Código postal",
-            city: "Localidad",
-            province: "Provincia",
-            provinceDefault: "Seleccioná una provincia",
-            provinces: [
-                "Buenos Aires",
-                "Catamarca",
-                "Chaco",
-                "Chubut",
-                "Ciudad Autónoma de Buenos Aires",
-                "Córdoba",
-                "Corrientes",
-                "Entre Ríos",
-                "Formosa",
-                "Jujuy",
-                "La Pampa",
-                "La Rioja",
-                "Mendoza",
-                "Misiones",
-                "Neuquén",
-                "Río Negro",
-                "Salta",
-                "San Juan",
-                "San Luis",
-                "Santa Cruz",
-                "Santa Fe",
-                "Santiago del Estero",
-                "Tierra del Fuego",
-                "Tucumán",
-            ] as const,
-        },
-        cargo: {
-            heading: "Detalle de la carga",
-            cargoDescription: "Descripción de la carga",
-            weightKg: "Peso (kg)",
-            weightHint: (max: string) => `Capacidad máxima del vehículo: ${max} kg`,
-            weightExceeded: (max: string) =>
-                `El peso supera la capacidad del vehículo (${max} kg).`,
-            volumeCm3: "Volumen (cm³)",
-            volumeHint: (max: number) =>
-                `Capacidad máxima del vehículo: ${max.toLocaleString("es-AR")} cm³`,
-            volumeNoLimit: "Este vehículo no tiene volumen máximo registrado.",
-            volumeExceeded: (max: number) =>
-                `El volumen supera la capacidad del vehículo (${max.toLocaleString("es-AR")} cm³).`,
-            declaredValue: "Valor declarado (ARS)",
-        },
-        review: {
-            heading: "Fecha y resumen del presupuesto",
-            windowInfo: "Ventana de transporte seleccionada",
-            windowZone: (origin: string, dest: string) => `${origin} → ${dest}`,
-            windowRate: (rate: string) => `$${rate} / km`,
-            pickupDate: "Fecha de retiro",
-            pickupDateHint: (from: string, to: string) =>
-                `Disponible entre ${from} y ${to}`,
-            estimatedKm: "Kilómetros estimados del viaje",
-            estimatedCost: "Costo estimado",
-            noEstimate: "Ingresá los km para ver el costo",
-        },
+    title: "Confirmar oferta",
+    lead: "Revisá la carga y la ventana de transporte antes de enviar tu oferta.",
+    loadingLabel: "Cargando los datos de la oferta",
+    loadError: "No pudimos cargar la carga o la ventana de transporte.",
+    backToCargo: "← Volver a la carga",
+    cargoSection: {
+        heading: "Tu carga",
+        route: (from: string, to: string) => `${from} → ${to}`,
+        pickup: "Retiro",
+        delivery: "Entrega",
+        pickupWindow: "Ventana de retiro",
+        weight: "Peso",
+        weightUnit: "kg",
     },
-    nav: {
-        next: "Siguiente",
-        back: "Atrás",
-        submit: "Enviar oferta",
-        submitting: "Enviando…",
+    windowSection: {
+        heading: "Ventana de transporte",
+        route: (from: string, to: string) => `${from} → ${to}`,
+        carrier: (name: string) => `Transportista: ${name}`,
+        carrierFallback: "Transportista",
+        vehicle: (make: string, model: string, plate: string) =>
+            `${make} ${model} · ${plate}`,
+        rate: (rate: string) => `$${rate} / km`,
+        availability: (from: string, to: string) => `Disponible ${from} – ${to}`,
     },
-    confirmation: {
-        title: "Oferta enviada",
-        lead: "Tu oferta fue enviada al transportista. Te avisaremos cuando responda.",
-        quoteRef: (id: number) => `Referencia de oferta: #${id}`,
-        status: "Estado: pendiente de respuesta",
-        backToHome: "Volver al panel",
-    },
+    estimatedKm: "Kilómetros estimados del viaje",
+    estimatedKmError: "Ingresá una cantidad de kilómetros mayor a cero.",
+    estimatedCost: "Costo estimado",
+    noEstimate: "Ingresá los km para ver el costo",
+    submit: "Enviar oferta",
+    submitting: "Enviando…",
+    cancel: "Cancelar",
     errors: {
-        noState: "No se pudo cargar la ventana de transporte. Volvé al perfil del transportista.",
         saveError: "No se pudo enviar la oferta. Revisá los campos e intentá de nuevo.",
     },
-    stepAnnouncement: (step: number, label: string) => `Paso ${step}: ${label}`,
 } as const;

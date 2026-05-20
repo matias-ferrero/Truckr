@@ -128,8 +128,8 @@ paths:
         '401':
           description: unauthenticated
     post:
-      summary: publish a cargo and bid it against a transport window (US7 — Shipper
-        creates offer)
+      summary: bid an existing cargo against a transport window (US7 — Shipper creates
+        offer)
       tags:
       - Cargo Offers
       security:
@@ -137,15 +137,15 @@ paths:
       parameters: []
       responses:
         '201':
-          description: vehicle without registered volume accepts any cargo volume
+          description: cargo without volume accepts any vehicle
         '401':
           description: unauthenticated
         '403':
-          description: carrier role cannot create offers
+          description: shipper cannot bid on another shipper's cargo
         '404':
           description: transport window not found or inactive
         '422':
-          description: model validation failure — blank pickup_address
+          description: transport window already has a pending offer
       requestBody:
         content:
           application/json:
@@ -155,37 +155,132 @@ paths:
                 cargo_offer:
                   type: object
                   required:
+                  - cargo_id
                   - transport_window_id
-                  - pickup_address
-                  - delivery_address
-                  - pickup_date
-                  - cargo_description
-                  - weight_kg
-                  - volume_cm3
-                  - declared_value_cents
                   - estimated_km
                   properties:
+                    cargo_id:
+                      type: integer
                     transport_window_id:
                       type: integer
-                    pickup_address:
-                      type: string
-                    delivery_address:
-                      type: string
-                    pickup_date:
-                      type: string
-                      format: date
-                    cargo_description:
-                      type: string
-                    weight_kg:
-                      type: string
-                    volume_cm3:
-                      type: string
-                    declared_value_cents:
-                      type: string
                     estimated_km:
                       type: string
               required:
               - cargo_offer
+  "/api/cargos":
+    get:
+      summary: list the shipper's cargos
+      tags:
+      - Cargos
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: filters by status
+        '401':
+          description: unauthenticated
+        '403':
+          description: non-shipper is forbidden
+    post:
+      summary: publish a cargo
+      tags:
+      - Cargos
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '201':
+          description: created — status open, body includes matches
+        '422':
+          description: missing cargo params
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cargo:
+                  type: object
+              required:
+              - cargo
+  "/api/cargos/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: show a cargo with its nested offers
+      tags:
+      - Cargos
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: returns the cargo with nested offers
+        '403':
+          description: another shipper's cargo is forbidden
+        '404':
+          description: unknown cargo
+    patch:
+      summary: update a cargo
+      tags:
+      - Cargos
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '200':
+          description: updates an editable cargo
+        '422':
+          description: blocked when an accepted offer exists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cargo:
+                  type: object
+              required:
+              - cargo
+    delete:
+      summary: soft-cancel a cargo and expire its pending offers
+      tags:
+      - Cargos
+      security:
+      - bearer_auth: []
+      responses:
+        '204':
+          description: soft-cancels the cargo and expires pending sibling offers
+        '422':
+          description: blocked when an accepted offer exists
+  "/api/cargos/{id}/matches":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: list zone-compatible transport windows for a cargo
+      tags:
+      - Cargos
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: returns matching windows; excludes inactive, contended and
+            incompatible ones
+        '403':
+          description: another shipper's cargo is forbidden
   "/api/carriers/me/transport_windows":
     get:
       summary: list my transport windows

@@ -11,6 +11,7 @@ class CargoOfferResource
   # Embed the minimal cargo summary needed for list-view cards.
   # Avoids a separate round-trip on the index endpoint.
   one :cargo do
-    attributes :pickup_address, :delivery_address, :pickup_date, :cargo_description
+    attributes :pickup_address, :delivery_address,
+               :pickup_window_start, :pickup_window_end, :cargo_description
   end
 end

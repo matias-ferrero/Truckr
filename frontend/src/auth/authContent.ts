@@ -3,6 +3,12 @@
    library lands. UI components must read strings from here, never inline. */
 
 export const authContent = {
+    forbidden: {
+        title: "No tenés acceso a esta página",
+        lead:
+            "Esta sección es solo para cuentas de tipo Expedidor. Si creés que es un error, revisá con qué cuenta iniciaste sesión.",
+        backHome: "Volver al panel",
+    },
     register: {
         errors: {
             nameRequired: "Decinos cómo te llamás.",

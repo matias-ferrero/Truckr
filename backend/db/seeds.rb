@@ -57,11 +57,15 @@ identity_users.each do |spec|
   end
 end
 
-# Marketplace fixtures — REQ-BE-00021 (post-rename REF-BE-00002).
-# Seeds Cargo publications + CargoOffer bids with Window+Cargo composition,
-# including one Cargo with multiple pending offers to demo the parallel-offers
-# case. Idempotent. Skips silently when the dependent Identity rows have not
-# been seeded yet.
+# Marketplace fixtures — REQ-BE-00021 (post-rename REF-BE-00002; schema +
+# validations updated by REQ-BE-00032). Seeds Cargo publications + CargoOffer
+# bids consistent with every model rule: TransportWindows on a vehicle never
+# overlap; a Cargo weighs within the vehicle's capacity; a CargoOffer's Cargo
+# pickup window overlaps the target window; a window holds at most one
+# pending/accepted offer (window-lock). cargo1 carries two parallel offers;
+# cargo2 is left un-offered so its detail demos the matches view against the
+# still-free tw3. Idempotent. Skips silently when the dependent Identity rows
+# have not been seeded yet.
 if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
    Carrier.any? && Shipper.any? && Vehicle.any?
 
@@ -70,13 +74,15 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
   vehicle = carrier.vehicles.first
 
   if vehicle
+    # Three non-overlapping windows on the same vehicle — TransportWindow
+    # rejects overlapping active windows per vehicle.
     tw1 = TransportWindow.find_or_create_by!(
       vehicle: vehicle, origin_zone: "Buenos Aires", destination_zone: "Córdoba"
     ) do |w|
       w.price_per_km   = 1500.0
       w.max_km         = 1200
       w.available_from = 1.day.from_now
-      w.available_to   = 10.days.from_now
+      w.available_to   = 9.days.from_now
       w.active         = true
     end
 
@@ -86,7 +92,7 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
       w.price_per_km   = 1700.0
       w.max_km         = 900
       w.available_from = 11.days.from_now
-      w.available_to   = 18.days.from_now
+      w.available_to   = 19.days.from_now
       w.active         = true
     end
 
@@ -95,18 +101,24 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
     ) do |w|
       w.price_per_km   = 1400.0
       w.max_km         = 500
-      w.available_from = 2.days.from_now
-      w.available_to   = 9.days.from_now
+      w.available_from = 21.days.from_now
+      w.available_to   = 29.days.from_now
       w.active         = true
     end
 
+    # Cargo weights stay within the seeded vehicle's 5 t capacity so the
+    # CargoOffer capacity validation passes; pickup windows overlap the
+    # windows their offers target.
     cargo1 = Cargo.find_or_create_by!(
       shipper: shipper, cargo_description: "Pallets de granos"
     ) do |c|
       c.pickup_address       = "Puerto de Buenos Aires"
       c.delivery_address     = "Av. Sabattini 5500, Córdoba"
-      c.pickup_date          = 3.days.from_now
-      c.weight_kg            = 12_000.0
+      c.pickup_zone          = "Buenos Aires"
+      c.delivery_zone        = "Córdoba"
+      c.pickup_window_start  = 5.days.from_now
+      c.pickup_window_end    = 15.days.from_now
+      c.weight_kg            = 4_200.0
       c.volume_cm3           = 30_000_000
       c.declared_value_cents = 150_000_000
     end
@@ -114,16 +126,21 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
     cargo2 = Cargo.find_or_create_by!(
       shipper: shipper, cargo_description: "Materiales de construcción"
     ) do |c|
-      c.pickup_address       = "Parque industrial Rosario"
-      c.delivery_address     = "Godoy Cruz 1200, Mendoza"
-      c.pickup_date          = 4.days.from_now
-      c.weight_kg            = 8_500.0
+      c.pickup_address       = "Av. 7 1200, La Plata"
+      c.delivery_address     = "Av. Luro 3500, Mar del Plata"
+      c.pickup_zone          = "La Plata"
+      c.delivery_zone        = "Mar del Plata"
+      c.pickup_window_start  = 22.days.from_now
+      c.pickup_window_end    = 27.days.from_now
+      c.weight_kg            = 3_800.0
       c.volume_cm3           = 18_000_000
       c.declared_value_cents = 90_000_000
     end
 
-    # Parallel-offers demo: cargo1 collects pending bids against two distinct
-    # windows so the shipper UI has data for the comparison view (US10/US12).
+    # Parallel-offers demo: cargo1 collects two pending bids against two
+    # distinct windows so the shipper UI has data for the comparison view
+    # (US10/US12). tw3 is intentionally left un-offered — cargo2's detail
+    # then demos the matches view against it.
     CargoOffer.find_or_create_by!(cargo: cargo1, carrier: carrier, transport_window: tw1) do |co|
       co.amount_cents = 18_000_000
       co.currency     = "ARS"
@@ -131,15 +148,8 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
       co.expires_at   = 24.hours.from_now
     end
 
-    CargoOffer.find_or_create_by!(cargo: cargo1, carrier: carrier, transport_window: tw3) do |co|
+    CargoOffer.find_or_create_by!(cargo: cargo1, carrier: carrier, transport_window: tw2) do |co|
       co.amount_cents = 16_500_000
-      co.currency     = "ARS"
-      co.status       = "pending"
-      co.expires_at   = 24.hours.from_now
-    end
-
-    CargoOffer.find_or_create_by!(cargo: cargo2, carrier: carrier, transport_window: tw2) do |co|
-      co.amount_cents = 15_300_000
       co.currency     = "ARS"
       co.status       = "pending"
       co.expires_at   = 24.hours.from_now

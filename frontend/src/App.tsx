@@ -140,7 +140,7 @@ export default function LandingPage() {
                             <span className="brandTag">Transporte en Argentina</span>
                         </a>
                         <nav className="nav" aria-label="Secciones">
-                            <Link to="/transport_windows/search">Buscar transportistas</Link>
+                            <Link to="/signup?role=shipper">Buscar transportistas</Link>
                             <a href="#para-quien">Para quién</a>
                             <a href="#como-funciona">Cómo funciona</a>
                             <a href="#confianza">Confianza</a>

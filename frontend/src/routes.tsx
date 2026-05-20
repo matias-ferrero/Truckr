@@ -12,7 +12,6 @@ import { DashboardPage } from "./pages/dashboard/DashboardPage";
 const LoginPage = lazy(() => import("./auth/LoginPage").then((m) => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import("./auth/RegisterPage").then((m) => ({ default: m.RegisterPage })));
 const ImpersonatePage = lazy(() => import("./auth/ImpersonatePage"));
-const CarrierSearchPage = lazy(() => import("./pages/search/CarrierSearchPage"));
 const VehicleForm           = lazy(() => import("./pages/carrier/VehicleForm"));
 const VehicleList           = lazy(() => import("./pages/carrier/VehicleList"));
 const TransportWindowList   = lazy(() => import("./pages/carrier/TransportWindowList"));
@@ -21,6 +20,10 @@ const CarrierDetail = lazy(() => import("./pages/public/CarrierDetail"));
 const CarrierMeRedirect = lazy(() => import("./pages/public/CarrierMeRedirect"));
 const CreateOfferPage = lazy(() => import("./pages/shipper/CreateOfferPage"));
 const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
+const CargoList   = lazy(() => import("./features/cargo/CargoList"));
+const CargoForm   = lazy(() => import("./features/cargo/CargoForm"));
+const CargoDetail = lazy(() => import("./features/cargo/CargoDetail"));
+const CargoMatches = lazy(() => import("./features/cargo/CargoMatches"));
 
 function AuthShell({ children }: { children: React.ReactNode }) {
     return (
@@ -45,6 +48,20 @@ function CarrierLayout() {
                 </Suspense>
             </div>
         </RequireCarrier>
+    );
+}
+
+function ShipperLayout() {
+    return (
+        <RequireShipper>
+            <div className="shipperPage">
+                <a className="skipLink" href="#main">Saltar al contenido</a>
+                <Header />
+                <Suspense fallback={<main className="shipperMain" id="main" aria-busy="true" />}>
+                    <Outlet />
+                </Suspense>
+            </div>
+        </RequireShipper>
     );
 }
 
@@ -109,14 +126,6 @@ export function AppRoutes() {
                             </Suspense>
                         }
                     />
-                    <Route
-                        path="/transport_windows/search"
-                        element={
-                            <AuthShell>
-                                <CarrierSearchPage />
-                            </AuthShell>
-                        }
-                    />
                     <Route path="/carrier" element={<CarrierLayout />}>
                         <Route path="vehicle" element={<VehicleForm mode="primary" />} />
                         <Route path="vehicle/new" element={<VehicleForm mode="new" />} />
@@ -130,17 +139,15 @@ export function AppRoutes() {
                         {/* Declared before `:id` so the literal segment wins over the wildcard. */}
                         <Route path="/carriers/me" element={<CarrierMeRedirect />} />
                         <Route path="/carriers/:id" element={<CarrierDetail />} />
-                        {/* US7 — offer wizard; requires a logged-in Shipper. */}
-                        <Route
-                            path="/carriers/:id/offers/new"
-                            element={
-                                <RequireShipper>
-                                    <Suspense fallback={<main className="publicMain" id="main" aria-busy="true" />}>
-                                        <CreateOfferPage />
-                                    </Suspense>
-                                </RequireShipper>
-                            }
-                        />
+                    </Route>
+                    {/* US27 — "Mis cargas" + cargo-scoped offer flow (REQ-BE-00032). */}
+                    <Route path="/shipper/cargos" element={<ShipperLayout />}>
+                        <Route index element={<CargoList />} />
+                        <Route path="new" element={<CargoForm mode="new" />} />
+                        <Route path=":id" element={<CargoDetail />} />
+                        <Route path=":id/edit" element={<CargoForm mode="edit" />} />
+                        <Route path=":id/matches" element={<CargoMatches />} />
+                        <Route path=":id/offers/new" element={<CreateOfferPage />} />
                     </Route>
                     <Route
                         path="/profile"

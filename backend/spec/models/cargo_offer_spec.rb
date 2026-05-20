@@ -108,6 +108,67 @@ RSpec.describe CargoOffer, type: :model do
     end
   end
 
+  describe "cross-record validations" do
+    let(:carrier) { create(:carrier) }
+    let(:vehicle) { create(:vehicle, carrier: carrier, max_load_kg: 5000) }
+    let(:window) do
+      create(:transport_window, vehicle: vehicle,
+             available_from: 2.days.from_now, available_to: 10.days.from_now)
+    end
+
+    describe "pickup_window_overlaps_transport_window" do
+      it "is valid when the cargo's pickup window overlaps the transport window" do
+        cargo = create(:cargo, pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now)
+        offer = build(:cargo_offer, cargo: cargo, carrier: carrier, transport_window: window)
+        expect(offer).to be_valid
+      end
+
+      it "is invalid when the cargo's pickup window is entirely after the transport window" do
+        cargo = create(:cargo, pickup_window_start: 20.days.from_now, pickup_window_end: 22.days.from_now)
+        offer = build(:cargo_offer, cargo: cargo, carrier: carrier, transport_window: window)
+        expect(offer).not_to be_valid
+        expect(offer.errors[:pickup_window]).to be_present
+      end
+    end
+
+    describe "within_vehicle_capacity" do
+      it "tolerates a nil cargo volume_cm3" do
+        cargo = create(:cargo, volume_cm3: nil, weight_kg: 1000,
+                       pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now)
+        offer = build(:cargo_offer, cargo: cargo, carrier: carrier, transport_window: window)
+        expect(offer).to be_valid
+      end
+
+      it "rejects a cargo heavier than the vehicle's max load" do
+        cargo = create(:cargo, weight_kg: 9999,
+                       pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now)
+        offer = build(:cargo_offer, cargo: cargo, carrier: carrier, transport_window: window)
+        expect(offer).not_to be_valid
+        expect(offer.errors[:weight_kg]).to be_present
+      end
+    end
+
+    describe "transport_window_not_already_taken (window-lock)" do
+      it "rejects a second offer against an already-contended window" do
+        create(:cargo_offer, :pending, carrier: carrier, transport_window: window,
+               cargo: create(:cargo, pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now))
+        second = build(:cargo_offer, carrier: carrier, transport_window: window,
+                       cargo: create(:cargo, pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now))
+        expect(second).not_to be_valid
+        expect(second.errors[:transport_window]).to be_present
+      end
+
+      it "allows an offer when the window's prior offers are all expired/cancelled" do
+        prior = create(:cargo_offer, :pending, carrier: carrier, transport_window: window,
+               cargo: create(:cargo, pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now))
+        prior.transition_to!(:expired)
+        second = build(:cargo_offer, carrier: carrier, transport_window: window,
+                       cargo: create(:cargo, pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now))
+        expect(second).to be_valid
+      end
+    end
+  end
+
   describe "#transition_to!" do
     it "updates status on a legal transition" do
       cargo_offer = create(:cargo_offer, :pending)

@@ -1,12 +1,11 @@
 import { useContext, useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { CarrierDetail as CarrierDetailDto, getCarrier } from "../../api/carriers";
 import { ApiError } from "../../api";
 import { publicContent } from "./publicContent";
 import { Button, buttonVariants } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
 import { AuthContext } from "../../auth/AuthContext";
-import { useCurrentUser } from "../../auth/useCurrentUser";
 
 const t = publicContent.carrierDetail;
 
@@ -38,8 +37,6 @@ export default function CarrierDetail() {
 
     const [state, setState] = useState<CarrierState>({ status: "loading" });
     const [reloadKey, setReloadKey] = useState(0);
-    const { me } = useCurrentUser();
-    const navigate = useNavigate();
 
     useEffect(() => {
         if (!Number.isFinite(carrierId) || carrierId <= 0) {
@@ -117,7 +114,6 @@ export default function CarrierDetail() {
     }
 
     const { carrier } = state;
-    const isShipper = me?.roles.includes("shipper") ?? false;
     const ratingNum = Number(carrier.rating_avg);
     const isOwner = myCarrierId === carrier.id;
 
@@ -169,12 +165,6 @@ export default function CarrierDetail() {
                     windows={carrier.transport_windows}
                     carrier={carrier}
                     carrierId={carrierId}
-                    isShipper={isShipper}
-                    onOffer={(w) =>
-                        navigate(`/carriers/${carrierId}/offers/new?window=${w.id}`, {
-                            state: { carrier, window: w },
-                        })
-                    }
                 />
 
                 <VehiclesSection vehicles={carrier.vehicles} />
@@ -215,14 +205,10 @@ function ZonesSection({
     windows,
     carrier,
     carrierId,
-    isShipper,
-    onOffer,
 }: {
     windows: CarrierDetailDto["transport_windows"];
     carrier: CarrierDetailDto;
     carrierId: number;
-    isShipper: boolean;
-    onOffer: (w: CarrierDetailDto["transport_windows"][0]) => void;
 }) {
     // Suppress unused-variable lint on carrierId — kept for future deep-link use.
     void carrierId;
@@ -244,18 +230,6 @@ function ZonesSection({
                                 <span className="zonePrice">
                                     {t.pricePerKmLabel(w.price_per_km)}
                                 </span>
-                                {isShipper && (
-                                    <Button
-                                        size="sm"
-                                        data-testid="offer-cta-top"
-                                        aria-label={t.offerCtaAriaLabel(
-                                            t.zoneLine(w.origin_zone, w.destination_zone),
-                                        )}
-                                        onClick={() => onOffer(w)}
-                                    >
-                                        {t.offerCta}
-                                    </Button>
-                                )}
                             </li>
                         ))}
                     </ul>

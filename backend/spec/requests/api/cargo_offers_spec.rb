@@ -15,19 +15,24 @@ RSpec.describe "Api::CargoOffers", type: :request do
       let(:Authorization) { "Bearer #{jwt_for(shipper_user)}" }
 
       let(:vehicle) { create(:vehicle, carrier: carrier_user.carrier) }
-      let(:window)  do
+      let(:window_a) do
         create(:transport_window, vehicle: vehicle,
                available_from: 2.days.from_now, available_to: 10.days.from_now)
+      end
+      let(:window_b) do
+        create(:transport_window, vehicle: vehicle,
+               available_from: 12.days.from_now, available_to: 20.days.from_now)
       end
 
       let!(:my_offer) do
         cargo = create(:cargo, shipper: shipper_user.shipper)
-        create(:cargo_offer, cargo: cargo, carrier: carrier_user.carrier, transport_window: window)
+        create(:cargo_offer, cargo: cargo, carrier: carrier_user.carrier, transport_window: window_a)
       end
 
       let!(:other_offer) do
-        cargo = create(:cargo, shipper: other_shipper.shipper)
-        create(:cargo_offer, cargo: cargo, carrier: carrier_user.carrier, transport_window: window)
+        cargo = create(:cargo, shipper: other_shipper.shipper,
+                       pickup_window_start: 13.days.from_now, pickup_window_end: 15.days.from_now)
+        create(:cargo_offer, cargo: cargo, carrier: carrier_user.carrier, transport_window: window_b)
       end
 
       response(200, "shipper sees only their own offers with cargo embedded") do
@@ -36,7 +41,8 @@ RSpec.describe "Api::CargoOffers", type: :request do
           expect(body).to be_an(Array)
           expect(body.map { |co| co["id"] }).to contain_exactly(my_offer.id)
           expect(body.first["cargo"]).to include(
-            "pickup_address", "delivery_address", "pickup_date", "cargo_description"
+            "pickup_address", "delivery_address", "pickup_window_start",
+            "pickup_window_end", "cargo_description"
           )
         end
       end
@@ -61,7 +67,7 @@ RSpec.describe "Api::CargoOffers", type: :request do
       end
     end
 
-    post("publish a cargo and bid it against a transport window (US7 — Shipper creates offer)") do
+    post("bid an existing cargo against a transport window (US7 — Shipper creates offer)") do
       tags "Cargo Offers"
       consumes "application/json"
       produces "application/json"
@@ -72,19 +78,11 @@ RSpec.describe "Api::CargoOffers", type: :request do
         properties: {
           cargo_offer: {
             type: :object,
-            required: %w[transport_window_id pickup_address delivery_address
-                         pickup_date cargo_description weight_kg volume_cm3
-                         declared_value_cents estimated_km],
+            required: %w[cargo_id transport_window_id estimated_km],
             properties: {
-              transport_window_id:  { type: :integer },
-              pickup_address:       { type: :string },
-              delivery_address:     { type: :string },
-              pickup_date:          { type: :string, format: "date" },
-              cargo_description:    { type: :string },
-              weight_kg:            { type: :string },
-              volume_cm3:           { type: :string },
-              declared_value_cents: { type: :string },
-              estimated_km:         { type: :string }
+              cargo_id:            { type: :integer },
+              transport_window_id: { type: :integer },
+              estimated_km:        { type: :string }
             }
           }
         },
@@ -94,6 +92,7 @@ RSpec.describe "Api::CargoOffers", type: :request do
       # ── helpers ──────────────────────────────────────────────────────────────
 
       let(:shipper_user)  { create(:user, :with_shipper) }
+      let(:other_shipper) { create(:user, :with_shipper) }
       let(:carrier_user)  { create(:user, :with_carrier) }
       let(:Authorization) { "Bearer #{jwt_for(shipper_user)}" }
 
@@ -109,26 +108,27 @@ RSpec.describe "Api::CargoOffers", type: :request do
         )
       end
 
+      let(:cargo) do
+        create(:cargo, shipper: shipper_user.shipper, weight_kg: 1500,
+               pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now)
+      end
+
       let(:valid_payload) do
         {
           cargo_offer: {
-            transport_window_id:  window.id,
-            pickup_address:       "Av. Corrientes 1234, CABA",
-            delivery_address:     "Av. Colón 500, Córdoba",
-            pickup_date:          3.days.from_now.to_date.iso8601,
-            cargo_description:    "Pallets de electrodomésticos",
-            weight_kg:            "1500",
-            volume_cm3:           "3000000",
-            declared_value_cents: "500000",
-            estimated_km:         "700"
+            cargo_id:            cargo.id,
+            transport_window_id: window.id,
+            estimated_km:        "700"
           }
         }
       end
 
       # ── 201 happy path ────────────────────────────────────────────────────────
 
-      response(201, "created — shipper offer accepted") do
+      response(201, "created — shipper bids their cargo, no extra Cargo created") do
         let(:payload) { valid_payload }
+
+        before { cargo } # materialise the cargo before counting
 
         run_test! do |response|
           body = JSON.parse(response.body)
@@ -136,11 +136,18 @@ RSpec.describe "Api::CargoOffers", type: :request do
           expect(body["status"]).to eq("pending")
           expect(body["currency"]).to eq("ARS")
           expect(body["amount_cents"]).to be > 0
+          expect(body["cargo_id"]).to eq(cargo.id)
           expect(body["carrier_id"]).to eq(carrier_user.carrier.id)
           expect(body["transport_window_id"]).to eq(window.id)
           expect(body["expires_at"]).to be_present
+        end
+      end
 
-          # Atomically created Cargo + CargoOffer
+      response(201, "does not create an extra Cargo row") do
+        let(:payload) { valid_payload }
+
+        run_test! do
+          # cargo is created by the `valid_payload` let; the action must not add another.
           expect(Cargo.count).to eq(1)
           expect(CargoOffer.count).to eq(1)
         end
@@ -170,11 +177,42 @@ RSpec.describe "Api::CargoOffers", type: :request do
         end
       end
 
+      # ── 403 shipper bids on a cargo they do not own ──────────────────────────
+
+      response(403, "shipper cannot bid on another shipper's cargo") do
+        let(:foreign_cargo) do
+          create(:cargo, shipper: other_shipper.shipper,
+                 pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now)
+        end
+        let(:payload) do
+          valid_payload.deep_merge(cargo_offer: { cargo_id: foreign_cargo.id })
+        end
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body.dig("error", "code")).to eq("forbidden")
+        end
+      end
+
+      # ── 404 unknown cargo_id ──────────────────────────────────────────────────
+
+      response(404, "cargo not found") do
+        let(:payload) do
+          valid_payload.deep_merge(cargo_offer: { cargo_id: 0 })
+        end
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body.dig("error", "code")).to eq("not_found")
+        end
+      end
+
       # ── 404 inactive window ───────────────────────────────────────────────────
 
       response(404, "transport window not found or inactive") do
-        let!(:inactive_window) do
-          create(:transport_window, vehicle: vehicle, active: false,
+        let(:inactive_window) do
+          other_vehicle = create(:vehicle, max_load_kg: 5000, carrier: carrier_user.carrier)
+          create(:transport_window, vehicle: other_vehicle, active: false,
                  available_from: 2.days.from_now, available_to: 10.days.from_now)
         end
         let(:payload) do
@@ -187,40 +225,30 @@ RSpec.describe "Api::CargoOffers", type: :request do
         end
       end
 
-      # ── 422 pickup_date out of window range ───────────────────────────────────
+      # ── 422 pickup window does not overlap ────────────────────────────────────
 
-      response(422, "pickup_date before window opens") do
-        let(:payload) do
-          valid_payload.deep_merge(cargo_offer: { pickup_date: 1.day.from_now.to_date.iso8601 })
+      response(422, "cargo pickup window does not overlap the transport window") do
+        let(:cargo) do
+          create(:cargo, shipper: shipper_user.shipper, weight_kg: 1500,
+                 pickup_window_start: 30.days.from_now, pickup_window_end: 32.days.from_now)
         end
+        let(:payload) { valid_payload }
 
         run_test! do |response|
           body = JSON.parse(response.body)
           expect(body.dig("error", "code")).to eq("unprocessable")
-          expect(body.dig("error", "details", "pickup_date")).to be_present
-        end
-      end
-
-      # ── 422 malformed pickup_date ─────────────────────────────────────────────
-
-      response(422, "malformed pickup_date is rejected with field-level error") do
-        let(:payload) do
-          valid_payload.deep_merge(cargo_offer: { pickup_date: "not-a-date" })
-        end
-
-        run_test! do |response|
-          body = JSON.parse(response.body)
-          expect(body.dig("error", "code")).to eq("unprocessable")
-          expect(body.dig("error", "details", "pickup_date")).to be_present
+          expect(body.dig("error", "details", "pickup_window")).to be_present
         end
       end
 
       # ── 422 weight exceeds vehicle capacity ───────────────────────────────────
 
       response(422, "cargo weight exceeds vehicle max_load_kg") do
-        let(:payload) do
-          valid_payload.deep_merge(cargo_offer: { weight_kg: "9999" })
+        let(:cargo) do
+          create(:cargo, shipper: shipper_user.shipper, weight_kg: 9999,
+                 pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now)
         end
+        let(:payload) { valid_payload }
 
         run_test! do |response|
           body = JSON.parse(response.body)
@@ -229,50 +257,14 @@ RSpec.describe "Api::CargoOffers", type: :request do
         end
       end
 
-      # ── 422 volume exceeds vehicle capacity ───────────────────────────────────
+      # ── 201 null cargo volume is unconstrained ────────────────────────────────
 
-      response(422, "cargo volume exceeds vehicle volume_cm3") do
-        let(:vehicle_with_dims) do
-          create(:vehicle,
-                 max_load_kg: 5000,
-                 length_cm: 500, width_cm: 200, height_cm: 200,
-                 carrier: carrier_user.carrier)
+      response(201, "cargo without volume accepts any vehicle") do
+        let(:cargo) do
+          create(:cargo, shipper: shipper_user.shipper, weight_kg: 1500, volume_cm3: nil,
+                 pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now)
         end
-        let(:window_with_dims) do
-          create(:transport_window, vehicle: vehicle_with_dims,
-                 available_from: 2.days.from_now, available_to: 10.days.from_now)
-        end
-        let(:payload) do
-          valid_payload.deep_merge(cargo_offer: {
-            transport_window_id: window_with_dims.id,
-            volume_cm3: "999999999"
-          })
-        end
-
-        run_test! do |response|
-          body = JSON.parse(response.body)
-          expect(body.dig("error", "code")).to eq("unprocessable")
-          expect(body.dig("error", "details", "volume_cm3")).to be_present
-        end
-      end
-
-      # ── 201 null vehicle volume is unconstrained ──────────────────────────────
-
-      response(201, "vehicle without registered volume accepts any cargo volume") do
-        let(:vehicle_no_dims) do
-          create(:vehicle, max_load_kg: 5000, length_cm: nil, width_cm: nil, height_cm: nil,
-                 carrier: carrier_user.carrier)
-        end
-        let(:window_no_dims) do
-          create(:transport_window, vehicle: vehicle_no_dims,
-                 available_from: 2.days.from_now, available_to: 10.days.from_now)
-        end
-        let(:payload) do
-          valid_payload.deep_merge(cargo_offer: {
-            transport_window_id: window_no_dims.id,
-            volume_cm3: "999999999"
-          })
-        end
+        let(:payload) { valid_payload }
 
         run_test! do |response|
           expect(response.status).to eq(201)
@@ -295,17 +287,23 @@ RSpec.describe "Api::CargoOffers", type: :request do
         end
       end
 
-      # ── 422 model validation (blank pickup_address) ────────────────────────────
+      # ── 422 window already has a pending offer (window-lock) ──────────────────
 
-      response(422, "model validation failure — blank pickup_address") do
-        let(:payload) do
-          valid_payload.deep_merge(cargo_offer: { pickup_address: "" })
+      response(422, "transport window already has a pending offer") do
+        let(:other_cargo) do
+          create(:cargo, shipper: other_shipper.shipper,
+                 pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now)
         end
+        let!(:existing_offer) do
+          create(:cargo_offer, :pending, cargo: other_cargo,
+                 carrier: carrier_user.carrier, transport_window: window)
+        end
+        let(:payload) { valid_payload }
 
         run_test! do |response|
           body = JSON.parse(response.body)
           expect(body.dig("error", "code")).to eq("unprocessable")
-          expect(body.dig("error", "details")).to be_present
+          expect(body.dig("error", "details", "transport_window")).to be_present
         end
       end
     end

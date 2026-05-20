@@ -5,18 +5,14 @@ import { DashboardPage } from "./DashboardPage";
 import * as authHook from "../../auth/useCurrentUser";
 import * as vehiclesApi from "../../api/vehicles";
 import * as transportWindowsApi from "../../api/transport_windows";
-import * as carriersApi from "../../api/carriers";
-import * as quotesApi from "../../api/quotes";
+import * as quotesApi from "../../api/cargoOffers";
+import * as cargoApi from "../../features/cargo/api";
 
 vi.mock("../../auth/useCurrentUser");
 vi.mock("../../api/vehicles");
 vi.mock("../../api/transport_windows");
-vi.mock("../../api/carriers");
-vi.mock("../../api/quotes");
-
-type MeShape = Parameters<typeof authHook.useCurrentUser>[0] extends never ? object : never;
-const _typeOnly: MeShape | undefined = undefined;
-void _typeOnly;
+vi.mock("../../api/cargoOffers");
+vi.mock("../../features/cargo/api");
 
 function fakeMe(over: Partial<{ full_name: string | null; email: string; roles: string[] }> = {}) {
     return {
@@ -93,13 +89,14 @@ function fakeCargoOffer(over: Partial<quotesApi.CargoOffer> = {}): quotesApi.Car
         amount_cents: 105_000_000,
         currency: "ARS",
         status: "pending",
-        expires_at: "2026-06-01T00:00:00Z",
+        expires_at: "2026-05-27T10:00:00Z",
         created_at: "2026-05-20T10:00:00Z",
         updated_at: "2026-05-20T10:00:00Z",
         cargo: {
             pickup_address: "Av. Corrientes 1234, C1043 CABA, Ciudad Autónoma de Buenos Aires",
             delivery_address: "Av. Colón 500, X5000 Córdoba, Córdoba",
-            pickup_date: "2026-05-25",
+            pickup_window_start: "2026-05-25T08:00:00Z",
+            pickup_window_end: "2026-05-26T18:00:00Z",
             cargo_description: "Pallets",
         },
         ...over,
@@ -123,8 +120,12 @@ const renderPage = () =>
 describe("DashboardPage", () => {
     beforeEach(() => {
         vi.resetAllMocks();
-        // Default: never-resolving promise so sync tests don't get spurious state updates.
+        // Default: never-resolving promises so sync tests don't get spurious
+        // state updates from the shipper data fetches.
         (quotesApi.listMyCargoOffers as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+            new Promise(() => {}),
+        );
+        (cargoApi.listCargos as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
             new Promise(() => {}),
         );
     });
@@ -142,24 +143,26 @@ describe("DashboardPage", () => {
         expect(container.firstChild).toBeNull();
     });
 
-    it("renders the shipper view: greeting, role eyebrow, carrier-search section, and trips — no carrier-only sections, no redundant profile CTAs in the hero", () => {
+    it("renders the shipper view: greeting, role eyebrow, Mis cargas, offers and trips — no carrier-only sections, no redundant profile CTAs in the hero", () => {
         mockMe(fakeMe({ roles: ["shipper"], full_name: "Ana García", email: "ana@example.com" }));
         renderPage();
 
         expect(screen.getByRole("heading", { level: 1, name: /hola, ana/i })).toBeInTheDocument();
         expect(screen.getByText(/panel · expedidor/i)).toBeInTheDocument();
-        expect(screen.getByRole("heading", { level: 2, name: /encontrá un transportista/i })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 2, name: /mis cargas/i })).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mis ofertas/i })).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mis viajes/i })).toBeInTheDocument();
         expect(screen.queryByRole("heading", { level: 2, name: /mi disponibilidad/i })).toBeNull();
         expect(screen.queryByRole("heading", { level: 2, name: /mi flota/i })).toBeNull();
+        // The free-form transport-window search section was removed (plan §9 D9).
+        expect(screen.queryByRole("heading", { level: 2, name: /encontrá un transportista/i })).toBeNull();
         // Profile entry lives in the header now; the hero must not duplicate it.
         expect(screen.queryByText("ana@example.com")).toBeNull();
         expect(screen.queryByRole("link", { name: /editar mi perfil/i })).toBeNull();
         expect(screen.queryByRole("link", { name: /ver mi perfil público/i })).toBeNull();
     });
 
-    it("does not render the carrier-search section in the carrier view", async () => {
+    it("does not render the Mis cargas section in the carrier view", async () => {
         mockMe(fakeMe({ roles: ["carrier"], full_name: "Beto" }));
         const listMock = vehiclesApi.listMyVehicles as unknown as ReturnType<typeof vi.fn>;
         listMock.mockResolvedValue({
@@ -172,8 +175,8 @@ describe("DashboardPage", () => {
         });
         renderPage();
         await waitFor(() => expect(listMock).toHaveBeenCalled());
-        expect(screen.queryByRole("heading", { level: 2, name: /encontrá un transportista/i })).toBeNull();
-        expect(carriersApi.searchCarriers).not.toHaveBeenCalled();
+        expect(screen.queryByRole("heading", { level: 2, name: /mis cargas/i })).toBeNull();
+        expect(cargoApi.listCargos).not.toHaveBeenCalled();
         // Don't leak call counts into later carrier-view tests.
         listMock.mockClear();
         (transportWindowsApi.listMyTransportWindows as unknown as ReturnType<typeof vi.fn>).mockClear();
@@ -253,7 +256,8 @@ describe("DashboardPage", () => {
                     cargo: {
                         pickup_address: "Belgrano 100, 5500 Mendoza, Mendoza",
                         delivery_address: "San Martín 200, 8300 Neuquén, Neuquén",
-                        pickup_date: "2026-06-01",
+                        pickup_window_start: "2026-06-01T08:00:00Z",
+                        pickup_window_end: "2026-06-02T18:00:00Z",
                         cargo_description: "Maquinaria",
                     },
                 }),

@@ -1,0 +1,12 @@
+en:
+  activerecord:
+    errors:
+      models:
+        cargo:
+          attributes:
+            pickup_window_end:
+              must_be_after_start: "must be after the start of the window"
+  errors:
+    cargo_locked: "The cargo cannot be modified in its current state"
+    not_editable: "the cargo is not editable in its current state"
+    not_cancellable: "the cargo cannot be cancelled in its current state"

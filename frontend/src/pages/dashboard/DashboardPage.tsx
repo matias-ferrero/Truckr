@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import { useCurrentUser } from "../../auth/useCurrentUser";
 import { listMyVehicles, Vehicle } from "../../api/vehicles";
 import { listMyTransportWindows, TransportWindow } from "../../api/transport_windows";
-import { listMyCargoOffers, CargoOffer } from "../../api/quotes";
+import { listMyCargoOffers, CargoOffer } from "../../api/cargoOffers";
 import { dashboardContent, CARGO_OFFER_STATUS_LABEL, CARGO_OFFER_STATUS_BADGE_CLASS } from "./dashboardContent";
-import { TransportWindowSearchSection } from "./TransportWindowSearchSection";
+import { MyCargosSection } from "./MyCargosSection";
 import "../../styles/dashboard.css";
 
 const arDateFormatter = new Intl.DateTimeFormat("es-AR", {
@@ -91,7 +91,7 @@ export function DashboardPage() {
                     </p>
                 </header>
 
-                {!isCarrier && <TransportWindowSearchSection />}
+                {!isCarrier && <MyCargosSection />}
 
                 {!isCarrier && (
                     <section className="dashboardSection" aria-labelledby="section-offers">
@@ -141,7 +141,7 @@ export function DashboardPage() {
                                             <IconCalendar />
                                             <span>
                                                 {co.cargo
-                                                    ? formatDate(co.cargo.pickup_date)
+                                                    ? formatDate(co.cargo.pickup_window_start)
                                                     : formatDate(co.created_at)}
                                             </span>
                                         </div>

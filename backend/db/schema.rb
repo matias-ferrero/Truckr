@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_19_120003) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_19_130001) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -83,18 +83,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_19_120003) do
   end
 
   create_table "cargos", force: :cascade do |t|
+    t.string "cancellation_reason"
+    t.datetime "cancelled_at"
     t.text "cargo_description", null: false
     t.datetime "created_at", null: false
     t.integer "declared_value_cents", null: false
     t.string "delivery_address", null: false
+    t.string "delivery_zone"
+    t.string "delivery_zone_normalized"
     t.string "pickup_address", null: false
-    t.datetime "pickup_date", null: false
+    t.datetime "pickup_window_end", null: false
+    t.datetime "pickup_window_start", null: false
+    t.string "pickup_zone"
+    t.string "pickup_zone_normalized"
     t.integer "shipper_id", null: false
+    t.string "status", default: "open", null: false
     t.datetime "updated_at", null: false
-    t.integer "volume_cm3", null: false
+    t.integer "volume_cm3"
     t.decimal "weight_kg", precision: 10, scale: 2, null: false
-    t.index ["pickup_date"], name: "index_cargos_on_pickup_date"
+    t.index ["delivery_zone_normalized"], name: "index_cargos_on_delivery_zone_normalized"
+    t.index ["pickup_zone_normalized"], name: "index_cargos_on_pickup_zone_normalized"
     t.index ["shipper_id"], name: "index_cargos_on_shipper_id"
+    t.index ["status"], name: "index_cargos_on_status"
   end
 
   create_table "carriers", force: :cascade do |t|

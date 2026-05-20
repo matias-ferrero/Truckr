@@ -1,0 +1,12 @@
+es:
+  activerecord:
+    errors:
+      models:
+        cargo:
+          attributes:
+            pickup_window_end:
+              must_be_after_start: "debe ser posterior al inicio de la ventana"
+  errors:
+    cargo_locked: "La carga no se puede modificar en su estado actual"
+    not_editable: "la carga no es editable en su estado actual"
+    not_cancellable: "la carga no se puede cancelar en su estado actual"
