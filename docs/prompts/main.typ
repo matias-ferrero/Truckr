@@ -78,13 +78,13 @@
 #include "chat-2026_04_13-00_28_33.typ"
 #pagebreak()
 
+#include "chat-2026_04_13-16_20_43.typ"
+#pagebreak()
+
 #include "chat-2026_04_13-16_22_37.typ"
 #pagebreak()
 
 #include "chat-2026_04_13-23_03_43.typ"
-#pagebreak()
-
-#include "chat-2026_04_13-16_20_43.typ"
 #pagebreak()
 
 #include "chat-2026_04_14-16_46_31.typ"
@@ -99,7 +99,16 @@
 #include "chat-2026_04_26-18_22_37.typ"
 #pagebreak()
 
+#include "chat-2026_05_03-10_19_00.typ"
+#pagebreak()
+
 // ── Iteración 5 ────────────────────────────────────────────────────────────
 = Iteración 5
+
+#include "chat-2026_05_10-03_14_29.typ"
+#pagebreak()
+
+#include "chat-2026_05_10-15_13_41.typ"
+#pagebreak()
 
 #include "chat-2026_05_10-16_25_08.typ"

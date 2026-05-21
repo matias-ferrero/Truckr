@@ -8,3 +8,4 @@ just = "latest"     # command runner, similar to Make
 deno = "latest"
 node = "lts"        # Playwright CLI; deno's npm shim hangs on @playwright/test config load
 ruby = "3.4"
+terraform = "latest"

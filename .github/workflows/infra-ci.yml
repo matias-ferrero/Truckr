@@ -1,0 +1,27 @@
+name: Infra CI
+
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+
+jobs:
+  validate:
+    name: Terraform fmt + validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.9"
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive infra/
+
+      - name: Validate staging
+        run: |
+          cd infra/envs/staging
+          terraform init -backend=false
+          terraform validate

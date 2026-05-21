@@ -4,6 +4,20 @@ Integrations the platform uses today, and the ones on the roadmap. Each row note
 
 ## Runtime Integrations
 
+### AWS (active — staging)
+
+- **Purpose**: hosts the deployed staging environment.
+- **Services used**:
+  - **EC2 + EIP** — single `t3.micro` instance running Docker; EIP keeps the sslip.io hostname stable for Let's Encrypt cert renewals.
+  - **ECR** — `truckr-backend` image registry; Kamal pushes from operator laptop, EC2 pulls via Kamal-injected `docker login`.
+  - **S3 + CloudFront** — frontend bundle hosted in a private S3 bucket fronted by CloudFront with Origin Access Control.
+  - **SSM Parameter Store** — source-of-truth for `RAILS_MASTER_KEY` (under `/truckr/staging/*`); fetched at deploy time by `backend/.kamal/secrets`.
+  - **DLM (Data Lifecycle Manager)** — daily EBS snapshots of the SQLite volume; 7-day retention.
+  - **IAM** — least-privilege EC2 role (`AmazonSSMManagedInstanceCore` only); GitHub OIDC role for future CI deploys (INF-INFRA-00004).
+  - **S3 + DynamoDB (state backend)** — `truckr-tfstate-${account_id}` bucket + lock table for Terraform remote state.
+- **Provisioning**: `infra/envs/staging/` (Terraform). First-bootstrap in [`infra/README.md`](../../infra/README.md); day-2 ops in [`deployment-runbook.md`](deployment-runbook.md).
+- **TLS**: kamal-proxy + Let's Encrypt on `<eip>.sslip.io` (auto-renew).
+
 ### GitHub (active)
 
 - **Purpose**: source-of-truth repo, CI host, release artifact store.

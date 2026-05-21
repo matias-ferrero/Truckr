@@ -1,7 +1,7 @@
 @startuml deployment-diagram
 !include <C4/C4_Deployment>
 
-title Deployment Diagram — Truckr® (target topology)
+title Deployment Diagram — Truckr® (staging on AWS)
 
 Deployment_Node(dev, "Developer workstation", "macOS / Linux") {
   Deployment_Node(mise, "mise-managed toolchain", "") {
@@ -9,37 +9,81 @@ Deployment_Node(dev, "Developer workstation", "macOS / Linux") {
     Container(rails_dev, "Rails dev server", "Ruby 3.4 + Puma", "bin/rails server → http://localhost:3000")
     ContainerDb(sqlite_dev, "SQLite", "storage/development.sqlite3")
   }
+  Container(kamal_cli, "Kamal CLI", "Ruby gem", "bundle exec kamal deploy → builds, pushes to ECR, SSHes to EC2")
+  Container(aws_cli, "AWS CLI", "", "Fetches secrets from SSM at deploy time")
 }
 
-Deployment_Node(cdn, "CDN / static host", "e.g. GitHub Pages, Cloudflare, Netlify") {
-  Container(spa_prod, "Frontend bundle", "Static HTML + JS + CSS", "Output of `deno task build` (dist/).")
-}
+Deployment_Node(aws, "AWS account (us-east-1)", "Single account, staging environment") {
 
-Deployment_Node(host, "Application host", "Single VM or container host (Kamal target)") {
-  Deployment_Node(docker, "Docker runtime", "") {
-    Deployment_Node(app_container, "Truckr API container", "ruby:3.4-slim + jemalloc") {
-      Container(thruster, "Thruster", "HTTP front-cache + X-Sendfile", "Listens on :80")
-      Container(puma, "Puma", "Rails app server", "Runs Rails app via bin/thrust bin/rails server")
-      Container(worker_prod, "solid_queue worker", "separate process", "Runs Active Job tasks")
+  Deployment_Node(cloudfront, "CloudFront distribution", "Origin Access Control to S3") {
+    Container(spa_prod, "Frontend bundle", "Static HTML + JS + CSS", "Output of deno task build (dist/), served via S3 origin")
+  }
+  Deployment_Node(s3_frontend, "S3 bucket (frontend)", "Private bucket, OAC only") {
+    Container(s3_objects, "dist/* objects", "", "aws s3 sync from operator laptop")
+  }
+
+  Deployment_Node(vpc, "VPC + public subnet", "Internet Gateway, no NAT") {
+    Deployment_Node(ec2, "EC2 t3.micro + EIP", "Ubuntu 22.04 AMI, encrypted gp3 root volume") {
+      Deployment_Node(docker, "Docker runtime", "installed by user_data.sh") {
+        Container(kamal_proxy, "kamal-proxy", "Let's Encrypt TLS termination", "Listens on :80 + :443 for ip-X-X-X-X.sslip.io")
+        Deployment_Node(app_container, "Truckr API container", "ruby:3.4-slim + jemalloc") {
+          Container(thruster, "Thruster", "HTTP front-cache", "Listens on :80 inside container")
+          Container(puma, "Puma", "Rails app server", "Runs Rails app")
+          Container(worker_prod, "solid_queue worker", "Active Job", "In-process via SOLID_QUEUE_IN_PUMA")
+        }
+        ContainerDb(sqlite_prod, "SQLite databases", "Docker volume truckr_storage", "production.sqlite3 + cache + queue + cable")
+      }
+      Container(ssm_agent, "amazon-ssm-agent", "snap", "Registers with Systems Manager for break-glass + future CI transport")
     }
-    ContainerDb(sqlite_prod, "SQLite databases", "mounted volume", "production.sqlite3 + cache + queue + cable")
+  }
+
+  Deployment_Node(ecr, "ECR repository", "truckr-backend") {
+    Container(ecr_image, "Image tags", "content-hashed by Kamal", "Lifecycle policy: keep last 10")
+  }
+
+  Deployment_Node(ssm, "SSM Parameter Store", "/truckr/staging/*") {
+    Container(rails_key, "rails_master_key", "SecureString", "Source of truth for RAILS_MASTER_KEY")
+  }
+
+  Deployment_Node(dlm, "Data Lifecycle Manager", "EBS snapshots") {
+    Container(snapshots, "Daily SQLite snapshots", "03:00 UTC, 7-day retention", "Targets tag Name=truckr-staging-app")
+  }
+
+  Deployment_Node(iam, "IAM", "least-privilege roles") {
+    Container(ec2_role, "EC2 instance role", "AmazonSSMManagedInstanceCore only", "No SSM/ECR read perms — Kamal injects via SSH")
+    Container(gha_oidc_role, "GitHub Actions OIDC role", "sts:AssumeRoleWithWebIdentity", "Used by INF-INFRA-00004 workflows")
   }
 }
 
 Deployment_Node(github_infra, "GitHub", "SaaS") {
-  Container(actions, "GitHub Actions", "release-please workflow", "On push to main: release PR; on merge: tag + attach PDFs.")
-  Container(releases, "GitHub Releases", "artifact store", "artifacts.pdf, prompts.pdf.")
+  Container(actions, "GitHub Actions", "release-please + infra-ci", "Validates terraform fmt+validate; CI deploy in INF-INFRA-00004")
+  Container(releases, "GitHub Releases", "artifact store", "artifacts.pdf, prompts.pdf")
+}
+
+Deployment_Node(letsencrypt, "Let's Encrypt", "ACME CA") {
+  Container(acme, "HTTP-01 challenge", "", "kamal-proxy answers on :80 for ip-X-X-X-X.sslip.io")
 }
 
 Rel(vite_dev, rails_dev, "HTTP / CORS", "fetch /api/*")
 Rel(rails_dev, sqlite_dev, "Active Record")
 
-Rel(spa_prod, thruster, "HTTPS / JSON", "fetch /api/*")
+Rel(kamal_cli, ecr_image, "docker push", "OIDC/ECR auth")
+Rel(kamal_cli, kamal_proxy, "SSH :22", "kamal deploy / rollback / app exec")
+Rel(aws_cli, rails_key, "ssm:GetParameter", "fetched by .kamal/secrets")
+Rel(kamal_cli, aws_cli, "shells out for secrets fetch")
+
+Rel(spa_prod, kamal_proxy, "HTTPS / JSON", "via CloudFront, fetch /api/*")
+Rel(kamal_proxy, thruster, "proxy", "plain HTTP inside container network")
+Rel(kamal_proxy, acme, "HTTP-01 challenge", "cert issue + renew")
 Rel(thruster, puma, "proxy")
 Rel(puma, sqlite_prod, "Active Record")
 Rel(worker_prod, sqlite_prod, "Active Job polling")
+Rel(sqlite_prod, snapshots, "snapshotted daily")
+Rel(ssm_agent, gha_oidc_role, "session-manager target", "future INF-INFRA-00004 transport")
 
+Rel(cloudfront, s3_objects, "Origin pull", "via OAC")
 Rel(actions, releases, "uploads PDFs")
+Rel(actions, gha_oidc_role, "AssumeRoleWithWebIdentity")
 
 SHOW_LEGEND()
 @enduml

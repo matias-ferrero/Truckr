@@ -1,0 +1,12 @@
+# Local tfvars and backend config with secrets — never commit
+*.tfvars
+!*.tfvars.example
+backend.hcl
+!backend.hcl.example
+
+# Terraform state and cache
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
+crash.log

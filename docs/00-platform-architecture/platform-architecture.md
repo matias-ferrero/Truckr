@@ -39,9 +39,27 @@ If the product graduates past the academic deliverable, each component can be ex
 - **docs ↔ code**: one-way. Docs reference product decisions; code does not depend on docs at runtime. Typst PDFs are built from `.typ` sources in CI.
 - **release pipeline**: `release-please` watches `main`, derives bumps from Conventional Commits, opens a Release PR. Merging the Release PR tags a version and triggers `typst compile` in GitHub Actions to attach the PDFs.
 
+## Deployment topology (staging)
+
+Provisioned by Terraform in `infra/envs/staging/`. Single AWS account, single region (default `sa-east-1`).
+
+| Layer | AWS service | Notes |
+|---|---|---|
+| Network | VPC + public subnet + Internet Gateway | No private subnet / NAT — staging only |
+| Backend compute | EC2 `t3.micro` + EIP | Docker host; Kamal manages the container lifecycle |
+| Container registry | ECR (`truckr-backend`) | Kamal pushes from operator laptop (CI in `INF-INFRA-00004`) |
+| Backend TLS | kamal-proxy + Let's Encrypt | Cert issued for `<eip>.sslip.io` |
+| Secrets | SSM Parameter Store under `/truckr/staging/*` | Fetched by `.kamal/secrets` at deploy time |
+| Data | SQLite on Docker volume + DLM daily EBS snapshot | Per `CLAUDE.md § Database policy` |
+| Frontend hosting | S3 + CloudFront (OAC) | Static Vite bundle; deploy via `aws s3 sync` (manual today) |
+| CI auth | IAM OIDC role for GitHub Actions | Provisioned by `modules/github_oidc`; wired up in `INF-INFRA-00004` |
+| State | S3 (`truckr-tfstate-${account_id}`) + DynamoDB lock | Bootstrapped by `infra/bootstrap.sh` |
+
+See `infra/README.md` for first-bootstrap; `docs/05-appendices/deployment-runbook.md` for day-2 ops.
+
 ## Platform Diagram
 
-See `diagrams/platform-overview.puml`.
+See `diagrams/platform-overview.puml` and `../03-architecture-diagrams/deployment-diagram.puml`.
 
 ## Document Information
 

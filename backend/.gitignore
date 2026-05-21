@@ -38,3 +38,9 @@ config/*.key
 
 # SimpleCov coverage report
 /coverage/
+
+# Ignore key files for decrypting credentials and more.
+/config/*.key
+
+# Local-only backup of pre-rotation credentials
+/config/credentials.yml.enc.pre-rotation.bak

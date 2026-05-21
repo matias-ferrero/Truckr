@@ -227,3 +227,12 @@ backend/vendor/bundle/*
 
 # Local session exports (gdsi-sdlc — never commit)
 .gdsi-sdlc/sessions/
+
+# Terraform — sensitive local config + state (never commit)
+infra/envs/*/backend.hcl
+infra/envs/*/terraform.tfvars
+infra/envs/*/.terraform/
+infra/envs/*/.terraform.lock.hcl
+infra/envs/*/*.tfstate
+infra/envs/*/*.tfstate.backup
+infra/envs/*/tfplan*

@@ -146,9 +146,9 @@ Estos no son costos vinculados a reducir horas en tareas específicas — son *i
 
 #v(0.8em)
 
-=== Infraestructura Cloud — AWS (Prototipo)
+=== Infraestructura Cloud — AWS (staging)
 
-Los recursos están dimensionados para un entorno de prototipo con carga baja (\~50 usuarios concurrentes). Se prioriza costo sobre disponibilidad; sin Multi-AZ ni redundancia hasta validar el producto.
+Topología fijada por `CLAUDE.md § "Database policy"`: SQLite + un único contenedor con Kamal. Sin RDS, sin Redis administrado, sin ALB. La aplicación corre en una EC2 con kamal-proxy terminando TLS vía Let's Encrypt sobre un hostname sslip.io. El frontend se sirve desde S3 + CloudFront. Provisionado por Terraform (`infra/envs/staging/`).
 
 #table(
   columns: (auto, auto, auto, auto, auto),
@@ -169,64 +169,70 @@ Los recursos están dimensionados para un entorno de prototipo con carga baja (\
       weight: "bold",
     )[Costo mensual (USD)]],
   ),
-  [ECS — Servidor de aplicación (API \+ backend)],
-  [t3.small (2 vCPU, 2 GB RAM)],
-  [1],
-  [\$15,18/mes],
-  [\$15,18],
-
-  [ECS — Servidor de workers / tareas asíncronas],
+  [EC2 — Servidor de aplicación (Rails \+ Kamal)],
   [t3.micro (2 vCPU, 1 GB RAM)],
   [1],
   [\$7,59/mes],
   [\$7,59],
 
-  [RDS — Base de datos relacional (PostgreSQL 18)],
-  [db.t3.micro (2 vCPU, 1 GB RAM, 20 GB SSD, Single-AZ)],
+  [EBS gp3 — Volumen root con SQLite],
+  [20 GB gp3],
   [1],
-  [\$14,93/mes],
-  [\$14,93],
+  [\$1,60/mes],
+  [\$1,60],
 
-  [ElastiCache — Caché y sesiones (Redis 7)],
-  [cache.t3.micro (1 vCPU, 0,5 GB RAM)],
-  [1],
-  [\$11,52/mes],
-  [\$11,52],
-
-  [S3 — Almacenamiento (imágenes, docs, backups)],
-  [Standard — 50 GB \+ 10 GB transferencia],
-  [1],
-  [≈ \$1,15/mes],
-  [\$1,15],
-
-  [Application Load Balancer],
-  [ALB (1 regla, \~10 LCU estimadas)],
-  [1],
-  [\$16,20/mes],
-  [\$16,20],
-
-  [Route 53 — DNS],
-  [Hosted Zone \+ consultas estándar],
+  [EBS Snapshots — Backups diarios (DLM, 7 días retención)],
+  [≈ 20 GB efectivos],
   [1],
   [\$0,50/mes],
   [\$0,50],
 
-  [Amplify Hosting — Frontend (assets estáticos)],
-  [10 GB servidos, 1 GB almacenamiento],
+  [Elastic IP — Hostname estable para sslip.io],
+  [IPv4 asociada a EC2],
   [1],
-  [≈ \$1,52/mes],
-  [\$1,52],
+  [\$0,00/mes],
+  [\$0,00],
 
-  [Elastic IP],
-  [IPv4 — asociada a ECS],
+  [ECR — Registro de imágenes Docker (truckr-backend)],
+  [\~0,5 GB con lifecycle policy],
   [1],
+  [\$0,05/mes],
+  [\$0,05],
+
+  [S3 — Bundle frontend \+ tfstate],
+  [Standard — \~6 GB \+ 5 GB transferencia],
+  [2 buckets],
+  [\$0,14/mes],
+  [\$0,14],
+
+  [CloudFront — CDN del frontend],
+  [\~10 GB transferencia/mes],
+  [1],
+  [\$0,85/mes],
+  [\$0,85],
+
+  [DynamoDB — Lock de Terraform state],
+  [On-demand, \<100 ops/mes],
+  [1],
+  [\$0,01/mes],
+  [\$0,01],
+
+  [SSM Parameter Store — Secretos],
+  [Standard params, sin throughput extra],
+  [1],
+  [\$0,00/mes],
+  [\$0,00],
+
+  [TLS — kamal-proxy \+ Let's Encrypt],
+  [Auto-renew sobre sslip.io],
+  [—],
   [\$0,00/mes],
   [\$0,00],
 
   table.cell(fill: luma(240), colspan: 4)[#align(
     right,
   )[*Total mensual infraestructura AWS*]],
-  table.cell(fill: luma(240))[*\$68,59*],
+  table.cell(fill: luma(240))[*\$10,74*],
 )
 
 #pagebreak()
@@ -253,9 +259,9 @@ Los recursos están dimensionados para un entorno de prototipo con carga baja (\
   ),
   [Equipo (5 Dev + 1 PM)], [\$1.072], [\$3.216], [\$7.504],
   [Tooling IA], [\$30], [\$90], [\$210],
-  [Infraestructura AWS], [\$68,59], [\$68,59], [\$137,18],
+  [Infraestructura AWS], [\$10,74], [\$10,74], [\$21,48],
   table.cell(fill: luma(240), colspan: 1)[#align(right)[*Total*]],
-  table.cell(fill: luma(240))[*\$1.170,59*],
-  table.cell(fill: luma(240))[*\$3.374,59*],
-  table.cell(fill: luma(240))[*\$7.851,18*],
+  table.cell(fill: luma(240))[*\$1.112,74*],
+  table.cell(fill: luma(240))[*\$3.316,74*],
+  table.cell(fill: luma(240))[*\$7.735,48*],
 )
