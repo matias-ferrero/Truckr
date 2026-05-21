@@ -3,11 +3,10 @@
 ``schema_version`` permits future evolution. ``include_generated_at=False``
 omits the wall-clock so tests can compare byte-for-byte.
 
-Schema v2 emits inverse + (optional) forward projection blocks alongside
-``aggregate.created_per_sprint`` and ``aggregate.closed_excluded_total``.
-Each metric is paired with a one-line ``_meaning`` companion field so any
-downstream consumer renders metric + explanation together — no orphaned
-numbers.
+Schema v3 emits User-Story throughput, lead time measured in sprints, and the
+inverse + (optional) forward projection. Each metric is paired with a one-line
+``_meaning`` companion field (es-AR) so any downstream consumer renders metric
++ explanation together — no orphaned numbers.
 """
 
 from __future__ import annotations
@@ -17,7 +16,7 @@ from dataclasses import asdict, is_dataclass
 from datetime import date, datetime
 from typing import Any
 
-from team_performance.models import Projection, Report
+from team_performance.models import AggregateStats, Projection, Report
 
 
 def _default(obj: object) -> Any:
@@ -30,20 +29,49 @@ def _default(obj: object) -> Any:
     raise TypeError(f"cannot serialize {type(obj).__name__}")
 
 
+def _aggregate_block(agg: AggregateStats) -> dict[str, Any]:
+    out: dict[str, Any] = {"sample_size_sprints": agg.sample_size_sprints}
+    if agg.throughput is None:
+        out["throughput"] = None
+    else:
+        t = agg.throughput
+        out["throughput"] = {
+            "mean": t.mean,
+            "mean_meaning": "Promedio de User Stories completadas por sprint.",
+            "median": t.median,
+            "median_meaning": "User Stories completadas en un sprint típico.",
+            "stdev": t.stdev,
+            "stdev_meaning": "Dispersión alrededor de la media — mayor = menos predecible.",
+            "min": t.min,
+            "min_meaning": "Peor sprint observado.",
+            "max": t.max,
+            "max_meaning": "Mejor sprint observado.",
+        }
+    if agg.lead_time_sprints is None:
+        out["lead_time_sprints"] = None
+    else:
+        c = agg.lead_time_sprints
+        out["lead_time_sprints"] = {
+            "p50": c.p50,
+            "p50_meaning": "La mitad de las US se completan dentro de esta cantidad de sprints.",
+            "p75": c.p75,
+            "p75_meaning": (
+                "Tres cuartos de las US se completan dentro de esta cantidad de sprints."
+            ),
+            "p90": c.p90,
+            "p90_meaning": "Nueve de cada diez US se completan dentro de esta cantidad de sprints.",
+        }
+    return out
+
+
 def _projection_block(p: Projection) -> dict[str, Any]:
     out: dict[str, Any] = {
-        "target_issues": p.target_issues,
-        "target_issues_meaning": "Cantidad inicial de issues del backlog provista por el operador.",
+        "target_user_stories": p.target_user_stories,
+        "target_user_stories_meaning": (
+            "Cantidad de User Stories del backlog a alcanzar, provista por el operador."
+        ),
         "method": p.method,
-        "method_meaning": (
-            "split_bootstrap_throughput también modela el crecimiento del backlog; "
-            "bootstrap_throughput muestrea sólo lo entregado."
-        ),
-        "scope_growth_enabled": p.scope_growth_enabled,
-        "scope_growth_enabled_meaning": (
-            "Cuando es verdadero, cada sprint simulado también suma una cantidad "
-            "muestreada de ítems creados al target acumulado."
-        ),
+        "method_meaning": "bootstrap_throughput muestrea el throughput observado por sprint.",
         "bootstrap_samples": p.bootstrap_samples,
         "bootstrap_samples_meaning": "Cantidad de futuros simulados independientes.",
         "sprints_to_target": {
@@ -78,36 +106,19 @@ def _projection_block(p: Projection) -> dict[str, Any]:
             "remaining_sprints_meaning": "Horizonte fijo sobre el que se consulta.",
             "p_meet_or_exceed_target": f.p_meet_or_exceed_target,
             "p_meet_or_exceed_target_meaning": (
-                "Probabilidad de cerrar ≥ target issues dentro del horizonte fijo."
+                "Probabilidad de completar ≥ target User Stories dentro del horizonte fijo."
             ),
             "total_projected_p10": f.total_projected_p10,
             "total_projected_p10_meaning": (
-                "Total cerrado proyectado pesimista — sólo el 10% de los futuros es peor."
+                "Total proyectado de US completadas pesimista — sólo el 10% de los futuros es peor."
             ),
             "total_projected_p50": f.total_projected_p50,
-            "total_projected_p50_meaning": ("Total cerrado proyectado mediano sobre el horizonte."),
+            "total_projected_p50_meaning": "Total mediano de US completadas sobre el horizonte.",
             "total_projected_p90": f.total_projected_p90,
             "total_projected_p90_meaning": (
-                "Total cerrado proyectado optimista — sólo el 10% de los futuros lo supera."
+                "Total proyectado de US completadas optimista — sólo el 10% de los futuros lo "
+                "supera."
             ),
-        }
-    out["scope_growth"] = None
-    if p.scope_growth is not None:
-        s = p.scope_growth
-        out["scope_growth"] = {
-            "created_per_sprint_mean": s.created_per_sprint_mean,
-            "created_per_sprint_mean_meaning": (
-                "Promedio histórico de ítems agregados al alcance por sprint — usado para "
-                "hacer crecer el target."
-            ),
-            "created_per_sprint_median": s.created_per_sprint_median,
-            "created_per_sprint_median_meaning": (
-                "Ítems agregados por sprint en un sprint típico."
-            ),
-            "created_per_sprint_min": s.created_per_sprint_min,
-            "created_per_sprint_min_meaning": "Sprint más tranquilo por intake.",
-            "created_per_sprint_max": s.created_per_sprint_max,
-            "created_per_sprint_max_meaning": "Sprint más ruidoso por intake.",
         }
     return out
 
@@ -119,18 +130,17 @@ def render_json(report: Report, *, include_generated_at: bool = True) -> str:
         "sprints": [
             {
                 "index": s.index,
-                "start": s.start.isoformat(),
-                "end": s.end.isoformat(),
-                "closed_count": len(s.closed),
-                "closed_excluded_count": len(s.closed_excluded),
-                "created_count": len(s.created),
-                "wip_at_end": s.wip_at_end,
-                "closed_numbers": [i.number for i in s.closed],
-                "closed_excluded_numbers": [i.number for i in s.closed_excluded],
+                "phase": s.phase,
+                "window_start": s.window_start.isoformat(),
+                "window_end": s.window_end.isoformat(),
+                "completed_count": len(s.completed),
+                "completed_user_stories": list(s.completed),
+                "wip_at_end": len(s.in_progress),
+                "in_progress_user_stories": list(s.in_progress),
             }
             for s in report.sprints
         ],
-        "aggregate": asdict(report.aggregate),
+        "aggregate": _aggregate_block(report.aggregate),
         "projection": _projection_block(report.projection)
         if report.projection is not None
         else None,

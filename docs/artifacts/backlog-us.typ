@@ -83,7 +83,7 @@ para completar y mantener actualizados mis datos personales.
 
 // ── Plataforma del Expedidor ────────────────────────────────────────────────
 
-== US4: Búsqueda de Ventanas Compatibles con mi Carga
+== US4: Búsqueda de Ventanas Compatibles con mi Carga (REHACER)
 
 *Release:* MVP \
 *Prioridad:* Alta \
@@ -153,23 +153,19 @@ para decidir si es el indicado antes de enviarle una oferta de carga.
 
 *Descripción:*
 Como expedidor,
-quiero enviar una oferta de carga al transportista responsable de una ventana compatible con mi carga,
-para proponerle un precio y que decida si acepta realizar el viaje.
+quiero enviar una oferta al transportista responsable de una ventana compatible con mi carga,
+para contactarlo y que decida si acepta realizar el viaje.
 
 *Criterios de Aceptación:*
-+ El acceso a esta pantalla requiere tener una carga en estado abierta y una ventana en estado abierta ya seleccionadas; los datos de la carga (origen, destino, peso, dimensiones, descripción, distancia) no se reingresan al ofertar.
-+ La oferta lleva una fecha de retiro, precargada con el primer día de la intersección entre el filtro de fecha del expedidor (US4) y la franja temporal de la ventana; el expedidor puede editarla y se valida que permanezca dentro de esa intersección.
-+ Se puede ingresar un mensaje opcional dirigido al transportista (por ejemplo, detalles de la carga, condiciones de retiro).
-+ El monto de la oferta se calcula como precio por kilómetro de la ventana × distancia de la carga y se muestra antes de confirmar; no es editable, ya que refleja la tarifa publicada por el transportista en US9. Al confirmar, ese monto queda congelado en la oferta: ediciones posteriores de la ventana (US33) no alteran ofertas ya creadas.
++ Para publicar una oferta, se debe tener una carga en estado abierta y una ventana en estado abierta ya seleccionadas.
++ En la publicación de la oferta, se define una fecha de retiro de la carga.
++ Se puede ingresar un mensaje opcional dirigido al transportista.
++ El monto de la oferta se calcula como el precio por kilómetro de la ventana por la distancia del traslado y se muestra antes de confirmar.
 + Al confirmar, se crea una oferta de carga en estado pendiente asociada a la carga, a la ventana, al transportista y al vehículo de la ventana.
-+ Al confirmar, la ventana seleccionada pasa de abierta a con oferta pendiente (otros expedidores dejan de verla en su búsqueda mientras la oferta siga pendiente).
-+ La carga permanece en estado abierta mientras existan ofertas pendientes; sólo pasa a aceptada cuando algún transportista acepta una de las ofertas.
++ Al confirmar, el monto de la oferta queda congelado.
 + Se informa visiblemente que la oferta expira automáticamente a las 48 horas de enviada si el transportista no responde.
-+ El transportista correspondiente es notificado de la nueva oferta recibida.
 + Tras confirmar, el expedidor regresa al detalle de la carga, donde la nueva oferta aparece en el listado de ofertas de la carga con su estado actual; la oferta también aparece en su dashboard (US37).
-+ El expedidor puede repetir US7 contra otras ventanas compatibles de la misma carga mientras existan ventanas abiertas disponibles; cada confirmación produce una oferta independiente.
-+ Si entre que el expedidor abre la pantalla y confirma la oferta la ventana fue tomada por otra propuesta, se muestra un mensaje claro ("esta ventana ya recibió una oferta, elegí otra") y no se crea la oferta.
-+ Si el transportista rechaza la oferta o ésta expira a las 48 horas, la ventana vuelve automáticamente a estado abierta y queda disponible para otros expedidores.
++ El expedidor puede volver a ofertar a otras ventanas abiertas compatibles de la misma carga.
 
 == US8: Realizar Pago (Expedidor)
 
@@ -211,8 +207,7 @@ para que los expedidores cuya carga coincida con mi ruta y fecha me encuentren y
 + Se debe asociar uno de los vehículos previamente registrados por el transportista (US14) — la capacidad y dimensiones del vehículo determinan qué cargas pueden coincidir con la ventana.
 + Se puede indicar un precio por kilómetro para el servicio.
 + Una vez completados los datos necesarios, se puede confirmar la publicación de la ventana.
-+ La ventana aparece en los resultados de búsqueda (US4) de los expedidores cuya carga, ruta y fecha coincidan.
-+ El transportista puede listar sus ventanas activas, editarlas o despublicarlas en cualquier momento.
++ La ventana aparece en los resultados de búsqueda de los expedidores cuya carga, ruta y fecha coincidan.
 
 == US10: Observar Ofertas de Viaje
 
@@ -303,7 +298,6 @@ para que los expedidores conozcan las características de mi vehículo al buscar
 + Se pueden ingresar las dimensiones del camión (largo, ancho, alto del espacio de carga).
 + Se puede ingresar la capacidad de carga máxima en kilogramos.
 + Se pueden subir fotos del camión.
-+ Los datos del vehículo se muestran en el perfil del transportista y en los detalles visibles al expedidor.
 + Se puede registrar más de un vehículo si el transportista tiene una flota.
 
 == US15: Pago al Transportista
@@ -331,19 +325,19 @@ para cobrar por mi servicio de forma segura y en tiempo.
 
 *Descripción:*
 Como expedidor,
-quiero publicar una carga con su origen, destino, distancia, peso y descripción,
-para luego poder buscar ventanas de transporte compatibles y enviar ofertas de carga a los transportistas que las publicaron.
+quiero publicar una carga con toda su informacion detallada,
+para poder enviarla.
 
 *Criterios de Aceptación:*
 + Se pueden ingresar los datos de la dirección de origen y de la dirección de destino (calle, número, código postal, ciudad y provincia).
 + Se puede ingresar el peso de la carga en kilogramos (debe ser mayor a cero).
-+ Se puede ingresar la distancia estimada del viaje en kilómetros (debe ser mayor a cero); a futuro se calculará automáticamente mediante integración con Google Maps.
 + Se puede ingresar una descripción de la carga a transportar.
 + Se pueden ingresar instrucciones de manipulación especial (opcional, por ejemplo "frágil", "refrigerado").
 + Los campos obligatorios están claramente marcados y se validan antes de enviar el formulario; si falta uno o un valor es inválido se muestra un mensaje claro por campo.
 + Solo los expedidores autenticados pueden publicar una carga; un transportista logueado no ve la opción.
-+ Al publicar exitosamente, la carga queda en estado abierta (sin ofertas asociadas todavía) y el expedidor es redirigido a la pantalla de detalle de la carga, desde donde puede iniciar la búsqueda de ventanas de transporte compatibles (US4).
-+ El expedidor puede ver el listado de sus cargas publicadas, con su estado actual (abierta / aceptada / cancelada), desde una sección "Mis cargas".
++ Al publicar exitosamente, la carga queda en estado abierta (sin ofertas asociadas todavía).
++ Al publicar exitosamente, el expedidor es redirigido a la pantalla detalles de la carga.
++ Al publicar exitosamente, se inicia la búsqueda de ventanas de transporte compatibles (US4).
 
 == US36: Dashboard del Transportista
 
@@ -358,9 +352,8 @@ para tener una vista general de mis ventanas, ofertas y viajes sin navegar por v
 
 *Criterios de Aceptación:*
 + Al loguearse como transportista, se accede a un dashboard como pantalla principal.
-+ Se muestra un resumen de las ventanas de transporte activas publicadas (US9).
-+ Se muestra la cantidad de ofertas de viaje pendientes de revisión (US10).
-+ Se muestra un listado de los viajes activos en curso (US12).
++ Se muestra un listado de los vehiculos cargados por el transportista (US14).
++ Se muestra un resumen de las ventanas de transporte activas publicadas, la disponibilidad (US9).
 + Cada sección del dashboard enlaza a la pantalla detallada correspondiente.
 + Si el transportista no tiene actividad, cada sección muestra un estado vacío con una acción sugerida (por ejemplo, publicar una ventana o registrar un vehículo).
 
@@ -377,9 +370,8 @@ para hacer seguimiento de mis ofertas y envíos sin navegar por varias pantallas
 
 *Criterios de Aceptación:*
 + Al loguearse como expedidor, se accede a un dashboard como pantalla principal.
++ Se muestra un listado de las cargas publicadas (US27).
 + Se muestra un listado de las ofertas de retiro realizadas y su estado (pendiente, aceptada, rechazada) (US7).
-+ Se muestra un listado de los envíos en curso con su estado actual.
-+ Se muestra un acceso directo para buscar nuevas ventanas de transporte (US4).
 + Cada sección del dashboard enlaza a la pantalla detallada correspondiente.
 + Si el expedidor no tiene actividad, cada sección muestra un estado vacío con una acción sugerida (por ejemplo, buscar ventanas de transporte).
 
@@ -400,6 +392,247 @@ para entender qué ofrece la plataforma y decidir si me registro como expedidor 
 + Hay llamados a la acción claros y visibles que llevan al registro (US1) y al login (US2).
 + La página es responsive y se visualiza correctamente en desktop y mobile.
 + Un usuario con sesión activa que ingresa a la landing es redirigido a la pantalla principal de su rol.
+
+== US39: Crear Administrador
+
+*Release:* MVP \
+*Prioridad:* Media \
+*Épica:* Cuenta
+
+*Descripción:*
+Como dueño del producto,
+quiero poder crear una cuenta admin,
+para poder administrador al resto de usuarios y entidades existentes en la aplicacion.
+
+*Criterios de Aceptación:*
++ Al estar logueado como admin, se puede acceder a un formulario a rellenar con los datos del nuevo admin
++ Se realiza una validacion donde solo un administrador, puede dar de alta otra cuenta de admin.
+
+== US40: Bandeja de Usuarios
+
+*Release:* MVP \
+*Prioridad:* Media \
+*Épica:* Cuenta
+
+*Descripción:*
+Como usuario administrador,
+quiero poder observar una lista de usuarios existentes en la aplicacion,
+para permitirme administrarlos
+
+*Criterios de Aceptación:*
++ Dentro del backoffice, hay un boton que me lleva a la solapa de Users
++ Una vez dentro de la pagina, tengo que poder observar la lista de usuarios existentes.
+
+== US41: Personificar Usuario
+
+*Release:* MVP \
+*Prioridad:* Media \
+*Épica:* Cuenta
+
+*Descripción:*
+Como usuario administrador,
+quiero personificar la cuenta de un usuario existente,
+para meterme en ella y actuar como si fuera el.
+
+*Criterios de Aceptación:*
++ Dentro la bandeja de usuarios, hay un boton que me redirige al dashboard de su cuenta.
++ Al hacerse la redireccion, no deba loguearme con sus datos y el inicio de sesion sea automatico.
+
+== US42: Administrar mi Flota
+
+*Release:* MVP \
+*Prioridad:* Alta \
+*Épica:* Cuenta
+
+*Descripción:*
+Como transportista,
+quiero poder observar los camiones registrados en mi flota,
+para poder administrar cada uno de ellos.
+
+*Criterios de Aceptación:*
++ Al entrar a mi flota, debo poder observar cada uno de mis vehiculos registrados, con sus datos.
++ En la tarjeta del camion, debe haber un boton para entrar a modificar los datos.
++ En la tarjeta del camion, debe haber un boton para eliminar dicho vehiculo.
+
+== US31: Editar Vehiculo de mi Flota
+
+*Release:* MVP \
+*Prioridad:* Alta \
+*Épica:* Cuenta
+
+*Descripción:*
+Como transportista,
+quiero poder modificar los datos de un vehículo de mi flota previamente registrado (US14),
+para mantener actualizadas sus capacidades, fotos y dimensiones cuando cambien.
+
+*Criterios de Aceptación:*
++ Desde el listado de vehículos del transportista, se puede acceder a una pantalla de edición del vehículo seleccionado.
++ Se pueden modificar dimensiones (largo, ancho, alto), capacidad de carga máxima en kilogramos, y agregar o quitar fotos del camión.
++ La patente no se puede modificar bajo ninguna circunstancia — el campo se muestra siempre deshabilitado.
++ Al guardar, los datos actualizados se reflejan inmediatamente en el perfil público del transportista (US6) y en los detalles visibles al expedidor en los resultados de búsqueda (US4).
++ Al presionar "Descartar Cambios" o navegar a otra página sin guardar, los datos escritos no se impactan.
+
+== US43: Administrar mis Ventanas de Transporte
+
+*Release:* MVP \
+*Prioridad:* Alta \
+*Épica:* Gestión de Viajes
+
+*Descripción:*
+Como transportista,
+quiero poder ver mis ventanas de transporte en la plataforma,
+para tener un registro de mis posibles viajes.
+
+*Criterios de Aceptación:*
++ El transportista puede visualizar sus ventanas activas, junto con sus detalles.
++ Se observan botones para editarlas, ocultarlas o eliminarlas en cualquier momento.
++ En la pagina de Mi Disponibilidad, se encuentra un boton para poder publicar una nueva.
+
+== US33: Editar Ventana de Transporte
+
+*Release:* Release 2 \
+*Prioridad:* Media \
+*Épica:* Gestión de Viajes
+
+*Descripción:*
+Como transportista,
+quiero poder modificar los datos de una ventana de transporte (`TransportWindow`) que ya publiqué (US9),
+para corregir errores o ajustarla a cambios en mi disponibilidad sin tener que despublicarla y republicarla.
+
+*Criterios de Aceptación:*
++ Desde la pantalla "Mi Disponibilidad", se puede acceder a una pantalla de edición de la ventana seleccionada.
++ Se pueden modificar zona origen, zona destino, franja temporal (fecha/hora desde y hasta), vehículo asociado (entre los registrados en US14) y precio por kilómetro.
++ Al guardar, la ventana actualizada se refleja inmediatamente en los resultados de búsqueda de los expedidores (US4) según los nuevos criterios.
++ Si la ventana ya tiene ofertas de viaje recibidas (US10) que dejarían de ser compatibles con los nuevos datos (por ejemplo, fechas que ya no se solapan o vehículo de menor capacidad), se muestra una advertencia antes de confirmar listando las ofertas afectadas.
++ Si la ventana está asociada a un viaje ya aceptado (US12), no se permite modificarla y se indica el motivo.
++ Al presionar "Descartar Cambios" o navegar a otra página sin guardar, los datos escritos no se impactan.
+
+== US34: Eliminar Ventana de Transporte
+
+*Release:* Release 2 \
+*Prioridad:* Media \
+*Épica:* Gestión de Viajes
+
+*Descripción:*
+Como transportista,
+quiero poder dar de baja definitivamente una ventana de transporte que publiqué,
+para retirarla del sistema cuando ya no quiero recibir ofertas contra ella ni conservarla en mi listado.
+
+*Criterios de Aceptación:*
++ Desde la pantalla "Mi Disponibilidad", cada entrada ofrece una acción de "Eliminar" claramente diferenciada de "Ocultar" (US35).
++ Antes de confirmar la baja, se muestra un diálogo de confirmación que aclara que la acción es irreversible y detalla las ofertas pendientes que se cancelarán.
++ Si la ventana tiene ofertas de viaje pendientes (US10) sin aceptar, la baja las cancela automáticamente y notifica a los expedidores correspondientes.
++ Si la ventana está asociada a un viaje ya aceptado (US12), la baja se rechaza y se indica al transportista que debe completar o cancelar el viaje primero.
++ La ventana dada de baja deja de aparecer en los resultados de búsqueda de los expedidores (US4) y en el listado activo del transportista, pero se conserva en el historial a efectos de auditoría.
++ La ventana dada de baja no puede reactivarse — para volver a operar el mismo trayecto el transportista debe publicar una nueva ventana (US9).
+
+== US35: Ocultar de Ventana de Transporte
+
+*Release:* Release 2 \
+*Prioridad:* Baja \
+*Épica:* Gestión de Viajes
+
+*Descripción:*
+Como transportista,
+quiero poder ocultar temporalmente una ventana de transporte sin darla de baja,
+para dejar de recibir ofertas mientras evalúo cambios o resuelvo una indisponibilidad puntual, conservando la opción de reactivarla luego.
+
+*Criterios de Aceptación:*
++ Desde la pantalla "Mi Disponibilidad", cada entrada ofrece una acción de "Ocultar" claramente diferenciada de "Eliminar" (US34).
++ Al ocultar la ventana, ésta deja de aparecer en los resultados de búsqueda de los expedidores (US4) pero permanece visible en el listado del transportista marcada como "Oculta".
++ Las ofertas pendientes recibidas previamente (US10) no se cancelan al ocultar — el transportista puede seguir aceptándolas o rechazándolas.
++ Desde la pantalla "Mi Disponibilidad", una ventana oculta ofrece una acción de "Reactivar" que la vuelve a publicar tal como estaba, sin necesidad de reingresar los datos.
++ El ocultamiento no afecta viajes ya aceptados (US12) asociados a la ventana.
++ El estado oculto persiste hasta que el transportista lo revierta explícitamente o dé de baja la ventana (US34).
+
+== US44: Administrar Cargas
+
+*Release:* MVP \
+*Prioridad:* Alta \
+*Épica:* Gestionar Cargas
+
+*Descripción:*
+Como expedidor,
+quiero visualizar mis cargas creadas,
+para poder administrar todas ellas.
+
+*Criterios de Aceptación:*
++ El expedidor puede ver el listado de sus cargas publicadas, desde una sección "Mis cargas".
++ Se puede observar el estado actual de dichas cargas (abierta / aceptada / cancelada).
++ Se puede acceder a los detalles de una carga especifica.
+
+== US45: Filtrar mis Cargas
+
+*Release:* MVP \
+*Prioridad:* Alta \
+*Épica:* Gestionar Cargas
+
+*Descripción:*
+Como expedidor,
+quiero poder filtrar mis cargas,
+para poder observar mas rapido una de ellas.
+
+*Criterios de Aceptación:*
++ En la sección "Mis cargas", se puede seleccionar un estado posible de carga.
++ El expedidor puede ver el listado de sus cargas publicadas que cumplan con dicho estado.
+
+== US46: Ver Detalles de una Carga
+
+*Release:* MVP \
+*Prioridad:* Alta \
+*Épica:* Gestionar Cargas
+
+*Descripción:*
+Como expedidor,
+quiero entrar a los detalles mis cargas creadas,
+para poder observar todas su informacion detallada.
+
+*Criterios de Aceptación:*
++ El expedidor puede ver toda la informacion de dicha carga publicada.
++ Se puede observar el estado actual de dichas cargas (abierta / aceptada / cancelada).
++ Se pueden visualizar las ofertas enviadas a transportistas de dicha carga.
+
+== US47: Editar Carga
+
+*Release:* MVP \
+*Prioridad:* Alta \
+*Épica:* Cuenta
+
+*Descripción:*
+Como transportista,
+quiero poder modificar los datos de una carga,
+para mantener actualizada su informacion en caso de ser necesario.
+
+*Criterios de Aceptación:*
++ Desde el los detalles de una carga, se puede acceder a una pantalla de edición de la seleccionada.
++ Se pueden modificar descripcion, peso, volumen, valor declarado (en ARS), direccion de retiro.
++ Los campos obligatorios están claramente marcados y se validan antes de enviar el formulario; si falta uno o un valor es inválido se muestra un mensaje claro por campo.
++ Al guardar, los datos actualizados se reflejan inmediatamente en los detalles visibles de dicha carga.
++ Al presionar "Descartar Cambios" o navegar a otra página sin guardar, los datos escritos no se impactan.
+
+== US48: Búsqueda de Ventanas Compatibles con mi Carga
+
+*Release:* MVP \
+*Prioridad:* Alta \
+*Épica:* Buscar Transporte para mi Carga
+
+*Descripción:*
+Como expedidor,
+quiero ver el listado de ventanas de transporte compatibles con una carga que publiqué,
+para identificar qué transportistas están en condiciones de realizar mi viaje y poder enviarles una oferta de carga.
+
+*Criterios de Aceptación:*
++ Se accede a esta pantalla desde la pantalla de detalle de una carga publicada (US27).
++ El expedidor puede acotar el listado con un filtro opcional de fecha de retiro mínima y máxima.
++ El listado muestra únicamente las ventanas en estado abierta cuya franja temporal intersecta el rango de fecha de retiro indicado; si el expedidor no indica fecha mínima se asume la fecha actual sin mostrarla, y si no indica máxima no se aplica tope superior.
++ El listado muestra únicamente las ventanas cuyo origen está a una distancia menor o igual al radio de retiro declarado por el transportista respecto del origen de la carga, y cuyo destino también está dentro del mismo radio respecto del destino de la carga.
++ El listado muestra únicamente las ventanas cuyo vehículo asociado tiene capacidad disponible mayor o igual al peso de la carga.
++ Cada resultado muestra origen, destino, franja de fechas, resumen del transportista responsable y del vehículo asociado, precio por kilómetro de referencia y costo estimado total para la carga (precio por kilómetro × distancia estimada).
++ En caso de existir muchas ventanas compatibles, los resultados se muestran paginados.
++ Al hacer click sobre el resumen de una ventana, se navega al detalle del transportista responsable (US6) preservando el contexto de la carga y de la ventana seleccionada.
++ Cada fila incluye una acción "Ofertar" que lleva directamente a US7 con la carga y la ventana ya en contexto.
++ Si la carga ya tiene ofertas pendientes contra otras ventanas, se muestra un contador visible ("Ofertas pendientes: N") para que el expedidor recuerde sus propuestas en curso.
++ Si no hay ventanas compatibles, se muestra un mensaje claro indicándolo y se sugiere revisar el filtro de fecha o el origen/destino de la carga.
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Post MVP — Release 2
@@ -520,24 +753,6 @@ para saber dónde está mi carga y cuándo llegará.
 + El tracking solo está disponible para viajes que fueron aceptados y pagados.
 + La información se actualiza periódicamente sin que el expedidor deba refrescar la página.
 
-== US31: Modificación de Vehículo
-
-*Release:* Release 2 \
-*Prioridad:* Media \
-*Épica:* Cuenta
-
-*Descripción:*
-Como transportista,
-quiero poder modificar los datos de un vehículo de mi flota previamente registrado (US14),
-para mantener actualizadas sus capacidades, fotos y dimensiones cuando cambien.
-
-*Criterios de Aceptación:*
-+ Desde el listado de vehículos del transportista, se puede acceder a una pantalla de edición del vehículo seleccionado.
-+ Se pueden modificar dimensiones (largo, ancho, alto), capacidad de carga máxima en kilogramos, y agregar o quitar fotos del camión.
-+ La patente no se puede modificar bajo ninguna circunstancia — el campo se muestra siempre deshabilitado.
-+ Al guardar, los datos actualizados se reflejan inmediatamente en el perfil público del transportista (US6) y en los detalles visibles al expedidor en los resultados de búsqueda (US4).
-+ Al presionar "Descartar Cambios" o navegar a otra página sin guardar, los datos escritos no se impactan.
-
 == US32: Baja de Vehículo
 
 *Release:* Release 2 \
@@ -556,63 +771,6 @@ para retirarlo del catálogo cuando lo vendí, deseché o ya no esté operativo.
 + Si el vehículo está asociado a un viaje en curso (aceptado y no entregado), la baja se rechaza y se explica el motivo.
 + El vehículo dado de baja deja de aparecer en el listado activo del transportista, pero sus datos se conservan a efectos del historial de viajes (US17) — los viajes pasados siguen mostrando el vehículo que los realizó.
 + El vehículo dado de baja deja de ser seleccionable al publicar nuevas ventanas de transporte.
-
-== US33: Modificación de Ventana de Transporte
-
-*Release:* Release 2 \
-*Prioridad:* Media \
-*Épica:* Gestión de Viajes
-
-*Descripción:*
-Como transportista,
-quiero poder modificar los datos de una ventana de transporte (`TransportWindow`) que ya publiqué (US9),
-para corregir errores o ajustarla a cambios en mi disponibilidad sin tener que despublicarla y republicarla.
-
-*Criterios de Aceptación:*
-+ Desde la pantalla "Mi Disponibilidad", se puede acceder a una pantalla de edición de la ventana seleccionada.
-+ Se pueden modificar zona origen, zona destino, franja temporal (fecha/hora desde y hasta), vehículo asociado (entre los registrados en US14) y precio por kilómetro.
-+ Al guardar, la ventana actualizada se refleja inmediatamente en los resultados de búsqueda de los expedidores (US4) según los nuevos criterios.
-+ Si la ventana ya tiene ofertas de viaje recibidas (US10) que dejarían de ser compatibles con los nuevos datos (por ejemplo, fechas que ya no se solapan o vehículo de menor capacidad), se muestra una advertencia antes de confirmar listando las ofertas afectadas.
-+ Si la ventana está asociada a un viaje ya aceptado (US12), no se permite modificarla y se indica el motivo.
-+ Al presionar "Descartar Cambios" o navegar a otra página sin guardar, los datos escritos no se impactan.
-
-== US34: Baja de Ventana de Transporte
-
-*Release:* Release 2 \
-*Prioridad:* Media \
-*Épica:* Gestión de Viajes
-
-*Descripción:*
-Como transportista,
-quiero poder dar de baja definitivamente una ventana de transporte que publiqué,
-para retirarla del sistema cuando ya no quiero recibir ofertas contra ella ni conservarla en mi listado.
-
-*Criterios de Aceptación:*
-+ Desde la pantalla "Mi Disponibilidad", cada entrada ofrece una acción de "Eliminar" claramente diferenciada de "Ocultar" (US35).
-+ Antes de confirmar la baja, se muestra un diálogo de confirmación que aclara que la acción es irreversible y detalla las ofertas pendientes que se cancelarán.
-+ Si la ventana tiene ofertas de viaje pendientes (US10) sin aceptar, la baja las cancela automáticamente y notifica a los expedidores correspondientes.
-+ Si la ventana está asociada a un viaje ya aceptado (US12), la baja se rechaza y se indica al transportista que debe completar o cancelar el viaje primero.
-+ La ventana dada de baja deja de aparecer en los resultados de búsqueda de los expedidores (US4) y en el listado activo del transportista, pero se conserva en el historial a efectos de auditoría.
-+ La ventana dada de baja no puede reactivarse — para volver a operar el mismo trayecto el transportista debe publicar una nueva ventana (US9).
-
-== US35: Ocultamiento de Ventana de Transporte
-
-*Release:* Release 2 \
-*Prioridad:* Baja \
-*Épica:* Gestión de Viajes
-
-*Descripción:*
-Como transportista,
-quiero poder ocultar temporalmente una ventana de transporte sin darla de baja,
-para dejar de recibir ofertas mientras evalúo cambios o resuelvo una indisponibilidad puntual, conservando la opción de reactivarla luego.
-
-*Criterios de Aceptación:*
-+ Desde la pantalla "Mi Disponibilidad", cada entrada ofrece una acción de "Ocultar" claramente diferenciada de "Eliminar" (US34).
-+ Al ocultar la ventana, ésta deja de aparecer en los resultados de búsqueda de los expedidores (US4) pero permanece visible en el listado del transportista marcada como "Oculta".
-+ Las ofertas pendientes recibidas previamente (US10) no se cancelan al ocultar — el transportista puede seguir aceptándolas o rechazándolas.
-+ Desde la pantalla "Mi Disponibilidad", una ventana oculta ofrece una acción de "Reactivar" que la vuelve a publicar tal como estaba, sin necesidad de reingresar los datos.
-+ El ocultamiento no afecta viajes ya aceptados (US12) asociados a la ventana.
-+ El estado oculto persiste hasta que el transportista lo revierta explícitamente o dé de baja la ventana (US34).
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Post MVP — Release 3

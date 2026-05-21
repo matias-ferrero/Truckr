@@ -1,20 +1,19 @@
 """Empirical bootstrap of throughput, with two complementary projections.
 
 **Inverse projection** (always emitted when projecting): how many sprints to
-close ≥ ``target_issues``? Sample one sprint's throughput at a time from
-history (with replacement), accumulate, and record the sprint number when
-the running total first meets the target. Sort the trial outcomes and read
-percentiles (p50/p85/p95/p99). This is the framing the operator usually
+complete >= ``target_user_stories``? Sample one sprint's throughput at a time
+from history (with replacement), accumulate, and record the sprint number
+when the running total first meets the target. Sort the trial outcomes and
+read percentiles (p50/p85/p95/p99). This is the framing the operator usually
 wants ("we will finish in 6 sprints with 50% confidence, 8 with 85%").
 
 **Forward projection** (optional, requires ``remaining_sprints``): given a
-fixed horizon of ``N`` future sprints, what is P(close ≥ target)? Same
+fixed horizon of ``N`` future sprints, what is P(complete >= target)? Same
 trials, different read-off.
 
-**Scope-growth model** (optional, ``created_throughput`` provided): split
-Monte Carlo. In each trial step we also sample one sprint from the
-``items-created`` distribution and add it to the running target. Off by
-default — turn it on when scope is known to drift.
+The bootstrap is a pure historical replay: each future sprint is resampled
+from the observed per-sprint throughput. It does not model capacity changes,
+holidays, or scope drift.
 """
 
 from __future__ import annotations
@@ -40,36 +39,28 @@ def _percentile_int(sorted_values: list[int], pct: float) -> int:
 
 
 def bootstrap_inverse(
-    closed_throughput: list[int],
+    throughput: list[int],
     *,
-    target_issues: int,
+    target_user_stories: int,
     samples: int = 10_000,
     seed: int = 42,
-    created_throughput: list[int] | None = None,
     horizon_hint: int | None = None,
 ) -> SprintsToTarget:
-    """Sample-until-target bootstrap.
-
-    If ``created_throughput`` is provided, the target grows during each trial
-    by a per-sprint sample from that distribution (split Monte Carlo).
-    """
-    if len(closed_throughput) < MIN_SPRINTS_FOR_PROJECTION:
+    """Sample-until-target bootstrap over the observed per-sprint throughput."""
+    if len(throughput) < MIN_SPRINTS_FOR_PROJECTION:
         raise InsufficientDataError(
-            f"need ≥ {MIN_SPRINTS_FOR_PROJECTION} completed sprints to project, "
-            f"got {len(closed_throughput)}"
+            f"need >= {MIN_SPRINTS_FOR_PROJECTION} closed sprints to project, got {len(throughput)}"
         )
     if samples <= 0:
         raise ValueError("samples must be positive")
-    if target_issues < 0:
-        raise ValueError("target_issues must be non-negative")
-    if created_throughput is not None and len(created_throughput) != len(closed_throughput):
-        raise ValueError("created_throughput must have same length as closed_throughput")
+    if target_user_stories < 0:
+        raise ValueError("target_user_stories must be non-negative")
 
     cap = max(
         DEFAULT_TRIAL_SPRINT_CAP_FLOOR,
         DEFAULT_TRIAL_SPRINT_CAP_MULTIPLIER * (horizon_hint or 1),
         DEFAULT_TRIAL_SPRINT_CAP_MULTIPLIER
-        * max(1, target_issues // max(1, max(closed_throughput) or 1)),
+        * max(1, target_user_stories // max(1, max(throughput) or 1)),
     )
 
     rng = Random(seed)
@@ -77,12 +68,9 @@ def bootstrap_inverse(
     did_not_finish = 0
     for _ in range(samples):
         delivered = 0
-        target = target_issues
         for sprint_n in range(1, cap + 1):
-            delivered += rng.choice(closed_throughput)
-            if created_throughput is not None:
-                target += rng.choice(created_throughput)
-            if delivered >= target:
+            delivered += rng.choice(throughput)
+            if delivered >= target_user_stories:
                 outcomes.append(sprint_n)
                 break
         else:
@@ -101,39 +89,30 @@ def bootstrap_inverse(
 
 
 def bootstrap_forward(
-    closed_throughput: list[int],
+    throughput: list[int],
     *,
-    target_issues: int,
+    target_user_stories: int,
     remaining_sprints: int,
     samples: int = 10_000,
     seed: int = 42,
-    created_throughput: list[int] | None = None,
 ) -> ForwardOutcome:
-    """Fixed-horizon bootstrap: P(close ≥ target in `remaining_sprints` sprints)."""
-    if len(closed_throughput) < MIN_SPRINTS_FOR_PROJECTION:
+    """Fixed-horizon bootstrap: P(complete >= target in `remaining_sprints` sprints)."""
+    if len(throughput) < MIN_SPRINTS_FOR_PROJECTION:
         raise InsufficientDataError(
-            f"need ≥ {MIN_SPRINTS_FOR_PROJECTION} completed sprints to project, "
-            f"got {len(closed_throughput)}"
+            f"need >= {MIN_SPRINTS_FOR_PROJECTION} closed sprints to project, got {len(throughput)}"
         )
     if samples <= 0:
         raise ValueError("samples must be positive")
     if remaining_sprints <= 0:
         raise ValueError("remaining_sprints must be positive")
-    if created_throughput is not None and len(created_throughput) != len(closed_throughput):
-        raise ValueError("created_throughput must have same length as closed_throughput")
 
     rng = Random(seed)
     totals: list[int] = []
     hits = 0
     for _ in range(samples):
-        delivered = 0
-        target = target_issues
-        for _ in range(remaining_sprints):
-            delivered += rng.choice(closed_throughput)
-            if created_throughput is not None:
-                target += rng.choice(created_throughput)
+        delivered = sum(rng.choice(throughput) for _ in range(remaining_sprints))
         totals.append(delivered)
-        if delivered >= target:
+        if delivered >= target_user_stories:
             hits += 1
 
     totals.sort()

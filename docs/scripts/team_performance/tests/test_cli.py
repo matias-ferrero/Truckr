@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import json
-import subprocess
-from collections.abc import Callable
+from pathlib import Path
 
 import pytest
 
@@ -16,6 +15,7 @@ from team_performance.cli import (
     EXIT_USAGE,
     main,
 )
+from team_performance.tests.conftest import SprintWriter
 
 
 def test_help_exits_zero(capsys: pytest.CaptureFixture[str]):
@@ -31,167 +31,137 @@ def test_version_exits_zero(capsys: pytest.CaptureFixture[str]):
     with pytest.raises(SystemExit) as exc_info:
         main(["--version"])
     assert exc_info.value.code == 0
-    out = capsys.readouterr().out
-    assert __version__ in out
+    assert __version__ in capsys.readouterr().out
 
 
-def test_remaining_sprints_alone_is_usage_error(capsys: pytest.CaptureFixture[str]):
-    with pytest.raises(SystemExit) as exc_info:
-        main(["--repo", "x/y", "--sprint-start", "2026-04-21", "--remaining-sprints", "5"])
-    assert exc_info.value.code == EXIT_USAGE
-    err = capsys.readouterr().err
-    assert "target-issues" in err.lower()
-
-
-def test_end_to_end_with_fake_runner(
-    fake_gh_runner: Callable[..., subprocess.CompletedProcess[str]],
+def test_remaining_sprints_alone_is_usage_error(
     capsys: pytest.CaptureFixture[str],
+    sprints_fixture_dir: Path,
+    backlog_us_fixture: Path,
 ):
-    rc = main(
-        [
-            "--repo",
-            "x/y",
-            "--sprint-start",
-            "2026-04-21",
-            "--as-of",
-            "2026-05-19",
-            "--format",
-            "json",
-        ],
-        runner=fake_gh_runner,
-    )
+    with pytest.raises(SystemExit) as exc_info:
+        main(
+            [
+                "--sprints-dir",
+                str(sprints_fixture_dir),
+                "--backlog-us",
+                str(backlog_us_fixture),
+                "--remaining-sprints",
+                "5",
+            ]
+        )
+    assert exc_info.value.code == EXIT_USAGE
+    assert "target-user-stories" in capsys.readouterr().err.lower()
+
+
+def _base_args(sprints_dir: Path, backlog: Path) -> list[str]:
+    return [
+        "--sprints-dir",
+        str(sprints_dir),
+        "--backlog-us",
+        str(backlog),
+        "--format",
+        "json",
+    ]
+
+
+def test_end_to_end_stats_only(
+    capsys: pytest.CaptureFixture[str],
+    sprints_fixture_dir: Path,
+    backlog_us_fixture: Path,
+):
+    rc = main(_base_args(sprints_fixture_dir, backlog_us_fixture))
     assert rc == EXIT_OK
-    captured = capsys.readouterr()
-    payload = json.loads(captured.out)
-    assert payload["schema_version"] == "2"
-    assert len(payload["sprints"]) == 2
-    # Issue 107 (NOT_PLANNED) closed in sprint 1 → counted as excluded, not throughput.
-    assert payload["sprints"][0]["closed_count"] == 3
-    assert payload["sprints"][0]["closed_excluded_count"] == 1
-    assert payload["sprints"][1]["closed_count"] == 2
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["schema_version"] == "3"
+    assert len(payload["sprints"]) == 3
+    assert payload["sprints"][0]["completed_count"] == 2
+    assert payload["sprints"][2]["completed_count"] == 1
     assert payload["projection"] is None
 
 
-def test_projection_emitted_when_target_provided(
-    fake_gh_runner: Callable[..., subprocess.CompletedProcess[str]],
+def test_projection_emitted_with_target_and_horizon(
     capsys: pytest.CaptureFixture[str],
+    sprints_fixture_dir: Path,
+    backlog_us_fixture: Path,
 ):
     rc = main(
         [
-            "--repo",
-            "x/y",
-            "--sprint-start",
-            "2026-04-21",
-            "--as-of",
-            "2026-05-19",
-            "--target-issues",
-            "10",
-            "--remaining-sprints",
+            *_base_args(sprints_fixture_dir, backlog_us_fixture),
+            "--target-user-stories",
             "5",
+            "--remaining-sprints",
+            "3",
             "--bootstrap-samples",
             "1000",
-            "--format",
-            "json",
-        ],
-        runner=fake_gh_runner,
+        ]
     )
     assert rc == EXIT_OK
-    payload = json.loads(capsys.readouterr().out)
-    proj = payload["projection"]
+    proj = json.loads(capsys.readouterr().out)["projection"]
     assert proj is not None
-    assert proj["target_issues"] == 10
-    assert proj["scope_growth_enabled"] is False
-    inv = proj["sprints_to_target"]
+    assert proj["target_user_stories"] == 5
+    assert proj["method"] == "bootstrap_throughput"
     for k in ("p50", "p85", "p95", "p99"):
-        assert isinstance(inv[k], int)
-    assert proj["forward"]["remaining_sprints"] == 5
-    assert "p_meet_or_exceed_target" in proj["forward"]
+        assert isinstance(proj["sprints_to_target"][k], int)
+    assert proj["forward"]["remaining_sprints"] == 3
 
 
 def test_inverse_only_when_no_horizon(
-    fake_gh_runner: Callable[..., subprocess.CompletedProcess[str]],
     capsys: pytest.CaptureFixture[str],
+    sprints_fixture_dir: Path,
+    backlog_us_fixture: Path,
 ):
     rc = main(
         [
-            "--repo",
-            "x/y",
-            "--sprint-start",
-            "2026-04-21",
-            "--as-of",
-            "2026-05-19",
-            "--target-issues",
-            "10",
+            *_base_args(sprints_fixture_dir, backlog_us_fixture),
+            "--target-user-stories",
+            "5",
             "--bootstrap-samples",
             "1000",
-            "--format",
-            "json",
-        ],
-        runner=fake_gh_runner,
+        ]
     )
     assert rc == EXIT_OK
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["projection"]["forward"] is None
-    assert payload["projection"]["sprints_to_target"]["p50"] >= 1
-
-
-def test_scope_growth_flag_enables_split_bootstrap(
-    fake_gh_runner: Callable[..., subprocess.CompletedProcess[str]],
-    capsys: pytest.CaptureFixture[str],
-):
-    rc = main(
-        [
-            "--repo",
-            "x/y",
-            "--sprint-start",
-            "2026-04-21",
-            "--as-of",
-            "2026-05-19",
-            "--target-issues",
-            "10",
-            "--scope-growth",
-            "--bootstrap-samples",
-            "1000",
-            "--format",
-            "json",
-        ],
-        runner=fake_gh_runner,
-    )
-    assert rc == EXIT_OK
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["projection"]["scope_growth_enabled"] is True
-    assert payload["projection"]["method"] == "split_bootstrap_throughput"
-    assert payload["projection"]["scope_growth"]["created_per_sprint_mean"] >= 0
+    proj = json.loads(capsys.readouterr().out)["projection"]
+    assert proj["forward"] is None
+    assert proj["sprints_to_target"]["p50"] >= 1
 
 
 def test_insufficient_sample_exits_4(
-    fake_gh_runner: Callable[..., subprocess.CompletedProcess[str]],
+    tmp_path: Path,
+    backlog_us_fixture: Path,
+    make_sprint: SprintWriter,
 ):
-    rc = main(
-        [
-            "--repo",
-            "x/y",
-            "--sprint-start",
-            "2026-04-21",
-            "--as-of",
-            "2026-04-29",
-            "--target-issues",
-            "10",
-            "--remaining-sprints",
-            "5",
-            "--format",
-            "json",
-        ],
-        runner=fake_gh_runner,
-    )
+    make_sprint(tmp_path, 1, completed=["US1"])  # only one closed sprint
+    rc = main([*_base_args(tmp_path, backlog_us_fixture), "--target-user-stories", "5"])
     assert rc == EXIT_INSUFFICIENT_SAMPLE
 
 
 def test_data_source_failure_exits_3(
-    failing_gh_runner: Callable[..., subprocess.CompletedProcess[str]],
+    tmp_path: Path,
+    backlog_us_fixture: Path,
+    make_sprint: SprintWriter,
 ):
-    rc = main(
-        ["--repo", "x/y", "--sprint-start", "2026-04-21", "--as-of", "2026-05-19"],
-        runner=failing_gh_runner,
-    )
+    make_sprint(tmp_path, 1, completed=[], raw="---\nsprint: 1\n")  # unterminated frontmatter
+    rc = main(_base_args(tmp_path, backlog_us_fixture))
     assert rc == EXIT_DATA
+
+
+def test_unknown_us_id_exits_3_by_default(
+    tmp_path: Path,
+    backlog_us_fixture: Path,
+    make_sprint: SprintWriter,
+):
+    make_sprint(tmp_path, 1, completed=["US1"])
+    make_sprint(tmp_path, 2, completed=["US99"])  # not in the US1..US5 fixture catalogue
+    assert main(_base_args(tmp_path, backlog_us_fixture)) == EXIT_DATA
+
+
+def test_no_us_validation_skips_catalog(
+    tmp_path: Path,
+    backlog_us_fixture: Path,
+    make_sprint: SprintWriter,
+):
+    make_sprint(tmp_path, 1, completed=["US1"])
+    make_sprint(tmp_path, 2, completed=["US99"])
+    rc = main([*_base_args(tmp_path, backlog_us_fixture), "--no-us-validation"])
+    assert rc == EXIT_OK

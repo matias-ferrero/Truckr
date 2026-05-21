@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from argparse import Namespace
-from datetime import date
 from pathlib import Path
 
 import pytest
@@ -14,123 +13,76 @@ from team_performance.errors import ConfigError
 
 def _ns(**kw: object) -> Namespace:
     defaults: dict[str, object] = {
-        "repo": None,
-        "gh_bin": None,
-        "sprint_start": None,
-        "sprint_length_days": None,
-        "as_of": None,
-        "target_issues": None,
+        "sprints_dir": None,
+        "phase": None,
+        "backlog_us": None,
+        "target_user_stories": None,
         "remaining_sprints": None,
         "bootstrap_samples": None,
         "seed": None,
         "output_format": None,
         "no_color": False,
         "verbosity": 0,
-        "scope_growth": False,
+        "no_us_validation": False,
     }
     defaults.update(kw)
     return Namespace(**defaults)
 
 
-@pytest.fixture
-def empty_pyproject(tmp_path: Path) -> Path:
-    p = tmp_path / "pyproject.toml"
-    p.write_text("", encoding="utf-8")
-    return p
-
-
-@pytest.fixture
-def populated_pyproject(tmp_path: Path) -> Path:
-    p = tmp_path / "pyproject.toml"
-    p.write_text(
-        '[tool.team_performance]\nrepo = "x/y"\nsprint_length_days = 7\n',
-        encoding="utf-8",
-    )
-    return p
-
-
-def test_cli_overrides_env_and_pyproject(populated_pyproject: Path):
-    args = _ns(repo="cli/repo", sprint_start="2026-04-21")
-    cfg = load_config(
-        args,
-        env={"TEAM_PERF_REPO": "env/repo"},
-        pyproject_path=populated_pyproject,
-        today=date(2026, 5, 19),
-    )
-    assert cfg.repo == "cli/repo"
-
-
-def test_env_overrides_pyproject(populated_pyproject: Path):
-    args = _ns(sprint_start="2026-04-21")
-    cfg = load_config(
-        args,
-        env={"TEAM_PERF_REPO": "env/repo"},
-        pyproject_path=populated_pyproject,
-        today=date(2026, 5, 19),
-    )
-    assert cfg.repo == "env/repo"
-
-
-def test_pyproject_used_when_no_cli_or_env(populated_pyproject: Path):
-    args = _ns(sprint_start="2026-04-21")
-    cfg = load_config(args, env={}, pyproject_path=populated_pyproject, today=date(2026, 5, 19))
-    assert cfg.repo == "x/y"
-    assert cfg.sprint_length_days == 7
-
-
-def test_missing_repo_raises(empty_pyproject: Path):
-    args = _ns(sprint_start="2026-04-21")
-    with pytest.raises(ConfigError, match="repo"):
-        load_config(args, env={}, pyproject_path=empty_pyproject)
-
-
-def test_missing_sprint_start_raises(populated_pyproject: Path):
-    args = _ns()
-    with pytest.raises(ConfigError, match="sprint-start"):
-        load_config(args, env={}, pyproject_path=populated_pyproject)
-
-
-def test_remaining_sprints_alone_raises(populated_pyproject: Path):
-    args = _ns(sprint_start="2026-04-21", remaining_sprints=5)
-    with pytest.raises(ConfigError, match="target-issues"):
-        load_config(args, env={}, pyproject_path=populated_pyproject, today=date(2026, 5, 19))
-
-
-def test_target_issues_alone_is_allowed(populated_pyproject: Path):
-    args = _ns(sprint_start="2026-04-21", target_issues=10)
-    cfg = load_config(args, env={}, pyproject_path=populated_pyproject, today=date(2026, 5, 19))
-    assert cfg.target_issues == 10
-    assert cfg.remaining_sprints is None
-    assert cfg.scope_growth is False
-
-
-def test_sprint_start_after_as_of_raises(populated_pyproject: Path):
-    args = _ns(sprint_start="2026-06-01", as_of="2026-05-01")
-    with pytest.raises(ConfigError, match="after as-of"):
-        load_config(args, env={}, pyproject_path=populated_pyproject)
-
-
-def test_invalid_format_raises(populated_pyproject: Path):
-    args = _ns(sprint_start="2026-04-21", output_format="xml")
-    with pytest.raises(ConfigError, match="format"):
-        load_config(args, env={}, pyproject_path=populated_pyproject, today=date(2026, 5, 19))
-
-
-def test_no_color_env_respected(populated_pyproject: Path):
-    args = _ns(sprint_start="2026-04-21")
-    cfg = load_config(
-        args,
-        env={"NO_COLOR": "1"},
-        pyproject_path=populated_pyproject,
-        today=date(2026, 5, 19),
-    )
-    assert cfg.no_color is True
-
-
-def test_defaults_applied(populated_pyproject: Path):
-    args = _ns(sprint_start="2026-04-21")
-    cfg = load_config(args, env={}, pyproject_path=populated_pyproject, today=date(2026, 5, 19))
+def test_defaults_applied():
+    cfg = load_config(_ns(), env={})
+    assert cfg.sprints_dir == Path("docs/sprints")
+    assert cfg.phase == "development"
+    assert cfg.backlog_us == Path("docs/artifacts/backlog-us.typ")
+    assert cfg.validate_us_ids is True
     assert cfg.bootstrap_samples == 10_000
     assert cfg.seed == 42
     assert cfg.output_format == "json"
-    assert cfg.gh_bin == "gh"
+
+
+def test_cli_overrides_env():
+    cfg = load_config(_ns(sprints_dir="cli/sprints"), env={"TEAM_PERF_SPRINTS_DIR": "env/sprints"})
+    assert cfg.sprints_dir == Path("cli/sprints")
+
+
+def test_env_used_when_no_cli():
+    cfg = load_config(_ns(), env={"TEAM_PERF_PHASE": "documentation"})
+    assert cfg.phase == "documentation"
+
+
+def test_remaining_sprints_alone_raises():
+    with pytest.raises(ConfigError, match="target-user-stories"):
+        load_config(_ns(remaining_sprints=5), env={})
+
+
+def test_target_alone_is_allowed():
+    cfg = load_config(_ns(target_user_stories=10), env={})
+    assert cfg.target_user_stories == 10
+    assert cfg.remaining_sprints is None
+
+
+def test_negative_target_raises():
+    with pytest.raises(ConfigError, match="non-negative"):
+        load_config(_ns(target_user_stories=-1), env={})
+
+
+def test_non_positive_remaining_sprints_raises():
+    with pytest.raises(ConfigError, match="remaining-sprints must be positive"):
+        load_config(_ns(target_user_stories=10, remaining_sprints=0), env={})
+
+
+def test_invalid_format_raises():
+    with pytest.raises(ConfigError, match="format"):
+        load_config(_ns(output_format="xml"), env={})
+
+
+def test_no_color_env_respected():
+    assert load_config(_ns(), env={"NO_COLOR": "1"}).no_color is True
+
+
+def test_no_us_validation_flag():
+    assert load_config(_ns(no_us_validation=True), env={}).validate_us_ids is False
+
+
+def test_no_us_validation_env():
+    assert load_config(_ns(), env={"TEAM_PERF_NO_US_VALIDATION": "1"}).validate_us_ids is False

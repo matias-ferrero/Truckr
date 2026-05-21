@@ -66,8 +66,3 @@ select = ["E", "F", "I", "B", "UP", "N", "SIM", "RUF"]
 
 [tool.ruff.lint.per-file-ignores]
 "docs/scripts/team_performance/tests/**" = ["B011"]
-
-[tool.team_performance]
-repo = "tcorzo/fiuba-gestion-tp"
-sprint_length_days = 14
-# sprint_start = "2026-04-21"     # descomentar cuando el equipo lo defina

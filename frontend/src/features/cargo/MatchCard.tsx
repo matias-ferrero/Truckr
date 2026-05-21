@@ -33,38 +33,50 @@ export default function MatchCard({ cargoId, match }: Props) {
 
     return (
         <li>
-            <Link
-                className="matchCard"
-                to={`/shipper/cargos/${cargoId}/offers/new?window=${match.id}`}
-                state={{ window: match }}
-                aria-label={t.offerCtaAria(route)}
-            >
-                <div className="matchCardHeader">
-                    <span className="matchRoute" title={route}>
-                        {route}
-                    </span>
-                    <span className="matchRating">
-                        {t.rating(match.carrier.rating_avg)}
-                    </span>
+            <article className="matchCard">
+                <Link
+                    className="matchCardBody"
+                    to={`/shipper/cargos/${cargoId}/offers/new?window=${match.id}`}
+                    state={{ window: match }}
+                    aria-label={t.offerCtaAria(route)}
+                >
+                    <div className="matchCardHeader">
+                        <span className="matchRoute" title={route}>
+                            {route}
+                        </span>
+                        <span className="matchRating">
+                            {t.rating(match.carrier.rating_avg)}
+                        </span>
+                    </div>
+                    <p className="matchCarrier">{t.carrier(carrierName)}</p>
+                    <p className="matchMeta">
+                        {t.vehicle(
+                            match.vehicle.make,
+                            match.vehicle.model,
+                            match.vehicle.plate,
+                        )}
+                    </p>
+                    <p className="matchMeta">
+                        {t.capacity(match.vehicle.max_load_kg)}
+                    </p>
+                    <p className="matchMeta">
+                        {t.availability(
+                            formatDate(match.available_from),
+                            formatDate(match.available_to),
+                        )}
+                        {" · "}
+                        {t.pricePerKm(match.price_per_km)}
+                    </p>
+                </Link>
+                <div className="cardActions matchCardActions">
+                    <Link
+                        className="button buttonGhost"
+                        to={`/carriers/${match.carrier.id}`}
+                    >
+                        {t.viewCarrierDetail}
+                    </Link>
                 </div>
-                <p className="matchCarrier">{t.carrier(carrierName)}</p>
-                <p className="matchMeta">
-                    {t.vehicle(
-                        match.vehicle.make,
-                        match.vehicle.model,
-                        match.vehicle.plate,
-                    )}
-                </p>
-                <p className="matchMeta">{t.capacity(match.vehicle.max_load_kg)}</p>
-                <p className="matchMeta">
-                    {t.availability(
-                        formatDate(match.available_from),
-                        formatDate(match.available_to),
-                    )}
-                    {" · "}
-                    {t.pricePerKm(match.price_per_km)}
-                </p>
-            </Link>
+            </article>
         </li>
     );
 }

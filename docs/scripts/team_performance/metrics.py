@@ -1,13 +1,19 @@
-"""Aggregate throughput statistics and cycle-time percentiles."""
+"""Aggregate throughput statistics and lead-time percentiles.
+
+Throughput is User Stories *completed* per sprint. Lead time is measured in
+whole sprints: for a completed US, ``completion sprint - first-seen sprint``,
+where "first seen" is the earliest sprint the US appeared in either the
+``in_progress`` or ``completed`` list (0 when it started and finished in the
+same sprint).
+"""
 
 from __future__ import annotations
 
 import statistics
-from collections.abc import Callable
 
 from team_performance.models import (
     AggregateStats,
-    CycleTimePercentiles,
+    LeadTimePercentiles,
     Sprint,
     ThroughputStats,
 )
@@ -25,24 +31,6 @@ def _percentile(sorted_values: list[float], pct: float) -> float:
     return sorted_values[lo] * (1 - frac) + sorted_values[hi] * frac
 
 
-def cycle_time_percentiles(sprints: tuple[Sprint, ...]) -> CycleTimePercentiles | None:
-    durations: list[float] = []
-    for sprint in sprints:
-        for issue in sprint.closed:
-            if issue.closed_at is None:
-                continue
-            seconds = (issue.closed_at - issue.created_at).total_seconds()
-            durations.append(seconds / 86400.0)
-    if not durations:
-        return None
-    durations.sort()
-    return CycleTimePercentiles(
-        p50=_percentile(durations, 0.50),
-        p75=_percentile(durations, 0.75),
-        p90=_percentile(durations, 0.90),
-    )
-
-
 def _stats_from_counts(counts: list[int]) -> ThroughputStats | None:
     if not counts:
         return None
@@ -55,24 +43,33 @@ def _stats_from_counts(counts: list[int]) -> ThroughputStats | None:
     )
 
 
-def _per_sprint(sprints: tuple[Sprint, ...], extractor: Callable[[Sprint], int]) -> list[int]:
-    return [extractor(s) for s in sprints]
-
-
 def throughput_stats(sprints: tuple[Sprint, ...]) -> ThroughputStats | None:
-    return _stats_from_counts(_per_sprint(sprints, lambda s: len(s.closed)))
+    return _stats_from_counts([len(s.completed) for s in sprints])
 
 
-def created_per_sprint_stats(sprints: tuple[Sprint, ...]) -> ThroughputStats | None:
-    return _stats_from_counts(_per_sprint(sprints, lambda s: len(s.created)))
+def lead_time_percentiles(sprints: tuple[Sprint, ...]) -> LeadTimePercentiles | None:
+    """Percentiles of per-US lead time, in sprints. ``sprints`` must be index-ordered."""
+    first_seen: dict[str, int] = {}
+    for sprint in sprints:
+        for us in (*sprint.in_progress, *sprint.completed):
+            first_seen.setdefault(us, sprint.index)
+
+    leads: list[float] = [
+        float(sprint.index - first_seen[us]) for sprint in sprints for us in sprint.completed
+    ]
+    if not leads:
+        return None
+    leads.sort()
+    return LeadTimePercentiles(
+        p50=_percentile(leads, 0.50),
+        p75=_percentile(leads, 0.75),
+        p90=_percentile(leads, 0.90),
+    )
 
 
 def compute_aggregate(sprints: tuple[Sprint, ...]) -> AggregateStats:
-    closed_excluded_total = sum(len(s.closed_excluded) for s in sprints)
     return AggregateStats(
         throughput=throughput_stats(sprints),
-        created_per_sprint=created_per_sprint_stats(sprints),
-        cycle_time_days=cycle_time_percentiles(sprints),
+        lead_time_sprints=lead_time_percentiles(sprints),
         sample_size_sprints=len(sprints),
-        closed_excluded_total=closed_excluded_total,
     )

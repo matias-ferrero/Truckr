@@ -47,6 +47,7 @@ function renderCard(match: CargoMatch, cargoId = 7) {
                     path="/shipper/cargos/:id/offers/new"
                     element={<LocationProbe />}
                 />
+                <Route path="/carriers/:id" element={<LocationProbe />} />
             </Routes>
         </MemoryRouter>,
     );
@@ -85,5 +86,12 @@ describe("MatchCard", () => {
         expect(screen.getByTestId("loc")).toHaveTextContent(
             "/shipper/cargos/7/offers/new?window=5",
         );
+    });
+
+    it("includes a button to open the carrier public profile", async () => {
+        const user = userEvent.setup();
+        renderCard(makeMatch(), 7);
+        await user.click(screen.getByRole("link", { name: /Ver perfil/i }));
+        expect(screen.getByTestId("loc")).toHaveTextContent("/carriers/1");
     });
 });

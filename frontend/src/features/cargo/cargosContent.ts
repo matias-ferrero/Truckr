@@ -216,6 +216,7 @@ export const cargosContent = {
     match: {
         carrier: (name: string) => `Transportista: ${name}`,
         carrierFallback: "Transportista",
+        viewCarrierDetail: "Ver perfil",
         rating: (avg: string) => `${avg} ★`,
         vehicle: (make: string, model: string, plate: string) =>
             `${make} ${model} · ${plate}`,

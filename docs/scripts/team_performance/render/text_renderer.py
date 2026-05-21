@@ -44,33 +44,27 @@ def render_text(report: Report, console: Console) -> None:
     console.print(f"[bold]Performance del equipo[/] — esquema {report.schema_version}")
     cfg = report.config_snapshot
     console.print(
-        f"repo={cfg.get('repo')!r} sprint_start={cfg.get('sprint_start')} "
-        f"sprint_length_days={cfg.get('sprint_length_days')} as_of={cfg.get('as_of')} "
-        f"scope_growth={cfg.get('scope_growth')}"
+        f"sprints_dir={cfg.get('sprints_dir')!r} phase={cfg.get('phase')} "
+        f"target_user_stories={cfg.get('target_user_stories')}"
     )
 
     # ── Sprints ──────────────────────────────────────────────────────────
     sprints_table = Table(title="Sprints completados", title_style="bold")
     sprints_table.add_column("#", justify="right")
     sprints_table.add_column("Ventana")
-    sprints_table.add_column("Cerrados", justify="right")
-    sprints_table.add_column("Excl.", justify="right")
-    sprints_table.add_column("Creados", justify="right")
+    sprints_table.add_column("US completadas", justify="right")
     sprints_table.add_column("WIP@fin", justify="right")
     for sprint in report.sprints:
-        window = f"{sprint.start.date().isoformat()} → {sprint.end.date().isoformat()}"
+        window = f"{sprint.window_start.isoformat()} → {sprint.window_end.isoformat()}"
         sprints_table.add_row(
             str(sprint.index),
             window,
-            str(len(sprint.closed)),
-            str(len(sprint.closed_excluded)),
-            str(len(sprint.created)),
-            str(sprint.wip_at_end),
+            str(len(sprint.completed)),
+            str(len(sprint.in_progress)),
         )
     sprints_table.caption = (
-        "Cerrados = entregados (state_reason=COMPLETED). "
-        "Excl. = cerrados-pero-no-entregados (not_planned, duplicate). "
-        "Creados = ítems agregados al alcance. WIP@fin = ítems abiertos al cierre del sprint."
+        "US completadas = User Stories terminadas en el sprint. "
+        "WIP@fin = User Stories en progreso (no terminadas) al cierre del sprint."
     )
     console.print(sprints_table)
 
@@ -79,8 +73,8 @@ def render_text(report: Report, console: Console) -> None:
     if agg.throughput is not None:
         t = agg.throughput
         rows: list[tuple[str, str, str]] = [
-            ("Media", _fmt_float(t.mean), "Promedio de issues *entregados* por sprint."),
-            ("Mediana", _fmt_float(t.median), "Issues entregados por sprint en un sprint típico."),
+            ("Media", _fmt_float(t.mean), "Promedio de User Stories completadas por sprint."),
+            ("Mediana", _fmt_float(t.median), "User Stories completadas en un sprint típico."),
             (
                 "Desv. estándar",
                 _fmt_float(t.stdev),
@@ -93,36 +87,31 @@ def render_text(report: Report, console: Console) -> None:
                 str(agg.sample_size_sprints),
                 "Sprints completados que alimentan el bootstrap. Menos de 8 = pronóstico ancho.",
             ),
-            (
-                "Cierres excluidos",
-                str(agg.closed_excluded_total),
-                "Cerrados como not_planned/duplicate, *no* contados como trabajo entregado.",
-            ),
         ]
-        console.print(_stat_table("Throughput (issues entregados / sprint)", rows))
+        console.print(_stat_table("Throughput (User Stories completadas / sprint)", rows))
     else:
-        console.print("[muted]No hay sprints completados en la ventana.[/]")
+        console.print("[muted]No hay sprints completados en el ledger.[/]")
 
-    if agg.cycle_time_days is not None:
-        c = agg.cycle_time_days
+    if agg.lead_time_sprints is not None:
+        c = agg.lead_time_sprints
         console.print(
             _stat_table(
-                "Tiempo de ciclo (días desde creación → cierre, sólo entregados)",
+                "Lead time (sprints desde primer trabajo → completado)",
                 [
                     (
                         "p50",
                         _fmt_float(c.p50, digits=1),
-                        "La mitad de los issues se completan dentro de estos días.",
+                        "La mitad de las US se completan dentro de esta cantidad de sprints.",
                     ),
                     (
                         "p75",
                         _fmt_float(c.p75, digits=1),
-                        "Tres cuartos se completan dentro de estos días.",
+                        "Tres cuartos se completan dentro de esta cantidad de sprints.",
                     ),
                     (
                         "p90",
                         _fmt_float(c.p90, digits=1),
-                        "Nueve de cada diez se completan dentro de estos días.",
+                        "Nueve de cada diez se completan dentro de esta cantidad de sprints.",
                     ),
                 ],
             )
@@ -130,7 +119,7 @@ def render_text(report: Report, console: Console) -> None:
 
     # ── Projection ───────────────────────────────────────────────────────
     if report.projection is None:
-        if cfg.get("target_issues") is not None:
+        if cfg.get("target_user_stories") is not None:
             console.print(
                 "[yellow]Proyección retenida:[/] se requieren ≥ 2 sprints completados. "
                 "Las métricas observadas más arriba siguen siendo válidas."
@@ -141,9 +130,8 @@ def render_text(report: Report, console: Console) -> None:
     inv = p.sprints_to_target
     console.print(
         _stat_table(
-            f"Sprints para cerrar ≥ {p.target_issues} issues "
-            f"(bootstrap {'split' if p.scope_growth_enabled else 'plano'}, "
-            f"{p.bootstrap_samples} muestras)",
+            f"Sprints para completar ≥ {p.target_user_stories} User Stories "
+            f"(bootstrap, {p.bootstrap_samples} muestras)",
             [
                 (
                     "p50",
@@ -184,54 +172,24 @@ def render_text(report: Report, console: Console) -> None:
                 f"Horizonte fijo — {f.remaining_sprints} sprints restantes",
                 [
                     (
-                        "P(cerrar ≥ target)",
+                        "P(completar ≥ target)",
                         _fmt_pct(f.p_meet_or_exceed_target),
                         "Probabilidad de terminar el backlog dentro del horizonte fijo.",
                     ),
                     (
                         "Total proyectado p10",
                         str(f.total_projected_p10),
-                        "Total cerrado pesimista — sólo el 10% de los futuros es peor.",
+                        "Total de US completadas pesimista — sólo el 10% de los futuros es peor.",
                     ),
                     (
                         "Total proyectado p50",
                         str(f.total_projected_p50),
-                        "Total cerrado mediano sobre el horizonte.",
+                        "Total mediano de US completadas sobre el horizonte.",
                     ),
                     (
                         "Total proyectado p90",
                         str(f.total_projected_p90),
-                        "Total cerrado optimista — sólo el 10% de los futuros lo supera.",
-                    ),
-                ],
-            )
-        )
-
-    if p.scope_growth is not None:
-        s = p.scope_growth
-        console.print(
-            _stat_table(
-                "Crecimiento de alcance — ítems *agregados* por sprint (infla el target)",
-                [
-                    (
-                        "Media",
-                        _fmt_float(s.created_per_sprint_mean),
-                        "Promedio de ítems agregados por sprint.",
-                    ),
-                    (
-                        "Mediana",
-                        str(s.created_per_sprint_median),
-                        "Ítems agregados por sprint en un sprint típico.",
-                    ),
-                    (
-                        "Mín",
-                        str(s.created_per_sprint_min),
-                        "Sprint histórico más tranquilo en intake.",
-                    ),
-                    (
-                        "Máx",
-                        str(s.created_per_sprint_max),
-                        "Sprint histórico más ruidoso en intake.",
+                        "Total de US completadas optimista — sólo el 10% de los futuros lo supera.",
                     ),
                 ],
             )

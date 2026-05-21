@@ -2,55 +2,70 @@
 
 from __future__ import annotations
 
-import json
-import subprocess
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 import pytest
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
-
-@pytest.fixture
-def sample_issues_json() -> str:
-    return (FIXTURES_DIR / "sample_issues.json").read_text(encoding="utf-8")
+# Signature of the make_sprint factory: (directory, index, **kwargs) -> written path.
+SprintWriter = Callable[..., Path]
 
 
 @pytest.fixture
 def frozen_now() -> datetime:
-    return datetime(2026, 5, 19, 12, 0, tzinfo=UTC)
+    return datetime(2026, 5, 28, 12, 0, tzinfo=UTC)
 
 
 @pytest.fixture
-def fake_gh_runner(sample_issues_json: str) -> Callable[..., subprocess.CompletedProcess[str]]:
-    def runner(cmd: list[str], *, timeout: float) -> subprocess.CompletedProcess[str]:
-        return subprocess.CompletedProcess(
-            args=cmd, returncode=0, stdout=sample_issues_json, stderr=""
+def sprints_fixture_dir() -> Path:
+    """A clean, valid 3-sprint development ledger checked into the repo."""
+    return FIXTURES_DIR / "sprints"
+
+
+@pytest.fixture
+def backlog_us_fixture() -> Path:
+    """A minimal backlog-us.typ declaring US1..US5."""
+    return FIXTURES_DIR / "backlog-us.typ"
+
+
+@pytest.fixture
+def make_sprint() -> SprintWriter:
+    """Factory writing an ad-hoc sprint-NN.md into ``directory`` for a test."""
+
+    def _write(
+        directory: Path,
+        index: int,
+        *,
+        completed: list[str],
+        in_progress: list[str] | None = None,
+        phase: str = "development",
+        status: str = "closed",
+        window: str | None = None,
+        raw: str | None = None,
+    ) -> Path:
+        directory.mkdir(parents=True, exist_ok=True)
+        path = directory / f"sprint-{index:02d}.md"
+        if raw is not None:
+            path.write_text(raw, encoding="utf-8")
+            return path
+        in_progress = in_progress or []
+        if window is None:
+            start = date(2026, 5, 7) + timedelta(days=7 * (index - 1))
+            window = f"{start.isoformat()} → {(start + timedelta(days=6)).isoformat()}"
+        body = (
+            "---\n"
+            f"sprint: {index}\n"
+            f"phase: {phase}\n"
+            f"status: {status}\n"
+            f"window: {window}\n"
+            f"in_progress_user_stories: [{', '.join(in_progress)}]\n"
+            f"completed_user_stories: [{', '.join(completed)}]\n"
+            "---\n\n## Retro\n- ok\n"
         )
+        path.write_text(body, encoding="utf-8")
+        return path
 
-    return runner
-
-
-@pytest.fixture
-def failing_gh_runner() -> Callable[..., subprocess.CompletedProcess[str]]:
-    def runner(cmd: list[str], *, timeout: float) -> subprocess.CompletedProcess[str]:
-        return subprocess.CompletedProcess(
-            args=cmd, returncode=1, stdout="", stderr="repo not found"
-        )
-
-    return runner
-
-
-@pytest.fixture
-def malformed_gh_runner() -> Callable[..., subprocess.CompletedProcess[str]]:
-    def runner(cmd: list[str], *, timeout: float) -> subprocess.CompletedProcess[str]:
-        return subprocess.CompletedProcess(args=cmd, returncode=0, stdout="not-json{", stderr="")
-
-    return runner
-
-
-@pytest.fixture
-def parsed_sample_issues(sample_issues_json: str) -> list[dict[str, object]]:
-    return json.loads(sample_issues_json)
+    return _write

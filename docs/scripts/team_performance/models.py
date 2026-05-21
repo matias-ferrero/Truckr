@@ -1,40 +1,24 @@
 """Frozen, slotted dataclasses describing the domain.
 
-All datetime fields are timezone-aware UTC. Collections are tuples to keep
-``frozen=True`` instances hashable and shareable across threads/tests.
+The unit of throughput is the *User Story*: a US is "completed" in sprint N
+when the team records it in that sprint's ledger file. Collections are tuples
+of US ids (e.g. ``("US1", "US14")``) to keep ``frozen=True`` instances
+hashable and shareable across threads/tests.
 """
 
 from dataclasses import dataclass
-from datetime import datetime
-
-
-@dataclass(frozen=True, slots=True)
-class Issue:
-    number: int
-    title: str
-    state: str
-    state_reason: str | None  # GitHub: COMPLETED | NOT_PLANNED | DUPLICATE | REOPENED | None
-    created_at: datetime
-    closed_at: datetime | None
-    labels: tuple[str, ...]
+from datetime import date, datetime
 
 
 @dataclass(frozen=True, slots=True)
 class Sprint:
     index: int
-    start: datetime
-    end: datetime
-    closed: tuple[Issue, ...]  # Only state_reason ∈ {COMPLETED, None} — wontfix excluded
-    closed_excluded: tuple[Issue, ...]  # Closed in window but excluded (not_planned, duplicate)
-    created: tuple[Issue, ...]
-    wip_at_end: int
-
-
-@dataclass(frozen=True, slots=True)
-class Breakdown:
-    by_prefix: dict[str, int]
-    by_scope: dict[str, int]
-    by_priority: dict[str, int]
+    phase: str  # "development" | "documentation"
+    status: str  # "closed" (counted) | "in_progress" (skipped)
+    window_start: date
+    window_end: date
+    completed: tuple[str, ...]  # US ids finished in this sprint
+    in_progress: tuple[str, ...]  # US ids worked but NOT finished (carry-over WIP)
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,7 +31,9 @@ class ThroughputStats:
 
 
 @dataclass(frozen=True, slots=True)
-class CycleTimePercentiles:
+class LeadTimePercentiles:
+    """Lead time measured in whole sprints: completion sprint - first-seen sprint."""
+
     p50: float
     p75: float
     p90: float
@@ -55,16 +41,14 @@ class CycleTimePercentiles:
 
 @dataclass(frozen=True, slots=True)
 class AggregateStats:
-    throughput: ThroughputStats | None  # Issues *delivered* per sprint
-    created_per_sprint: ThroughputStats | None  # Items added per sprint (scope-growth source)
-    cycle_time_days: CycleTimePercentiles | None
+    throughput: ThroughputStats | None  # User Stories completed per sprint
+    lead_time_sprints: LeadTimePercentiles | None
     sample_size_sprints: int
-    closed_excluded_total: int  # Wontfix/duplicate count across the sample
 
 
 @dataclass(frozen=True, slots=True)
 class SprintsToTarget:
-    """Inverse projection: how many sprints to close ≥ target."""
+    """Inverse projection: how many sprints to complete >= target user stories."""
 
     p50: int
     p85: int
@@ -76,7 +60,7 @@ class SprintsToTarget:
 
 @dataclass(frozen=True, slots=True)
 class ForwardOutcome:
-    """Forward projection: given N future sprints, P(close ≥ target)."""
+    """Forward projection: given N future sprints, P(complete >= target)."""
 
     remaining_sprints: int
     p_meet_or_exceed_target: float
@@ -86,24 +70,12 @@ class ForwardOutcome:
 
 
 @dataclass(frozen=True, slots=True)
-class ScopeGrowthStats:
-    """Distribution of items *added* per sprint, used to grow the target during inverse trials."""
-
-    created_per_sprint_mean: float
-    created_per_sprint_median: float
-    created_per_sprint_min: int
-    created_per_sprint_max: int
-
-
-@dataclass(frozen=True, slots=True)
 class Projection:
-    target_issues: int  # Initial target (before scope growth)
+    target_user_stories: int
     bootstrap_samples: int
     method: str
-    scope_growth_enabled: bool
     sprints_to_target: SprintsToTarget  # Always present when projecting
     forward: ForwardOutcome | None  # Present iff --remaining-sprints given
-    scope_growth: ScopeGrowthStats | None  # Present iff scope growth enabled
 
 
 @dataclass(frozen=True, slots=True)

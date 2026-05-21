@@ -137,16 +137,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_19_130001) do
   end
 
   create_table "shipments", force: :cascade do |t|
+    t.datetime "accepted_at"
     t.string "cancellation_reason"
     t.datetime "cancelled_at"
     t.integer "cargo_offer_id", null: false
     t.datetime "created_at", null: false
     t.datetime "delivered_at"
     t.datetime "discarded_at"
+    t.datetime "estimated_delivery_at"
     t.datetime "picked_up_at"
     t.datetime "settled_at"
     t.string "status", default: "draft", null: false
     t.datetime "updated_at", null: false
+    t.index ["accepted_at"], name: "index_shipments_on_accepted_at"
     t.index ["cargo_offer_id"], name: "index_shipments_on_cargo_offer_id", unique: true
     t.index ["discarded_at"], name: "index_shipments_on_discarded_at"
     t.index ["status"], name: "index_shipments_on_status"

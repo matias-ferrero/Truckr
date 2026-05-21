@@ -9,11 +9,11 @@ class TeamPerfError(Exception):
 
 
 class ConfigError(TeamPerfError):
-    """Invalid CLI/env/pyproject configuration. Maps to exit 2."""
+    """Invalid CLI/env configuration. Maps to exit 2."""
 
 
 class DataSourceError(TeamPerfError):
-    """Upstream data source failed (gh missing, repo invalid, parse error). Maps to exit 3."""
+    """Sprint ledger could not be read or failed validation. Maps to exit 3."""
 
 
 class InsufficientDataError(TeamPerfError):

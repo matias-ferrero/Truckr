@@ -64,6 +64,7 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REF-BE-00002 | Rename Quote → CargoOffer y CargoOffer → Cargo en el backend (modelos, tablas, AA, specs, seeds) | IR | BE | 2026-05-19 | [plan](REF/REF-BE-00002/REF-BE-00002-rename-quote-cargooffer-y-cargooffer-cargo-en-backend.plan.md) |
 | REQ-BE-00032 | Cargo fullstack — modelo, endpoints, FSM + "Mis cargas" UI (US27) | IR | BE | 2026-05-19 | [plan](REQ/REQ-BE-00032/REQ-BE-00032-cargo-fullstack-us27.plan.md) |
 | INF-BE-00006 | CargoOfferExpirationJob — auto-expira `pending` a las 48 h y flipea Window a `open` (mismo tx) | NEW | BE | 2026-05-19 | [#200](https://github.com/tcorzo/fiuba-gestion-tp/issues/200) |
+| INF-GEN-00003 | team-performance: medir throughput por User Stories completadas vía ledger por sprint | IR | GEN | 2026-05-20 | [#207](https://github.com/tcorzo/fiuba-gestion-tp/pull/207) |
 
 ## Legend
 

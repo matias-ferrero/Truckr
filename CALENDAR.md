@@ -38,18 +38,15 @@ Dev phase begins the day after the artifact defense. Sprint *N* defense is the c
 
 ## Canonical inputs for `team-performance`
 
+The `team-performance` CLI no longer derives sprint windows from dates — it reads the per-sprint ledger under `docs/sprints/` (one `sprint-NN.md` file per sprint, with its window and completed User Stories declared inline). The sprint numbers and windows in the tables above are the source of truth for what each ledger file should contain.
+
 When the question is about the **dev phase** (the default for this skill):
 
-| Flag                    | Value          |
-|-------------------------|----------------|
-| `--sprint-start`        | `2026-05-07`   |
-| `--sprint-length-days`  | `7`            |
+| Flag             | Value           |
+|------------------|-----------------|
+| `--sprints-dir`  | `docs/sprints`  |
+| `--phase`        | `development`   |
 
-When the question is about the **documentation phase** (rare — typically only for retrospective analysis):
+For the **documentation phase** (rare — typically only for retrospective analysis) pass `--phase documentation`.
 
-| Flag                    | Value          |
-|-------------------------|----------------|
-| `--sprint-start`        | `2026-04-09`   |
-| `--sprint-length-days`  | `7`            |
-
-Do **not** mix the two phases in a single run — historical throughput from the documentation phase does not generalise to the development phase (different work type, different cadence of artifact production vs. issue closure).
+Do **not** mix the two phases in a single run — throughput from the documentation phase does not generalise to the development phase (different work type, different cadence). The tool counts only ledger files whose `phase` matches `--phase` and whose `status` is `closed`.
