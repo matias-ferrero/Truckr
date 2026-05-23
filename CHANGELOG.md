@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.2.1](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.2.0...v0.2.1) (2026-05-23)
+
+
+### Features
+
+* **cargo:** cargo fullstack — modelo, endpoints + mis cargas UI (US27) ([#205](https://github.com/tcorzo/fiuba-gestion-tp/issues/205)) ([7e6b63e](https://github.com/tcorzo/fiuba-gestion-tp/commit/7e6b63e385101c553a64c2f62fe2ed4eacbf2c12))
+* **infra:** add base AWS infrastructure with Terraform ([#143](https://github.com/tcorzo/fiuba-gestion-tp/issues/143)) ([d5c7ba7](https://github.com/tcorzo/fiuba-gestion-tp/commit/d5c7ba7f12b3e09d3baa6b8067b34f794b421da1))
+* **landing:** two-voice committed palette with orchestrated motion ([#191](https://github.com/tcorzo/fiuba-gestion-tp/issues/191)) ([0df038b](https://github.com/tcorzo/fiuba-gestion-tp/commit/0df038bcb01ddda1efefe97121dd09ebaf2fd156))
+* **profile:** user profile edition (US3) ([#177](https://github.com/tcorzo/fiuba-gestion-tp/issues/177)) ([fac61a9](https://github.com/tcorzo/fiuba-gestion-tp/commit/fac61a94237539e0cfef9f90b0c73d883dd60292))
+* **shipper:** create offer wizard — US7 (REQ-FE-00015) ([#193](https://github.com/tcorzo/fiuba-gestion-tp/issues/193)) ([b4c7a7e](https://github.com/tcorzo/fiuba-gestion-tp/commit/b4c7a7ed690321f937cdc7a6f0a030d1176e318e))
+* **team-performance:** measure throughput in completed User Stories via per-sprint ledger ([#207](https://github.com/tcorzo/fiuba-gestion-tp/issues/207)) ([378db7f](https://github.com/tcorzo/fiuba-gestion-tp/commit/378db7f7943af2419e2b17136ee5caa62b743ddc))
+* **ui:** extend two-voice committed palette across auth, dashboard, carrier, public ([#192](https://github.com/tcorzo/fiuba-gestion-tp/issues/192)) ([2583227](https://github.com/tcorzo/fiuba-gestion-tp/commit/258322771486098c02b54ad57a5d854fbad3174e))
+
+
+### Bug Fixes
+
+* carrier details button, backlog and add sprint 2 docs ([#208](https://github.com/tcorzo/fiuba-gestion-tp/issues/208)) ([71d3fee](https://github.com/tcorzo/fiuba-gestion-tp/commit/71d3fee29bee783c9580c005e69ecc6b891203dc))
+* **windows:** rename toggle copy to ocultar/mostrar ([#195](https://github.com/tcorzo/fiuba-gestion-tp/issues/195)) ([052ca98](https://github.com/tcorzo/fiuba-gestion-tp/commit/052ca98edc4241fc43b6e57f17fe6fdbe3ab2256))
+
 ## [0.2.0](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.1.10...v0.2.0) (2026-05-16)
 
 
