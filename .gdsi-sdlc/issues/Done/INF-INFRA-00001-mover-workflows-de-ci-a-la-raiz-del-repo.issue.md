@@ -2,7 +2,7 @@
 tag: INF-INFRA-00001
 title: Mover workflows de CI a la raíz del repo con filtros por paths
 priority: P2
-status: backlog
+status: done
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/70

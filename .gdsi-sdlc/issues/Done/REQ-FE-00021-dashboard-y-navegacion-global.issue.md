@@ -2,7 +2,7 @@
 tag: REQ-FE-00021
 title: Dashboard post-login + navegación global
 priority: P1
-status: backlog
+status: done
 created: '2026-05-10'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/146

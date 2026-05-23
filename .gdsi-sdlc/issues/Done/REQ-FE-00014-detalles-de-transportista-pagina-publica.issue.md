@@ -2,7 +2,7 @@
 tag: REQ-FE-00014
 title: Página de detalle de transportista (perfil público + CTA ofertar)
 priority: P1
-status: backlog
+status: done
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/120

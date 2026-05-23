@@ -1,18 +1,24 @@
 ---
 tag: INF-GEN-00003
-title: 'team-performance: medir throughput por User Stories completadas vía ledger por sprint'
+title: 'team-performance: medir throughput por User Stories completadas vía ledger
+  por sprint'
 priority: P2
-status: in_review
+status: done
 created: '2026-05-20'
-plan: docs/features/INF/INF-GEN-00003/INF-GEN-00003-team-performance-us-ledger.plan.md
-pr: https://github.com/tcorzo/fiuba-gestion-tp/pull/207
 source: manual
+source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/210
 author: Claude Code
+github_issue: 210
+github_project_item: PVTI_lAHOAm1mPc4BWhiVzgtlAJc
+github_repo: tcorzo/fiuba-gestion-tp
+last_synced: 2026-05-22T23:12:51.699065+00:00Z
 labels:
 - INF
 - GEN
 - team-performance
 - tooling
+plan: docs/features/INF/INF-GEN-00003/INF-GEN-00003-team-performance-us-ledger.plan.md
+pr: https://github.com/tcorzo/fiuba-gestion-tp/pull/207
 ---
 
 ## Summary

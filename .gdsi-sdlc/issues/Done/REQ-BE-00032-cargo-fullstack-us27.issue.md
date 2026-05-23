@@ -2,7 +2,7 @@
 tag: REQ-BE-00032
 title: Cargo fullstack — modelo, endpoints, FSM + "Mis cargas" UI (US27)
 priority: P1
-status: in_review
+status: done
 created: '2026-05-19'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/198

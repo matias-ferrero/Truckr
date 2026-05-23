@@ -110,7 +110,7 @@ backend-migrate:
 
 # Reset and seed database
 backend-reset:
-    cd backend && bin/rails db:reset && bin/rails db:seed
+    cd backend && bin/rails db:reset
 
 # Run the backend test suite (RSpec)
 backend-test:

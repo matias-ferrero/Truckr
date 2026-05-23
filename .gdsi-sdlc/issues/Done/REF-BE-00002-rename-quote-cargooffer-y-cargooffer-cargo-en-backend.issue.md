@@ -3,7 +3,7 @@ tag: REF-BE-00002
 title: Rename Quote → CargoOffer y CargoOffer → Cargo en el backend (modelos, tablas,
   AA, specs, seeds)
 priority: P1
-status: in_review
+status: done
 created: '2026-05-19'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/197

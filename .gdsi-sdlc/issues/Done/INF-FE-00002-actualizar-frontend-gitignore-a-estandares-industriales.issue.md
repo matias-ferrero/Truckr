@@ -6,9 +6,12 @@ priority: P2
 status: done
 created: '2026-05-03'
 source: manual
-source_url: ''
+source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/209
 author: Claude Code
-last_synced: 2026-05-03T15:34:14.818166+00:00Z
+github_issue: 209
+github_project_item: PVTI_lAHOAm1mPc4BWhiVzgtlAHg
+github_repo: tcorzo/fiuba-gestion-tp
+last_synced: 2026-05-22T23:12:40.705771+00:00Z
 labels:
 - correction
 - INF

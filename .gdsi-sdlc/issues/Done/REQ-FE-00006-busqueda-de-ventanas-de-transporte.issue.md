@@ -2,7 +2,7 @@
 tag: REQ-FE-00006
 title: Búsqueda de ventanas de transporte por zona origen/destino y rango de fechas
 priority: P1
-status: backlog
+status: done
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/112

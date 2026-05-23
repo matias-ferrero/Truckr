@@ -2,7 +2,7 @@
 tag: REQ-FE-00015
 title: Ofertar carga contra ventana del transportista — wizard de creación de CargoOffer
 priority: P1
-status: in-review
+status: done
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/121

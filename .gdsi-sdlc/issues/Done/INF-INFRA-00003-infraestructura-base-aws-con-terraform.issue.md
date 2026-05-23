@@ -2,7 +2,7 @@
 tag: INF-INFRA-00003
 title: Infraestructura base en AWS con Terraform
 priority: P2
-status: in_review
+status: done
 created: '2026-05-10'
 source: manual
 source_url: ''

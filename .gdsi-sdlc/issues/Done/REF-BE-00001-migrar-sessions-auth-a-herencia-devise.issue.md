@@ -2,7 +2,7 @@
 tag: REF-BE-00001
 title: Migrar Api::AuthController a Devise + devise-jwt (login/logout/me con JWT); mantener register custom
 priority: P1
-status: ready
+status: done
 created: '2026-05-11'
 source: manual
 author: Claude Code

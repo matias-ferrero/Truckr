@@ -2,7 +2,7 @@
 tag: INF-INFRA-00002
 title: Agregar workflow de Frontend CI (Vitest + vite build + Playwright)
 priority: P2
-status: backlog
+status: done
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/71

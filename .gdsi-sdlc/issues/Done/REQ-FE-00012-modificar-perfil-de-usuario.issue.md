@@ -2,7 +2,7 @@
 tag: REQ-FE-00012
 title: Modificar perfil de usuario (datos personales y datos de camión si es transportista)
 priority: P2
-status: backlog
+status: done
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/118
