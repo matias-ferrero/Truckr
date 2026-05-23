@@ -35,6 +35,7 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REQ-BE-00033 | US8 — Realizar pago del expedidor sobre CargoOffer aceptado (gateway mock) | RDY | BE | 2026-05-22 | [plan](REQ/REQ-BE-00033/REQ-BE-00033-us8-realizar-pago-expedidor.plan.md) |
 | INF-GEN-00003 | team-performance: medir throughput por User Stories completadas vía ledger por sprint | DONE | GEN | 2026-05-20 | [#207](https://github.com/tcorzo/fiuba-gestion-tp/pull/207) |
 | FIX-BE-00001 | Permitir destino nullable en TransportWindow (US4/US5 rework) | RDY | BE | 2026-05-22 | [plan](FIX/FIX-BE-00001/FIX-BE-00001-permitir-destino-nullable-en-transport-window.plan.md) |
+| REQ-BE-00034 | Baja de vehículo por el transportista (soft delete, ADR-009) (US32) | RDY | BE | 2026-05-22 | [plan](REQ/REQ-BE-00034/REQ-BE-00034-us32-baja-de-vehiculo-soft-delete.plan.md) |
 
 ## Legend
 
