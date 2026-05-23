@@ -32,6 +32,7 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REF-BE-00001 | Migrar Api::AuthController a Devise + devise-jwt (login/logout/me con JWT); mantener register custom | DONE | BE | 2026-05-11 | [plan](REF/REF-BE-00001/REF-BE-00001-migrar-sessions-auth-a-herencia-devise.plan.md) |
 | REF-BE-00002 | Rename Quote → CargoOffer y CargoOffer → Cargo en el backend (modelos, tablas, AA, specs, seeds) | DONE | BE | 2026-05-19 | [plan](REF/REF-BE-00002/REF-BE-00002-rename-quote-cargooffer-y-cargooffer-cargo-en-backend.plan.md) |
 | REQ-BE-00032 | Cargo fullstack — modelo, endpoints, FSM + "Mis cargas" UI (US27) | DONE | BE | 2026-05-19 | [plan](REQ/REQ-BE-00032/REQ-BE-00032-cargo-fullstack-us27.plan.md) |
+| REQ-BE-00033 | US8 — Realizar pago del expedidor sobre CargoOffer aceptado (gateway mock) | RDY | BE | 2026-05-22 | [plan](REQ/REQ-BE-00033/REQ-BE-00033-us8-realizar-pago-expedidor.plan.md) |
 | INF-GEN-00003 | team-performance: medir throughput por User Stories completadas vía ledger por sprint | DONE | GEN | 2026-05-20 | [#207](https://github.com/tcorzo/fiuba-gestion-tp/pull/207) |
 | FIX-BE-00001 | Permitir destino nullable en TransportWindow (US4/US5 rework) | RDY | BE | 2026-05-22 | [plan](FIX/FIX-BE-00001/FIX-BE-00001-permitir-destino-nullable-en-transport-window.plan.md) |
 

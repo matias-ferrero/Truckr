@@ -24,10 +24,11 @@ The `English model / table` column lists the canonical Rails identifier for each
 | **Envío** | `Shipment` / `shipments` | Active or completed transport contract between a Transportista and an Expedidor. State machine: `draft → quoted → accepted → in_transit → delivered → settled` (+ `cancelled`). Soft-deleted (audit). |
 | **Evento de tracking** | `TrackingEvent` / `tracking_events` | Append-only log entry for a Shipment: position, status change. |
 | **Ruta** | `Route` / `routes` | Planned polyline + waypoints for a Shipment. |
-| **Pago / Escrow** | `Payment` / `payments` | Held funds released on delivery. Soft-deleted (audit). |
+| **Pago / Escrow** | `Payment` / `payments` | Shipper-initiated charge per accepted `Shipment`. MVP: `escrowed` is terminal (no release / refund); `Shipment` 1:N `Payment` (per-attempt rows). Soft-deleted (audit). See ADR-012. |
 | **Seguro** | `InsurancePolicy` / `insurance_policies` | Insurance policy brokered per Shipment, optional. |
 | **Factura ARCA** | `ArcaInvoice` / `arca_invoices` | Fiscal document emitted against a settled Shipment. Soft-deleted (audit). |
-| **Pasarela de pagos** | — (external) | Third-party payment gateway with escrow capability. Not a model — integration target. |
+| **Pasarela de pagos** | — (external) | Real third-party gateway (Mercado Pago / Stripe). Post-MVP. Not a model — integration target via the `Payments::Gateway` interface. |
+| **Pasarela falsa** | `Payments::FakeGateway` | In-tree, deterministic, always-on (including production) gateway used by the MVP. Implements `Payments::Gateway` and is swappable for a real adapter without domain change. See ADR-012. |
 | **Tracking** | — (concept) | Live position and status updates for an in-transit shipment. The model is `TrackingEvent`. |
 
 ### Deprecated synonyms (kept for traceability — do not introduce in new content)

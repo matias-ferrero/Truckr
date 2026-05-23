@@ -27,12 +27,15 @@ Integrations the platform uses today, and the ones on the roadmap. Each row note
 - **Config**: `.github/workflows/release-please.yml`, `release-please-config.json`, `.release-please-manifest.json`.
 - **Secrets**: uses the default `GITHUB_TOKEN`.
 
-### Payment gateway (planned)
+### Payment gateway
 
-- **Candidates**: Mercado Pago (primary — local market fit), Stripe (fallback).
-- **Purpose**: charge expedidores, hold funds in escrow, release to transportista on delivery.
-- **Integration style**: server-initiated charges via REST + webhook callbacks for status updates.
-- **Where it will live**: `Api::PaymentsController` + `PaymentSettlementJob` (solid_queue).
+- **MVP**: `Payments::FakeGateway` (in-tree, deterministic, always-on including in production). It IS the payment gateway for the MVP — see ADR-012.
+- **Post-MVP candidates**: Mercado Pago (primary — local market fit), Stripe (fallback). When introduced, they implement the same `Payments::Gateway` Ruby interface — no domain-model change.
+- **Purpose**: charge expedidores at the moment they accept the Carrier's offer; unlock the Carrier's contact info and the Shipment's pickup readiness once payment succeeds.
+- **Integration style (MVP)**: in-process `confirm!` on the fake gateway. Return-URL flow (`GET /api/payments/:id/return?outcome=...`) — no webhooks.
+- **Integration style (post-MVP)**: server-initiated charges via REST + signed webhook callbacks.
+- **Where it lives**: `Api::Shipments::PaymentsController` + `Api::PaymentsController` (return / abandon actions); `app/services/payments/` for the gateway interface and adapters.
+- **Escrow semantics (MVP)**: `Payment.status = escrowed` is terminal. There is no settlement job; no `released` transition. A real-gateway integration would re-introduce both.
 
 ### ARCA — Argentine tax authority (planned)
 

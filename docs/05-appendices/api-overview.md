@@ -52,8 +52,9 @@ Drawn from the product backlog (`docs/artifacts/backlog-us.typ`). Names are indi
 | POST | `/api/carriers/me/cargo-offers/:id/accept` | Carrier accepts a CargoOffer → creates a Shipment; cascades sibling-reject and flips the TransportWindow (REQ-BE-00024). |
 | GET, POST | `/api/shipments` | List/show active shipments. |
 | POST | `/api/shipments/:id/tracking_events` | Append tracking event (transportista or provider webhook). |
-| POST | `/api/payments` | Initiate charge on quote acceptance. |
-| POST | `/api/payments/webhook` | Gateway webhook (status updates). |
+| POST | `/api/shipments/:id/payments` | Shipper initiates payment for an accepted `Shipment` (US8). Creates a `Payment` in `pending`, returns `{ redirect_url, payment_id }`. |
+| GET  | `/api/payments/:id/return` | Gateway return URL. Query param `?outcome=approved\|rejected\|pending` advances the `Payment` state. Idempotent. |
+| POST | `/api/payments/:id/abandon` | Shipper transitions a stuck `pending` `Payment` to `rejected` to unblock retry (US8). |
 
 ## CORS
 

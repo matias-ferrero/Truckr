@@ -19,7 +19,6 @@
 | Job | Trigger | Purpose |
 |-----|---------|---------|
 | `TrackingIngestJob` | Incoming webhook from GPS provider | Parse payload → append `TrackingEvent`. |
-| `PaymentSettlementJob` | Shipment transitions to `delivered` | Instruct payment gateway to release escrow. |
 | `InvoiceEmissionJob` | Shipment transitions to `settled` | Call ARCA, persist CAE on `ArcaInvoice`. |
 | `NotificationEmailJob` | Key lifecycle events | Transactional email via Action Mailer. |
 | `MatchExpiryJob` | Cron | Expire open `TransportWindow` / `CargoOffer` / `Quote` past their validity. |

@@ -50,7 +50,7 @@ Cross-context relationships rendered in `erd-overview.puml`. The most important 
 - `Carrier` 1:N `Vehicle`; `Carrier` 1:N `TransportWindow`; `Shipper` 1:N `Cargo`.
 - `Cargo` 1:N `CargoOffer`; `TransportWindow` 1:N `CargoOffer` (one window can receive many offers over its lifetime, but only one `pending` at a time in MVP).
 - `CargoOffer` 1:0..1 `Shipment` (an accepted offer produces exactly one shipment).
-- `Shipment` 1:N `TrackingEvent`, 1:1 `Route`, 1:1 `Payment`, 1:0..1 `InsurancePolicy`, 1:0..1 `ArcaInvoice`.
+- `Shipment` 1:N `TrackingEvent`, 1:1 `Route`, **1:N `Payment`** (per-attempt; see § 5.1), 1:0..1 `InsurancePolicy`, 1:0..1 `ArcaInvoice`.
 
 ### 1.1 Persona ↔ Model Mapping (derived from the glossary)
 
@@ -269,11 +269,13 @@ States: `draft → offered → accepted → in_transit → delivered → settled
 | From → To | Guard | Side effect |
 |-----------|-------|-------------|
 | `draft → offered` | At least one `CargoOffer.status = 'pending'` exists for the linked `Cargo`. | Append `TrackingEvent('offered')`. |
-| `offered → accepted` | The Carrier confirms one `CargoOffer` (transitions it to `accepted`). | Append `TrackingEvent('accepted')`. **Copy `CargoOffer.vehicle_id` into `Shipment.vehicle_id`** (frozen from this point on). Open a `Payment` row in `escrowed` status (Commerce). Sibling pending `CargoOffer`s for the same `Cargo` are auto-rejected; their Windows auto-flip back to `open` (§ 3.1). |
-| `accepted → in_transit` | The Carrier signals pickup. | Append `TrackingEvent('picked_up')`. |
+| `offered → accepted` | The Carrier confirms one `CargoOffer` (transitions it to `accepted`). | Append `TrackingEvent('accepted')`. **Copy `CargoOffer.vehicle_id` into `Shipment.vehicle_id`** (frozen from this point on). Sibling pending `CargoOffer`s for the same `Cargo` are auto-rejected; their Windows auto-flip back to `open` (§ 3.1). **No `Payment` row is created at this point** — payment is Shipper-initiated and lives in its own bounded context (see § 5.1). |
+| `accepted → in_transit` | The Carrier signals pickup. Predicate: at least one `Payment` for this Shipment is `escrowed` (the Shipper paid). | Append `TrackingEvent('picked_up')`. |
 | `in_transit → delivered` | The Carrier signals delivery. | Append `TrackingEvent('delivered')`. |
-| `delivered → settled` | Either the Shipper confirms, or N hours elapse without dispute. | Append `TrackingEvent('settled')`. Release `Payment` from escrow. Emit `ArcaInvoice` (asynchronous job). |
-| `{any except settled} → cancelled` | Per-state guard: pre-`accepted` cancellations are free; post-`accepted` may incur fees. | Append `TrackingEvent('cancelled')`. Refund or partially refund `Payment` according to the guard rules. |
+| `delivered → settled` | Either the Shipper confirms, or N hours elapse without dispute. | Append `TrackingEvent('settled')`. Emit `ArcaInvoice` (asynchronous job). **MVP: no escrow release** — `Payment.status` is terminal at `escrowed`; a real-gateway integration would add `released` and a settlement job here. |
+| `{any except settled} → cancelled` | Per-state guard: pre-`accepted` cancellations are free; post-`accepted` may incur fees. | Append `TrackingEvent('cancelled')`. **MVP: no automatic refund** — refund flow is post-MVP; record the cancellation and reconcile out-of-band. |
+
+> **Payment as a predicate, not a state.** The Shipment FSM intentionally does not include a "paid" or "to_pickup" state. Whether a Shipment is payment-ready is a derived predicate: `shipment.payments.escrowed.exists?`. UI surfaces this as a label ("a recoger" once the Shipper has paid; "pendiente de pago" otherwise) but the canonical state stays at `accepted` until pickup. Rationale: keeps the FSM aligned with physical events (pickup, delivery, settlement) and avoids a financial state in a logistics machine. See ADR-012.
 
 **Vehicle reassignment**: NOT supported in Phase 0/1. `Shipment.vehicle_id` is frozen at `offered → accepted` and never changes. If a Carrier needs to swap trucks (breakdown, scheduling conflict), the only path is to **cancel the Shipment and have the Shipper author a new `CargoOffer`** against a different Window with the replacement Vehicle. Treating mid-flight vehicle swap as a state-change side effect (with its own tracking event, payment implication, and ARCA fiscal impact) is deliberately out of scope; revisit when the operational data demands it.
 
@@ -293,9 +295,26 @@ Key attributes: `shipment_id` (unique), `polyline` (text), `waypoints_json` (tex
 
 Soft-delete enabled on `Payment` and `ArcaInvoice` per ADR-009. `InsurancePolicy` is hard-deleted; expired policies remain queryable through their `status` column.
 
-### 5.1 `Payment` (escrow)
+### 5.1 `Payment` (Shipper-initiated charge with escrow semantics)
 
-Key attributes: `shipment_id`, `shipper_id`, `carrier_id`, `amount_cents`, `currency`, `provider` (`mercadopago` / `stripe` / `other`), `provider_reference`, `status` (`pending` / `escrowed` / `released` / `refunded` / `disputed`), `escrowed_at`, `released_at`, `deleted_at` (soft-delete). Soft-deletes preserve dispute / refund traceability.
+**Cardinality**: `Shipment` 1:N `Payment` — every "Pagar" click creates a fresh `Payment` row (per-attempt history). At most one row per Shipment is in `pending` or `escrowed` at any time; the rest are `rejected` (terminal). Soft-deleted (discard gem) per ADR-009 — failed attempts are kept for audit.
+
+**Key attributes**: `shipment_id`, `amount_cents` (frozen from `CargoOffer.price` at create), `currency` (default `ARS`), `provider` (`fake` / `mercadopago` / `stripe` / `other`), `provider_reference` (the ID returned by the gateway), `status` (see FSM below), `escrowed_at`, `rejected_at`, `discarded_at` (discard gem).
+
+**FSM (MVP)**:
+
+```
+pending --gateway:approved--> escrowed   (terminal)
+pending --gateway:rejected--> rejected   (terminal)
+pending --shipper:abandon!-> rejected    (Shipper-initiated recovery from a stuck pending)
+```
+
+- `escrowed` is **terminal in the MVP**. There is no settlement job and no `released` transition. Once `escrowed`, the Payment unlocks: (a) the Shipper's view of the Carrier's contact info, (b) the Carrier's permission to mark the Shipment `in_transit`. See `domain-model.md` § 4.1.
+- `rejected` is terminal. The Shipper retries by creating a new `Payment` row (a new "Pagar" click → `POST /api/shipments/:id/payments`).
+- The Shipper can abandon a stuck `pending` row (e.g. tab closed before gateway resolved) via `POST /api/payments/:id/abandon`, transitioning it to `rejected`. This unblocks retry without admin intervention.
+- `refunded` and `disputed` states from earlier drafts are **deferred to post-MVP**. Re-introducing them requires a real gateway integration and a settlement / dispute flow — out of scope for the MVP. See ADR-012.
+
+**Gateway abstraction**: a `Payments::Gateway` Ruby interface (`create_intent`, `confirm!`) is implemented in the MVP by `Payments::FakeGateway`, a deterministic in-process implementation whose `outcome` is driven by a UI button (`/dev/fake-payment/:provider_reference`). The fake gateway is **always-on**, including in production — it IS the production gateway for the MVP. Real MercadoPago / Stripe integration becomes a single new implementation of the same interface, no domain change.
 
 ### 5.2 `InsurancePolicy`
 
@@ -353,6 +372,7 @@ The TBD slots (`Review` US17 / US21 / US26) are intentional gaps — see § 9.
 | **ADR-008** | `01-technical-vision/technical-vision.md` | `User` + `Carrier` / `Shipper` extension tables; role state derived from relation rows (no denormalised flags); scopes / predicates on `User`; `AdminUser` isolated. |
 | **ADR-009** | `01-technical-vision/technical-vision.md` | Soft-delete only on `Shipment`, `Payment`, `ArcaInvoice`. Hard-delete elsewhere. |
 | **ADR-010** | `01-technical-vision/technical-vision.md` | Lat / lng `DECIMAL(9,6)` columns Phase 0/1; PostGIS Phase 2 alongside Postgres. |
+| **ADR-012** | `01-technical-vision/technical-vision.md` | `Payment` model: Shipment 1:N (per-attempt rows), FSM `pending → escrowed \| rejected` (no `released`/`refunded`/`disputed` in MVP), fake gateway always-on in production. |
 | **Decision F** (this doc § 4.1) | here | `Shipment` FSM modelled by hand — no `aasm` gem until complexity warrants. |
 | **Decision G** (this doc § 2.6) | here | Flat namespace under `app/models/`; revisit at ~25 models. |
 
