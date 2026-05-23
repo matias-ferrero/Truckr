@@ -30,6 +30,8 @@ The `English model / table` column lists the canonical Rails identifier for each
 | **Pasarela de pagos** | — (external) | Real third-party gateway (Mercado Pago / Stripe). Post-MVP. Not a model — integration target via the `Payments::Gateway` interface. |
 | **Pasarela falsa** | `Payments::FakeGateway` | In-tree, deterministic, always-on (including production) gateway used by the MVP. Implements `Payments::Gateway` and is swappable for a real adapter without domain change. See ADR-012. |
 | **Tracking** | — (concept) | Live position and status updates for an in-transit shipment. The model is `TrackingEvent`. |
+| **Notificación** | — (transient, not persisted) | Evento empujado por el backend al frontend de un usuario en tiempo real vía Action Cable. No se persiste server-side — el historial es session-only en el cliente. Tipos definidos en `Notifications::Type`. Emitida exclusivamente vía `Notifications::Publisher`. |
+| **Tipo de notificación** | — (Ruby module: `Notifications::Type`) | Discriminador cerrado del payload de una `Notificación`. Whitelist registrado en `Notifications::Type` (constantes Ruby); emisores y consumidores (toast registry en FE) referencian el mismo conjunto. Cada feature que emite notificaciones agrega su constante acá en el PR que la introduce. |
 
 ### Deprecated synonyms (kept for traceability — do not introduce in new content)
 

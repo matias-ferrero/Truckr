@@ -172,6 +172,36 @@ The project is transitioning from the **planning phase** (product artifacts, USM
 - Per-attempt rows mean policy / authorization queries always filter by status: any `shipment.payments.escrowed.exists?`-style predicate is one index away (`payments(shipment_id, status)`).
 - "Fake gateway in production" is a deliberate, documented surface. It is acceptable because (a) this is academic coursework not a real product (per `CLAUDE.md`), (b) the alternative — env-gating the gateway — would require a second always-broken code path that never gets exercised in production. The fake gateway is the canonical path until a real adapter lands.
 
+### ADR-013 — In-app notifications: best-effort live delivery, no offline queue
+
+**Context**: Several sprint-4+ features need to push state changes to the user in real time — payment confirmed, offer accepted, shipment state transitions, new offer received, etc. Before wiring any of them, a single transport + contract is being scaffolded (`INF-FE-00005`). The framework's delivery semantics shape every consumer that follows.
+
+Most notification systems developers have encountered (Slack, Discord, Linear) persist notifications server-side and offer "unread / missed" views. That model is the implicit baseline a future feature builder will assume unless this decision is documented.
+
+**Decision**:
+
+- **Transport**: Action Cable (Rails 8 built-in) backed by **Solid Cable** (DB-backed pub/sub via `solid_cable_messages` table on the primary SQLite DB — consistent with ADR-002 / `CLAUDE.md` § "Database policy"). No Redis, no external pub/sub, no separate WebSocket service. Single Kamal container serves both HTTP and WS upgrades.
+- **Delivery semantic**: **best-effort live delivery only.** A notification is broadcast to the recipient's WS stream at publish time and **lost** if no WebSocket is open. Solid Cable does not store-and-forward.
+- **No `notifications` table.** No server-side persistence. No "missed notifications" view. No `read_at` / "mark as read" server-side. The frontend's in-session list is the only history that exists, and it dies with the browser tab.
+- **Source-of-truth lives in the REST API.** Every feature that emits a notification **must** also expose a REST/poll path so the client can reconstruct the same state on reload — the notification is a UX accelerator, not a domain event. Example: "payment confirmed" pushes a toast, but the shipper's payment-confirmed state is still derivable from `GET /api/payments/:id`.
+- **Contract entry point**: `Notifications::Publisher.publish(user_id:, type:, payload:)`. `type` is a closed whitelist in `Notifications::Type` (constants, raises on unknown). Synchronous broadcast via `NotificationsChannel.broadcast_to(user, message)`. Payload validated to be a JSON-serializable Hash; `emitted_at` is server-injected.
+- **WS auth**: JWT in query string (`wss://…/cable?token=<jwt>`), decoded with `Warden::JWTAuth::UserDecoder` in `ApplicationCable::Connection#connect` (consistent with ADR-011). Browsers can't attach `Authorization` headers to a native `WebSocket(url)`, and the cookie-based Action Cable pattern doesn't apply because Devise+JWT runs without sessions. `token` is filtered from logs.
+
+**Alternatives considered**:
+
+- **Durable delivery with `notifications` table + ack flow + retry** — what most developers expect. Rejected: needs schema, audit of every consumer to persist before broadcasting, plus a "mark as read" surface. Cost is high; benefit (a feature builder can fire-and-forget without thinking about reload state) does not match an academic-scope product where REST is already the source of truth and traffic is low.
+- **SSE (`ActionController::Live`)** — simpler transport, no WS upgrade in the proxy. Rejected: unidirectional, one HTTP connection per tab, manual reconnect logic, no native channel-class scoping (collides with future per-user streams like presence / live chat).
+- **Polling** — zero infrastructure. Rejected: laggy UX, constant CPU/DB cost even when nothing's happening, not real-time.
+- **Redis-backed Action Cable** — the Rails-pre-8 default. Rejected: violates `CLAUDE.md` § "Database policy" (no external infra beyond SQLite + Kamal).
+
+**Consequences**:
+
+- Future REQ-BE/FE features that emit notifications **must** also have a REST recovery path. PR review must enforce this — a feature that relies on a notification as the only way the client learns about a state change is a defect. This is a non-obvious contract that future feature builders inherit silently; document in `CLAUDE.md` or feature-template if it gets missed twice.
+- "Notify all carriers in zone X" (high-fan-out broadcast) is **not** supported by this framework — same publisher path requires a fan-out loop and would amplify Solid Cable INSERT cost. If/when needed, scoped revisit.
+- Multi-tab UX: the user sees the notification in **every** tab where they have a WS open. Each tab maintains its own in-session history; closing one doesn't affect the others.
+- If Solid Cable proves problematic on SQLite under low concurrency (WAL contention with hot-path writes), fallback is the `async` adapter (in-process, single-container — already the deploy reality per Kamal + ADR-002). No fallback to Redis or external pub/sub: that reopens the `CLAUDE.md` infra policy.
+- Promoting the framework to durable delivery later is a **breaking** change — every consumer would need to adopt a persistence call. The "every consumer has a REST recovery path" rule is what makes that promotion cheap-to-reverse: if durability becomes load-bearing, the REST paths already exist as the source of truth and only the consumer's *recovery moment* moves from "on user reload" to "on background reconnect".
+
 ### Decisions Deferred
 
 - Mobile strategy (React Native vs. PWA) — auth is no longer a blocker for either.
@@ -181,6 +211,7 @@ The project is transitioning from the **planning phase** (product artifacts, USM
 - **Production database**: SQLite. Permanent. See `CLAUDE.md` § "Database policy" and ADR-002. No PostgreSQL migration is planned, queued, or under consideration.
 - **Geospatial storage**: lat/lng columns + Haversine in application code + external API for routing. See ADR-010. No PostGIS, ever.
 - **Authentication / authorization**: Devise + devise-jwt with JTI Matcher revocation. See ADR-011.
+- **In-app notifications**: Action Cable + Solid Cable transport with best-effort live delivery; no `notifications` table, no offline queue, no missed-notifications view. See ADR-012.
 
 ---
 

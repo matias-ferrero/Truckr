@@ -26,6 +26,7 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REQ-FE-00014 | Página de detalle de transportista — perfil público + CTA ofertar (US6) | DONE | FE | 2026-05-03 | - |
 | REQ-FE-00015 | Ofertar carga contra ventana del transportista — wizard de creación de CargoOffer (US7) | DONE | FE | 2026-05-03 | PR #193 |
 | REQ-FE-00016 | Publicar ventana de transporte — TransportWindow CRUD (US9) | DONE | FE | 2026-05-03 | [plan](REQ/REQ-FE-00016/REQ-FE-00016-transport-window-crud.plan.md) |
+| INF-FE-00005 | Framework de notificaciones web en tiempo real (scaffold) | READY | FE | 2026-05-22 | [plan](INF/INF-FE-00005/INF-FE-00005-framework-notificaciones-web-scaffold.plan.md) · [#217](https://github.com/tcorzo/fiuba-gestion-tp/issues/217) |
 | REQ-FE-00017 | Bandeja de ofertas recibidas por el transportista (US10) | NEW | FE | 2026-05-03 | - |
 | REQ-BE-00024 | Aceptación de CargoOffer por el transportista con cascada sibling-reject (US12) | NEW | BE | 2026-05-03 | - |
 | REQ-FE-00021 | Dashboard post-login + navegación global (Sprint 1 UX glue) | DONE | FE | 2026-05-10 | - |
