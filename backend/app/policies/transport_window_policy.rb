@@ -16,7 +16,7 @@ class TransportWindowPolicy < ApplicationPolicy
       if user&.carrier
         scope.joins(:vehicle).where(vehicles: { carrier_id: user.carrier.id })
       else
-        scope.active
+        scope.active.marketplace_open
       end
     end
   end

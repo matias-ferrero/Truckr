@@ -8,5 +8,6 @@ FactoryBot.define do
     sequence(:available_from) { |n| (n + 1).days.from_now }
     sequence(:available_to)   { |n| (n + 7).days.from_now }
     active { true }
+    status { "open" }
   end
 end

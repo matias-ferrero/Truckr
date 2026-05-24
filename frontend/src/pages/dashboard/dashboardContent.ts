@@ -15,6 +15,7 @@ export const dashboardContent = {
     },
     trips: {
         heading:    "Mis viajes",
+        viewAll:    "Ver mis viajes",
         emptyTitle: "Todavía no tenés viajes",
         emptyHint:  "Cuando se confirme tu primer viaje vas a verlo acá.",
     },
@@ -51,6 +52,7 @@ export const CARGO_OFFER_STATUS_LABEL: Record<string, string> = {
     pending:   "Pendiente",
     accepted:  "Aceptada",
     paid:      "Pagada",
+    rejected:  "Rechazada",
     expired:   "Vencida",
     cancelled: "Cancelada",
 };
@@ -60,6 +62,7 @@ export const CARGO_OFFER_STATUS_BADGE_CLASS: Record<string, string> = {
     pending:   "pendiente",
     accepted:  "aceptado",
     paid:      "pagado",
+    rejected:  "pasado",
     expired:   "pasado",
     cancelled: "pasado",
 };

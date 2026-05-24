@@ -142,6 +142,162 @@ export const handlers: RequestHandler[] = [
 
     http.get(`${API}/api/cargo_offers`, () =>
         HttpResponse.json([], { headers: pagyHeaders(0) })),
+
+    http.get(`${API}/api/carriers/me/cargo-offers`, ({ request }) => {
+        const status = new URL(request.url).searchParams.get("status") ?? "pending";
+        const all = [
+            {
+                id: 11,
+                cargo_id: 7,
+                carrier_id: 1,
+                transport_window_id: 5,
+                status: "pending",
+                expires_at: "2026-06-15T12:00:00Z",
+                accepted_at: null,
+                rejected_at: null,
+                created_at: "2026-06-10T10:00:00Z",
+                updated_at: "2026-06-10T10:00:00Z",
+                price_amount_cents: 105_000_000,
+                cargo: {
+                    id: 7,
+                    pickup_address: "Av. Corrientes 1234, CABA",
+                    delivery_address: "Av. Colón 500, Córdoba",
+                    weight_kg: "1500.0",
+                    volume_cm3: 3_000_000,
+                    declared_value_cents: 5_000_000,
+                    pickup_window_start: "2026-06-12T08:00:00Z",
+                    pickup_window_end: "2026-06-13T18:00:00Z",
+                    cargo_description: "Pallets",
+                    status: "open",
+                },
+                shipper: { id: 1, name: "Test User" },
+                transport_window: {
+                    id: 5,
+                    origin_zone: "Buenos Aires",
+                    destination_zone: "Córdoba",
+                    available_from: "2026-06-11T08:00:00Z",
+                    available_to: "2026-06-16T18:00:00Z",
+                    price_per_km: "1500.0",
+                    max_km: 1000,
+                    status: "pending_offer",
+                },
+            },
+        ];
+
+        const filtered = all.filter((item) => item.status === status);
+        return HttpResponse.json(filtered, { headers: pagyHeaders(filtered.length) });
+    }),
+
+    http.post(`${API}/api/carriers/me/cargo-offers/:id/accept`, ({ params }) => {
+        const id = Number(params.id);
+        return HttpResponse.json({
+            cargo_offer: {
+                id,
+                cargo_id: 7,
+                carrier_id: 1,
+                transport_window_id: 5,
+                status: "accepted",
+                expires_at: "2026-06-15T12:00:00Z",
+                accepted_at: "2026-06-11T10:00:00Z",
+                rejected_at: null,
+                created_at: "2026-06-10T10:00:00Z",
+                updated_at: "2026-06-11T10:00:00Z",
+                price_amount_cents: 105_000_000,
+                cargo: {
+                    id: 7,
+                    pickup_address: "Av. Corrientes 1234, CABA",
+                    delivery_address: "Av. Colón 500, Córdoba",
+                    weight_kg: "1500.0",
+                    volume_cm3: 3_000_000,
+                    declared_value_cents: 5_000_000,
+                    pickup_window_start: "2026-06-12T08:00:00Z",
+                    pickup_window_end: "2026-06-13T18:00:00Z",
+                    cargo_description: "Pallets",
+                    status: "accepted",
+                },
+                shipper: { id: 1, name: "Test User" },
+                transport_window: {
+                    id: 5,
+                    origin_zone: "Buenos Aires",
+                    destination_zone: "Córdoba",
+                    available_from: "2026-06-11T08:00:00Z",
+                    available_to: "2026-06-16T18:00:00Z",
+                    price_per_km: "1500.0",
+                    max_km: 1000,
+                    status: "reserved",
+                },
+            },
+            shipment: {
+                id: 31,
+                cargo_offer_id: id,
+                status: "pending_payment",
+                accepted_at: "2026-06-11T10:00:00Z",
+                picked_up_at: null,
+                delivered_at: null,
+                created_at: "2026-06-11T10:00:00Z",
+                updated_at: "2026-06-11T10:00:00Z",
+            },
+        });
+    }),
+
+    http.post(`${API}/api/carriers/me/cargo-offers/:id/reject`, ({ params }) => {
+        const id = Number(params.id);
+        return HttpResponse.json({
+            id,
+            cargo_id: 7,
+            carrier_id: 1,
+            transport_window_id: 5,
+            status: "rejected",
+            expires_at: "2026-06-15T12:00:00Z",
+            accepted_at: null,
+            rejected_at: "2026-06-11T10:00:00Z",
+            created_at: "2026-06-10T10:00:00Z",
+            updated_at: "2026-06-11T10:00:00Z",
+            price_amount_cents: 105_000_000,
+            cargo: {
+                id: 7,
+                pickup_address: "Av. Corrientes 1234, CABA",
+                delivery_address: "Av. Colón 500, Córdoba",
+                weight_kg: "1500.0",
+                volume_cm3: 3_000_000,
+                declared_value_cents: 5_000_000,
+                pickup_window_start: "2026-06-12T08:00:00Z",
+                pickup_window_end: "2026-06-13T18:00:00Z",
+                cargo_description: "Pallets",
+                status: "open",
+            },
+            shipper: { id: 1, name: "Test User" },
+            transport_window: {
+                id: 5,
+                origin_zone: "Buenos Aires",
+                destination_zone: "Córdoba",
+                available_from: "2026-06-11T08:00:00Z",
+                available_to: "2026-06-16T18:00:00Z",
+                price_per_km: "1500.0",
+                max_km: 1000,
+                status: "open",
+            },
+        });
+    }),
+
+    http.get(`${API}/api/carriers/me/shipments`, ({ request }) => {
+        const status = new URL(request.url).searchParams.get("status");
+        const all = [
+            {
+                id: 31,
+                cargo_offer_id: 11,
+                status: "pending_payment",
+                accepted_at: "2026-06-11T10:00:00Z",
+                picked_up_at: null,
+                delivered_at: null,
+                created_at: "2026-06-11T10:00:00Z",
+                updated_at: "2026-06-11T10:00:00Z",
+            },
+        ];
+
+        const filtered = status ? all.filter((item) => item.status === status) : all;
+        return HttpResponse.json(filtered, { headers: pagyHeaders(filtered.length) });
+    }),
 ];
 
 function pagyHeaders(total: number): Record<string, string> {
@@ -168,7 +324,6 @@ export function fixtureCargo(overrides: Record<string, unknown> = {}) {
         weight_kg: "1500.0",
         volume_cm3: 3_000_000,
         declared_value_cents: 5_000_000,
-        cancelled_at: null,
         created_at: "2026-05-20T10:00:00Z",
         updated_at: "2026-05-20T10:00:00Z",
         editable: true,

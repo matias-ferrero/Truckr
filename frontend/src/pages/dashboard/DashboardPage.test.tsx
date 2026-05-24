@@ -217,6 +217,7 @@ describe("DashboardPage", () => {
         expect(screen.getByText(/panel · transportista/i)).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mi disponibilidad/i })).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mi flota/i })).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: /ver mis viajes/i })).toHaveAttribute("href", "/carrier/shipments");
 
         await waitFor(() => {
             expect(screen.getByRole("heading", { level: 3, name: "Centro a Pilar" })).toBeInTheDocument();

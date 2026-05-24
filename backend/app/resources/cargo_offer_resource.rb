@@ -6,6 +6,7 @@ class CargoOfferResource
 
   attributes :id, :cargo_id, :carrier_id, :transport_window_id,
              :amount_cents, :currency, :status, :expires_at,
+             :accepted_at, :rejected_at,
              :created_at, :updated_at
 
   # Embed the minimal cargo summary needed for list-view cards.

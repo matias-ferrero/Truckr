@@ -166,10 +166,17 @@ if defined?(CargoOffer) && defined?(Shipment) && CargoOffer.exists?
 
     attrs = { cargo_offer: cargo_offer, status: state }
     case state
-    when "in_transit" then attrs[:picked_up_at] = 1.hour.ago
-    when "delivered"  then attrs.merge!(picked_up_at: 4.hours.ago, delivered_at: 30.minutes.ago)
-    when "settled"    then attrs.merge!(picked_up_at: 1.day.ago, delivered_at: 6.hours.ago, settled_at: 30.minutes.ago)
-    when "cancelled"  then attrs.merge!(cancelled_at: 1.minute.ago, cancellation_reason: "demo")
+    when "pending_payment"
+      attrs[:accepted_at] = 2.hours.ago
+    when "to_pick_up"
+      attrs[:accepted_at] = 3.hours.ago
+    when "in_transit"
+      attrs[:accepted_at] = 4.hours.ago
+      attrs[:picked_up_at] = 1.hour.ago
+    when "delivered"
+      attrs[:accepted_at] = 1.day.ago
+      attrs[:picked_up_at] = 4.hours.ago
+      attrs[:delivered_at] = 30.minutes.ago
     end
 
     Shipment.create!(attrs)

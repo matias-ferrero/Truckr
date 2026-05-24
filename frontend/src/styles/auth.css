@@ -61,6 +61,12 @@
     gap: var(--space-3);
 }
 
+.appHeaderNavCluster {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
 .appHeaderEmail {
     font-size: var(--text-sm);
     color: var(--ink-2);
@@ -76,10 +82,29 @@
     font-weight: 600;
     font-size: var(--text-sm);
     padding: 8px 12px;
-    min-height: 36px;
+        min-height: 36px;
     display: inline-flex;
     align-items: center;
     border-radius: var(--radius-sm);
+}
+
+.appHeaderLinkPill {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.appHeaderBadge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: color-mix(in oklab, var(--brand-secondary) 40%, var(--paper));
+    border: 1px solid color-mix(in oklab, var(--brand-secondary) 70%, var(--ink));
+    border-radius: 999px;
+    padding: 2px 8px;
+    line-height: 1.2;
 }
 
 .appHeaderLink:hover {
@@ -101,6 +126,13 @@
 
     .appHeaderLink {
         padding: 6px 10px;
+        min-height: 44px;
+    }
+
+    .appHeaderBadge {
+        display: inline-flex;
+        padding: 2px 6px;
+        font-size: 0.675rem;
     }
 
     .authMain {

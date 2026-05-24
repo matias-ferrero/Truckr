@@ -7,7 +7,7 @@ class TransportWindowResource
 
   attributes :id, :vehicle_id, :origin_zone, :destination_zone,
              :price_per_km, :max_km, :available_from, :available_to,
-             :active, :created_at, :updated_at
+             :active, :status, :created_at, :updated_at
 
   attribute :vehicle do |tw|
     v = tw.vehicle

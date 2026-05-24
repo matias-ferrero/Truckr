@@ -3,12 +3,15 @@
 # TransportWindow — published carrier availability tied to a specific Vehicle.
 # Carrier is reachable via vehicle.carrier (no denormalised carrier_id, see plan §4.1).
 class TransportWindow < ApplicationRecord
+  STATUSES = %w[open pending_offer reserved].freeze
+
   belongs_to :vehicle, inverse_of: :transport_windows
   has_many :cargo_offers, dependent: :restrict_with_error, inverse_of: :transport_window
 
   delegate :carrier, to: :vehicle, allow_nil: true
 
   validates :origin_zone, :destination_zone, presence: true
+  validates :status, inclusion: { in: STATUSES }
   validates :price_per_km, numericality: { greater_than: 0 }
   validates :max_km, numericality: { greater_than: 0, only_integer: true }
   validates :available_from, :available_to, presence: true
@@ -18,6 +21,7 @@ class TransportWindow < ApplicationRecord
   before_save :normalize_search_fields
 
   scope :active, -> { where(active: true) }
+  scope :marketplace_open, -> { where(status: "open") }
 
   # MVP: diacritic-insensitive substring match via normalized columns.
   # Phase 2: replace with PostGIS / proper geocoded matching (ADR-010).
@@ -26,7 +30,7 @@ class TransportWindow < ApplicationRecord
 
   def self.ransackable_attributes(_auth_object = nil)
     %w[id vehicle_id origin_zone destination_zone origin_zone_normalized destination_zone_normalized
-       price_per_km max_km available_from available_to active created_at updated_at]
+      price_per_km max_km available_from available_to active status created_at updated_at]
   end
 
   def self.ransackable_associations(_auth_object = nil)

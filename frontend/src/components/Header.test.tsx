@@ -78,12 +78,26 @@ describe("Header", () => {
                     shipper: null,
                 })
             ),
+            http.get(`${API}/api/carriers/me/cargo-offers`, () =>
+                HttpResponse.json([], {
+                    headers: {
+                        "X-Total": "3",
+                        "X-Page": "1",
+                        "X-Per-Page": "20",
+                        "X-Total-Pages": "1",
+                    },
+                })
+            ),
         );
 
         renderHeader("/");
         await waitFor(() => expect(screen.getByText("Carrier User")).toBeInTheDocument());
         expect(screen.getByRole("link", { name: /perfil público de carrier user/i }))
             .toHaveAttribute("href", "/carriers/me");
+        expect(screen.getByRole("link", { name: /bandeja/i })).toHaveAttribute("href", "/carrier/cargo-offers");
+        expect(screen.queryByRole("link", { name: /mis viajes/i })).toBeNull();
+        expect(screen.queryByRole("link", { name: /envíos/i })).toBeNull();
+        await waitFor(() => expect(screen.getByText(/3 pendientes/i)).toBeInTheDocument());
     });
 
     it("logs out when Salir is clicked", async () => {

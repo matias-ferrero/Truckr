@@ -140,6 +140,7 @@ RSpec.describe "Api::CargoOffers", type: :request do
           expect(body["carrier_id"]).to eq(carrier_user.carrier.id)
           expect(body["transport_window_id"]).to eq(window.id)
           expect(body["expires_at"]).to be_present
+          expect(window.reload.status).to eq("pending_offer")
         end
       end
 

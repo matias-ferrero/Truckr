@@ -51,6 +51,16 @@ describe("AppRoutes", () => {
         server.use(
             http.get(`${API}/api/auth/me`, () => HttpResponse.json(carrierMe)),
             http.get(`${API}/api/carriers/me/vehicles`, () => HttpResponse.json([])),
+            http.get(`${API}/api/carriers/me/cargo-offers`, () =>
+                HttpResponse.json([], {
+                    headers: {
+                        "X-Total": "0",
+                        "X-Page": "1",
+                        "X-Per-Page": "20",
+                        "X-Total-Pages": "1",
+                    },
+                })
+            ),
         );
 
         window.history.pushState({}, "", "/carrier/vehicles");
@@ -58,6 +68,62 @@ describe("AppRoutes", () => {
 
         const skipLinks = await screen.findAllByText(/saltar al contenido/i);
         expect(skipLinks.length).toBeGreaterThan(0);
+    });
+
+    it("renders carrier inbox route", async () => {
+        server.use(
+            http.get(`${API}/api/auth/me`, () => HttpResponse.json(carrierMe)),
+            http.get(`${API}/api/carriers/me/cargo-offers`, () =>
+                HttpResponse.json([], {
+                    headers: {
+                        "X-Total": "0",
+                        "X-Page": "1",
+                        "X-Per-Page": "20",
+                        "X-Total-Pages": "1",
+                    },
+                })
+            ),
+        );
+
+        window.history.pushState({}, "", "/carrier/cargo-offers");
+        render(<AppRoutes />);
+
+        await waitFor(() =>
+            expect(screen.getByRole("heading", { name: /ofertas recibidas/i })).toBeInTheDocument()
+        );
+    });
+
+    it("renders carrier shipments route", async () => {
+        server.use(
+            http.get(`${API}/api/auth/me`, () => HttpResponse.json(carrierMe)),
+            http.get(`${API}/api/carriers/me/cargo-offers`, () =>
+                HttpResponse.json([], {
+                    headers: {
+                        "X-Total": "0",
+                        "X-Page": "1",
+                        "X-Per-Page": "20",
+                        "X-Total-Pages": "1",
+                    },
+                })
+            ),
+            http.get(`${API}/api/carriers/me/shipments`, () =>
+                HttpResponse.json([], {
+                    headers: {
+                        "X-Total": "0",
+                        "X-Page": "1",
+                        "X-Per-Page": "20",
+                        "X-Total-Pages": "1",
+                    },
+                })
+            ),
+        );
+
+        window.history.pushState({}, "", "/carrier/shipments");
+        render(<AppRoutes />);
+
+        await waitFor(() =>
+            expect(screen.getByRole("heading", { name: /mis viajes/i })).toBeInTheDocument()
+        );
     });
 
     it("falls through unknown paths to the landing", async () => {

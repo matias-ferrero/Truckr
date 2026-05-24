@@ -31,17 +31,28 @@ module Api
       cargo = Cargo.find(cargo_offer_params[:cargo_id])
       authorize cargo, :offer?
 
-      window = TransportWindow.active.includes(vehicle: :carrier)
+      window = TransportWindow.active.marketplace_open.includes(vehicle: :carrier)
                               .find(cargo_offer_params[:transport_window_id])
 
-      cargo_offer = CargoOffer.create!(
-        cargo:            cargo,
-        carrier:          window.carrier,
-        transport_window: window,
-        currency:         "ARS",
-        status:           "pending",
-        estimated_km:     cargo_offer_params[:estimated_km]
-      )
+      cargo_offer = nil
+      ActiveRecord::Base.transaction do
+        window.lock!
+        unless window.status == "open"
+          offer = CargoOffer.new
+          offer.errors.add(:transport_window, :already_taken)
+          raise ActiveRecord::RecordInvalid, offer
+        end
+
+        cargo_offer = CargoOffer.create!(
+          cargo:            cargo,
+          carrier:          window.carrier,
+          transport_window: window,
+          currency:         "ARS",
+          status:           "pending",
+          estimated_km:     cargo_offer_params[:estimated_km]
+        )
+        window.update!(status: "pending_offer")
+      end
 
       CargoOfferMailer.notify_carrier(cargo_offer).deliver_later
       render json: CargoOfferResource.new(cargo_offer).serialize, status: :created

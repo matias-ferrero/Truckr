@@ -17,8 +17,15 @@ FactoryBot.define do
     expires_at   { 24.hours.from_now }
 
     trait(:pending)   { status { "pending" } }
-    trait(:accepted)  { status { "accepted" } }
+    trait(:accepted)  do
+      status { "accepted" }
+      accepted_at { 5.minutes.ago }
+    end
     trait(:paid)      { status { "paid" } }
+    trait(:rejected)  do
+      status { "rejected" }
+      rejected_at { 5.minutes.ago }
+    end
     trait(:expired)   { status { "expired" } }
     trait(:cancelled) { status { "cancelled" } }
   end

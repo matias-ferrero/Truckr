@@ -41,6 +41,8 @@
      saturated tokens as the landing instead of the pre-committed wash. */
   --brand-primary: #46aadc;   /* Open-Sky Blue — shipper voice */
   --brand-secondary: #e1be5a; /* Honey Saffron — carrier voice */
+  --brand-success: oklch(72% 0.13 150); /* Success (green) */
+  --brand-warning: oklch(78% 0.13 80);  /* Warning (amber) */
   --brand-tertiary: #9ca0a8;  /* Cool Concrete — structural neutral */
   --brand-error: #e26464;     /* Signal Coral — reserved */
   --brand-neutral: #ffffff;   /* Paper White — reserved surface */

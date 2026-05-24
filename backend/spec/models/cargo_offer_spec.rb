@@ -43,15 +43,16 @@ RSpec.describe CargoOffer, type: :model do
 
     it "freezes TERMINAL_STATES" do
       expect(CargoOffer::TERMINAL_STATES).to be_frozen
-      expect(CargoOffer::TERMINAL_STATES).to contain_exactly("paid", "expired", "cancelled")
+      expect(CargoOffer::TERMINAL_STATES).to contain_exactly("paid", "rejected", "expired", "cancelled")
     end
 
     it "freezes ALLOWED_TRANSITIONS and matches the documented table" do
       expect(CargoOffer::ALLOWED_TRANSITIONS).to be_frozen
       expect(CargoOffer::ALLOWED_TRANSITIONS).to eq(
-        "pending"   => %w[accepted expired cancelled],
+        "pending"   => %w[accepted expired rejected cancelled],
         "accepted"  => %w[paid cancelled],
         "paid"      => [],
+        "rejected"  => [],
         "expired"   => [],
         "cancelled" => []
       )
@@ -62,6 +63,7 @@ RSpec.describe CargoOffer, type: :model do
     let!(:pending_co)   { create(:cargo_offer, :pending) }
     let!(:accepted_co)  { create(:cargo_offer, :accepted) }
     let!(:paid_co)      { create(:cargo_offer, :paid) }
+    let!(:rejected_co)  { create(:cargo_offer, :rejected) }
     let!(:expired_co)   { create(:cargo_offer, :expired) }
     let!(:cancelled_co) { create(:cargo_offer, :cancelled) }
 
@@ -79,6 +81,10 @@ RSpec.describe CargoOffer, type: :model do
 
     it ".cancelled returns only status=cancelled" do
       expect(CargoOffer.cancelled).to contain_exactly(cancelled_co)
+    end
+
+    it ".rejected returns only status=rejected" do
+      expect(CargoOffer.rejected).to contain_exactly(rejected_co)
     end
 
     it ".expired returns only status=expired" do

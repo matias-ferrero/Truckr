@@ -8,6 +8,8 @@
 class CargoOfferPolicy < ApplicationPolicy
   def index?  = user&.shipper.present? || user&.carrier.present?
   def create? = user&.shipper.present?
+  def accept? = owner_carrier?
+  def reject? = owner_carrier?
 
   class Scope < Scope
     def resolve
@@ -19,5 +21,11 @@ class CargoOfferPolicy < ApplicationPolicy
         scope.none
       end
     end
+  end
+
+  private
+
+  def owner_carrier?
+    user&.carrier.present? && record.carrier_id == user.carrier.id
   end
 end

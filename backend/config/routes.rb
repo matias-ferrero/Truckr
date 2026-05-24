@@ -45,6 +45,13 @@ Rails.application.routes.draw do
                            module: "carriers/me"
       resources :transport_windows, only: %i[index show create update destroy],
                                     module: "carriers/me"
+      resources :shipments, only: %i[index], module: "carriers/me"
+    end
+
+    scope path: "carriers/me/cargo-offers", as: :me_cargo_offers, module: "carriers/me" do
+      get "/", to: "cargo_offers#index"
+      post "/:id/accept", to: "cargo_offers#accept"
+      post "/:id/reject", to: "cargo_offers#reject"
     end
 
     # Public read endpoints — anyone can browse a carrier's fleet.

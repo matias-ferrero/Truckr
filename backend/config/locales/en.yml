@@ -3,6 +3,10 @@ en:
   cargo_offer_mailer:
     notify_carrier:
       subject: "New cargo offer received — Truckr®"
+    notify_shipper_offer_accepted:
+      subject: "Your cargo offer was accepted — Truckr®"
+    notify_shipper_offer_rejected:
+      subject: "Cargo offer update — Truckr®"
   errors:
     unauthorized: "Authentication required"
     invalid_credentials: "Invalid email or password"
@@ -27,6 +31,7 @@ en:
               out_of_window_range: "the cargo's pickup window does not overlap the transport window's availability"
             transport_window:
               already_taken: "the transport window already has a pending or accepted offer"
+              not_open: "the transport window is not open"
             weight_kg:
               exceeds_vehicle_capacity: "exceeds the vehicle's load capacity"
             volume_cm3:

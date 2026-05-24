@@ -10,8 +10,8 @@ RSpec.describe Shipment, type: :model do
   describe "validations" do
     it { is_expected.to validate_presence_of(:cargo_offer_id) }
 
-    it "STATUSES contains the canonical 7 states" do
-      expect(described_class::STATUSES).to eq(%w[draft offered accepted in_transit delivered settled cancelled])
+    it "STATUSES contains the canonical 4 states" do
+      expect(described_class::STATUSES).to eq(%w[pending_payment to_pick_up in_transit delivered])
     end
 
     it "rejects unknown status assignments via the enum" do
@@ -19,9 +19,10 @@ RSpec.describe Shipment, type: :model do
         .to raise_error(ArgumentError)
     end
 
-    it "requires cancellation_reason when cancelled" do
-      s = create(:shipment, :offered)
-      expect { s.transition_to!(:cancelled) }.to raise_error(ActiveRecord::RecordInvalid)
+    it "requires accepted_at when pending_payment" do
+      s = build(:shipment, status: "pending_payment", accepted_at: nil)
+      expect(s).not_to be_valid
+      expect(s.errors[:accepted_at]).to be_present
     end
   end
 
@@ -29,27 +30,19 @@ RSpec.describe Shipment, type: :model do
     it "is frozen and contains the canonical map" do
       expect(described_class::ALLOWED_TRANSITIONS).to be_frozen
       expect(described_class::ALLOWED_TRANSITIONS).to eq(
-        draft:      [ :offered ],
-        offered:    [ :accepted, :cancelled ],
-        accepted:   [ :in_transit, :cancelled ],
-        in_transit: [ :delivered, :cancelled ],
-        delivered:  [ :settled ],
-        settled:    [],
-        cancelled:  []
+        pending_payment: [ :to_pick_up ],
+        to_pick_up:      [ :in_transit ],
+        in_transit:      [ :delivered ],
+        delivered:       []
       )
     end
   end
 
   describe "#transition_to! — permitted transitions" do
     permitted = [
-      [ :draft,      :offered,    {} ],
-      [ :offered,    :accepted,   {} ],
-      [ :offered,    :cancelled,  { reason: "buyer changed mind" } ],
-      [ :accepted,   :in_transit, {} ],
-      [ :accepted,   :cancelled,  { reason: "carrier no-show" } ],
-      [ :in_transit, :delivered,  {} ],
-      [ :in_transit, :cancelled,  { reason: "vehicle failure" } ],
-      [ :delivered,  :settled,    {} ]
+      [ :pending_payment, :to_pick_up, {} ],
+      [ :to_pick_up,      :in_transit, {} ],
+      [ :in_transit,      :delivered,  {} ]
     ]
 
     permitted.each do |from, to, extra|
@@ -71,11 +64,10 @@ RSpec.describe Shipment, type: :model do
 
   describe "#transition_to! — rejected transitions" do
     rejected = [
-      [ :delivered,  :in_transit ],
-      [ :settled,    :in_transit ],
-      [ :cancelled,  :offered ],
-      [ :draft,      :delivered ],
-      [ :delivered,  :cancelled ] # explicit: no rollback after delivery
+      [ :delivered,       :in_transit ],
+      [ :pending_payment, :delivered ],
+      [ :to_pick_up,      :pending_payment ],
+      [ :in_transit,      :to_pick_up ]
     ]
 
     rejected.each do |from, to|
@@ -91,28 +83,28 @@ RSpec.describe Shipment, type: :model do
 
   describe "#transition_to! — locking" do
     it "wraps the transition in a row lock" do
-      s = create(:shipment, :offered)
+      s = create(:shipment, :pending_payment)
       expect(s).to receive(:with_lock).and_call_original
-      s.transition_to!(:accepted)
+      s.transition_to!(:to_pick_up)
     end
   end
 
   describe "scopes" do
-    let!(:draft)      { create(:shipment, :draft) }
+    let!(:pending_payment) { create(:shipment, :pending_payment) }
+    let!(:to_pick_up)      { create(:shipment, :to_pick_up) }
     let!(:in_transit) { create(:shipment, :in_transit) }
-    let!(:settled)    { create(:shipment, :settled) }
-    let!(:cancelled)  { create(:shipment, :cancelled) }
+    let!(:delivered)  { create(:shipment, :delivered) }
 
-    it ".active excludes settled and cancelled" do
-      expect(Shipment.active).to match_array([ draft, in_transit ])
+    it ".active includes only active shipment states" do
+      expect(Shipment.active).to match_array([ pending_payment, to_pick_up, in_transit ])
     end
 
-    it ".completed includes settled and cancelled" do
-      expect(Shipment.completed).to match_array([ settled, cancelled ])
+    it ".completed includes delivered shipments" do
+      expect(Shipment.completed).to match_array([ delivered ])
     end
 
-    it ".in_progress matches accepted/in_transit only" do
-      expect(Shipment.in_progress).to match_array([ in_transit ])
+    it ".in_progress matches the active shipment queue" do
+      expect(Shipment.in_progress).to match_array([ pending_payment, to_pick_up, in_transit ])
     end
   end
 

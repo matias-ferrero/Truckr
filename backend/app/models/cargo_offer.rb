@@ -8,13 +8,15 @@
 #     │            │
 #     ├──► expired │
 #     │            └──► cancelled
+#     ├──► rejected
 #     └──► cancelled
 #
 # Allowed transitions:
-#   pending   → accepted, expired, cancelled
+#   pending   → accepted, expired, rejected, cancelled
 #   accepted  → paid, cancelled
 #   paid      → (terminal)
 #   expired   → (terminal)
+#   rejected  → (terminal)
 #   cancelled → (terminal)
 #
 # Triggers (NOT implemented in this issue — declared as the contract for
@@ -27,12 +29,13 @@
 # `accepted` is the transition that signals "ready to be picked up by Fulfilment
 # (REQ-BE-00022)" — the trigger for `Shipment.create!(cargo_offer: ...)`.
 class CargoOffer < ApplicationRecord
-  STATES = %w[pending accepted paid expired cancelled].freeze
-  TERMINAL_STATES = %w[paid expired cancelled].freeze
+  STATES = %w[pending accepted paid rejected expired cancelled].freeze
+  TERMINAL_STATES = %w[paid rejected expired cancelled].freeze
   ALLOWED_TRANSITIONS = {
-    "pending"   => %w[accepted expired cancelled],
+    "pending"   => %w[accepted expired rejected cancelled],
     "accepted"  => %w[paid cancelled],
     "paid"      => [],
+    "rejected"  => [],
     "expired"   => [],
     "cancelled" => []
   }.freeze
@@ -75,9 +78,14 @@ class CargoOffer < ApplicationRecord
   scope :pending,     -> { where(status: "pending") }
   scope :accepted,    -> { where(status: "accepted") }
   scope :paid,        -> { where(status: "paid") }
+  scope :rejected,    -> { where(status: "rejected") }
   scope :cancelled,   -> { where(status: "cancelled") }
   scope :expired,     -> { where(status: "expired") }
   scope :past_expiry, -> { where("expires_at < ?", Time.current) }
+
+  def expired?
+    expires_at.present? && expires_at < Time.current
+  end
 
   def can_transition_to?(new_status)
     ALLOWED_TRANSITIONS.fetch(status, []).include?(new_status.to_s)

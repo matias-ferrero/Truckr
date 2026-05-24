@@ -35,4 +35,28 @@ RSpec.describe CargoOfferMailer, type: :mailer do
       expect { mail.deliver_now }.not_to raise_error
     end
   end
+
+  describe "#notify_shipper_offer_accepted" do
+    subject(:mail) { described_class.notify_shipper_offer_accepted(cargo_offer) }
+
+    it "is addressed to the shipper's email" do
+      expect(mail.to).to contain_exactly(shipper_user.email)
+    end
+
+    it "includes payment path in the body" do
+      expect(mail.body.encoded).to include("/cargos/#{cargo.id}/pay")
+    end
+  end
+
+  describe "#notify_shipper_offer_rejected" do
+    subject(:mail) { described_class.notify_shipper_offer_rejected(cargo_offer) }
+
+    it "is addressed to the shipper's email" do
+      expect(mail.to).to contain_exactly(shipper_user.email)
+    end
+
+    it "references the rejected cargo offer id" do
+      expect(mail.body.encoded).to include(cargo_offer.id.to_s)
+    end
+  end
 end

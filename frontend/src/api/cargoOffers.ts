@@ -32,8 +32,10 @@ export type CargoOffer = {
     transport_window_id: number;
     amount_cents: number;
     currency: string;
-    status: "pending" | "accepted" | "paid" | "expired" | "cancelled";
+    status: "pending" | "accepted" | "paid" | "rejected" | "expired" | "cancelled";
     expires_at: string;
+    accepted_at?: string | null;
+    rejected_at?: string | null;
     created_at: string;
     updated_at: string;
     // The index resource embeds a cargo summary; optional for defensive

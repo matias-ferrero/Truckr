@@ -162,6 +162,11 @@ export function DashboardPage() {
                             <span className="dashboardSectionIcon" aria-hidden="true"><IconTruck /></span>
                             <h2 id="section-trips">{dc.trips.heading}</h2>
                         </div>
+                        {isCarrier && (
+                            <Link to="/carrier/shipments" className="button buttonGhost">
+                                {dc.trips.viewAll}
+                            </Link>
+                        )}
                     </div>
                     <div className="dashboardCardList">
                         <div className="dashboardEmpty" role="status">

@@ -362,6 +362,125 @@
     min-height: 44px;
 }
 
+/* ── Carrier cargo-offer inbox + shipments (US10 / US12) ───────────── */
+
+.inboxFilterLabel {
+    display: grid;
+    gap: 6px;
+    min-width: 220px;
+}
+
+.inboxFilterLabel > span {
+    font-weight: 600;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+}
+
+.inboxFilterSelect {
+    min-height: 44px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
+    padding: 10px 12px;
+}
+
+.offerInboxGrid,
+.shipmentGrid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr));
+}
+
+.offerInboxCard,
+.shipmentCard {
+    background: var(--surface-form);
+    border: 1px solid var(--border-cream);
+    border-radius: 16px;
+    box-shadow: 0 8px 20px color-mix(in oklab, var(--brand-secondary) 14%, transparent);
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.offerInboxHead,
+.shipmentHead {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.offerInboxRoute,
+.shipmentHead h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.3;
+}
+
+.offerInboxMeta,
+.shipmentMeta {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+}
+
+.offerInboxMeta p,
+.shipmentMeta {
+    margin: 0;
+}
+
+.offerInboxDetails {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--paper) 90%, var(--brand-secondary));
+}
+
+.offerInboxDetails > summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    font-weight: 600;
+}
+
+.offerInboxDetails[open] > summary {
+    border-bottom: 1px solid var(--border);
+}
+
+.offerInboxDetailBody {
+    padding: 12px;
+    display: grid;
+    gap: 8px;
+}
+
+.offerInboxDetailBody h3 {
+    margin: 6px 0 2px;
+    font-size: 0.95rem;
+}
+
+.offerInboxDetailBody p {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+}
+
+.offerInboxActions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.shipmentsFilter {
+    display: inline-flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
 .searchField input::placeholder {
     color: var(--ink-3);
     opacity: 1;
@@ -385,6 +504,36 @@
     display: grid;
     gap: 16px;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+/* Mobile adaptations: single-column lists and larger touch targets */
+@media (max-width: 640px) {
+    .offerInboxGrid,
+    .shipmentGrid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .offerInboxCard,
+    .shipmentCard {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .offerInboxActions {
+        flex-direction: column;
+    }
+
+    .offerInboxActions > button,
+    .offerInboxActions > a,
+    .paginator button {
+        width: 100%;
+        min-height: 44px;
+    }
+
+    .paginator {
+        gap: 12px;
+    }
 }
 
 .searchCard {

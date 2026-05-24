@@ -1,6 +1,6 @@
 ActiveAdmin.register Shipment do
-  permit_params :cargo_offer_id, :status, :picked_up_at, :delivered_at, :settled_at,
-                :cancelled_at, :cancellation_reason, :discarded_at
+  permit_params :cargo_offer_id, :status, :accepted_at, :picked_up_at, :delivered_at,
+                :discarded_at
   config.sort_order = "created_at_desc"
 
   filter :status, as: :select, collection: Shipment::STATUSES
@@ -11,10 +11,9 @@ ActiveAdmin.register Shipment do
     id_column
     column :cargo_offer_id
     column :status
+    column :accepted_at
     column :picked_up_at
     column :delivered_at
-    column :settled_at
-    column :cancelled_at
     column :created_at
     actions
   end
@@ -24,11 +23,9 @@ ActiveAdmin.register Shipment do
       row :id
       row :cargo_offer_id
       row :status
+      row :accepted_at
       row :picked_up_at
       row :delivered_at
-      row :settled_at
-      row :cancelled_at
-      row :cancellation_reason
       row :discarded_at
       row :created_at
       row :updated_at
@@ -65,11 +62,9 @@ ActiveAdmin.register Shipment do
     f.inputs do
       f.input :cargo_offer
       f.input :status, as: :select, collection: Shipment::STATUSES
+      f.input :accepted_at
       f.input :picked_up_at
       f.input :delivered_at
-      f.input :settled_at
-      f.input :cancelled_at
-      f.input :cancellation_reason
       f.input :discarded_at
     end
     f.actions

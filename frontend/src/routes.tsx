@@ -16,6 +16,8 @@ const VehicleForm           = lazy(() => import("./pages/carrier/VehicleForm"));
 const VehicleList           = lazy(() => import("./pages/carrier/VehicleList"));
 const TransportWindowList   = lazy(() => import("./pages/carrier/TransportWindowList"));
 const TransportWindowForm   = lazy(() => import("./pages/carrier/TransportWindowForm"));
+const CarrierCargoOfferInbox = lazy(() => import("./pages/carrier/CarrierCargoOfferInbox"));
+const CarrierShipments = lazy(() => import("./pages/carrier/CarrierShipments"));
 const CarrierDetail = lazy(() => import("./pages/public/CarrierDetail"));
 const CarrierMeRedirect = lazy(() => import("./pages/public/CarrierMeRedirect"));
 const CreateOfferPage = lazy(() => import("./pages/shipper/CreateOfferPage"));
@@ -134,6 +136,8 @@ export function AppRoutes() {
                         <Route path="availability"     element={<TransportWindowList />} />
                         <Route path="availability/new" element={<TransportWindowForm mode="new" />} />
                         <Route path="availability/:id" element={<TransportWindowForm mode="edit" />} />
+                        <Route path="cargo-offers" element={<CarrierCargoOfferInbox />} />
+                        <Route path="shipments" element={<CarrierShipments />} />
                     </Route>
                     <Route element={<PublicLayout />}>
                         {/* Declared before `:id` so the literal segment wins over the wildcard. */}

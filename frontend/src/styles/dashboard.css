@@ -9,8 +9,7 @@
        always sit on warmth and the shipper sections always sit on sky. The
        per-section variants below pick up the matching voice. Status
        semantics stay page-local; brand tokens inherit from :root. */
-    --brand-success: oklch(72% 0.13 150);
-    --brand-warning: oklch(78% 0.13 80);
+    /* Status semantics: use `--brand-success` and `--brand-warning` from :root */
     --ink-4: color-mix(in oklab, var(--ink) 38%, var(--brand-neutral));
     --page-bg: var(--surface);
     --border-strong: color-mix(in oklab, var(--brand-primary) 55%, var(--ink));

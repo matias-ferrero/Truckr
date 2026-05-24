@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_19_130001) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_24_000000) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -66,18 +66,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_19_130001) do
   end
 
   create_table "cargo_offers", force: :cascade do |t|
+    t.datetime "accepted_at"
     t.integer "amount_cents", null: false
     t.integer "cargo_id", null: false
     t.integer "carrier_id", null: false
     t.datetime "created_at", null: false
     t.string "currency", default: "ARS", null: false
     t.datetime "expires_at", null: false
+    t.datetime "rejected_at"
     t.string "status", default: "pending", null: false
     t.integer "transport_window_id", null: false
     t.datetime "updated_at", null: false
+    t.index ["accepted_at"], name: "index_cargo_offers_on_accepted_at"
     t.index ["cargo_id"], name: "index_cargo_offers_on_cargo_id"
     t.index ["carrier_id"], name: "index_cargo_offers_on_carrier_id"
     t.index ["expires_at"], name: "index_cargo_offers_on_expires_at"
+    t.index ["rejected_at"], name: "index_cargo_offers_on_rejected_at"
     t.index ["status"], name: "index_cargo_offers_on_status"
     t.index ["transport_window_id"], name: "index_cargo_offers_on_transport_window_id"
   end
@@ -153,7 +157,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_19_130001) do
     t.index ["cargo_offer_id"], name: "index_shipments_on_cargo_offer_id", unique: true
     t.index ["discarded_at"], name: "index_shipments_on_discarded_at"
     t.index ["status"], name: "index_shipments_on_status"
-    t.check_constraint "status IN ('draft','offered','accepted','in_transit','delivered','settled','cancelled')", name: "shipments_status_check"
+    t.check_constraint "status IN ('pending_payment','to_pick_up','in_transit','delivered')", name: "shipments_status_check"
   end
 
   create_table "shippers", force: :cascade do |t|
@@ -195,12 +199,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_19_130001) do
     t.string "origin_zone", null: false
     t.string "origin_zone_normalized"
     t.decimal "price_per_km", precision: 10, scale: 2, null: false
+    t.string "status", default: "open", null: false
     t.datetime "updated_at", null: false
     t.integer "vehicle_id", null: false
     t.index ["active"], name: "index_transport_windows_on_active"
     t.index ["available_from", "available_to"], name: "index_transport_windows_on_available_from_and_available_to"
     t.index ["destination_zone_normalized"], name: "index_transport_windows_on_destination_zone_normalized"
     t.index ["origin_zone_normalized"], name: "index_transport_windows_on_origin_zone_normalized"
+    t.index ["status"], name: "index_transport_windows_on_status"
     t.index ["vehicle_id", "available_from", "available_to"], name: "idx_tw_on_vehicle_and_window"
     t.index ["vehicle_id"], name: "index_transport_windows_on_vehicle_id"
   end

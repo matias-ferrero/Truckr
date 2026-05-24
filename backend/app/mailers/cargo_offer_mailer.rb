@@ -15,4 +15,32 @@ class CargoOfferMailer < ApplicationMailer
       format.text { render plain: "CargoOffer ##{cargo_offer.id} received. (stub)" }
     end
   end
+
+  def notify_shipper_offer_accepted(cargo_offer)
+    @cargo_offer = cargo_offer
+    @cargo = cargo_offer.cargo
+
+    mail(
+      to: @cargo.shipper.user.email,
+      subject: I18n.t("cargo_offer_mailer.notify_shipper_offer_accepted.subject")
+    ) do |format|
+      format.text do
+        render plain: "Cargo ##{@cargo.id} has an accepted offer. Continue payment at /cargos/#{@cargo.id}/pay"
+      end
+    end
+  end
+
+  def notify_shipper_offer_rejected(cargo_offer)
+    @cargo_offer = cargo_offer
+    @cargo = cargo_offer.cargo
+
+    mail(
+      to: @cargo.shipper.user.email,
+      subject: I18n.t("cargo_offer_mailer.notify_shipper_offer_rejected.subject")
+    ) do |format|
+      format.text do
+        render plain: "CargoOffer ##{cargo_offer.id} for Cargo ##{@cargo.id} was rejected."
+      end
+    end
+  end
 end
