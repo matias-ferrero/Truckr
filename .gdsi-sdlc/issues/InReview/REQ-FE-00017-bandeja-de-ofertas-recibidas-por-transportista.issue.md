@@ -2,7 +2,7 @@
 tag: REQ-FE-00017
 title: Bandeja de ofertas recibidas por el transportista
 priority: P1
-status: backlog
+status: in_review
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/123

@@ -2,7 +2,7 @@
 tag: REQ-BE-00024
 title: Aceptación de CargoOffer por el transportista con cascada sibling-reject
 priority: P1
-status: backlog
+status: in_review
 created: '2026-05-03'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/104
