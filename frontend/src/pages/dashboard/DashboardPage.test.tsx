@@ -43,8 +43,10 @@ function fakeWindow(over: Partial<transportWindowsApi.TransportWindow> = {}): tr
     return {
         id: 1,
         vehicle_id: 1,
-        origin_zone: "Centro",
-        destination_zone: "Pilar",
+        origin_province: "Centro",
+        origin_locality: null,
+        destination_province: "Pilar",
+        destination_locality: null,
         price_per_km: "150.00",
         max_km: 100,
         available_from: "2026-06-01T09:00:00.000Z",
@@ -206,8 +208,12 @@ describe("DashboardPage", () => {
         });
         (transportWindowsApi.listMyTransportWindows as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
             items: [
-                fakeWindow({ origin_zone: "Centro", destination_zone: "Pilar" }),
-                fakeWindow({ id: 2, origin_zone: "San Isidro", destination_zone: "CABA" }),
+                fakeWindow({ origin_province: "Centro",
+        origin_locality: null, destination_province: "Pilar",
+        destination_locality: null }),
+                fakeWindow({ id: 2, origin_province: "San Isidro",
+        origin_locality: null, destination_province: "CABA",
+        destination_locality: null }),
             ],
             meta: { total: 2, page: 1, perPage: 20, totalPages: 1 },
         });

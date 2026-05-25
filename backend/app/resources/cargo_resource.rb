@@ -40,11 +40,13 @@ class CargoResource
         created_at: offer.created_at,
         updated_at: offer.updated_at,
         transport_window: window && {
-          id: window.id,
-          origin_zone: window.origin_zone,
-          destination_zone: window.destination_zone,
-          available_from: window.available_from,
-          available_to: window.available_to
+          id:                   window.id,
+          origin_province:      window.origin_province,
+          origin_locality:      window.origin_locality,
+          destination_province: window.destination_province,
+          destination_locality: window.destination_locality,
+          available_from:       window.available_from,
+          available_to:         window.available_to
         }
       }
     end

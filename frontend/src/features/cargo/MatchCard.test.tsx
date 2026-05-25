@@ -8,8 +8,10 @@ import type { CargoMatch } from "../../types/Cargo";
 function makeMatch(over: Partial<CargoMatch> = {}): CargoMatch {
     return {
         id: 5,
-        origin_zone: "Buenos Aires",
-        destination_zone: "Córdoba",
+        origin_province: "Buenos Aires",
+        origin_locality: null,
+        destination_province: "Córdoba",
+        destination_locality: null,
         price_per_km: "1500.0",
         max_km: 1000,
         available_from: "2026-05-25T00:00:00Z",
@@ -68,6 +70,11 @@ describe("MatchCard", () => {
         ).toBeInTheDocument();
     });
 
+    it("renders province and locality when locality is present", () => {
+        renderCard(makeMatch({ origin_locality: "CABA", destination_locality: "Córdoba Capital" }));
+        expect(screen.getByText("Buenos Aires, CABA → Córdoba, Córdoba Capital")).toBeInTheDocument();
+    });
+
     it("falls back to a generic carrier label when display_name is null", () => {
         renderCard(
             makeMatch({
@@ -86,6 +93,11 @@ describe("MatchCard", () => {
         expect(screen.getByTestId("loc")).toHaveTextContent(
             "/shipper/cargos/7/offers/new?window=5",
         );
+    });
+
+    it("shows 'Destino abierto' when destination_province is null", () => {
+        renderCard(makeMatch({ destination_province: null, destination_locality: null }));
+        expect(screen.getByText("Buenos Aires → Destino abierto")).toBeInTheDocument();
     });
 
     it("includes a button to open the carrier public profile", async () => {

@@ -330,8 +330,14 @@ function OfferRow({ offer }: { offer: CargoOffer }) {
             <span className="offerRoute">
                 {window
                     ? t.offers.window(
-                        window.origin_zone,
-                        window.destination_zone,
+                        window.origin_locality
+                            ? `${window.origin_province}, ${window.origin_locality}`
+                            : window.origin_province,
+                        window.destination_province
+                            ? (window.destination_locality
+                                ? `${window.destination_province}, ${window.destination_locality}`
+                                : window.destination_province)
+                            : "Destino abierto",
                     )
                     : `#${offer.transport_window_id}`}
             </span>

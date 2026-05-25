@@ -41,8 +41,10 @@ function fakeCargo(over: Partial<Cargo> = {}): Cargo {
 function fakeWindow(over: Partial<CargoMatch> = {}): CargoMatch {
     return {
         id: 5,
-        origin_zone: "Buenos Aires",
-        destination_zone: "Córdoba",
+        origin_province: "Buenos Aires",
+        origin_locality: null,
+        destination_province: "Córdoba",
+        destination_locality: null,
         price_per_km: "1500",
         max_km: 1000,
         available_from: "2026-05-25T00:00:00Z",

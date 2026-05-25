@@ -49,8 +49,10 @@ function makeOffer(over: Partial<CargoOffer> = {}): CargoOffer {
         updated_at: "",
         transport_window: {
             id: 5,
-            origin_zone: "Buenos Aires",
-            destination_zone: "Córdoba",
+            origin_province: "Buenos Aires",
+            origin_locality: null,
+            destination_province: "Córdoba",
+            destination_locality: null,
         },
         ...over,
     };

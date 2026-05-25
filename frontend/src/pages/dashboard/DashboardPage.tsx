@@ -217,11 +217,13 @@ export function DashboardPage() {
                                             </div>
                                             <h3
                                                 className="dashboardCardTitle"
-                                                aria-label={`${w.origin_zone} a ${w.destination_zone}`}
+                                                aria-label={`${w.origin_province} a ${w.destination_province ?? "Destino abierto"}`}
                                             >
-                                                {w.origin_zone}
+                                                {w.origin_locality ? `${w.origin_province}, ${w.origin_locality}` : w.origin_province}
                                                 <span aria-hidden="true"> → </span>
-                                                {w.destination_zone}
+                                                {w.destination_province
+                                                    ? (w.destination_locality ? `${w.destination_province}, ${w.destination_locality}` : w.destination_province)
+                                                    : "Destino abierto"}
                                                 <IconArrowRight className="arrow" />
                                             </h3>
                                             <div className="dashboardCardMeta">

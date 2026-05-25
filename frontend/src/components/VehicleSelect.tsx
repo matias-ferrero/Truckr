@@ -10,6 +10,7 @@ export type VehicleSelectProps = {
     label?: string;
     placeholder?: string;
     autoSelectIfSingle?: boolean;
+    onEmpty?: () => void;
 };
 
 type LoadState =
@@ -23,6 +24,7 @@ export default function VehicleSelect({
     label = "Vehículo",
     placeholder = "Seleccioná un vehículo",
     autoSelectIfSingle = true,
+    onEmpty,
 }: VehicleSelectProps) {
     const [state, setState] = useState<LoadState>({ status: "loading" });
 
@@ -33,7 +35,9 @@ export default function VehicleSelect({
                 const res = await listMyVehicles(1);
                 if (cancelled) return;
                 setState({ status: "ready", items: res.items });
-                if (autoSelectIfSingle && res.items.length === 1 && value == null) {
+                if (res.items.length === 0) {
+                    onEmpty?.();
+                } else if (autoSelectIfSingle && res.items.length === 1 && value == null) {
                     onChange(res.items[0]!.id);
                 }
             } catch (e) {

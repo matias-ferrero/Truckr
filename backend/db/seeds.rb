@@ -77,7 +77,7 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
     # Three non-overlapping windows on the same vehicle — TransportWindow
     # rejects overlapping active windows per vehicle.
     tw1 = TransportWindow.find_or_create_by!(
-      vehicle: vehicle, origin_zone: "Buenos Aires", destination_zone: "Córdoba"
+      vehicle: vehicle, origin_province: "Buenos Aires", destination_province: "Córdoba"
     ) do |w|
       w.price_per_km   = 1500.0
       w.max_km         = 1200
@@ -87,7 +87,7 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
     end
 
     tw2 = TransportWindow.find_or_create_by!(
-      vehicle: vehicle, origin_zone: "Rosario", destination_zone: "Mendoza"
+      vehicle: vehicle, origin_province: "Rosario", destination_province: "Mendoza"
     ) do |w|
       w.price_per_km   = 1700.0
       w.max_km         = 900
@@ -97,7 +97,7 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
     end
 
     tw3 = TransportWindow.find_or_create_by!(
-      vehicle: vehicle, origin_zone: "La Plata", destination_zone: "Mar del Plata"
+      vehicle: vehicle, origin_province: "La Plata", destination_province: "Mar del Plata"
     ) do |w|
       w.price_per_km   = 1400.0
       w.max_km         = 500

@@ -65,8 +65,10 @@ function fakeCarrier(over: Partial<CarrierDetailDto> = {}): CarrierDetailDto {
             {
                 id: 7,
                 vehicle_id: 1,
-                origin_zone: "Buenos Aires",
-                destination_zone: "Rosario",
+                origin_province: "Buenos Aires",
+                origin_locality: null,
+                destination_province: "Rosario",
+                destination_locality: null,
                 price_per_km: "1500.50",
                 max_km: 1200,
                 available_from: "2026-06-01T00:00:00Z",
@@ -118,6 +120,33 @@ describe("CarrierDetail", () => {
         expect(screen.getByText(/\$1500\.50 \/ km/)).toBeInTheDocument();
     });
 
+    it("renders province and locality in route when locality is present", async () => {
+        vi.mocked(carriersApi.getCarrier).mockResolvedValueOnce(
+            fakeCarrier({
+                transport_windows: [
+                    {
+                        id: 7,
+                        vehicle_id: 1,
+                        origin_province: "Buenos Aires",
+                        origin_locality: "CABA",
+                        destination_province: "Córdoba",
+                        destination_locality: "Córdoba Capital",
+                        price_per_km: "1500.50",
+                        max_km: 1200,
+                        available_from: "2026-06-01T00:00:00Z",
+                        available_to: "2026-06-30T00:00:00Z",
+                        active: true,
+                    },
+                ],
+            }),
+        );
+        renderAt("/carriers/42");
+
+        expect(
+            await screen.findByText(/Buenos Aires, CABA → Córdoba, Córdoba Capital/i),
+        ).toBeInTheDocument();
+    });
+
     it("shows a not-found state when the API returns 404", async () => {
         vi.mocked(carriersApi.getCarrier).mockRejectedValueOnce(
             new ApiError(404, "Recurso no encontrado", "not_found"),
@@ -144,6 +173,31 @@ describe("CarrierDetail", () => {
         ).toBeInTheDocument();
         // No <img> rendered without photos; the placeholder is aria-hidden.
         expect(screen.queryByRole("img", { name: /foto de mercedes-benz/i })).toBeNull();
+    });
+
+    it("renders 'Destino abierto' for open-destination transport windows", async () => {
+        vi.mocked(carriersApi.getCarrier).mockResolvedValueOnce(
+            fakeCarrier({
+                transport_windows: [
+                    {
+                        id: 8,
+                        vehicle_id: 1,
+                        origin_province: "Buenos Aires",
+                        origin_locality: null,
+                        destination_province: null,
+                        destination_locality: null,
+                        price_per_km: "1200.00",
+                        max_km: 800,
+                        available_from: "2026-06-01T00:00:00Z",
+                        available_to: "2026-06-30T00:00:00Z",
+                        active: true,
+                    },
+                ],
+            }),
+        );
+        renderAt("/carriers/42");
+
+        expect(await screen.findByText(/Buenos Aires → Destino abierto/i)).toBeInTheDocument();
     });
 
     it("falls back to descriptionFallback when the carrier has no description", async () => {

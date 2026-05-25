@@ -72,4 +72,18 @@ describe("VehicleSelect", () => {
             "/carrier/vehicle/new"
         );
     });
+
+    it("calls onEmpty when the carrier has no vehicles", async () => {
+        vi.mocked(vehiclesApi.listMyVehicles).mockResolvedValueOnce({
+            items: [],
+            meta: { total: 0, page: 1, perPage: 20, totalPages: 1 },
+        });
+        const onEmpty = vi.fn();
+        render(
+            <MemoryRouter>
+                <VehicleSelect value={null} onChange={() => {}} onEmpty={onEmpty} />
+            </MemoryRouter>
+        );
+        await waitFor(() => expect(onEmpty).toHaveBeenCalledOnce());
+    });
 });

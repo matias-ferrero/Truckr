@@ -13,6 +13,44 @@ RSpec.describe CargoOffer, type: :model do
     end
   end
 
+  describe "defaults (before_validation on create)" do
+    let(:carrier) { create(:carrier) }
+    let(:vehicle) { create(:vehicle, carrier: carrier) }
+    let(:window) do
+      create(:transport_window, vehicle: vehicle,
+             available_from: 2.days.from_now, available_to: 10.days.from_now)
+    end
+    let(:cargo) do
+      create(:cargo, pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now)
+    end
+
+    it "sets status to 'pending' when not provided" do
+      offer = CargoOffer.new(cargo: cargo, transport_window: window, estimated_km: 500)
+      offer.valid?
+      expect(offer.status).to eq("pending")
+    end
+
+    it "sets currency to 'ARS' when not provided" do
+      offer = CargoOffer.new(cargo: cargo, transport_window: window, estimated_km: 500)
+      offer.valid?
+      expect(offer.currency).to eq("ARS")
+    end
+
+    it "derives carrier from transport_window when not provided" do
+      offer = CargoOffer.new(cargo: cargo, transport_window: window, estimated_km: 500)
+      offer.valid?
+      expect(offer.carrier).to eq(carrier)
+    end
+
+    it "does not override an explicitly provided carrier" do
+      other_carrier = create(:carrier)
+      offer = CargoOffer.new(cargo: cargo, transport_window: window,
+                             carrier: other_carrier, estimated_km: 500)
+      offer.valid?
+      expect(offer.carrier).to eq(other_carrier)
+    end
+  end
+
   describe "validations" do
     subject { build(:cargo_offer) }
 

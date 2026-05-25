@@ -107,6 +107,26 @@ RSpec.describe Cargo, type: :model do
       expect(cargo.cancellation_reason).to eq("Plans changed")
     end
 
+    it "expires pending cargo_offers when transitioning to cancelled" do
+      cargo = create(:cargo)
+      pending_offer = create(:cargo_offer, :pending, cargo: cargo)
+
+      cargo.transition_to!(:cancelled)
+
+      expect(pending_offer.reload.status).to eq("expired")
+    end
+
+    it "does not touch already-expired or cancelled cargo_offers on cancellation" do
+      cargo = create(:cargo)
+      expired_offer   = create(:cargo_offer, :expired,   cargo: cargo)
+      cancelled_offer = create(:cargo_offer, :cancelled, cargo: cargo)
+
+      cargo.transition_to!(:cancelled)
+
+      expect(expired_offer.reload.status).to eq("expired")
+      expect(cancelled_offer.reload.status).to eq("cancelled")
+    end
+
     it "raises IllegalTransition out of the accepted terminal state" do
       cargo = create(:cargo, :accepted)
       expect { cargo.transition_to!(:cancelled) }.to raise_error(Cargo::IllegalTransition)
@@ -119,6 +139,60 @@ RSpec.describe Cargo, type: :model do
 
     it "IllegalTransition descends from StandardError" do
       expect(Cargo::IllegalTransition.ancestors).to include(StandardError)
+    end
+  end
+
+  describe "#matching_windows" do
+    let(:cargo) do
+      create(:cargo,
+             pickup_zone: "Buenos Aires", delivery_zone: "Córdoba", weight_kg: 1500,
+             pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now)
+    end
+    let(:vehicle) { create(:vehicle, max_load_kg: 5000) }
+
+    def make_window(overrides = {})
+      create(:transport_window, {
+        vehicle:           vehicle,
+        origin_province:   "Buenos Aires",
+        destination_province: "Córdoba",
+        available_from:    2.days.from_now,
+        available_to:      10.days.from_now
+      }.merge(overrides))
+    end
+
+    it "returns windows whose zone, dates and capacity match" do
+      win = make_window
+      expect(cargo.matching_windows).to include(win)
+    end
+
+    it "excludes inactive windows" do
+      win = make_window(active: false)
+      expect(cargo.matching_windows).not_to include(win)
+    end
+
+    it "excludes windows with a pending contender" do
+      win = make_window
+      create(:cargo_offer, :pending, transport_window: win,
+             cargo: create(:cargo, pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now))
+      expect(cargo.matching_windows).not_to include(win)
+    end
+
+    it "excludes windows whose vehicle capacity is too small" do
+      tiny = create(:vehicle, max_load_kg: 100)
+      win  = make_window(vehicle: tiny)
+      expect(cargo.matching_windows).not_to include(win)
+    end
+
+    it "excludes windows whose origin zone does not match" do
+      win = make_window(origin_province: "Mendoza")
+      expect(cargo.matching_windows).not_to include(win)
+    end
+
+    it "includes open-destination windows (destination_province nil)" do
+      win = create(:transport_window, :open_destination,
+                   vehicle: vehicle, origin_province: "Buenos Aires",
+                   available_from: 2.days.from_now, available_to: 10.days.from_now)
+      expect(cargo.matching_windows).to include(win)
     end
   end
 

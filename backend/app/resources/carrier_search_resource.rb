@@ -25,14 +25,16 @@ class CarrierSearchResource
     windows = params[:windows_by_carrier]&.fetch(carrier.id, []) || []
     windows.map do |window|
       {
-        id: window.id,
-        origin_zone: window.origin_zone,
-        destination_zone: window.destination_zone,
-        price_per_km: window.price_per_km,
-        max_km: window.max_km,
-        available_from: window.available_from,
-        available_to: window.available_to,
-        active: window.active
+        id:                   window.id,
+        origin_province:      window.origin_province,
+        origin_locality:      window.origin_locality,
+        destination_province: window.destination_province,
+        destination_locality: window.destination_locality,
+        price_per_km:         window.price_per_km,
+        max_km:               window.max_km,
+        available_from:       window.available_from,
+        available_to:         window.available_to,
+        active:               window.active
       }
     end
   end

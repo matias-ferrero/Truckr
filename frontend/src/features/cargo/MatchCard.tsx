@@ -25,10 +25,15 @@ type Props = {
  * distance is shown — Haversine is deferred to the GMaps follow-up.
  */
 export default function MatchCard({ cargoId, match }: Props) {
-    const route = cargosContent.list.route(
-        match.origin_zone,
-        match.destination_zone,
-    );
+    const originStr = match.origin_locality
+        ? `${match.origin_province}, ${match.origin_locality}`
+        : match.origin_province;
+    const destinationStr = match.destination_province
+        ? (match.destination_locality
+            ? `${match.destination_province}, ${match.destination_locality}`
+            : match.destination_province)
+        : null;
+    const route = cargosContent.list.route(originStr, destinationStr);
     const carrierName = match.carrier.display_name ?? t.carrierFallback;
 
     return (

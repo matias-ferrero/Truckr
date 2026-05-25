@@ -10,27 +10,31 @@ class TransportWindow < ApplicationRecord
 
   delegate :carrier, to: :vehicle, allow_nil: true
 
-  validates :origin_zone, :destination_zone, presence: true
+  validates :origin_province, presence: true
   validates :status, inclusion: { in: STATUSES }
+
+  before_validation :coerce_optional_fields
   validates :price_per_km, numericality: { greater_than: 0 }
   validates :max_km, numericality: { greater_than: 0, only_integer: true }
   validates :available_from, :available_to, presence: true
   validate  :time_window_is_coherent
   validate  :no_vehicle_overlap
+  validate  :locality_requires_province
 
   before_save :normalize_search_fields
 
   scope :active, -> { where(active: true) }
   scope :marketplace_open, -> { where(status: "open") }
 
-  # MVP: diacritic-insensitive substring match via normalized columns.
-  # Phase 2: replace with PostGIS / proper geocoded matching (ADR-010).
-  # Filtering is delegated to Ransack via origin_zone_normalized_cont, destination_zone_normalized_cont
-  # in Api::TransportWindowsController#index.
+  # Diacritic-insensitive substring match via normalized columns.
+  # Filtering delegated to Ransack via origin_province_normalized_cont /
+  # destination_province_normalized_cont in Api::TransportWindowsController#index.
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[id vehicle_id origin_zone destination_zone origin_zone_normalized destination_zone_normalized
-      price_per_km max_km available_from available_to active status created_at updated_at]
+    %w[id vehicle_id origin_province origin_locality destination_province destination_locality
+       origin_province_normalized origin_locality_normalized
+       destination_province_normalized destination_locality_normalized
+       price_per_km max_km available_from available_to active status created_at updated_at]
   end
 
   def self.ransackable_associations(_auth_object = nil)
@@ -39,9 +43,26 @@ class TransportWindow < ApplicationRecord
 
   private
 
+  def coerce_optional_fields
+    self.origin_locality       = origin_locality.presence
+    self.destination_province  = destination_province.presence
+    self.destination_locality  = destination_locality.presence
+  end
+
   def normalize_search_fields
-    self.origin_zone_normalized = I18n.transliterate(origin_zone.to_s).downcase if origin_zone.present?
-    self.destination_zone_normalized = I18n.transliterate(destination_zone.to_s).downcase if destination_zone.present?
+    self.origin_province_normalized    = I18n.transliterate(origin_province.to_s).downcase    if origin_province.present?
+    self.origin_locality_normalized    = I18n.transliterate(origin_locality.to_s).downcase    if origin_locality.present?
+    self.destination_province_normalized = I18n.transliterate(destination_province.to_s).downcase if destination_province.present?
+    self.destination_locality_normalized = I18n.transliterate(destination_locality.to_s).downcase if destination_locality.present?
+  end
+
+  def locality_requires_province
+    if origin_locality.present? && origin_province.blank?
+      errors.add(:origin_locality, :requires_province)
+    end
+    if destination_locality.present? && destination_province.blank?
+      errors.add(:destination_locality, :requires_province)
+    end
   end
 
   def time_window_is_coherent

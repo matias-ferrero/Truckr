@@ -40,8 +40,10 @@ export type CargoVehicleSummary = {
  */
 export type CargoMatch = {
     id: number;
-    origin_zone: string;
-    destination_zone: string;
+    origin_province: string;
+    origin_locality: string | null;
+    destination_province: string | null;
+    destination_locality: string | null;
     price_per_km: string;
     max_km: number;
     available_from: string;
@@ -64,8 +66,10 @@ export type CargoOffer = {
     updated_at: string;
     transport_window?: {
         id: number;
-        origin_zone: string;
-        destination_zone: string;
+        origin_province: string;
+        origin_locality: string | null;
+        destination_province: string | null;
+        destination_locality: string | null;
     };
 };
 

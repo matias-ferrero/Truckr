@@ -112,18 +112,20 @@ RSpec.configure do |config|
           TransportWindow: {
             type: :object,
             properties: {
-              id:               { type: :integer },
-              vehicle_id:       { type: :integer },
-              origin_zone:      { type: :string },
-              destination_zone: { type: :string },
-              price_per_km:     { type: :string },
-              max_km:           { type: :integer },
-              available_from:   { type: :string, format: "date-time" },
-              available_to:     { type: :string, format: "date-time" },
-              active:           { type: :boolean },
-              vehicle:          { "$ref" => "#/components/schemas/TransportWindowVehicle" },
-              created_at:       { type: :string, format: "date-time" },
-              updated_at:       { type: :string, format: "date-time" }
+              id:                    { type: :integer },
+              vehicle_id:            { type: :integer },
+              origin_province:       { type: :string },
+              origin_locality:       { type: :string, nullable: true },
+              destination_province:  { type: :string, nullable: true },
+              destination_locality:  { type: :string, nullable: true },
+              price_per_km:          { type: :string },
+              max_km:                { type: :integer },
+              available_from:        { type: :string, format: "date-time" },
+              available_to:          { type: :string, format: "date-time" },
+              active:                { type: :boolean },
+              vehicle:               { "$ref" => "#/components/schemas/TransportWindowVehicle" },
+              created_at:            { type: :string, format: "date-time" },
+              updated_at:            { type: :string, format: "date-time" }
             }
           },
           TransportWindowListResponse: {

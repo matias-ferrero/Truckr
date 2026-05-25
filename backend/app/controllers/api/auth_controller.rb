@@ -31,22 +31,12 @@ module Api
     # a control flag — never assigned to the User AR record. Strong params on
     # it would only earn a brakeman PermitAttributes false-positive.
     def register
-      role = params[:role].to_s
-      unless %w[carrier shipper].include?(role)
-        return render json: {
-          error: { code: "unprocessable", details: { role: [ "es inválido" ] } }
-        }, status: :unprocessable_entity
-      end
-
-      user = nil
-      ActiveRecord::Base.transaction do
-        user = User.create!(
-          email: register_params[:email],
-          password: register_params[:password],
-          full_name: register_params[:name]
-        )
-        attach_role!(user, role)
-      end
+      user = User.register_with_role!(
+        email:      register_params[:email],
+        password:   register_params[:password],
+        full_name:  register_params[:name],
+        role:       params[:role]
+      )
       sign_in(user)
       render json: MeResource.new(user).serialize, status: :created
     end
@@ -67,18 +57,8 @@ module Api
     # to belong to the user, so the verified state must reset until the
     # re-verification flow (US22) is wired.
     def update_me
-      changing_email = update_me_params.key?(:email) &&
-        update_me_params[:email].to_s.strip.downcase != current_user.email
-
-      current_user.assign_attributes(update_me_params)
-      current_user.verified_at = nil if changing_email
-
-      if current_user.save
-        render json: MeResource.new(current_user).serialize
-      else
-        render json: { error: { code: "unprocessable", details: current_user.errors.as_json } },
-               status: :unprocessable_entity
-      end
+      current_user.update!(update_me_params)
+      render json: MeResource.new(current_user).serialize
     end
 
     private
@@ -94,13 +74,6 @@ module Api
 
     def register_params
       params.permit(:email, :password, :name)
-    end
-
-    def attach_role!(user, role)
-      case role
-      when "carrier" then user.create_carrier!
-      when "shipper" then user.create_shipper!
-      end
     end
   end
 end

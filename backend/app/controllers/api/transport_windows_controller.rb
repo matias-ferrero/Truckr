@@ -8,7 +8,7 @@ module Api
   # `verify_policy_scoped` invariant from Api::BaseController holds.
   class TransportWindowsController < Api::BaseController
     def index
-      params.require(%i[origin_zone destination_zone date_from date_to])
+      params.require(%i[origin_province destination_province date_from date_to])
 
       # `policy_scope` returns `TransportWindow.active` (see TransportWindowPolicy::Scope).
       # Called up-front so the `verify_policy_scoped` after_action invariant holds
@@ -26,16 +26,29 @@ module Api
         )
       end
 
-      # Ransack narrows the active scope by zone (diacritic-insensitive substring match
+      # Ransack narrows the active scope by province (diacritic-insensitive substring match
       # against normalized columns) and by date-range overlap.
-      q = base_scope.ransack(
-        origin_zone_normalized_cont:      params[:origin_zone],
-        destination_zone_normalized_cont: params[:destination_zone],
-        available_from_lteq:              date_to.end_of_day,
-        available_to_gteq:                date_from.beginning_of_day
-      )
+      ransack_params = {
+        origin_province_normalized_cont:      params[:origin_province],
+        destination_province_normalized_cont: params[:destination_province],
+        available_from_lteq:                  date_to.end_of_day,
+        available_to_gteq:                    date_from.beginning_of_day
+      }
+      ransack_windows = base_scope.ransack(ransack_params).result(distinct: true)
 
-      windows = q.result(distinct: true).includes(vehicle: :carrier).order(:available_from)
+      # Open-destination windows (destination_province IS NULL) match any destination query:
+      # a Carrier offering "any destination within their radius" should appear when a
+      # Shipper filters by a specific destination.
+      windows = if params[:destination_province].present?
+        open_dest = base_scope.ransack(
+          ransack_params.except(:destination_province_normalized_cont)
+        ).result(distinct: true).where(destination_province_normalized: nil)
+        ransack_windows.or(open_dest)
+      else
+        ransack_windows
+      end
+
+      windows = windows.includes(vehicle: :carrier).order(:available_from)
 
       windows_by_carrier = windows.group_by { |w| w.vehicle.carrier_id }
       carrier_scope = Carrier.includes(:user).where(id: windows_by_carrier.keys).order(:legal_name)

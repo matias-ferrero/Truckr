@@ -16,7 +16,7 @@ module Api
         def index
           render_collection(
             TransportWindowResource,
-            policy_scope(TransportWindow).includes(:vehicle).order(available_from: :asc)
+            policy_scope(TransportWindow).includes(:vehicle, :cargo_offers).order(available_from: :asc)
           )
         end
 
@@ -51,19 +51,22 @@ module Api
         private
 
         def scoped_window
-          current_carrier.transport_windows.includes(:vehicle).find(params[:id])
+          current_carrier.transport_windows.includes(:vehicle, :cargo_offers).find(params[:id])
         end
 
         def create_params
           params.require(:transport_window).permit(
-            :vehicle_id, :origin_zone, :destination_zone,
+            :vehicle_id,
+            :origin_province, :origin_locality,
+            :destination_province, :destination_locality,
             :price_per_km, :max_km, :available_from, :available_to
           )
         end
 
         def update_params
           params.require(:transport_window).permit(
-            :origin_zone, :destination_zone,
+            :origin_province, :origin_locality,
+            :destination_province, :destination_locality,
             :price_per_km, :max_km, :available_from, :available_to, :active
           )
         end

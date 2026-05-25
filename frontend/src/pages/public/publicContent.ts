@@ -24,8 +24,13 @@ export const publicContent = {
             "Este transportista todavía no escribió una descripción.",
         zonesTitle: "Zonas que recorre",
         zonesEmpty: "Sin zonas publicadas en este momento.",
-        zoneLine: (origin: string, destination: string) =>
-            `${origin} → ${destination}`,
+        destinationAny: "Destino abierto",
+        zoneLine: (origin: string, destination: string | null) =>
+            `${origin} → ${destination ?? "Destino abierto"}`,
+        formatZone: (province: string, locality: string | null) =>
+            locality ? `${province}, ${locality}` : province,
+        formatZoneOrOpen: (province: string | null, locality: string | null) =>
+            province ? (locality ? `${province}, ${locality}` : province) : "Destino abierto",
         pricePerKmLabel: (price: string) => `$${price} / km`,
         photoAlt: (label: string) => `Foto de ${label}`,
         vehiclesTitle: "Vehículos",

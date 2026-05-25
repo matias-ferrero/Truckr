@@ -225,7 +225,10 @@ function ZonesSection({
                         {windows.map((w) => (
                             <li key={w.id} className="zoneItem">
                                 <span className="zoneRoute">
-                                    {t.zoneLine(w.origin_zone, w.destination_zone)}
+                                    {t.zoneLine(
+                                        t.formatZone(w.origin_province, w.origin_locality),
+                                        t.formatZoneOrOpen(w.destination_province, w.destination_locality),
+                                    )}
                                 </span>
                                 <span className="zonePrice">
                                     {t.pricePerKmLabel(w.price_per_km)}

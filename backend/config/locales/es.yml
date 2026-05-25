@@ -18,6 +18,12 @@ es:
   activerecord:
     errors:
       models:
+        transport_window:
+          attributes:
+            origin_locality:
+              requires_province: "requiere que se especifique la provincia de origen"
+            destination_locality:
+              requires_province: "requiere que se especifique la provincia de destino"
         cargo_offer:
           attributes:
             estimated_km:

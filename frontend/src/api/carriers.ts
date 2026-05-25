@@ -5,8 +5,10 @@ import type { Vehicle } from "./vehicles";
 export type TransportWindow = {
     id: number;
     vehicle_id: number;
-    origin_zone: string;
-    destination_zone: string;
+    origin_province: string;
+    origin_locality: string | null;
+    destination_province: string | null;
+    destination_locality: string | null;
     price_per_km: string;
     max_km: number;
     available_from: string;

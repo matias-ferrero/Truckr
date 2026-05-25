@@ -14,15 +14,17 @@ class CarrierDetailResource < CarrierResource
   attribute :transport_windows do |carrier|
     carrier.active_transport_windows.map do |w|
       {
-        id:               w.id,
-        vehicle_id:       w.vehicle_id,
-        origin_zone:      w.origin_zone,
-        destination_zone: w.destination_zone,
-        price_per_km:     w.price_per_km.to_s,
-        max_km:           w.max_km,
-        available_from:   w.available_from&.iso8601,
-        available_to:     w.available_to&.iso8601,
-        active:           w.active
+        id:                    w.id,
+        vehicle_id:            w.vehicle_id,
+        origin_province:       w.origin_province,
+        origin_locality:       w.origin_locality,
+        destination_province:  w.destination_province,
+        destination_locality:  w.destination_locality,
+        price_per_km:          w.price_per_km.to_s,
+        max_km:                w.max_km,
+        available_from:        w.available_from&.iso8601,
+        available_to:          w.available_to&.iso8601,
+        active:                w.active
       }
     end
   end

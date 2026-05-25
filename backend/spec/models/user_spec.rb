@@ -115,6 +115,69 @@ RSpec.describe User, type: :model do
     end
   end
 
+  describe ".register_with_role!" do
+    it "creates a user and a carrier profile" do
+      user = User.register_with_role!(email: "c@example.com", password: "Password1", full_name: "C", role: "carrier")
+      expect(user).to be_persisted
+      expect(user.carrier?).to be true
+      expect(user.shipper?).to be false
+    end
+
+    it "creates a user and a shipper profile" do
+      user = User.register_with_role!(email: "s@example.com", password: "Password1", full_name: "S", role: "shipper")
+      expect(user.shipper?).to be true
+      expect(user.carrier?).to be false
+    end
+
+    it "raises RecordInvalid with :role error for an unknown role" do
+      expect {
+        User.register_with_role!(email: "x@example.com", password: "Password1", full_name: "X", role: "admin")
+      }.to raise_error(ActiveRecord::RecordInvalid) { |e|
+        expect(e.record.errors[:role]).to be_present
+      }
+    end
+
+    it "raises RecordInvalid with :role error when role is nil" do
+      expect {
+        User.register_with_role!(email: "x@example.com", password: "Password1", full_name: "X", role: nil)
+      }.to raise_error(ActiveRecord::RecordInvalid) { |e|
+        expect(e.record.errors[:role]).to be_present
+      }
+    end
+
+    it "does not persist the user when role is invalid" do
+      expect {
+        User.register_with_role!(email: "x@example.com", password: "Password1", full_name: "X", role: "invalid") rescue nil
+      }.not_to change(User, :count)
+    end
+
+    it "does not persist the user when password is too weak" do
+      expect {
+        User.register_with_role!(email: "x@example.com", password: "weak", full_name: "X", role: "carrier") rescue nil
+      }.not_to change(User, :count)
+    end
+  end
+
+  describe "email change resets verified_at" do
+    it "clears verified_at when email changes" do
+      user = create(:user, :verified, email: "old@example.com")
+      user.update!(email: "new@example.com")
+      expect(user.reload.verified_at).to be_nil
+    end
+
+    it "does not clear verified_at when only other attributes change" do
+      user = create(:user, :verified, full_name: "Old Name")
+      user.update!(full_name: "New Name")
+      expect(user.reload.verified_at).to be_present
+    end
+
+    it "does not clear verified_at when email submitted is same canonical form" do
+      user = create(:user, :verified, email: "same@example.com")
+      user.update!(email: "SAME@example.com")
+      expect(user.reload.verified_at).to be_present
+    end
+  end
+
   describe "cascading destroy" do
     it "destroys carrier and shipper rows when the user is destroyed" do
       user = create(:user, :with_carrier, :with_shipper)

@@ -5,9 +5,15 @@
 class TransportWindowResource
   include Alba::Resource
 
-  attributes :id, :vehicle_id, :origin_zone, :destination_zone,
+  attributes :id, :vehicle_id,
+             :origin_province, :origin_locality,
+             :destination_province, :destination_locality,
              :price_per_km, :max_km, :available_from, :available_to,
              :active, :status, :created_at, :updated_at
+
+  attribute :cargo_offers_count do |tw|
+    tw.cargo_offers.size
+  end
 
   attribute :vehicle do |tw|
     v = tw.vehicle

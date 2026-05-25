@@ -17,9 +17,14 @@
     --cream: oklch(80% 0.13 82);       /* Manifest Cream source */
     --cream-deep: oklch(72% 0.11 78);  /* deep honey for contrast text */
 
-    /* "Visible" badge uses Manifest Cream — carrier voice, not traffic-light green. */
-    --status-active-bg: color-mix(in oklab, var(--cream) 22%, transparent);
-    --status-active-fg: var(--cream-deep);
+    /* Sky blue surface tokens — used for availability window cards */
+    --sky-surface: color-mix(in oklab, var(--brand-primary) 13%, var(--paper));
+    --sky-border: color-mix(in oklab, var(--brand-primary) 28%, transparent);
+    --sky-deep: oklch(48% 0.14 235);   /* dark sky for contrast text */
+
+    /* "Visible" badge: sky blue — matches card palette */
+    --status-active-bg: color-mix(in oklab, var(--brand-primary) 20%, var(--paper));
+    --status-active-fg: var(--sky-deep);
 
     --ink: oklch(18% 0.02 240);
     --ink-2: color-mix(in oklab, var(--ink) 78%, var(--paper));
@@ -143,14 +148,10 @@
 
 .cardActions {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
     padding: 12px 16px 16px;
-}
-
-.cardActions > .button {
-    flex: 1 1 auto;
-    min-width: 0;
+    flex-wrap: wrap;
 }
 
 .emptyState {
@@ -648,12 +649,12 @@
 }
 
 .windowCard {
-    background: var(--brand-neutral);
-    border: 1px solid var(--border-cream);
+    background: var(--paper);
+    border: 1px solid var(--sky-border);
     border-radius: 16px;
     padding: 0;
     overflow: hidden;
-    box-shadow: 0 4px 16px color-mix(in oklab, var(--brand-secondary) 20%, transparent);
+    box-shadow: 0 4px 16px color-mix(in oklab, var(--brand-primary) 14%, transparent);
     display: grid;
     grid-template-rows: auto 1fr auto;
     transition: transform 120ms ease, box-shadow 120ms ease;
@@ -685,26 +686,25 @@
 
 .windowCardHeader {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 16px 16px 8px;
-    /* Cream strip on both active and inactive cards — consistent structure. */
-    background: color-mix(in oklab, var(--cream) 10%, var(--paper));
-    border-bottom: 1px solid color-mix(in oklab, var(--cream) 28%, transparent);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 12px 16px 10px;
+    background: var(--sky-surface);
+    border-bottom: 1px solid var(--sky-border);
 }
 
 .windowRoute {
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 0.9375rem;   /* 15px → same size, now on display face */
+    font-size: 0.9375rem;
     letter-spacing: -0.02em;
     color: var(--ink);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    min-width: 0;
-    flex: 1 1 0;
+    align-self: stretch;
+    margin: 0;
 }
 
 .statusBadge {
@@ -729,23 +729,46 @@
 }
 
 .windowCardBody {
-    padding: 8px 16px 12px;
+    padding: 10px 16px 14px;
 }
 
 .windowMeta {
-    margin: 4px 0;
-    font-size: 0.875rem;    /* 14px — WCAG 1.4.4 floor */
+    margin: 3px 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
     color: var(--ink-2);
 }
 
 .windowMeta strong {
     color: var(--ink);
+    font-weight: 700;
 }
 
-.windowCardBody .windowMeta:last-child {
+/* Plate number: wider tracking reads as a vehicle identifier */
+.windowCardBody .windowMeta:first-child strong {
+    letter-spacing: 0.07em;
+}
+
+/* Price + max distance: the commercial signal — larger, full ink, tabular */
+.windowCardBody .windowMeta:nth-child(2) {
+    font-size: 0.9375rem;
     color: var(--ink);
-    font-weight: 500;
-    margin-top: 8px;
+    font-variant-numeric: tabular-nums;
+    margin: 5px 0;
+}
+
+.windowCardBody .windowMeta:nth-child(2) strong {
+    font-weight: 700;
+    color: var(--ink);
+}
+
+/* Date range: temporal reference — separated with a hair rule, tabular nums */
+.windowCardBody .windowMeta:last-child {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid color-mix(in oklab, var(--sky-border) 55%, transparent);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.005em;
 }
 
 /* Form hydrating skeleton */
@@ -823,19 +846,55 @@
 
 /* Post-save success banner */
 .savedBanner {
+    /* Fixed toast — centered at bottom, doesn't push layout */
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    width: max-content;
+    max-width: min(520px, calc(100vw - 48px));
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 10px 16px;
-    margin-bottom: 16px;
-    border-radius: 10px;
+    gap: 16px;
+    padding: 16px 24px;
+    border-radius: 12px;
     background: color-mix(in oklab, var(--cream) 28%, var(--paper));
     border: 1px solid color-mix(in oklab, var(--cream) 55%, transparent);
+    box-shadow: 0 12px 40px color-mix(in oklab, var(--ink) 22%, transparent);
     color: var(--ink);
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 600;
-    animation: savedBannerIn 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: savedBannerIn 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Stack a second toast above the first if both appear simultaneously */
+.savedBanner + .savedBanner {
+    bottom: calc(28px + 60px + 8px);
+}
+
+.errorBanner {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    width: max-content;
+    max-width: min(520px, calc(100vw - 48px));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--brand-error) 12%, var(--paper));
+    border: 1px solid color-mix(in oklab, var(--brand-error) 35%, transparent);
+    box-shadow: 0 12px 40px color-mix(in oklab, var(--ink) 22%, transparent);
+    color: var(--ink);
+    font-size: 1rem;
+    font-weight: 600;
+    animation: savedBannerIn 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .savedBannerClose {
@@ -860,24 +919,72 @@
     outline-offset: 3px;
 }
 
+.savedBannerUndo {
+    background: none;
+    border: 1px solid color-mix(in oklab, var(--ink) 30%, transparent);
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--ink);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    padding: 4px 12px;
+    flex-shrink: 0;
+    transition: background-color 120ms ease;
+}
+
+.savedBannerUndo:hover {
+    background: color-mix(in oklab, var(--ink) 6%, transparent);
+}
+
+.savedBannerUndo:focus-visible {
+    outline: 3px solid color-mix(in oklab, var(--ink) 15%, transparent);
+    outline-offset: 3px;
+}
+
 @keyframes savedBannerIn {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .savedBanner { animation: none; }
 }
 
-/* Window card action hierarchy — Edit leads (outline, flex-1) then secondary row */
+/* Window card action hierarchy — Edit leads (flex, takes available space),
+   labelled toggle + delete buttons sit on the right. */
 .cardEditBtn {
+    display: flex;   /* override Tailwind's inline-flex so flex-grow works reliably */
     flex: 1;
     min-width: 0;
+    justify-content: center;
 }
 
 .cardSecondaryActions {
     display: flex;
     gap: 4px;
+    flex-shrink: 0;
+    align-items: center;
+}
+
+/* Labeled secondary action buttons: icon + short text, compact padding */
+.cardSecondaryBtn {
+    gap: 5px;
+    padding-inline: 10px;
+}
+
+.cardSecondaryBtn [aria-hidden] svg,
+.cardSecondaryBtn svg {
+    flex-shrink: 0;
+}
+
+/* Visible label text beside the icon */
+.cardActionLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1;
 }
 
 .cardDeleteBtn {
@@ -900,10 +1007,10 @@
     border: 1px solid color-mix(in oklab, var(--cream) 40%, transparent);
 }
 
-.windowFormFields {
+.windowFormNumericFields {
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
 }
 
 .windowFormActions {
@@ -917,6 +1024,37 @@
     gap: 16px;
 }
 
+/* Origin / Destination zone fieldsets */
+.zoneGroup {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.zoneGroupDestination {
+    border-style: dashed;
+    border-color: color-mix(in oklab, var(--border) 70%, transparent);
+}
+
+.zoneGroupLegend {
+    padding: 0 8px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-bottom: 8px;
+}
+
+.zoneGroupFields {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+}
+
 /* Date-range fieldset — groups available_from + available_to semantically */
 .dateRange {
     border: 1px solid var(--border);
@@ -928,17 +1066,72 @@
     margin: 0;
 }
 
+/* Unify legend style with .zoneGroupLegend — same form, same treatment */
 .dateRange legend {
     padding: 0 8px;
-    font-weight: 600;
-    font-size: 14px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-bottom: 8px;
+}
+
+/* Keyboard shortcut hint badge — shown only on pointer (desktop) devices */
+.kbdHint {
+    display: none;
+    font-family: inherit;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 2px 5px;
+    border: 1px solid color-mix(in oklab, currentColor 35%, transparent);
+    border-radius: 4px;
+    background: color-mix(in oklab, currentColor 8%, transparent);
+    letter-spacing: 0.02em;
+    opacity: 0.75;
+    vertical-align: middle;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .kbdHint { display: inline-block; }
+}
+
+/* No-vehicles inline callout in the form */
+.noVehiclesCallout {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--cream) 16%, var(--paper));
+    border: 1px solid color-mix(in oklab, var(--cream) 45%, transparent);
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+}
+
+.noVehiclesCtaLink {
+    font-weight: 700;
     color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    white-space: nowrap;
+}
+
+.noVehiclesCtaLink:hover {
+    color: color-mix(in oklab, var(--cream-deep) 90%, var(--ink));
 }
 
 .requiredNote {
-    font-size: 0.8125rem;   /* 13px — improved from 12px */
+    font-size: 0.8125rem;
     color: var(--ink-2);
     margin: 0;
+}
+
+.requiredStar {
+    color: color-mix(in oklab, var(--brand-error) 80%, var(--ink));
+    font-weight: 700;
 }
 
 .field.fieldReadonly {

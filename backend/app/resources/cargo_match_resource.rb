@@ -10,7 +10,8 @@
 class CargoMatchResource
   include Alba::Resource
 
-  attributes :id, :origin_zone, :destination_zone,
+  attributes :id, :origin_province, :origin_locality,
+             :destination_province, :destination_locality,
              :price_per_km, :max_km, :available_from, :available_to, :active
 
   attribute :vehicle do |window|

@@ -74,6 +74,15 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
       get "/api/carriers/me/transport_windows/#{foreign.id}"
       expect(response).to have_http_status(:not_found)
     end
+
+    it "serializes destination_province as null for open-destination windows" do
+      tw = create(:transport_window, :open_destination, vehicle: vehicle)
+      get "/api/carriers/me/transport_windows/#{tw.id}"
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)
+      expect(body).to have_key("destination_province")
+      expect(body["destination_province"]).to be_nil
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -83,13 +92,13 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
     let(:valid_params) do
       {
         transport_window: {
-          vehicle_id:       vehicle.id,
-          origin_zone:      "Buenos Aires",
-          destination_zone: "Córdoba",
-          price_per_km:     1500.0,
-          max_km:           1200,
-          available_from:   2.days.from_now.iso8601,
-          available_to:     10.days.from_now.iso8601
+          vehicle_id:           vehicle.id,
+          origin_province:      "Buenos Aires",
+          destination_province: "Córdoba",
+          price_per_km:         1500.0,
+          max_km:               1200,
+          available_from:       2.days.from_now.iso8601,
+          available_to:         10.days.from_now.iso8601
         }
       }
     end
@@ -99,10 +108,22 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
       expect(response).to have_http_status(:created)
       body = JSON.parse(response.body)
       expect(body).to include(
-        "origin_zone"      => "Buenos Aires",
-        "destination_zone" => "Córdoba",
-        "active"           => true
+        "origin_province"      => "Buenos Aires",
+        "destination_province" => "Córdoba",
+        "active"               => true
       )
+    end
+
+    it "creates a window with locality fields" do
+      params = valid_params.deep_dup
+      params[:transport_window][:origin_locality]      = "CABA"
+      params[:transport_window][:destination_locality] = "Córdoba Capital"
+
+      post "/api/carriers/me/transport_windows", params: params
+      expect(response).to have_http_status(:created)
+      body = JSON.parse(response.body)
+      expect(body["origin_locality"]).to eq("CABA")
+      expect(body["destination_locality"]).to eq("Córdoba Capital")
     end
 
     it "rejects creation with a foreign vehicle_id" do
@@ -132,6 +153,16 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
       post "/api/carriers/me/transport_windows", params: params
       expect(response).to have_http_status(:unprocessable_entity)
     end
+
+    it "creates an open-destination window (no destination_province) and returns 201" do
+      params = valid_params.deep_dup
+      params[:transport_window].delete(:destination_province)
+
+      post "/api/carriers/me/transport_windows", params: params
+      expect(response).to have_http_status(:created)
+      body = JSON.parse(response.body)
+      expect(body["destination_province"]).to be_nil
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -142,9 +173,9 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
 
     it "updates an owned window" do
       patch "/api/carriers/me/transport_windows/#{window.id}",
-            params: { transport_window: { origin_zone: "Rosario" } }
+            params: { transport_window: { origin_province: "Rosario" } }
       expect(response).to have_http_status(:ok)
-      expect(JSON.parse(response.body)["origin_zone"]).to eq("Rosario")
+      expect(JSON.parse(response.body)["origin_province"]).to eq("Rosario")
     end
 
     it "can reactivate a deactivated window" do
@@ -166,7 +197,7 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
     it "returns 404 for another carrier's window" do
       foreign = create(:transport_window, vehicle: create(:vehicle, carrier: other_user.carrier))
       patch "/api/carriers/me/transport_windows/#{foreign.id}",
-            params: { transport_window: { origin_zone: "hijack" } }
+            params: { transport_window: { origin_province: "hijack" } }
       expect(response).to have_http_status(:not_found)
     end
   end
@@ -187,6 +218,15 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
       delete "/api/carriers/me/transport_windows/#{foreign.id}"
       expect(response).to have_http_status(:not_found)
     end
+
+    it "returns 422 when the window has associated cargo offers" do
+      tw = create(:transport_window, vehicle: vehicle,
+                  available_from: 1.day.from_now, available_to: 10.days.from_now)
+      create(:cargo_offer, transport_window: tw)
+      delete "/api/carriers/me/transport_windows/#{tw.id}"
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(TransportWindow.exists?(tw.id)).to be true
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -199,13 +239,13 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
 
       post "/api/carriers/me/transport_windows", params: {
         transport_window: {
-          vehicle_id:       vehicle.id,
-          origin_zone:      "Buenos Aires",
-          destination_zone: "Córdoba",
-          price_per_km:     1500.0,
-          max_km:           1200,
-          available_from:   4.days.from_now.iso8601,
-          available_to:     8.days.from_now.iso8601
+          vehicle_id:           vehicle.id,
+          origin_province:      "Buenos Aires",
+          destination_province: "Córdoba",
+          price_per_km:         1500.0,
+          max_km:               1200,
+          available_from:       4.days.from_now.iso8601,
+          available_to:         8.days.from_now.iso8601
         }
       }
       expect(response).to have_http_status(:created)
@@ -246,7 +286,7 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
         run_test! do |response|
           body = JSON.parse(response.body)
           expect(body).to be_an(Array)
-          expect(body.first).to include("id", "origin_zone", "destination_zone", "vehicle")
+          expect(body.first).to include("id", "origin_province", "destination_province", "vehicle")
         end
       end
 
@@ -270,15 +310,17 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
         properties: {
           transport_window: {
             type: :object,
-            required: %w[vehicle_id origin_zone destination_zone price_per_km max_km available_from available_to],
+            required: %w[vehicle_id origin_province price_per_km max_km available_from available_to],
             properties: {
-              vehicle_id:       { type: :integer },
-              origin_zone:      { type: :string },
-              destination_zone: { type: :string },
-              price_per_km:     { type: :number },
-              max_km:           { type: :integer },
-              available_from:   { type: :string, format: "date-time" },
-              available_to:     { type: :string, format: "date-time" }
+              vehicle_id:           { type: :integer },
+              origin_province:      { type: :string },
+              origin_locality:      { type: :string, nullable: true },
+              destination_province: { type: :string, nullable: true },
+              destination_locality: { type: :string, nullable: true },
+              price_per_km:         { type: :number },
+              max_km:               { type: :integer },
+              available_from:       { type: :string, format: "date-time" },
+              available_to:         { type: :string, format: "date-time" }
             }
           }
         }
@@ -290,19 +332,19 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
         let(:payload) do
           {
             transport_window: {
-              vehicle_id:       vehicle.id,
-              origin_zone:      "Buenos Aires",
-              destination_zone: "Córdoba",
-              price_per_km:     1500.0,
-              max_km:           1200,
-              available_from:   2.days.from_now.iso8601,
-              available_to:     10.days.from_now.iso8601
+              vehicle_id:           vehicle.id,
+              origin_province:      "Buenos Aires",
+              destination_province: "Córdoba",
+              price_per_km:         1500.0,
+              max_km:               1200,
+              available_from:       2.days.from_now.iso8601,
+              available_to:         10.days.from_now.iso8601
             }
           }
         end
         run_test! do |response|
           body = JSON.parse(response.body)
-          expect(body).to include("origin_zone" => "Buenos Aires", "active" => true)
+          expect(body).to include("origin_province" => "Buenos Aires", "active" => true)
         end
       end
 
@@ -312,13 +354,13 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
         let(:payload) do
           {
             transport_window: {
-              vehicle_id:       vehicle.id,
-              origin_zone:      "Buenos Aires",
-              destination_zone: "Córdoba",
-              price_per_km:     1500.0,
-              max_km:           1200,
-              available_from:   10.days.from_now.iso8601,
-              available_to:     2.days.from_now.iso8601
+              vehicle_id:           vehicle.id,
+              origin_province:      "Buenos Aires",
+              destination_province: "Córdoba",
+              price_per_km:         1500.0,
+              max_km:               1200,
+              available_from:       10.days.from_now.iso8601,
+              available_to:         2.days.from_now.iso8601
             }
           }
         end
@@ -388,13 +430,15 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
           transport_window: {
             type: :object,
             properties: {
-              origin_zone:      { type: :string },
-              destination_zone: { type: :string },
-              price_per_km:     { type: :number },
-              max_km:           { type: :integer },
-              available_from:   { type: :string, format: "date-time" },
-              available_to:     { type: :string, format: "date-time" },
-              active:           { type: :boolean }
+              origin_province:      { type: :string },
+              origin_locality:      { type: :string, nullable: true },
+              destination_province: { type: :string, nullable: true },
+              destination_locality: { type: :string, nullable: true },
+              price_per_km:         { type: :number },
+              max_km:               { type: :integer },
+              available_from:       { type: :string, format: "date-time" },
+              available_to:         { type: :string, format: "date-time" },
+              active:               { type: :boolean }
             }
           }
         }
@@ -405,10 +449,10 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
         let(:Authorization) { "Bearer #{Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first}" }
         let(:tw) { create(:transport_window, vehicle: vehicle) }
         let(:id) { tw.id }
-        let(:payload) { { transport_window: { origin_zone: "Rosario" } } }
+        let(:payload) { { transport_window: { origin_province: "Rosario" } } }
         run_test! do |response|
           body = JSON.parse(response.body)
-          expect(body["origin_zone"]).to eq("Rosario")
+          expect(body["origin_province"]).to eq("Rosario")
         end
       end
 
@@ -436,7 +480,7 @@ RSpec.describe "Api::Carriers::Me::TransportWindows", type: :request do
         let(:Authorization) { "Bearer #{Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first}" }
         let(:foreign) { create(:transport_window, vehicle: create(:vehicle, carrier: other_user.carrier)) }
         let(:id) { foreign.id }
-        let(:payload) { { transport_window: { origin_zone: "hijack" } } }
+        let(:payload) { { transport_window: { origin_province: "hijack" } } }
         run_test!
       end
 

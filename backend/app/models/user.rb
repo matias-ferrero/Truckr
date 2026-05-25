@@ -24,7 +24,10 @@ class User < ApplicationRecord
   has_one :carrier, dependent: :destroy
   has_one :shipper, dependent: :destroy
 
+  VALID_ROLES = %w[carrier shipper].freeze
+
   before_validation :canonicalise_email
+  before_save :clear_verified_at_on_email_change
   before_create :set_jti
 
   validates :email,
@@ -44,6 +47,23 @@ class User < ApplicationRecord
   def carrier? = carrier.present?
   def shipper? = shipper.present?
 
+  # Creates a User and attaches the corresponding role profile in one transaction.
+  # Raises ActiveRecord::RecordInvalid if role is not in VALID_ROLES or any
+  # validation fails, so callers can rely on rescue_from in BaseController.
+  def self.register_with_role!(email:, password:, full_name:, role:)
+    role = role.to_s
+    unless VALID_ROLES.include?(role)
+      dummy = new
+      dummy.errors.add(:role, I18n.t("errors.messages.inclusion"))
+      raise ActiveRecord::RecordInvalid, dummy
+    end
+    transaction do
+      user = create!(email: email, password: password, full_name: full_name)
+      role == "carrier" ? user.create_carrier! : user.create_shipper!
+      user
+    end
+  end
+
   def self.ransackable_attributes(_auth_object = nil)
     %w[id email full_name phone verified_at created_at updated_at]
   end
@@ -56,6 +76,11 @@ class User < ApplicationRecord
 
   def canonicalise_email
     self.email = email.to_s.strip.downcase.presence
+  end
+
+  def clear_verified_at_on_email_change
+    return unless persisted?
+    self.verified_at = nil if email != email_in_database
   end
 
   def set_jti

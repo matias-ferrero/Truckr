@@ -45,10 +45,7 @@ module Api
 
         cargo_offer = CargoOffer.create!(
           cargo:            cargo,
-          carrier:          window.carrier,
           transport_window: window,
-          currency:         "ARS",
-          status:           "pending",
           estimated_km:     cargo_offer_params[:estimated_km]
         )
         window.update!(status: "pending_offer")

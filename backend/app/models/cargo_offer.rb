@@ -63,6 +63,7 @@ class CargoOffer < ApplicationRecord
     [ cargo.pickup_window_start, cargo.pickup_window_end ]
   end
 
+  before_validation :set_defaults, on: :create
   before_validation :derive_amount_and_expiration, on: :create
 
   validates :amount_cents, numericality: { greater_than: 0, only_integer: true }
@@ -114,6 +115,12 @@ class CargoOffer < ApplicationRecord
   class InvalidTransition < StandardError; end
 
   private
+
+  def set_defaults
+    self.status   ||= "pending"
+    self.currency ||= "ARS"
+    self.carrier  ||= transport_window&.carrier
+  end
 
   def derive_amount_and_expiration
     return unless transport_window

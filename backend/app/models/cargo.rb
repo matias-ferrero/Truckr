@@ -44,6 +44,35 @@ class Cargo < ApplicationRecord
   def editable?    = status == "open" && accepted_cargo_offer.nil?
   def cancellable? = status == "open" && accepted_cargo_offer.nil?
 
+  # Returns the TransportWindows that match this Cargo for the purposes of
+  # offering (US4/US5): active, no pending/accepted contender, origin and
+  # destination zone substring-match, availability overlaps pickup window,
+  # vehicle can carry the weight. Open-destination windows match any delivery zone.
+  def matching_windows
+    blocked = CargoOffer.where(status: %w[pending accepted]).select(:transport_window_id)
+    base    = TransportWindow.active.where.not(id: blocked)
+
+    date_params = {
+      available_from_lteq: pickup_window_end,
+      available_to_gteq:   pickup_window_start
+    }
+
+    fixed_dest = base.ransack(
+      origin_province_normalized_cont:      pickup_zone_normalized,
+      destination_province_normalized_cont: delivery_zone_normalized,
+      **date_params
+    ).result(distinct: true)
+
+    open_dest = base.ransack(
+      origin_province_normalized_cont: pickup_zone_normalized,
+      **date_params
+    ).result(distinct: true).where(destination_province_normalized: nil)
+
+    fixed_dest.or(open_dest)
+              .joins(:vehicle).where("vehicles.max_load_kg >= ?", weight_kg)
+              .includes(vehicle: { carrier: :user }).order(:available_from)
+  end
+
   # Atomically advances `status`, validates the transition against the table
   # above and stamps the soft-cancel columns. Mirrors Shipment#transition_to! —
   # transaction + row lock so concurrent attempts serialise.
@@ -62,6 +91,7 @@ class Cargo < ApplicationRecord
           attrs[:cancellation_reason] = reason
         end
         update!(attrs)
+        cargo_offers.where(status: "pending").find_each { |o| o.transition_to!(:expired) } if new_status == :cancelled
       end
     end
   end

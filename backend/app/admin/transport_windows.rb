@@ -1,10 +1,11 @@
 ActiveAdmin.register TransportWindow do
-  permit_params :vehicle_id, :origin_zone, :destination_zone, :price_per_km,
-                :max_km, :active, :available_from, :available_to
+  permit_params :vehicle_id, :origin_province, :origin_locality,
+                :destination_province, :destination_locality,
+                :price_per_km, :max_km, :active, :available_from, :available_to
 
   filter :vehicle
-  filter :origin_zone
-  filter :destination_zone
+  filter :origin_province
+  filter :destination_province
   filter :active
   filter :available_from
   filter :available_to
@@ -14,8 +15,10 @@ ActiveAdmin.register TransportWindow do
     id_column
     column :vehicle
     column(:carrier) { |tw| tw.carrier }
-    column :origin_zone
-    column :destination_zone
+    column :origin_province
+    column :origin_locality
+    column :destination_province
+    column :destination_locality
     column :price_per_km
     column :max_km
     column :active
@@ -29,8 +32,10 @@ ActiveAdmin.register TransportWindow do
       row :id
       row :vehicle
       row :carrier
-      row :origin_zone
-      row :destination_zone
+      row :origin_province
+      row :origin_locality
+      row :destination_province
+      row :destination_locality
       row :price_per_km
       row :max_km
       row :active
@@ -44,8 +49,10 @@ ActiveAdmin.register TransportWindow do
   form do |f|
     f.inputs do
       f.input :vehicle
-      f.input :origin_zone
-      f.input :destination_zone
+      f.input :origin_province
+      f.input :origin_locality
+      f.input :destination_province
+      f.input :destination_locality
       f.input :price_per_km, min: 0
       f.input :max_km
       f.input :active

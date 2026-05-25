@@ -4,18 +4,18 @@ require "swagger_helper"
 
 RSpec.describe "Api::TransportWindows", type: :request do
   path "/api/transport_windows" do
-    parameter name: :origin_zone, in: :query, type: :string, required: true
-    parameter name: :destination_zone, in: :query, type: :string, required: true
+    parameter name: :origin_province, in: :query, type: :string, required: true
+    parameter name: :destination_province, in: :query, type: :string, required: true
     parameter name: :date_from, in: :query, type: :string, required: true
     parameter name: :date_to, in: :query, type: :string, required: true
 
-    get("search carriers by zones and date range") do
+    get("search carriers by province and date range") do
       tags "Transport Windows"
       produces "application/json"
 
       response(200, "successful") do
-        let(:origin_zone) { "buen" }
-        let(:destination_zone) { "cord" }
+        let(:origin_province) { "buen" }
+        let(:destination_province) { "cord" }
         let(:date_from) { "2026-05-12" }
         let(:date_to) { "2026-05-14" }
 
@@ -26,8 +26,8 @@ RSpec.describe "Api::TransportWindows", type: :request do
           create(
             :transport_window,
             vehicle: create(:vehicle, carrier: match_carrier),
-            origin_zone: "Buenos Aires",
-            destination_zone: "Córdoba",
+            origin_province: "Buenos Aires",
+            destination_province: "Córdoba",
             available_from: Time.zone.parse("2026-05-11 09:00:00"),
             available_to: Time.zone.parse("2026-05-15 18:00:00"),
             price_per_km: 1999.5
@@ -36,8 +36,8 @@ RSpec.describe "Api::TransportWindows", type: :request do
           create(
             :transport_window,
             vehicle: create(:vehicle, carrier: outside_zone_carrier),
-            origin_zone: "Mar del Plata",
-            destination_zone: "Bahía Blanca",
+            origin_province: "Mar del Plata",
+            destination_province: "Bahía Blanca",
             available_from: Time.zone.parse("2026-05-11 09:00:00"),
             available_to: Time.zone.parse("2026-05-15 18:00:00")
           )
@@ -51,28 +51,66 @@ RSpec.describe "Api::TransportWindows", type: :request do
           expect(body.first.keys).to include("display_name", "transport_windows")
           expect(body.first["transport_windows"].size).to eq(1)
           expect(body.first["transport_windows"].first).to include(
-            "origin_zone" => "Buenos Aires",
-            "destination_zone" => "Córdoba"
+            "origin_province" => "Buenos Aires",
+            "destination_province" => "Córdoba"
           )
         end
       end
 
+      response(200, "includes open-destination windows when filtering by destination") do
+        let(:origin_province) { "buen" }
+        let(:destination_province) { "cord" }
+        let(:date_from) { "2026-05-12" }
+        let(:date_to) { "2026-05-14" }
+
+        before do
+          carrier = create(:carrier, legal_name: "Fletes Abiertos")
+
+          create(
+            :transport_window,
+            vehicle: create(:vehicle, carrier: carrier),
+            origin_province: "Buenos Aires",
+            destination_province: "Córdoba",
+            available_from: Time.zone.parse("2026-05-11 09:00:00"),
+            available_to: Time.zone.parse("2026-05-15 18:00:00")
+          )
+
+          create(
+            :transport_window,
+            :open_destination,
+            vehicle: create(:vehicle, carrier: carrier),
+            origin_province: "Buenos Aires",
+            available_from: Time.zone.parse("2026-05-11 09:00:00"),
+            available_to: Time.zone.parse("2026-05-15 18:00:00")
+          )
+        end
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          windows = body.flat_map { |c| c["transport_windows"] }
+          expect(windows.size).to eq(2)
+          destinations = windows.map { |w| w["destination_province"] }
+          expect(destinations).to include("Córdoba")
+          expect(destinations).to include(nil)
+        end
+      end
+
       response(422, "missing query params") do
-        let(:origin_zone) { "Buenos Aires" }
-        let(:destination_zone) { nil }
+        let(:origin_province) { "Buenos Aires" }
+        let(:destination_province) { nil }
         let(:date_from) { "2026-05-12" }
         let(:date_to) { "2026-05-14" }
 
         run_test! do |response|
           body = JSON.parse(response.body)
           expect(body.dig("error", "code")).to eq("unprocessable")
-          expect(body.dig("error", "details", "destination_zone")).to include("is required")
+          expect(body.dig("error", "details", "destination_province")).to include("is required")
         end
       end
 
       response(422, "invalid date range") do
-        let(:origin_zone) { "Buenos Aires" }
-        let(:destination_zone) { "Córdoba" }
+        let(:origin_province) { "Buenos Aires" }
+        let(:destination_province) { "Córdoba" }
         let(:date_from) { "2026-05-20" }
         let(:date_to) { "2026-05-10" }
 
@@ -84,8 +122,8 @@ RSpec.describe "Api::TransportWindows", type: :request do
       end
 
       response(422, "invalid date format") do
-        let(:origin_zone) { "Buenos Aires" }
-        let(:destination_zone) { "Córdoba" }
+        let(:origin_province) { "Buenos Aires" }
+        let(:destination_province) { "Córdoba" }
         let(:date_from) { "not-a-date" }
         let(:date_to) { "2026-05-14" }
 

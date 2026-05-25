@@ -56,7 +56,7 @@ export const cargosContent = {
         emptyCta: "Publicá tu primera carga",
         filterLabel: "Filtrar por estado",
         filterAll: "Todas",
-        route: (from: string, to: string) => `${from} → ${to}`,
+        route: (from: string, to: string | null) => `${from} → ${to ?? "Destino abierto"}`,
         pickupWindow: (from: string, to: string) =>
             from === to ? from : `${from} – ${to}`,
         offersCount: (n: number) =>
@@ -144,7 +144,7 @@ export const cargosContent = {
             offers: "Mis ofertas",
         },
         summary: {
-            route: (from: string, to: string) => `${from} → ${to}`,
+            route: (from: string, to: string | null) => `${from} → ${to ?? "Destino abierto"}`,
             pickup: "Retiro",
             delivery: "Entrega",
             pickupWindow: "Ventana de retiro",

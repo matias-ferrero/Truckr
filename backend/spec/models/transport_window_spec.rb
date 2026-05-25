@@ -5,13 +5,16 @@ RSpec.describe TransportWindow, type: :model do
     it "builds a valid TransportWindow" do
       expect(build(:transport_window)).to be_valid
     end
+
+    it "builds a valid open-destination TransportWindow" do
+      expect(build(:transport_window, :open_destination)).to be_valid
+    end
   end
 
   describe "validations" do
     subject { build(:transport_window) }
 
-    it { is_expected.to validate_presence_of(:origin_zone) }
-    it { is_expected.to validate_presence_of(:destination_zone) }
+    it { is_expected.to validate_presence_of(:origin_province) }
     it { is_expected.to validate_presence_of(:available_from) }
     it { is_expected.to validate_presence_of(:available_to) }
     it { is_expected.to validate_numericality_of(:price_per_km).is_greater_than(0) }
@@ -52,16 +55,64 @@ RSpec.describe TransportWindow, type: :model do
   end
 
   describe "normalized search fields callback" do
-    it "normalizes origin_zone and destination_zone on save" do
-      tw = create(:transport_window, origin_zone: "Buenos Aires", destination_zone: "Córdoba")
-      expect(tw.origin_zone_normalized).to eq("buenos aires")
-      expect(tw.destination_zone_normalized).to eq("cordoba")
+    it "normalizes origin_province and destination_province on save" do
+      tw = create(:transport_window, origin_province: "Buenos Aires", destination_province: "Córdoba")
+      expect(tw.origin_province_normalized).to eq("buenos aires")
+      expect(tw.destination_province_normalized).to eq("cordoba")
+    end
+
+    it "normalizes origin_locality and destination_locality when present" do
+      tw = create(:transport_window, origin_locality: "CABA", destination_locality: "Córdoba Capital")
+      expect(tw.origin_locality_normalized).to eq("caba")
+      expect(tw.destination_locality_normalized).to eq("cordoba capital")
     end
 
     it "handles diacritics during normalization" do
-      tw = create(:transport_window, origin_zone: "São Paulo", destination_zone: "Zürich")
-      expect(tw.origin_zone_normalized).to eq("sao paulo")
-      expect(tw.destination_zone_normalized).to eq("zurich")
+      tw = create(:transport_window, origin_province: "São Paulo", destination_province: "Zürich")
+      expect(tw.origin_province_normalized).to eq("sao paulo")
+      expect(tw.destination_province_normalized).to eq("zurich")
+    end
+
+    it "stores nil destination_province_normalized when destination_province is blank" do
+      tw = create(:transport_window, :open_destination)
+      expect(tw.destination_province).to be_nil
+      expect(tw.destination_province_normalized).to be_nil
+    end
+
+    it "coerces empty string destination_province to nil" do
+      tw = create(:transport_window, destination_province: "")
+      expect(tw.destination_province).to be_nil
+    end
+
+    it "coerces empty string origin_locality to nil" do
+      tw = create(:transport_window, origin_locality: "")
+      expect(tw.origin_locality).to be_nil
+    end
+  end
+
+  describe "#locality_requires_province" do
+    it "rejects origin_locality without origin_province" do
+      tw = build(:transport_window, origin_province: nil, origin_locality: "CABA")
+      expect(tw).not_to be_valid
+      expect(tw.errors[:origin_locality]).to include(/requiere que se especifique la provincia de origen/)
+    end
+
+    it "rejects destination_locality without destination_province" do
+      tw = build(:transport_window, destination_province: nil, destination_locality: "Córdoba Capital")
+      expect(tw).not_to be_valid
+      expect(tw.errors[:destination_locality]).to include(/requiere que se especifique la provincia de destino/)
+    end
+
+    it "allows origin_locality when origin_province is present" do
+      tw = build(:transport_window, origin_province: "Buenos Aires", origin_locality: "CABA")
+      tw.valid?
+      expect(tw.errors[:origin_locality]).to be_empty
+    end
+
+    it "allows destination_locality when destination_province is present" do
+      tw = build(:transport_window, destination_province: "Córdoba", destination_locality: "Córdoba Capital")
+      tw.valid?
+      expect(tw.errors[:destination_locality]).to be_empty
     end
   end
 

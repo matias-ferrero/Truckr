@@ -88,7 +88,7 @@ RSpec.describe "Api::Cargos", type: :request do
         before do
           vehicle = create(:vehicle, max_load_kg: 5000, carrier: carrier_user.carrier)
           create(:transport_window, vehicle: vehicle,
-                 origin_zone: "Buenos Aires", destination_zone: "Córdoba",
+                 origin_province: "Buenos Aires", destination_province: "Córdoba",
                  available_from: 2.days.from_now, available_to: 10.days.from_now)
         end
 
@@ -256,28 +256,28 @@ RSpec.describe "Api::Cargos", type: :request do
       response(200, "returns matching windows; excludes inactive, contended and incompatible ones") do
         let!(:match) do
           create(:transport_window, vehicle: big_vehicle,
-                 origin_zone: "Buenos Aires", destination_zone: "Córdoba",
+                 origin_province: "Buenos Aires", destination_province: "Córdoba",
                  available_from: 2.days.from_now, available_to: 10.days.from_now)
         end
         let!(:inactive) do
           create(:transport_window, vehicle: big_vehicle, active: false,
-                 origin_zone: "Buenos Aires", destination_zone: "Córdoba",
+                 origin_province: "Buenos Aires", destination_province: "Córdoba",
                  available_from: 2.days.from_now, available_to: 10.days.from_now)
         end
         let!(:wrong_zone) do
           create(:transport_window, vehicle: big_vehicle,
-                 origin_zone: "Mendoza", destination_zone: "Salta",
+                 origin_province: "Mendoza", destination_province: "Salta",
                  available_from: 2.days.from_now, available_to: 10.days.from_now)
         end
         let!(:too_small) do
           tiny = create(:vehicle, max_load_kg: 100, carrier: carrier_user.carrier)
           create(:transport_window, vehicle: tiny,
-                 origin_zone: "Buenos Aires", destination_zone: "Córdoba",
+                 origin_province: "Buenos Aires", destination_province: "Córdoba",
                  available_from: 2.days.from_now, available_to: 10.days.from_now)
         end
         let!(:contended) do
           win = create(:transport_window, vehicle: big_vehicle,
-                       origin_zone: "Buenos Aires", destination_zone: "Córdoba",
+                       origin_province: "Buenos Aires", destination_province: "Córdoba",
                        available_from: 2.days.from_now, available_to: 10.days.from_now)
           create(:cargo_offer, :pending, transport_window: win,
                  cargo: create(:cargo, pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now))

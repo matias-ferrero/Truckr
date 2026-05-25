@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_25_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_25_200000) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -212,19 +212,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_000001) do
     t.datetime "available_from", null: false
     t.datetime "available_to", null: false
     t.datetime "created_at", null: false
-    t.string "destination_zone", null: false
-    t.string "destination_zone_normalized"
+    t.string "destination_locality"
+    t.string "destination_locality_normalized"
+    t.string "destination_province"
+    t.string "destination_province_normalized"
     t.integer "max_km", null: false
-    t.string "origin_zone", null: false
-    t.string "origin_zone_normalized"
+    t.string "origin_locality"
+    t.string "origin_locality_normalized"
+    t.string "origin_province", null: false
+    t.string "origin_province_normalized"
     t.decimal "price_per_km", precision: 10, scale: 2, null: false
     t.string "status", default: "open", null: false
     t.datetime "updated_at", null: false
     t.integer "vehicle_id", null: false
     t.index ["active"], name: "index_transport_windows_on_active"
     t.index ["available_from", "available_to"], name: "index_transport_windows_on_available_from_and_available_to"
-    t.index ["destination_zone_normalized"], name: "index_transport_windows_on_destination_zone_normalized"
-    t.index ["origin_zone_normalized"], name: "index_transport_windows_on_origin_zone_normalized"
+    t.index ["destination_locality_normalized"], name: "index_transport_windows_on_destination_locality_normalized"
+    t.index ["destination_province_normalized"], name: "index_transport_windows_on_destination_province_normalized"
+    t.index ["origin_locality_normalized"], name: "index_transport_windows_on_origin_locality_normalized"
+    t.index ["origin_province_normalized"], name: "index_transport_windows_on_origin_province_normalized"
     t.index ["status"], name: "index_transport_windows_on_status"
     t.index ["vehicle_id", "available_from", "available_to"], name: "idx_tw_on_vehicle_and_window"
     t.index ["vehicle_id"], name: "index_transport_windows_on_vehicle_id"

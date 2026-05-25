@@ -12,8 +12,10 @@ function makeWindow(overrides = {}) {
     return {
         id: 1,
         vehicle_id: 10,
-        origin_zone: "Buenos Aires",
-        destination_zone: "Córdoba",
+        origin_province: "Buenos Aires",
+        origin_locality: null,
+        destination_province: "Córdoba",
+        destination_locality: null,
         price_per_km: "1500.0",
         max_km: 1200,
         available_from: "2026-05-15T00:00:00.000Z",
@@ -59,8 +61,10 @@ describe("createTransportWindow", () => {
         mockFetch(makeWindow(), 201);
         const draft = {
             vehicle_id: 10,
-            origin_zone: "BsAs",
-            destination_zone: "Córdoba",
+            origin_province: "BsAs",
+            origin_locality: null,
+            destination_province: "Córdoba",
+            destination_locality: null,
             price_per_km: "1500",
             max_km: "1200",
             available_from: "2026-05-15T00:00",

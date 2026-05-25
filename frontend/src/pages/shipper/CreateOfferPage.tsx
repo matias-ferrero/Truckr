@@ -217,8 +217,14 @@ export default function CreateOfferPage() {
                     </h2>
                     <p className="offerSummaryRoute">
                         {t.windowSection.route(
-                            window.origin_zone,
-                            window.destination_zone,
+                            window.origin_locality
+                                ? `${window.origin_province}, ${window.origin_locality}`
+                                : window.origin_province,
+                            window.destination_province
+                                ? (window.destination_locality
+                                    ? `${window.destination_province}, ${window.destination_locality}`
+                                    : window.destination_province)
+                                : null,
                         )}
                     </p>
                     <p className="offerSummaryMeta">
