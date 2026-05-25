@@ -21,10 +21,25 @@ resource "aws_iam_role" "github_actions" {
       }
       Action = "sts:AssumeRoleWithWebIdentity"
       Condition = {
-        StringLike = {
-          "token.actions.githubusercontent.com:sub" = "repo:${var.github_org}/${var.github_repo}:*"
-        }
+        # Explicit StringEquals list instead of StringLike `repo:.../*`.
+        # The wildcard accepted any GitHub ref type — including PRs from
+        # forks (sub = repo:fork/...:pull_request). With this list, the
+        # role can only be assumed by:
+        #   - Pushes/runs on the main branch (apply, deploys)
+        #   - Jobs declaring `environment: staging` (Phase 3 apply)
+        #   - Jobs declaring `environment: production` (Phase 3 apply, reviewer-gated)
+        #   - PR runs from THIS repo (sub format `repo:<org>/<repo>:pull_request`)
+        # PR runs from forks have a fork-org sub and stay rejected.
+        # infra-plan.yml additionally enforces head.repo.full_name == github.repository
+        # so even repo-PR-shaped subs from a forked workflow file can't slip
+        # in via PR retarget tricks.
         StringEquals = {
+          "token.actions.githubusercontent.com:sub" = [
+            "repo:${var.github_org}/${var.github_repo}:ref:refs/heads/main",
+            "repo:${var.github_org}/${var.github_repo}:environment:staging",
+            "repo:${var.github_org}/${var.github_repo}:environment:production",
+            "repo:${var.github_org}/${var.github_repo}:pull_request",
+          ]
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
         }
       }
@@ -140,6 +155,51 @@ resource "aws_iam_role_policy" "github_actions" {
         Effect   = "Allow"
         Action   = ["cloudfront:CreateInvalidation"]
         Resource = var.cloudfront_distribution_arn
+      },
+      # Below: permissions for Phase 4's Kamal-via-SSM transport flow.
+      # backend-deploy.yml pushes an ephemeral SSH key to the EC2 via
+      # ec2-instance-connect (60s TTL), then tunnels SSH through SSM Session
+      # Manager — no inbound port 22 and no persistent CI keypair.
+      {
+        Sid      = "EC2InstanceConnect"
+        Effect   = "Allow"
+        Action   = ["ec2-instance-connect:SendSSHPublicKey"]
+        Resource = "arn:${data.aws_partition.current.partition}:ec2:*:*:instance/*"
+        Condition = {
+          StringEquals = {
+            "aws:ResourceTag/Project" = var.project
+          }
+        }
+      },
+      {
+        Sid    = "SSMSession"
+        Effect = "Allow"
+        Action = [
+          "ssm:StartSession",
+          "ssm:TerminateSession",
+          "ssm:DescribeSessions",
+          "ssm:GetConnectionStatus",
+        ]
+        Resource = [
+          "arn:${data.aws_partition.current.partition}:ec2:*:*:instance/*",
+          "arn:${data.aws_partition.current.partition}:ssm:*::document/AWS-StartSSHSession",
+        ]
+        # ResourceTag conditions on ssm:StartSession only apply to the EC2
+        # instance ARN, not the document ARN — the document is a global AWS
+        # asset. The tag still gates instance access, which is what matters.
+        Condition = {
+          StringEqualsIfExists = {
+            "aws:ResourceTag/Project" = var.project
+          }
+        }
+      },
+      {
+        Sid    = "EC2DescribeForSSH"
+        Effect = "Allow"
+        # describe-instances doesn't support resource-level conditions, so
+        # this read is account-wide. Read-only and metadata-only.
+        Action   = ["ec2:DescribeInstances"]
+        Resource = "*"
       },
     ]
   })

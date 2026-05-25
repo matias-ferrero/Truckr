@@ -14,15 +14,13 @@ permissions:
 
 jobs:
   plan:
-    # Phase 1 (INF-INFRA-00004): staging only. Production env is added in Phase 2
-    # (mirror dir under infra/envs/production) — the matrix grows to [staging, production] then.
     name: plan-${{ matrix.env }}
     runs-on: ubuntu-latest
     if: github.event.pull_request.head.repo.full_name == github.repository
     strategy:
       fail-fast: false
       matrix:
-        env: [staging]
+        env: [staging, production]
     concurrency:
       group: infra-plan-${{ github.ref }}-${{ matrix.env }}
       cancel-in-progress: true

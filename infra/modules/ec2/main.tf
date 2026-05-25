@@ -59,7 +59,14 @@ resource "aws_instance" "app" {
   lifecycle {
     # user_data is only evaluated on first boot; changes here require:
     #   terraform taint module.ec2.aws_instance.app && terraform apply
-    ignore_changes = [user_data]
+    #
+    # ami is ignored because data.aws_ami.ubuntu.id rolls forward whenever
+    # Canonical publishes a new image. Without this, a routine `terraform
+    # apply` would destroy and recreate the instance — wiping the SQLite
+    # volume that holds production data. To intentionally upgrade the OS,
+    # taint the instance, snapshot the EBS volume, and re-attach after
+    # replacement (see deployment runbook).
+    ignore_changes = [user_data, ami]
   }
 }
 

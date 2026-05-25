@@ -1,6 +1,6 @@
 locals {
   project = "truckr"
-  env     = "staging"
+  env     = "production"
 }
 
 data "aws_caller_identity" "current" {}
@@ -18,6 +18,9 @@ module "ecr" {
 
   project = local.project
   env     = local.env
+
+  # Longer rollback window than staging (default 5).
+  image_count_to_keep = 10
 }
 
 module "ssm" {
@@ -36,6 +39,9 @@ module "ec2" {
   subnet_id         = module.vpc.public_subnet_id
   security_group_id = module.vpc.ec2_security_group_id
   key_pair_name     = var.key_pair_name
+
+  # More RAM headroom for real users than staging's t3.micro.
+  instance_type = "t3.small"
 }
 
 module "s3_frontend" {
