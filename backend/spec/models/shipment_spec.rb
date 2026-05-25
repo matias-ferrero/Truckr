@@ -4,6 +4,7 @@ RSpec.describe Shipment, type: :model do
   describe "associations" do
     it { is_expected.to belong_to(:cargo_offer) }
     it { is_expected.to have_many(:tracking_events).dependent(:destroy) }
+    it { is_expected.to have_many(:payments).dependent(:restrict_with_error) }
     it { is_expected.to have_one(:route).dependent(:destroy) }
   end
 
@@ -11,7 +12,7 @@ RSpec.describe Shipment, type: :model do
     it { is_expected.to validate_presence_of(:cargo_offer_id) }
 
     it "STATUSES contains the canonical 4 states" do
-      expect(described_class::STATUSES).to eq(%w[pending_payment to_pick_up in_transit delivered])
+      expect(described_class::STATUSES).to eq(%w[accepted in_transit delivered cancelled])
     end
 
     it "rejects unknown status assignments via the enum" do
@@ -19,10 +20,23 @@ RSpec.describe Shipment, type: :model do
         .to raise_error(ArgumentError)
     end
 
-    it "requires accepted_at when pending_payment" do
-      s = build(:shipment, status: "pending_payment", accepted_at: nil)
+    it "requires accepted_at when accepted" do
+      s = build(:shipment, status: "accepted", accepted_at: nil)
       expect(s).not_to be_valid
       expect(s.errors[:accepted_at]).to be_present
+    end
+
+    it "requires cancelled_at when cancelled" do
+      s = build(:shipment, :cancelled, cancelled_at: nil)
+      expect(s).not_to be_valid
+      expect(s.errors[:cancelled_at]).to be_present
+    end
+  end
+
+  describe "defaults" do
+    it "defaults new shipments to status accepted" do
+      s = Shipment.new
+      expect(s.status).to eq("accepted")
     end
   end
 
@@ -30,30 +44,37 @@ RSpec.describe Shipment, type: :model do
     it "is frozen and contains the canonical map" do
       expect(described_class::ALLOWED_TRANSITIONS).to be_frozen
       expect(described_class::ALLOWED_TRANSITIONS).to eq(
-        pending_payment: [ :to_pick_up ],
-        to_pick_up:      [ :in_transit ],
-        in_transit:      [ :delivered ],
-        delivered:       []
+        accepted:   [ :in_transit, :cancelled ],
+        in_transit: [ :delivered, :cancelled ],
+        delivered:  [],
+        cancelled:  []
       )
     end
   end
 
   describe "#transition_to! — permitted transitions" do
     permitted = [
-      [ :pending_payment, :to_pick_up, {} ],
-      [ :to_pick_up,      :in_transit, {} ],
-      [ :in_transit,      :delivered,  {} ]
+      [ :accepted,   :in_transit ],
+      [ :accepted,   :cancelled  ],
+      [ :in_transit, :delivered  ],
+      [ :in_transit, :cancelled  ]
     ]
 
-    permitted.each do |from, to, extra|
+    permitted.each do |from, to|
       it "transitions #{from} -> #{to}" do
         s = create(:shipment, from)
-        expect { s.transition_to!(to, **extra) }.to change { s.reload.status.to_sym }.from(from).to(to)
+        expect { s.transition_to!(to) }.to change { s.reload.status.to_sym }.from(from).to(to)
+      end
+
+      it "stamps the matching timestamp column for #{to}" do
+        s = create(:shipment, from)
+        col = Shipment::STATUS_TIMESTAMP_COLUMNS[to]
+        expect { s.transition_to!(to) }.to change { s.reload.public_send(col) }.from(nil)
       end
 
       it "emits a status_change tracking event for #{from} -> #{to}" do
         s = create(:shipment, from)
-        expect { s.transition_to!(to, **extra) }.to change { s.tracking_events.count }.by(1)
+        expect { s.transition_to!(to) }.to change { s.tracking_events.count }.by(1)
         ev = s.tracking_events.order(:recorded_at).last
         expect(ev.kind).to eq("status_change")
         expect(ev.from_status).to eq(from.to_s)
@@ -64,10 +85,11 @@ RSpec.describe Shipment, type: :model do
 
   describe "#transition_to! — rejected transitions" do
     rejected = [
-      [ :delivered,       :in_transit ],
-      [ :pending_payment, :delivered ],
-      [ :to_pick_up,      :pending_payment ],
-      [ :in_transit,      :to_pick_up ]
+      [ :delivered,  :in_transit ],
+      [ :delivered,  :cancelled  ],
+      [ :cancelled,  :in_transit ],
+      [ :accepted,   :delivered  ],
+      [ :in_transit, :accepted   ]
     ]
 
     rejected.each do |from, to|
@@ -83,28 +105,28 @@ RSpec.describe Shipment, type: :model do
 
   describe "#transition_to! — locking" do
     it "wraps the transition in a row lock" do
-      s = create(:shipment, :pending_payment)
+      s = create(:shipment, :accepted)
       expect(s).to receive(:with_lock).and_call_original
-      s.transition_to!(:to_pick_up)
+      s.transition_to!(:in_transit)
     end
   end
 
   describe "scopes" do
-    let!(:pending_payment) { create(:shipment, :pending_payment) }
-    let!(:to_pick_up)      { create(:shipment, :to_pick_up) }
+    let!(:accepted)   { create(:shipment, :accepted) }
     let!(:in_transit) { create(:shipment, :in_transit) }
     let!(:delivered)  { create(:shipment, :delivered) }
+    let!(:cancelled)  { create(:shipment, :cancelled) }
 
-    it ".active includes only active shipment states" do
-      expect(Shipment.active).to match_array([ pending_payment, to_pick_up, in_transit ])
+    it ".active includes only accepted + in_transit" do
+      expect(Shipment.active).to match_array([ accepted, in_transit ])
     end
 
     it ".completed includes delivered shipments" do
       expect(Shipment.completed).to match_array([ delivered ])
     end
 
-    it ".in_progress matches the active shipment queue" do
-      expect(Shipment.in_progress).to match_array([ pending_payment, to_pick_up, in_transit ])
+    it ".in_progress matches .active" do
+      expect(Shipment.in_progress).to match_array([ accepted, in_transit ])
     end
   end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_24_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_25_000001) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -128,6 +128,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_000000) do
     t.index ["user_id"], name: "index_carriers_on_user_id", unique: true
   end
 
+  create_table "payments", force: :cascade do |t|
+    t.integer "amount_cents", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "ARS", null: false
+    t.datetime "escrowed_at"
+    t.datetime "failed_at"
+    t.string "failure_reason"
+    t.string "provider", default: "fake", null: false
+    t.string "provider_reference"
+    t.integer "shipment_id", null: false
+    t.string "state", null: false
+    t.datetime "updated_at", null: false
+    t.index ["provider_reference"], name: "index_payments_on_provider_reference"
+    t.index ["shipment_id", "state"], name: "index_payments_on_shipment_id_and_state"
+    t.index ["shipment_id"], name: "index_payments_on_shipment_id"
+    t.check_constraint "provider IN ('fake','mercadopago','stripe','other')", name: "payments_provider_check"
+    t.check_constraint "state IN ('escrowed','failed')", name: "payments_state_check"
+  end
+
   create_table "routes", force: :cascade do |t|
     t.datetime "calculated_at"
     t.datetime "created_at", null: false
@@ -151,13 +170,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_000000) do
     t.datetime "estimated_delivery_at"
     t.datetime "picked_up_at"
     t.datetime "settled_at"
-    t.string "status", default: "draft", null: false
+    t.string "status", default: "accepted", null: false
     t.datetime "updated_at", null: false
     t.index ["accepted_at"], name: "index_shipments_on_accepted_at"
     t.index ["cargo_offer_id"], name: "index_shipments_on_cargo_offer_id", unique: true
     t.index ["discarded_at"], name: "index_shipments_on_discarded_at"
     t.index ["status"], name: "index_shipments_on_status"
-    t.check_constraint "status IN ('pending_payment','to_pick_up','in_transit','delivered')", name: "shipments_status_check"
+    t.check_constraint "status IN ('accepted','in_transit','delivered','cancelled')", name: "shipments_status_check"
   end
 
   create_table "shippers", force: :cascade do |t|
@@ -252,6 +271,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_000000) do
   add_foreign_key "cargo_offers", "transport_windows"
   add_foreign_key "cargos", "shippers"
   add_foreign_key "carriers", "users"
+  add_foreign_key "payments", "shipments", on_delete: :restrict
   add_foreign_key "routes", "shipments", on_delete: :cascade
   add_foreign_key "shipments", "cargo_offers", on_delete: :restrict
   add_foreign_key "shippers", "users"

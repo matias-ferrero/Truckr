@@ -12,24 +12,22 @@ RSpec.describe "Api::Carriers::Me::Shipments", type: :request do
 
   describe "GET /api/carriers/me/shipments" do
     it "returns active shipments by default" do
-      mine_pending_payment = create(:shipment, :pending_payment,
+      mine_accepted = create(:shipment, :accepted,
                              cargo_offer: create(:cargo_offer, :accepted, carrier: carrier))
-      mine_to_pick_up = create(:shipment, :to_pick_up,
-                               cargo_offer: create(:cargo_offer, :accepted, carrier: carrier))
       mine_in_transit = create(:shipment, :in_transit,
                                cargo_offer: create(:cargo_offer, :accepted, carrier: carrier))
       _mine_delivered = create(:shipment, :delivered,
                                cargo_offer: create(:cargo_offer, :accepted, carrier: carrier))
 
       other_carrier = create(:carrier)
-      _foreign = create(:shipment, :pending_payment,
+      _foreign = create(:shipment, :accepted,
                         cargo_offer: create(:cargo_offer, :accepted, carrier: other_carrier))
 
       get "/api/carriers/me/shipments"
 
       expect(response).to have_http_status(:ok)
       ids = JSON.parse(response.body).map { |s| s["id"] }
-      expect(ids).to contain_exactly(mine_pending_payment.id, mine_to_pick_up.id, mine_in_transit.id)
+      expect(ids).to contain_exactly(mine_accepted.id, mine_in_transit.id)
     end
 
     it "supports explicit status filters" do
@@ -46,7 +44,7 @@ RSpec.describe "Api::Carriers::Me::Shipments", type: :request do
     end
 
     it "returns empty list for invalid filters" do
-      create(:shipment, :pending_payment, cargo_offer: create(:cargo_offer, :accepted, carrier: carrier))
+      create(:shipment, :accepted, cargo_offer: create(:cargo_offer, :accepted, carrier: carrier))
 
       get "/api/carriers/me/shipments", params: { status: "disputed" }
 

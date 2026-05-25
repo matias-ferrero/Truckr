@@ -4,7 +4,7 @@ RSpec.describe Route, type: :model do
   it { is_expected.to belong_to(:shipment) }
 
   describe "uniqueness of shipment_id" do
-    subject { build(:route, shipment: create(:shipment, :pending_payment)) }
+    subject { build(:route, shipment: create(:shipment, :accepted)) }
     it { is_expected.to validate_uniqueness_of(:shipment_id) }
   end
 

@@ -15,7 +15,7 @@ El Expedidor (Shipper) paga el `Shipment` que el Transportista aceptó (US12), d
 | Multiplicidad | `Shipment has_many :payments`. AC de retry crea filas nuevas. |
 | Retry | Una fila `failed` no transiciona — el Shipper crea una fila nueva con otro POST. La lista de Payments por Shipment es el audit trail de intentos. |
 | Invariante | A lo sumo **un** `Payment` en `escrowed` por Shipment (índice único parcial-simulado vía guard de servicio, ver below — SQLite no soporta partial indexes nativamente). |
-| Soft-delete | Vía `discard` gem (alineado con #215). `discarded_at` en `payments`. |
+| Soft-delete | **Hard-delete only.** Audit trail = per-attempt rows (los `Payment` fallidos persisten en estado terminal). El interlock de cancelación garantiza que ninguna fila `escrowed` se destruya en pleno flujo. |
 | `amount_cents` | Congelado en `create` desde `CargoOffer.amount_cents`. Inmutable. |
 | `provider` enum | `fake \| mercadopago \| stripe \| other`. MVP escribe `fake`. |
 | `provider_reference` | String — id que devuelve el gateway (fake o real). |
@@ -56,7 +56,7 @@ ACs de implementación:
 - [ ] **AC10**: Todas las cadenas visibles al usuario (UI + error messages) pasan por claves de i18n. Cero literales hardcoded en JSX ni en controllers.
 - [ ] **AC11**: `POST /api/shipments/:id/payments` es race-safe — request specs con dos llamadas concurrentes confirman que a lo sumo una crea un `Payment` en `escrowed`. Implementación: `shipment.with_lock { return if shipment.payments.escrowed.exists?; ... gateway call ... ; create row in terminal state }`.
 - [ ] **AC12**: `Payment.amount_cents` queda congelado al valor de `CargoOffer.amount_cents` en el momento de creación. Cambios posteriores al precio del `CargoOffer` no afectan al `Payment` ya creado.
-- [ ] **AC13**: `Payment` soporta soft-delete vía `discard` gem (alineado con #215). `discarded_at` indexado para consultas de audit. `default_scope` filtra discarded.
+- [ ] **AC13**: `Payment` es **hard-delete only**. El audit trail vive en las filas per-attempt (los `failed` persisten en estado terminal); el interlock de cancelación impide que se destruya un `escrowed` en mitad del flujo.
 - [ ] **AC14**: La cancelación de un `Shipment` (desde US39 — botón Expedidor "Cancelar envío") sólo es admitida si **no existe** un `Payment.escrowed` para ese Shipment. El servicio `Shipments::Cancel` devuelve `409 Conflict` con mensaje i18n `errors.shipments.cancel.already_paid` cuando el interlock falla. (Esta AC encierra el interlock entre las FSM de `Shipment` y `Payment`; aterrizarla en este issue es consistente con que el dueño de la FSM de Payment es Brian.)
 
 ## Domain model
@@ -75,7 +75,6 @@ ACs de implementación:
 | `escrowed_at` | `datetime` | yes | — | Set on row create si `state = escrowed`. |
 | `failed_at` | `datetime` | yes | — | Set on row create si `state = failed`. |
 | `failure_reason` | `string` | yes | — | Set por el gateway cuando `state = failed`. Para diagnóstico / UI. |
-| `discarded_at` | `datetime` | yes | — | `discard` gem. |
 | `created_at` | `datetime` | no | — | — |
 | `updated_at` | `datetime` | no | — | — |
 
@@ -83,7 +82,6 @@ ACs de implementación:
 
 - `payments(shipment_id, state)` — composite. Powers `shipment.payments.escrowed.exists?` y policy predicates.
 - `payments(provider_reference)` — for audit lookups.
-- `payments(discarded_at)` — soft-delete query.
 
 **Nota de columna `state` vs `status`**: usamos `state` para alinearnos con el resto del dominio (`Shipment.state`). La columna `status` fue descartada por consistencia.
 
@@ -194,7 +192,7 @@ Claves nuevas bajo `payments.*` y `errors.payments.*` en `backend/config/locales
 - **Construye sobre**: `REQ-BE-00024` (US12 — Carrier accepts CargoOffer → crea `Shipment` en `accepted`) y `REQ-FE-00017` (inbox de ofertas), ambos mergeados en PR #221.
 - **Acopla con**: las issues nuevas de Sprint 3 para US17 + US39 (listado + detalle de envíos). El chip de pago y el botón "Cancelar envío" del detalle dependen de este issue.
 - **ADR-012** — la decisión canónica del modelo de pago (`docs/01-technical-vision/technical-vision.md`). Pendiente: actualizar el ADR para reflejar el cambio sync mock + drop de `pending` (cleanup en este sprint o el siguiente, según prioridades).
-- **Issue #215** — adopción del `discard` gem para soft-deletes. Este issue lo usa desde día 1 para `Payment`.
+- **Issue #215** — adopción del `discard` gem para soft-deletes. **No aplica a `Payment`**: la tabla es hard-delete only y el audit trail vive en las filas per-attempt.
 - **No depende de** `REQ-BE-00006` (integración MP real, post-MVP).
 
 ## Implementation notes (pre-PR)

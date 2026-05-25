@@ -47,10 +47,10 @@ RSpec.describe Marketplace::CargoOfferAcceptanceService do
       expect(Shipment.find_by(cargo_offer_id: winner.id)).to be_nil
     end
 
-    it "creates a shipment in pending_payment state" do
+    it "creates a shipment in accepted state" do
       shipment = described_class.new(cargo_offer: winner).call
 
-      expect(shipment.status).to eq("pending_payment")
+      expect(shipment.status).to eq("accepted")
       expect(shipment.accepted_at).to be_present
     end
   end

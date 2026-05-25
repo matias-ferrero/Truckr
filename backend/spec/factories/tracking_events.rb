@@ -2,8 +2,8 @@ FactoryBot.define do
   factory :tracking_event do
     association :shipment
     kind         { "status_change" }
-    from_status  { "draft" }
-    to_status    { "offered" }
+    from_status  { "accepted" }
+    to_status    { "in_transit" }
     recorded_at  { Time.current }
     metadata     { {} }
 

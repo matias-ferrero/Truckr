@@ -7,7 +7,7 @@ module Api
         before_action :authenticate_user!
         before_action :require_carrier!
 
-        # GET /api/carriers/me/shipments?status=pending_payment|to_pick_up|in_transit|delivered
+        # GET /api/carriers/me/shipments?status=accepted|in_transit|delivered|cancelled
         # Default view is the active shipment queue.
         def index
           render_collection(ShipmentResource, filtered_scope.order(created_at: :desc))
@@ -20,7 +20,7 @@ module Api
 
           return scope.in_progress if params[:status].blank?
 
-          allowed = %w[pending_payment to_pick_up in_transit delivered]
+          allowed = Shipment::STATUSES
           return scope.none unless allowed.include?(params[:status])
 
           scope.where(status: params[:status])

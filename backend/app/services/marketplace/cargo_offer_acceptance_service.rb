@@ -33,7 +33,7 @@ module Marketplace
 
           shipment = Shipment.create!(
             cargo_offer: cargo_offer,
-            status: "pending_payment",
+            status: "accepted",
             accepted_at: at
           )
         end

@@ -2,29 +2,36 @@
 
 # Shipment — Fulfilment context aggregate root.
 #
-# State machine (hand-rolled, no gem — Decision F in domain-model.md):
+# Canonical FSM (ADR-012, amended 2026-05-24):
 #
-#   ┌──────────────────┐   ┌───────────┐   ┌────────────┐   ┌───────────┐
-#   │ pending_payment  │──▶│ to_pick_up│──▶│ in_transit  │──▶│ delivered │
-#   └──────────────────┘   └───────────┘   └────────────┘   └───────────┘
+#                ┌─────────────┐   ┌────────────┐   ┌───────────┐
+#                │  accepted   │──▶│ in_transit │──▶│ delivered │
+#                └─────────────┘   └────────────┘   └───────────┘
+#                       │                 │
+#                       ▼                 ▼
+#                  ┌────────────────────────┐
+#                  │       cancelled        │  (terminal from accepted or in_transit)
+#                  └────────────────────────┘
 #
-# Shipment is a fulfilment-only aggregate: payment and disputes live outside
-# this model. The carrier sees the pending-payment shipment immediately after
-# offer acceptance, then the shipper payment flips it to `to_pick_up`.
+# Permissive at the model layer: model accepts any allowed pair without
+# checking sprint-scope interlocks (e.g. "no cancel after an escrowed
+# Payment"). The Shipments::Cancel service (REQ-BE-00033) layers those
+# checks on top.
 class Shipment < ApplicationRecord
   class IllegalTransition < StandardError; end
 
   ALLOWED_TRANSITIONS = {
-    pending_payment: [ :to_pick_up ],
-    to_pick_up:      [ :in_transit ],
-    in_transit:      [ :delivered ],
-    delivered:       []
+    accepted:   [ :in_transit, :cancelled ],
+    in_transit: [ :delivered, :cancelled ],
+    delivered:  [],
+    cancelled:  []
   }.freeze
 
   STATUS_TIMESTAMP_COLUMNS = {
-    pending_payment: :accepted_at,
-    in_transit:      :picked_up_at,
-    delivered:       :delivered_at
+    accepted:   :accepted_at,
+    in_transit: :picked_up_at,
+    delivered:  :delivered_at,
+    cancelled:  :cancelled_at
   }.freeze
 
   STATUSES = ALLOWED_TRANSITIONS.keys.map(&:to_s).freeze
@@ -43,6 +50,7 @@ class Shipment < ApplicationRecord
   # ── Associations ──────────────────────────────────────────────────────
   belongs_to :cargo_offer, inverse_of: :shipment
   has_many   :tracking_events, dependent: :destroy, inverse_of: :shipment
+  has_many   :payments, dependent: :restrict_with_error, inverse_of: :shipment
   has_one    :route, dependent: :destroy, inverse_of: :shipment
 
   # ── Validations ───────────────────────────────────────────────────────
@@ -51,7 +59,7 @@ class Shipment < ApplicationRecord
   validate :timestamps_match_status
 
   # ── Scopes ────────────────────────────────────────────────────────────
-  scope :active,      -> { where(status: %w[pending_payment to_pick_up in_transit]) }
+  scope :active,      -> { where(status: %w[accepted in_transit]) }
   scope :completed,   -> { where(status: %w[delivered]) }
   scope :in_progress, -> { active }
 
@@ -90,12 +98,12 @@ class Shipment < ApplicationRecord
   end
 
   def self.ransackable_attributes(_auth_object = nil)
-     %w[id cargo_offer_id status accepted_at picked_up_at delivered_at discarded_at
-       created_at updated_at]
+     %w[id cargo_offer_id status accepted_at picked_up_at delivered_at cancelled_at
+        discarded_at created_at updated_at]
   end
 
   def self.ransackable_associations(_auth_object = nil)
-    %w[cargo_offer tracking_events route]
+    %w[cargo_offer tracking_events route payments]
   end
 
   private
@@ -104,12 +112,14 @@ class Shipment < ApplicationRecord
     return if status.blank?
 
     case status.to_sym
-    when :pending_payment
-      errors.add(:accepted_at, "must be set when pending payment") if accepted_at.blank?
+    when :accepted
+      errors.add(:accepted_at, "must be set when accepted") if accepted_at.blank?
     when :in_transit
       errors.add(:picked_up_at, "must be set when in transit") if picked_up_at.blank?
     when :delivered
       errors.add(:delivered_at, "must be set when delivered") if delivered_at.blank?
+    when :cancelled
+      errors.add(:cancelled_at, "must be set when cancelled") if cancelled_at.blank?
     end
   end
 end

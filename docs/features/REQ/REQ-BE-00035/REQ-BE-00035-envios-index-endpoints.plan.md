@@ -102,7 +102,7 @@ Campos:
 | `destination` | string | `shipment.cargo_offer.cargo.delivery_address` |
 | `created_at` | ISO8601 | |
 | `amount_cents` | integer | `shipment.amount_cents` (monto acordado del envío) |
-| `amount_currency` | string | `shipment.amount_currency` |
+| `currency` | string | `shipment.currency` |
 | `latest_activity_at` | ISO8601 | `COALESCE(MAX(tracking_events.created_at), shipments.updated_at)` — el FE no lo usa, pero lo expone para debugging y verificación de orden |
 
 ### 4.2 `ShipmentDetailResource`
@@ -116,11 +116,11 @@ Campos:
 | `payment_state` | string | mismo derivado y mismo criterio de omisión que `ShipmentListResource` |
 | `created_at` | ISO8601 | |
 | `amount_cents` | integer | |
-| `amount_currency` | string | |
+| `currency` | string | |
 | `cargo` | object | bloque anidado — ver 4.3 |
 | `vehicle` | object | `{ id, plate, kind }` |
 | `counterparty` | object | `{ kind, id, display_name }`. `kind ∈ {carrier, shipper}` — **siempre el opuesto al usuario que consulta** (si Carrier consulta → devuelve al Shipper; si Shipper consulta → devuelve al Carrier). Esto le quita al FE la responsabilidad de saber «quién es quién»: el componente de detalle es agnóstico de rol para este bloque. |
-| `payment` | object \| null | `{ id, state, amount_cents, amount_currency, captured_at }` — emitido si existe registro de `Payment`. `null` si no se inició el flujo de pago. **Omitido del payload si `state == "cancelled"`** (mismo criterio que `payment_state`). |
+| `payment` | object \| null | `{ id, state, amount_cents, currency, escrowed_at }` — emitido si existe registro de `Payment`. `null` si no se inició el flujo de pago. **Omitido del payload si `state == "cancelled"`** (mismo criterio que `payment_state`). |
 | `tracking_events` | array | `[{ id, kind, occurred_at }, ...]` ordenado ascendente por `occurred_at`. `kind` reusa los valores definidos en `REQ-BE-00022`. |
 | `available_actions` | array<string> | **Contrato crítico** — ver §4.4. |
 
