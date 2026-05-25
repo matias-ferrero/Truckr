@@ -1,0 +1,163 @@
+name: Infra plan
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra-plan.yml'
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  plan:
+    # Phase 1 (INF-INFRA-00004): staging only. Production env is added in Phase 2
+    # (mirror dir under infra/envs/production) — the matrix grows to [staging, production] then.
+    name: plan-${{ matrix.env }}
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    strategy:
+      fail-fast: false
+      matrix:
+        env: [staging]
+    concurrency:
+      group: infra-plan-${{ github.ref }}-${{ matrix.env }}
+      cancel-in-progress: true
+    defaults:
+      run:
+        shell: bash
+    env:
+      AWS_REGION: sa-east-1
+      TF_IN_AUTOMATION: 'true'
+      TF_INPUT: '0'
+      # Input variables for `terraform plan`. The real values live in the
+      # operator's gitignored terraform.tfvars; CI substitutes safe placeholders.
+      # Sensitive vars (rails_master_key) are passed empty, which produces a
+      # one-time SSM-parameter diff in the plan — reviewers should ignore it
+      # until Phase 2 switches to `data "aws_ssm_parameter"` lookups that read
+      # the real value back from state. Same goes for ssh_cidr: the CI dummy is
+      # TEST-NET-1 (192.0.2.0/32) so an accidental apply wouldn't open SSH wide.
+      TF_VAR_github_org: ${{ github.repository_owner }}
+      TF_VAR_github_repo: ${{ github.event.repository.name }}
+      TF_VAR_key_pair_name: truckr-${{ matrix.env }}-fy
+      TF_VAR_ssh_cidr: 192.0.2.0/32
+      TF_VAR_rails_master_key: ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v4
+        with:
+          experimental: true
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.GHA_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Materialize backend.hcl
+        working-directory: infra/envs/${{ matrix.env }}
+        run: |
+          if [ -z "${{ vars.TFSTATE_BUCKET }}" ]; then
+            echo "::error::Repo variable TFSTATE_BUCKET is not set. See plan §3 Phase 1.2."
+            exit 1
+          fi
+          printf 'bucket = "%s"\n' "${{ vars.TFSTATE_BUCKET }}" > backend.hcl
+
+      - name: Terraform init
+        working-directory: infra/envs/${{ matrix.env }}
+        run: terraform init -backend-config=backend.hcl -input=false -no-color
+
+      - name: Terraform plan
+        id: plan
+        working-directory: infra/envs/${{ matrix.env }}
+        run: |
+          set +e
+          terraform plan -no-color -input=false -detailed-exitcode -out=tfplan > plan.txt 2>&1
+          EXIT=$?
+          echo "exit=$EXIT" >> "$GITHUB_OUTPUT"
+          # Truncate the captured output to 60 KB so the PR comment stays under
+          # GitHub's 65,536-character comment limit even after markdown framing.
+          head -c 60000 plan.txt > plan.trunc.txt
+          mv plan.trunc.txt plan.txt
+          set -e
+          # Surface the plan in the job log too.
+          cat plan.txt
+          # exit=1 means a real terraform error (auth, syntax, provider). Re-raise
+          # AFTER posting the comment so reviewers can see what failed. The next
+          # step uses if: always() so the comment lands either way.
+          exit 0
+
+      - name: Upload plan artifact
+        if: steps.plan.outputs.exit != '1'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ matrix.env }}
+          path: infra/envs/${{ matrix.env }}/tfplan
+          retention-days: 30
+
+      - name: Post or update PR comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const env = '${{ matrix.env }}';
+            const exit = '${{ steps.plan.outputs.exit }}';
+            const planPath = `infra/envs/${env}/plan.txt`;
+            const plan = fs.existsSync(planPath)
+              ? fs.readFileSync(planPath, 'utf8')
+              : '(plan output not captured — see workflow logs)';
+            const marker = `<!-- INFRA-PLAN-COMMENT-${env} -->`;
+            const status = exit === '0'
+              ? 'No changes'
+              : exit === '2'
+                ? 'Changes detected'
+                : 'Plan failed';
+            const sha = (context.payload.pull_request && context.payload.pull_request.head.sha) || context.sha;
+            const body = [
+              marker,
+              `## Terraform plan — \`${env}\` — ${status}`,
+              ``,
+              `> Plan generated for commit \`${sha.slice(0, 7)}\`.`,
+              ``,
+              `<details><summary>Show plan</summary>`,
+              ``,
+              '```',
+              plan,
+              '```',
+              ``,
+              `</details>`,
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Fail on plan error
+        if: steps.plan.outputs.exit == '1'
+        run: |
+          echo "::error::terraform plan exited with code 1 — see PR comment and job log."
+          exit 1

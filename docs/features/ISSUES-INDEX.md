@@ -10,7 +10,7 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | INF-BE-00003 | Agregar ActiveAdmin al backend | DONE | BE | 2026-05-03 | PR #73 |
 | INF-INFRA-00001 | Mover workflows de CI a la raíz del repo con filtros por paths | DONE | INFRA | 2026-05-03 | - |
 | INF-INFRA-00002 | Agregar workflow de Frontend CI (Vitest + vite build + Playwright) | DONE | INFRA | 2026-05-03 | - |
-| INF-INFRA-00004 | Automatización de deploy vía GitHub Actions con OIDC (infra-plan, infra-apply, backend-deploy, frontend-deploy) | RDY | INFRA | 2026-05-19 | [plan](INF/INF-INFRA-00004/INF-INFRA-00004-automatizacion-de-deploy-via-github-actions-oidc.plan.md) · [#202](https://github.com/tcorzo/fiuba-gestion-tp/issues/202) |
+| INF-INFRA-00004 | Automatización de deploy vía GitHub Actions con OIDC (infra-plan, infra-apply, backend-deploy, frontend-deploy) | IP | INFRA | 2026-05-19 | [plan](INF/INF-INFRA-00004/INF-INFRA-00004-automatizacion-de-deploy-via-github-actions-oidc.plan.md) · [#202](https://github.com/tcorzo/fiuba-gestion-tp/issues/202) |
 | INF-FE-00002 | Actualizar frontend/.gitignore a estándares industriales (incluir .vite/ y env files) | DONE | FE | 2026-05-03 | PR #66 |
 | REQ-BE-00005 | Diseñar modelo de dominio inicial (Identity bounded context primero) | IR | BE | 2026-05-03 | [plan](REQ/REQ-BE-00005/REQ-BE-00005-disenar-modelo-de-dominio-inicial.plan.md) |
 | REQ-DOC-00002 | Crear artefacto de riesgos con metodología, registro y cobertura por categorías | DONE | DOC | 2026-04-18 | PR #77 |

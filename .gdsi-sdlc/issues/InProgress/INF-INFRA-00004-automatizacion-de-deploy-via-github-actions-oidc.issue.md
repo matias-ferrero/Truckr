@@ -2,7 +2,7 @@
 tag: INF-INFRA-00004
 title: Automatización de deploy vía GitHub Actions con OIDC (infra-plan, infra-apply, backend-deploy, frontend-deploy)
 priority: P2
-status: ready
+status: in_progress
 plan: docs/features/INF/INF-INFRA-00004/INF-INFRA-00004-automatizacion-de-deploy-via-github-actions-oidc.plan.md
 created: '2026-05-19'
 source: manual

@@ -32,6 +32,18 @@ resource "aws_iam_role" "github_actions" {
   })
 }
 
+// Read-only access for `terraform plan` refresh. Without this, plan from CI
+// fails on every Get/Describe across the resource types this stack manages
+// (iam:GetRole, ec2:DescribeImages, cloudfront:GetDistribution, …). Custom
+// allow-list would be a whack-a-mole each time a new module lands; the AWS
+// managed ReadOnlyAccess is wider than strictly needed but acceptable in a
+// single-purpose project account. Tighten in a follow-up if scope ever
+// shrinks (e.g. permissions boundary).
+resource "aws_iam_role_policy_attachment" "github_actions_read" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/ReadOnlyAccess"
+}
+
 resource "aws_iam_role_policy" "github_actions" {
   name = "${var.project}-${var.env}-github-actions"
   role = aws_iam_role.github_actions.id
