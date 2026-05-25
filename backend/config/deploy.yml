@@ -1,22 +1,25 @@
 service: truckr
 image: truckr-backend
 
-# Filled in from `terraform output` (envs/staging):
-#   app_host       → proxy.host + servers.web[0]
-#   ecr_repo_url   → registry.server
-# Both are stable across redeploys: app_host is built from the EIP and the EIP
-# survives stop/start; ecr_repo_url is the ECR repository URL.
+# Infrastructure addresses are read from ENV with staging-stable fallbacks so
+# a `kamal deploy` from the operator's laptop keeps working with no extra
+# config. CI (backend-deploy.yml) resolves the real values from SSM and
+# exports them before invoking kamal:
+#   EC2_INSTANCE_ID    → servers.web[0]  (instance-id, not hostname — Kamal
+#                                          SSHes via SSM proxy_command below)
+#   APP_HOST           → proxy.host       (sslip.io hostname Kamal claims TLS for)
+#   ECR_REGISTRY_URL   → registry.server  (account-scoped registry URL)
 servers:
   web:
-    - ip-18-228-83-21.sslip.io
+    - <%= ENV.fetch("EC2_INSTANCE_ID", "ip-18-228-83-21.sslip.io") %>
 
 proxy:
   ssl: true
-  host: ip-18-228-83-21.sslip.io
+  host: <%= ENV.fetch("APP_HOST", "ip-18-228-83-21.sslip.io") %>
   app_port: 80
 
 registry:
-  server: 000946353046.dkr.ecr.sa-east-1.amazonaws.com
+  server: <%= ENV.fetch("ECR_REGISTRY_URL", "000946353046.dkr.ecr.sa-east-1.amazonaws.com") %>
   username: AWS
   password:
     - KAMAL_REGISTRY_PASSWORD
@@ -42,6 +45,11 @@ builder:
 
 ssh:
   user: ubuntu
+  # CI tunnels SSH through SSM Session Manager so no inbound port-22 ingress
+  # is needed for GitHub runners. %h is the instance-id from `servers.web`
+  # above, %p is the SSH port. Empty (the laptop default) → direct SSH/TCP
+  # via the SG ingress rule.
+  proxy_command: <%= ENV.fetch("KAMAL_SSH_PROXY_COMMAND", "") %>
 
 aliases:
   console: app exec --interactive --reuse "bin/rails console"

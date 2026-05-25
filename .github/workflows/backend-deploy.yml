@@ -1,0 +1,124 @@
+name: Backend deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-deploy.yml'
+  workflow_dispatch:
+    inputs:
+      env:
+        description: 'Environment to deploy'
+        required: true
+        type: choice
+        options: [staging, production]
+        default: staging
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: deploy-${{ github.event.inputs.env || 'staging' }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: backend-deploy-${{ github.event.inputs.env || 'staging' }}
+      # Don't cancel a running deploy — mid-flight Kamal would leave a host in
+      # an inconsistent state (proxy switched but old container running, etc.).
+      cancel-in-progress: false
+    defaults:
+      run:
+        shell: bash
+    env:
+      AWS_REGION: sa-east-1
+      TRUCKR_ENV: ${{ github.event.inputs.env || 'staging' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v4
+        with:
+          experimental: true
+
+      - name: Install Ruby gems
+        working-directory: backend
+        run: bundle install
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.GHA_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve infrastructure IDs from SSM
+        run: |
+          set -euo pipefail
+          ECR_URL=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/ecr_repository_url" --query Parameter.Value --output text)
+          EC2_INSTANCE_ID=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/ec2_instance_id" --query Parameter.Value --output text)
+          APP_HOST=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/app_host" --query Parameter.Value --output text)
+          # ECR_URL is `<account>.dkr.ecr.<region>.amazonaws.com/<repo>`; the
+          # `${VAR%/*}` strips the trailing `/<repo>` to get just the registry.
+          ECR_REGISTRY_URL="${ECR_URL%/*}"
+          {
+            echo "ECR_URL=$ECR_URL"
+            echo "ECR_REGISTRY_URL=$ECR_REGISTRY_URL"
+            echo "EC2_INSTANCE_ID=$EC2_INSTANCE_ID"
+            echo "APP_HOST=$APP_HOST"
+            # SSM proxy for Kamal's SSH. %h and %p are replaced by OpenSSH with
+            # the resolved host (instance-id) and port.
+            echo "KAMAL_SSH_PROXY_COMMAND=aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters portNumber=%p"
+          } >> "$GITHUB_ENV"
+
+      - name: Install session-manager-plugin
+        run: |
+          set -euo pipefail
+          curl -fsSL "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" \
+            -o /tmp/session-manager-plugin.deb
+          sudo dpkg -i /tmp/session-manager-plugin.deb
+          session-manager-plugin --version
+
+      - name: Kamal build and push to ECR
+        # Build + push happens outside the 60-second ec2-instance-connect
+        # window so we don't burn it waiting on a multi-minute docker build.
+        working-directory: backend
+        run: bundle exec kamal build push
+
+      - name: Push ephemeral SSH key via ec2-instance-connect (60s TTL)
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          # Generate a fresh ed25519 keypair just for this deploy. Kamal /
+          # net-ssh defaults to ~/.ssh/id_ed25519 as an identity, so we don't
+          # need to manage ssh-agent state across steps.
+          ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N "" -q
+          AZ=$(aws ec2 describe-instances --instance-ids "$EC2_INSTANCE_ID" \
+            --query 'Reservations[0].Instances[0].Placement.AvailabilityZone' --output text)
+          aws ec2-instance-connect send-ssh-public-key \
+            --instance-id "$EC2_INSTANCE_ID" \
+            --availability-zone "$AZ" \
+            --instance-os-user ubuntu \
+            --ssh-public-key "file://$HOME/.ssh/id_ed25519.pub"
+
+      - name: Kamal deploy
+        working-directory: backend
+        # --skip-push because the previous step already built and pushed.
+        # Kamal pulls the SHA-tagged image on the host and swaps containers.
+        run: bundle exec kamal deploy --skip-push
+
+      - name: Smoke test /up
+        run: |
+          set -euo pipefail
+          # Retry for up to 5 minutes — kamal-proxy may take a moment to
+          # claim a fresh Let's Encrypt cert on first deploy.
+          for i in {1..10}; do
+            if curl --fail --silent --show-error --max-time 10 "https://${APP_HOST}/up"; then
+              echo "Smoke OK on attempt $i."
+              exit 0
+            fi
+            echo "Attempt $i: /up not ready, sleeping 30s..."
+            sleep 30
+          done
+          echo "::error::Smoke check failed: /up did not respond OK after 5 minutes"
+          exit 1
