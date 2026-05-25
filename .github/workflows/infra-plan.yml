@@ -33,15 +33,14 @@ jobs:
       TF_INPUT: '0'
       # Input variables for `terraform plan`. The real values live in the
       # operator's gitignored terraform.tfvars; CI substitutes safe placeholders.
-      # Sensitive vars (rails_master_key) are passed empty, which produces a
-      # one-time SSM-parameter diff in the plan — reviewers should ignore it
-      # until Phase 2 switches to `data "aws_ssm_parameter"` lookups that read
-      # the real value back from state. Same goes for ssh_cidr: the CI dummy is
-      # TEST-NET-1 (192.0.2.0/32) so an accidental apply wouldn't open SSH wide.
+      # - rails_master_key is empty: the module's lifecycle ignore_changes
+      #   suppresses the would-be diff (Phase 2).
+      # - ssh_cidr prefers the operator-set SSH_CIDR secret so the plan matches
+      #   real SG ingress; falls back to TEST-NET-1 if the secret isn't set yet.
       TF_VAR_github_org: ${{ github.repository_owner }}
       TF_VAR_github_repo: ${{ github.event.repository.name }}
       TF_VAR_key_pair_name: truckr-${{ matrix.env }}-fy
-      TF_VAR_ssh_cidr: 192.0.2.0/32
+      TF_VAR_ssh_cidr: ${{ secrets.SSH_CIDR || '192.0.2.0/32' }}
       TF_VAR_rails_master_key: ''
 
     steps:

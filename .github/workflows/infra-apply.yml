@@ -1,0 +1,176 @@
+name: Infra apply
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra-apply.yml'
+  workflow_dispatch:
+    inputs:
+      env:
+        description: 'Environment to apply'
+        required: true
+        type: choice
+        options: [staging, production]
+        default: staging
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  apply-staging:
+    name: apply-staging
+    if: github.event_name == 'push' || github.event.inputs.env == 'staging'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: infra-apply-staging
+      # Don't cancel a running apply — let it finish and only queue the next
+      # one. Cancelling mid-apply leaves Terraform state and AWS resources
+      # out of sync.
+      cancel-in-progress: false
+    defaults:
+      run:
+        shell: bash
+    env:
+      AWS_REGION: sa-east-1
+      TF_IN_AUTOMATION: 'true'
+      TF_INPUT: '0'
+      TF_VAR_github_org: ${{ github.repository_owner }}
+      TF_VAR_github_repo: ${{ github.event.repository.name }}
+      TF_VAR_key_pair_name: truckr-staging-fy
+      TF_VAR_ssh_cidr: ${{ secrets.SSH_CIDR || '192.0.2.0/32' }}
+      TF_VAR_rails_master_key: ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v4
+        with:
+          experimental: true
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.GHA_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Materialize backend.hcl
+        working-directory: infra/envs/staging
+        run: |
+          if [ -z "${{ vars.TFSTATE_BUCKET }}" ]; then
+            echo "::error::Repo variable TFSTATE_BUCKET is not set."
+            exit 1
+          fi
+          printf 'bucket = "%s"\n' "${{ vars.TFSTATE_BUCKET }}" > backend.hcl
+
+      - name: Terraform init
+        working-directory: infra/envs/staging
+        run: terraform init -backend-config=backend.hcl -input=false -no-color
+
+      - name: Terraform plan
+        id: plan
+        working-directory: infra/envs/staging
+        run: terraform plan -no-color -input=false -out=tfplan
+
+      - name: Refuse destroys without explicit operator action
+        working-directory: infra/envs/staging
+        run: |
+          # Bail if the plan would destroy or replace any resource — Phase 2
+          # lifecycle ignore_changes covers the known drift sources (ami,
+          # rails_master_key.value), so any destroy here is an unexpected
+          # surprise that deserves human review, not auto-apply.
+          set -euo pipefail
+          terraform show -no-color tfplan > plan.txt
+          if grep -E '(must be replaced|will be destroyed|forces replacement)' plan.txt; then
+            echo "::error::Plan would destroy or replace resources — refusing to auto-apply."
+            echo "Re-run with -target after manual review, or update ignore_changes."
+            exit 1
+          fi
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-staging
+          path: infra/envs/staging/tfplan
+          retention-days: 30
+
+      - name: Terraform apply
+        working-directory: infra/envs/staging
+        run: terraform apply -no-color -input=false -auto-approve tfplan
+
+  apply-production:
+    name: apply-production
+    if: github.event_name == 'push' || github.event.inputs.env == 'production'
+    needs: apply-staging
+    runs-on: ubuntu-latest
+    # Required reviewer gate lives on the Environment, not the workflow.
+    # Configured idempotently by infra/bootstrap-environments.sh.
+    environment: production
+    concurrency:
+      group: infra-apply-production
+      cancel-in-progress: false
+    defaults:
+      run:
+        shell: bash
+    env:
+      AWS_REGION: sa-east-1
+      TF_IN_AUTOMATION: 'true'
+      TF_INPUT: '0'
+      TF_VAR_github_org: ${{ github.repository_owner }}
+      TF_VAR_github_repo: ${{ github.event.repository.name }}
+      TF_VAR_key_pair_name: truckr-production-fy
+      TF_VAR_ssh_cidr: ${{ secrets.SSH_CIDR || '192.0.2.0/32' }}
+      TF_VAR_rails_master_key: ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v4
+        with:
+          experimental: true
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.GHA_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Materialize backend.hcl
+        working-directory: infra/envs/production
+        run: |
+          if [ -z "${{ vars.TFSTATE_BUCKET }}" ]; then
+            echo "::error::Repo variable TFSTATE_BUCKET is not set."
+            exit 1
+          fi
+          printf 'bucket = "%s"\n' "${{ vars.TFSTATE_BUCKET }}" > backend.hcl
+
+      - name: Terraform init
+        working-directory: infra/envs/production
+        run: terraform init -backend-config=backend.hcl -input=false -no-color
+
+      - name: Terraform plan
+        working-directory: infra/envs/production
+        run: terraform plan -no-color -input=false -out=tfplan
+
+      - name: Refuse destroys without explicit operator action
+        working-directory: infra/envs/production
+        run: |
+          set -euo pipefail
+          terraform show -no-color tfplan > plan.txt
+          if grep -E '(must be replaced|will be destroyed|forces replacement)' plan.txt; then
+            echo "::error::Plan would destroy or replace resources — refusing to auto-apply."
+            exit 1
+          fi
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-production
+          path: infra/envs/production/tfplan
+          retention-days: 30
+
+      - name: Terraform apply
+        working-directory: infra/envs/production
+        run: terraform apply -no-color -input=false -auto-approve tfplan
