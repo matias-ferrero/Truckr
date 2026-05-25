@@ -19,8 +19,10 @@ module "ecr" {
   project = local.project
   env     = local.env
 
-  # Longer rollback window than staging (default 5).
-  image_count_to_keep = 10
+  # Shared ECR repository (staging creates, production references). ECR repo
+  # names are account-global; both envs use the same registry and segregate
+  # by image tag (`staging-<sha>`, `production-<sha>`).
+  create = false
 }
 
 module "ssm" {
@@ -62,6 +64,10 @@ module "github_oidc" {
   ecr_repository_arn          = module.ecr.repository_arn
   frontend_bucket_arn         = module.s3_frontend.bucket_arn
   cloudfront_distribution_arn = module.s3_frontend.cloudfront_distribution_arn
+
+  # IAM OIDC providers are account-global per URL. Staging creates it;
+  # production references the existing provider via data source.
+  create_oidc_provider = false
 }
 
 # Terraform outputs → SSM Parameters so deploy workflows can resolve resource

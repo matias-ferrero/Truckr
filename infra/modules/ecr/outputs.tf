@@ -1,11 +1,16 @@
+locals {
+  // Pick the repository object from whichever side of the `create` flag is live.
+  repository = var.create ? aws_ecr_repository.backend[0] : data.aws_ecr_repository.backend[0]
+}
+
 output "repository_url" {
-  value = aws_ecr_repository.backend.repository_url
+  value = local.repository.repository_url
 }
 
 output "registry_id" {
-  value = aws_ecr_repository.backend.registry_id
+  value = local.repository.registry_id
 }
 
 output "repository_arn" {
-  value = aws_ecr_repository.backend.arn
+  value = local.repository.arn
 }

@@ -1,12 +1,37 @@
 data "aws_partition" "current" {}
 
+// IAM OIDC providers are account-global per URL — there can only be one for
+// token.actions.githubusercontent.com per AWS account. The first env to
+// apply (staging) creates it; additional envs reference it via data source
+// by setting `create_oidc_provider = false`. Role + policy are still
+// per-env (truckr-${env}-github-actions).
 resource "aws_iam_openid_connect_provider" "github" {
+  count = var.create_oidc_provider ? 1 : 0
+
   url = "https://token.actions.githubusercontent.com"
 
   client_id_list = ["sts.amazonaws.com"]
 
   # Stable thumbprint for token.actions.githubusercontent.com (documented by GitHub)
   thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
+}
+
+data "aws_iam_openid_connect_provider" "github" {
+  count = var.create_oidc_provider ? 0 : 1
+
+  url = "https://token.actions.githubusercontent.com"
+}
+
+# State migration: the `count` addition above changes the resource address.
+# Without the moved block, terraform would propose destroying the existing
+# OIDC provider and recreating it under the new address.
+moved {
+  from = aws_iam_openid_connect_provider.github
+  to   = aws_iam_openid_connect_provider.github[0]
+}
+
+locals {
+  oidc_provider_arn = var.create_oidc_provider ? aws_iam_openid_connect_provider.github[0].arn : data.aws_iam_openid_connect_provider.github[0].arn
 }
 
 resource "aws_iam_role" "github_actions" {
@@ -17,7 +42,7 @@ resource "aws_iam_role" "github_actions" {
     Statement = [{
       Effect = "Allow"
       Principal = {
-        Federated = aws_iam_openid_connect_provider.github.arn
+        Federated = local.oidc_provider_arn
       }
       Action = "sts:AssumeRoleWithWebIdentity"
       Condition = {

@@ -35,3 +35,9 @@ variable "cloudfront_distribution_arn" {
   type        = string
   description = "ARN of the CloudFront distribution (grants invalidation access to the GHA role)"
 }
+
+variable "create_oidc_provider" {
+  type        = bool
+  default     = true
+  description = "When true (default), this module creates the account-global IAM OIDC provider for token.actions.githubusercontent.com. Set to false in additional envs that should reference the existing provider via data source."
+}

@@ -41,7 +41,11 @@ jobs:
       TF_VAR_github_repo: ${{ github.event.repository.name }}
       TF_VAR_key_pair_name: truckr-staging-fy
       TF_VAR_ssh_cidr: ${{ secrets.SSH_CIDR || '192.0.2.0/32' }}
-      TF_VAR_rails_master_key: ''
+      # Placeholder — SSM SecureString requires length >= 1. The module's
+      # lifecycle ignore_changes = [value] freezes whatever was set out-of-band:
+      # `aws ssm put-parameter --overwrite --name /truckr/<env>/rails_master_key
+      #  --value "$(cat backend/config/master.key)"`.
+      TF_VAR_rails_master_key: 'placeholder-rotate-via-aws-cli'
 
     steps:
       - uses: actions/checkout@v4
@@ -122,7 +126,11 @@ jobs:
       TF_VAR_github_repo: ${{ github.event.repository.name }}
       TF_VAR_key_pair_name: truckr-production-fy
       TF_VAR_ssh_cidr: ${{ secrets.SSH_CIDR || '192.0.2.0/32' }}
-      TF_VAR_rails_master_key: ''
+      # Placeholder — SSM SecureString requires length >= 1. The module's
+      # lifecycle ignore_changes = [value] freezes whatever was set out-of-band:
+      # `aws ssm put-parameter --overwrite --name /truckr/<env>/rails_master_key
+      #  --value "$(cat backend/config/master.key)"`.
+      TF_VAR_rails_master_key: 'placeholder-rotate-via-aws-cli'
 
     steps:
       - uses: actions/checkout@v4
