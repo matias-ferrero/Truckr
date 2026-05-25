@@ -59,6 +59,19 @@ resource "aws_iam_role_policy_attachment" "github_actions_read" {
   policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/ReadOnlyAccess"
 }
 
+// Full write access so infra-apply.yml can actually modify resources
+// (ec2:RevokeSecurityGroupIngress, iam:UpdateRole, etc.). Required to make
+// Phase 3 CD work end-to-end. Same single-purpose-account rationale as
+// ReadOnlyAccess above — the real safety boundary is the OIDC trust policy
+// (which only grants short-lived tokens to specific sub claims), plus the
+// destroy guard in the workflow that bails on any "must be replaced /
+// will be destroyed" line in the plan. Tighten to PowerUserAccess +
+// custom IAM scope if the account ever hosts other workloads.
+resource "aws_iam_role_policy_attachment" "github_actions_admin" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AdministratorAccess"
+}
+
 resource "aws_iam_role_policy" "github_actions" {
   name = "${var.project}-${var.env}-github-actions"
   role = aws_iam_role.github_actions.id
