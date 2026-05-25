@@ -54,6 +54,16 @@ Rails.application.routes.draw do
       post "/:id/reject", to: "cargo_offers#reject"
     end
 
+    # Authenticated Shipper-side reads (REQ-BE-00035 §3.2).
+    scope path: "shippers/me", as: :shipper_me do
+      resources :shipments, only: %i[index], module: "shippers/me"
+    end
+
+    # Multi-role shipment detail (REQ-BE-00035 §3.3). Authorisation is
+    # Pundit-gated and translates a denied policy into 404 (not 403) — see
+    # Api::ShipmentsController.
+    resources :shipments, only: %i[show]
+
     # Public read endpoints — anyone can browse a carrier's fleet.
     resources :carriers, only: %i[show] do
       resources :vehicles, only: %i[index show], controller: "carriers/vehicles"

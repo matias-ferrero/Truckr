@@ -3,7 +3,7 @@ tag: REQ-BE-00035
 title: Endpoints de índice y detalle de Envíos (Carrier / Shipper / detalle) (US17
   + US39)
 priority: P1
-status: backlog
+status: in_review
 created: '2026-05-24'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/233
@@ -133,7 +133,7 @@ Detalles sobre `payment_state`:
 - `available_actions` es la lista de transiciones que **el usuario autenticado** puede disparar **en el estado actual** del envío. Esto es la fuente única de verdad para los botones de US39 — el frontend no recalcula. Reglas (mirror de los AC de US39):
   - Carrier, `shipment.state == "accepted"` + `payment_state == "paid"`: `["start_transit"]`.
   - Carrier, `shipment.state == "in_transit"`: `["deliver"]`.
-  - Shipper, `shipment.state == "accepted"` + `payment_state == "pending"`: `["pay", "cancel"]`.
+  - Shipper, `shipment.state == "accepted"` + `payment_state == "pending"`: `["pay"]`. (`cancel` queda diferido a un sprint posterior cuando aterrice el endpoint dedicado — ver plan §4.4.)
   - Shipper, `shipment.state == "accepted"` + `payment_state == "paid"`: `[]` (interlock — no cancelación post-pago per ADR-012).
   - `shipment.state in ["delivered", "cancelled"]`: `[]` (solo lectura).
 - Los `kind` de `available_actions` son strings estables (`start_transit`, `deliver`, `pay`, `cancel`) que el frontend mapea a clave i18n y endpoint.

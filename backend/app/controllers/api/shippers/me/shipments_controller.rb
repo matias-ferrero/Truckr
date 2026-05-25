@@ -1,18 +1,17 @@
 # frozen_string_literal: true
 
 module Api
-  module Carriers
+  module Shippers
     module Me
-      # GET /api/carriers/me/shipments — REQ-BE-00035 §3.1.
+      # GET /api/shippers/me/shipments — REQ-BE-00035 §3.2.
       #
-      # Returns every Shipment where the authenticated Carrier owns the
-      # Vehicle on the CargoOffer's TransportWindow. Sorted by
-      # latest_activity_at DESC (max tracking_events.recorded_at, fallback
-      # shipments.updated_at). No pagination / filters / search this sprint
-      # (AC9).
+      # Mirror of Api::Carriers::Me::ShipmentsController#index for the
+      # Expedidor side: returns every Shipment where the authenticated
+      # Shipper owns the Cargo on the CargoOffer. Same sort, same payload
+      # shape, same no-pagination contract (AC9).
       class ShipmentsController < Api::BaseController
         before_action :authenticate_user!
-        before_action :require_carrier!
+        before_action :require_shipper!
 
         def index
           shipments = Shipments::Index.for(scope: policy_scope(Shipment))

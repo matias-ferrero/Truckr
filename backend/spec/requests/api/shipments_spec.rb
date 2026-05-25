@@ -1,0 +1,182 @@
+# frozen_string_literal: true
+
+require "swagger_helper"
+
+# REQ-BE-00035 §3.3 — Multi-role shipment detail endpoint.
+RSpec.describe "Api::Shipments", type: :request do
+  include Devise::Test::IntegrationHelpers
+
+  let(:carrier_user) { create(:user, :with_carrier) }
+  let(:carrier)      { carrier_user.carrier }
+  let(:shipper_user) { create(:user, :with_shipper) }
+  let(:shipper)      { shipper_user.shipper }
+  let(:cargo)        { create(:cargo, shipper: shipper) }
+  let(:offer)        { create(:cargo_offer, :accepted, carrier: carrier, cargo: cargo) }
+  let(:shipment)     { create(:shipment, :accepted, cargo_offer: offer) }
+
+  describe "GET /api/shipments/:id" do
+    context "without JWT" do
+      it "returns 401" do
+        get "/api/shipments/#{shipment.id}"
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context "with an authenticated non-counterparty" do
+      it "returns 404 (not 403) — does not leak existence" do
+        intruder = create(:user, :with_carrier)
+        sign_in intruder
+
+        get "/api/shipments/#{shipment.id}"
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "returns 404 for a user with no profiles" do
+        bystander = create(:user)
+        sign_in bystander
+
+        get "/api/shipments/#{shipment.id}"
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "with an unknown id" do
+      it "returns 404" do
+        sign_in carrier_user
+
+        get "/api/shipments/999999"
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "when the shipment is discarded" do
+      it "returns 404 to the owning carrier" do
+        shipment.discard!
+        sign_in carrier_user
+
+        get "/api/shipments/#{shipment.id}"
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "when the requester is the owning Carrier" do
+      before { sign_in carrier_user }
+
+      it "returns 200 with the detail payload (counterparty = shipper)" do
+        get "/api/shipments/#{shipment.id}"
+
+        expect(response).to have_http_status(:ok)
+        body = JSON.parse(response.body)
+        expect(body["id"]).to eq(shipment.id)
+        expect(body["counterparty"]["kind"]).to eq("shipper")
+        expect(body["counterparty"]["id"]).to eq(shipper.id)
+      end
+
+      it "exposes cargo, vehicle, counterparty, payment, tracking_events, available_actions" do
+        create(:tracking_event, shipment: shipment, recorded_at: 30.minutes.ago)
+
+        get "/api/shipments/#{shipment.id}"
+
+        body = JSON.parse(response.body)
+        expect(body.keys).to include(
+          "id", "state", "payment_state", "amount_cents", "currency",
+          "cargo", "vehicle", "counterparty", "payment", "tracking_events",
+          "available_actions"
+        )
+        expect(body["cargo"]).to include("id" => cargo.id, "origin" => cargo.pickup_address)
+        expect(body["cargo"]).to have_key("pickup_lat")
+        expect(body["cargo"]).to have_key("delivery_lng")
+      end
+
+      it "exposes payment block when Payment exists" do
+        payment = create(:payment, :escrowed, shipment: shipment)
+
+        get "/api/shipments/#{shipment.id}"
+
+        body = JSON.parse(response.body)
+        expect(body["payment"]).to include("id" => payment.id, "state" => "escrowed")
+        expect(body["payment_state"]).to eq("paid")
+      end
+
+      it "exposes null payment when none exists" do
+        get "/api/shipments/#{shipment.id}"
+
+        body = JSON.parse(response.body)
+        expect(body["payment"]).to be_nil
+        expect(body["payment_state"]).to eq("pending")
+      end
+
+      it "sorts tracking_events ascending by occurred_at" do
+        create(:tracking_event, shipment: shipment, recorded_at: 1.day.ago)
+        create(:tracking_event, shipment: shipment, recorded_at: 3.days.ago)
+        create(:tracking_event, shipment: shipment, recorded_at: 2.days.ago)
+
+        get "/api/shipments/#{shipment.id}"
+
+        timestamps = JSON.parse(response.body)["tracking_events"].map { |e| e["occurred_at"] }
+        expect(timestamps).to eq(timestamps.sort)
+      end
+    end
+
+    context "when the requester is the owning Shipper" do
+      before { sign_in shipper_user }
+
+      it "returns 200 with counterparty = carrier" do
+        get "/api/shipments/#{shipment.id}"
+
+        expect(response).to have_http_status(:ok)
+        body = JSON.parse(response.body)
+        expect(body["counterparty"]["kind"]).to eq("carrier")
+        expect(body["counterparty"]["id"]).to eq(carrier.id)
+      end
+    end
+
+    describe "available_actions matrix (REQ-BE-00035 §4.4)" do
+      def detail_for(user)
+        sign_in user
+        get "/api/shipments/#{shipment.id}"
+        JSON.parse(response.body)["available_actions"]
+      end
+
+      context "carrier viewer" do
+        it "accepted + pending payment → []" do
+          expect(detail_for(carrier_user)).to eq([])
+        end
+
+        it "accepted + paid → [start_transit]" do
+          create(:payment, :escrowed, shipment: shipment)
+
+          expect(detail_for(carrier_user)).to eq([ "start_transit" ])
+        end
+
+        it "in_transit → [deliver]" do
+          shipment.update!(status: "in_transit", picked_up_at: 1.hour.ago)
+
+          expect(detail_for(carrier_user)).to eq([ "deliver" ])
+        end
+
+        it "delivered → []" do
+          shipment.update!(status: "delivered", picked_up_at: 2.hours.ago, delivered_at: 1.hour.ago)
+
+          expect(detail_for(carrier_user)).to eq([])
+        end
+      end
+
+      context "shipper viewer" do
+        it "accepted + pending → [pay]" do
+          expect(detail_for(shipper_user)).to eq([ "pay" ])
+        end
+
+        it "accepted + paid → [] (post-pay interlock, ADR-012)" do
+          create(:payment, :escrowed, shipment: shipment)
+
+          expect(detail_for(shipper_user)).to eq([])
+        end
+      end
+    end
+  end
+end
