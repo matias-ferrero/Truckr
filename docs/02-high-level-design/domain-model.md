@@ -342,19 +342,19 @@ This table maps USM / `backlog-us.typ` user stories to the entities they exercis
 | US8 — Realizar pago (expedidor) | `Payment`, `Shipment` | Commerce / Fulfilment |
 | US9 — Publicar disponibilidad (transportista) | `TransportWindow`, `Vehicle` | Marketplace |
 | US10 — Listado de ofertas para transportistas | `Cargo`, `TransportWindow` | Marketplace |
-| US11 — Aceptar viaje | `CargoOffer`, `Shipment` | Marketplace / Fulfilment |
+| US11 — Aceptar envío | `CargoOffer`, `Shipment` | Marketplace / Fulfilment |
 | US12 — Registrar vehículo | `Vehicle`, `Carrier` | Identity |
 | US13 — Notificaciones de estado | `TrackingEvent`, `Shipment` | Fulfilment |
-| US14 — Historial de viajes | `Shipment` | Fulfilment |
+| US14 — Historial de envíos | `Shipment` | Fulfilment |
 | US15 — Marcar producto recogido | `Shipment`, `TrackingEvent` | Fulfilment |
 | US16 — Marcar producto entregado | `Shipment`, `TrackingEvent` | Fulfilment |
 | US17 — Reseñas | (TBD — `Review` — not yet modelled, see § 9 What's Next) | Identity |
 | US18 — Tracking GPS en vivo | `TrackingEvent`, `Vehicle` | Fulfilment |
-| US19 — Viajes encadenados | `Shipment`, `Route` | Fulfilment |
+| US19 — Envíos encadenados | `Shipment`, `Route` | Fulfilment |
 | US20 — Seguro | `InsurancePolicy`, `Shipment` | Commerce |
 | US21 — Editar reseñas | (TBD — `Review`) | Identity |
 | US22 — Verificación de cuenta por email | `User` | Identity |
-| US23 — Viajes compuestos (multi-pickup / multi-delivery) | `Shipment`, `Route`, `TrackingEvent` | Fulfilment |
+| US23 — Envíos compuestos (multi-pickup / multi-delivery) | `Shipment`, `Route`, `TrackingEvent` | Fulfilment |
 | US24 — Encadenado de pedidos (rutas secuenciales) | `Shipment`, `Route` | Fulfilment |
 | US25 — Seguros (cotización por valor y distancia) | `InsurancePolicy`, `Shipment`, `Cargo` | Commerce |
 | US26 — Editar y eliminar reseña | (TBD — `Review`) | Identity |
@@ -399,7 +399,7 @@ Out of scope for this issue, but blocked on it:
 - **Auth strategy** — `has_secure_password` integration; Pundit policies scoped via `User#carrier?` / `User#shipper?` predicates (which read the `has_one :carrier` / `has_one :shipper` relations — see ADR-008).
 - **Review entity** — US17 / US21 (reseñas) are not yet modelled. Adding `Review` (FK `shipment_id`, `author_user_id`, `rating`, `body`, soft-delete?) is a small follow-up issue.
 - **`Match`** — the USM mentions matching as a distinct concept; in this draft it is collapsed into `CargoOffer`. Promote to a separate entity only if matching algorithms grow stateful.
-- **`Shipment` chained trips (US19)** — viajes encadenados may need a `ShipmentChain` aggregate. Punted to Phase 2.
+- **`Shipment` chained trips (US19)** — envíos encadenados may need a `ShipmentChain` aggregate. Punted to Phase 2.
 - **PostGIS migration** — Phase 2 trigger (ADR-010).
 
 ---

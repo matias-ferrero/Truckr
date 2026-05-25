@@ -92,11 +92,11 @@
     role: "TRANSPORTISTA",
     photo: "images/personas/hugo.png",
     profile: "Es un transportista independiente desde hace 30 años que vive en BSAS, trabaja con su hijo (Martín) y tienen 2 camiones.",
-    behavior: "Tiene una vida estable con su familia, y quiere mantener ese lugar como su base, y tener más viajes pero siempre volviendo a su casa. Está cerca de jubilarse, así que hace viajes ocasionalmente y no es tan constante.
+    behavior: "Tiene una vida estable con su familia, y quiere mantener ese lugar como su base, y tener más envíos pero siempre volviendo a su casa. Está cerca de jubilarse, así que hace envíos ocasionalmente y no es tan constante.
 No es bueno con la técnología, pero quiere expandirse facilmente manteniendo su estilo de vida.",
     needs: "Trabajar con una clientela estable que necesite trabajo ocasional/estacional.
 Necesita una interfaz simple y accesible que no le de tantos problemas, incluida una plataforma simple y confiable de pagos.
-Además, necesita llevar siempre carga llena o encadenar varios viajes en uno, para aprovechar cada viaje que haga.",
+Además, necesita llevar siempre carga llena o encadenar varios envíos en uno, para aprovechar cada envío que haga.",
   ),
 
   persona-card(
@@ -106,7 +106,7 @@ Además, necesita llevar siempre carga llena o encadenar varios viajes en uno, p
     photo: "images/personas/martin.png",
     profile: "Trabaja como transportista con su padre (Hugo) desde hace 10 años.",
     behavior: "Dado que sus clientes son siempre los mismos, está aburrido de su trabajo. Quiere aprovechar los transportes que hace para viajar y conocer diferentes lugares, a corta, mediana o larga distancia.",
-    needs: "Necesita expandir su clientela para tener distintos tipos de viajes, y no le importa sin son recurrentes u ocasionales. Estos viajes pueden ser a cualquier distancia, pero necesita encadenar viajes para que lo lleven a un lugar desde donde pueda conseguir otro, y así sucesivamente, haciendo viajes mientras trabaja.
+    needs: "Necesita expandir su clientela para tener distintos tipos de envíos, y no le importa sin son recurrentes u ocasionales. Estos envíos pueden ser a cualquier distancia, pero necesita encadenar envíos para que lo lleven a un lugar desde donde pueda conseguir otro, y así sucesivamente, haciendo envíos mientras trabaja.
 No conoce los lugares a donde va, así que necesita integración con gps para saber su recorrido.",
   ),
 
@@ -116,9 +116,9 @@ No conoce los lugares a donde va, así que necesita integración con gps para sa
     role: "TRANSPORTISTA",
     photo: "images/personas/agrotransport.png",
     profile: "Una empresa con base en BSAS que tiene una flota de 10 camiones con transportistas contratados a tiempo completo, que está en el rubro hace 2 años.",
-    behavior: "Tienen empleados que hacen viajes en simultáneo, la empresa los controla desde la base. Reciben peticiones de transporte y despachan un camión a hacer el encargo. Pueden despachar a corta, media o larga distancia, pero siempre buscan planificar sus transportes.
+    behavior: "Tienen empleados que hacen envíos en simultáneo, la empresa los controla desde la base. Reciben peticiones de transporte y despachan un camión a hacer el encargo. Pueden despachar a corta, media o larga distancia, pero siempre buscan planificar sus transportes.
 Quieren aprovechar mejor sus camiones, pues muchas veces tienen a algunos sin usar por varias semanas, y no quieren seguir desperdiciando esos recursos.",
-    needs: "Necesitan expandir su clientela facilmente para mejorar su ganancia. Para ello también necesitan por hacer seguimiento de los envíos que hacen e hicieron (historial de viajes, características de los productos, etc.). Además, para mejorar su planificación, necesitan hacer un trackeo vía GPS de sus camiones, así como también poder hacer varíos envíos en un solo viaje si es posible, y asegurarlos en caso de daños.",
+    needs: "Necesitan expandir su clientela facilmente para mejorar su ganancia. Para ello también necesitan por hacer seguimiento de los envíos que hacen e hicieron (historial de envíos, características de los productos, etc.). Además, para mejorar su planificación, necesitan hacer un trackeo vía GPS de sus camiones, así como también poder hacer varíos envíos en un solo envío si es posible, y asegurarlos en caso de daños.",
   ),
 
   persona-card(
@@ -142,8 +142,8 @@ Necesita una interfaz simple, que cuente con filtros por ubicación para hacer e
     photo: "images/personas/carolina.png",
     profile: "Mujer divorciada con 2 hijos, vive en Buenos Aires. Hace transporte especializado refrigerado desde hace 5 años.",
     behavior: "Hace transporte refrigerado, lleva carga especial y/o sensible. Tiene capacitación para cuidar la carga.
-Planifica viajes a corta y mediana distancia (ocasionalmente larga distancia), y cuida la ruta elegida por la carga que lleva.",
-    needs: "Necesita hacer viajes planificados con tiempo, así como también tener detalle de la carga que lleva.
+Planifica envíos a corta y mediana distancia (ocasionalmente larga distancia), y cuida la ruta elegida por la carga que lleva.",
+    needs: "Necesita hacer envíos planificados con tiempo, así como también tener detalle de la carga que lleva.
 Su carga no es común, así que necesita clientes confiables a largo plazo.",
   ),
 

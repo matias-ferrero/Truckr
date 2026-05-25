@@ -55,16 +55,16 @@
     #text(fill: black, weight: "bold")[Ver Ventanas de Transporte Disponibles]
   ],
   table.cell(colspan: 3, fill: epic-color, align: center)[
-    #text(fill: black, weight: "bold")[Gestión de Viajes]
+    #text(fill: black, weight: "bold")[Gestión de Envíos]
   ],
   table.cell(colspan: 3, fill: epic-color, align: center)[
     #text(fill: black, weight: "bold")[Reservar Transportista]
   ],
   table.cell(colspan: 2, fill: epic-color, align: center)[
-    #text(fill: black, weight: "bold")[Aceptar Viaje]
+    #text(fill: black, weight: "bold")[Aceptar Envío]
   ],
   table.cell(colspan: 1, fill: epic-color, align: center)[
-    #text(fill: black, weight: "bold")[Despues del viaje]
+    #text(fill: black, weight: "bold")[Despues del envío]
   ],
   table.cell(fill: col1-activ, align: center)[
     #text(fill: black, weight: "bold")[Crear]
@@ -91,7 +91,7 @@
     )[Publicación de Disponibilidad de Transporte]
   ],
   table.cell(fill: col8-activ, align: center)[
-    #text(fill: black, weight: "bold")[Ofertas de Viaje]
+    #text(fill: black, weight: "bold")[Ofertas de Envío]
   ],
   table.cell(fill: col9-activ, align: center)[
     #text(fill: black, weight: "bold")[Filtros]
@@ -106,10 +106,10 @@
     #text(fill: black, weight: "bold")[Seguros]
   ],
   table.cell(fill: col13-activ, align: center)[
-    #text(fill: black, weight: "bold")[Aceptación de Viaje]
+    #text(fill: black, weight: "bold")[Aceptación de Envío]
   ],
   table.cell(fill: col14-activ, align: center)[
-    #text(fill: black, weight: "bold")[Realizar Viaje]
+    #text(fill: black, weight: "bold")[Realizar Envío]
   ],
   table.cell(fill: col15-activ, align: center)[
     #text(fill: black, weight: "bold")[Reseñas]
@@ -152,7 +152,7 @@
   ],
   table.cell(fill: col8-task)[
     - Observar Listado de Ofertas
-    - Entrar a Detalles del Viaje
+    - Entrar a Detalles del Envío
     - Entrar a Detalles del Expedidor
   ],
   table.cell(fill: col9-task)[
@@ -177,7 +177,7 @@
     - Enviar documentación del seguro
   ],
   table.cell(fill: col13-task)[
-    - Aceptar viaje
+    - Aceptar envío
   ],
   table.cell(fill: col14-task)[
     - Confirmar retiro de determinado producto
@@ -199,7 +199,7 @@
     - Cambiar Contraseña
   ],
   table.cell(fill: col3-task)[
-    - Ver mi historial de viajes
+    - Ver mi historial de envíos
   ],
   table.cell(fill: col4-task)[
     - Paginado
@@ -207,13 +207,13 @@
   ],
   table.cell(fill: col5-task)[],
   table.cell(fill: col6-task)[
-    - Ver historial de viajes del transportista
+    - Ver historial de envíos del transportista
   ],
   table.cell(fill: col7-task)[],
   table.cell(fill: col8-task)[
     - Paginado
     - Sort By
-    - Ver historial de viajes del consumidor
+    - Ver historial de envíos del consumidor
   ],
   table.cell(fill: col9-task)[
     - Filtrar por Ubicación Destino
@@ -249,12 +249,12 @@
   ],
   table.cell(fill: col8-task)[],
   table.cell(fill: col9-task)[
-    - Estimar una fecha de entrega según los viajes aceptados
+    - Estimar una fecha de entrega según los envíos aceptados
   ],
   table.cell(fill: col10-task)[],
   table.cell(fill: col11-task)[
     - Integración con Mercado Pago
-    - Recibir pago de la app por los viajes concretados
+    - Recibir pago de la app por los envíos concretados
     - Efectuar pago al transportista
   ],
   table.cell(fill: col12-task)[

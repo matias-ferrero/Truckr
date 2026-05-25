@@ -20,7 +20,7 @@
 
 Hoy las features que necesitan refrescar la UI ante cambios de estado se apoyan en eventos custom de `window` (`truckr:carrier-quote-updated` de PR #194) y/o polling manual. Ese patrón no escala a multi-pestaña, no propaga eventos originados en background jobs ni en otros usuarios, y obliga a duplicar lógica en cada feature.
 
-Sprints siguientes introducen flujos en los que el backend necesita empujar eventos al frontend (oferta recibida, pago confirmado, cambio de estado de viaje, payout liberado, reseña recibida). Antes de cablear cada uno por separado, este sprint fija de una sola vez **el transporte (Action Cable + Solid Cable), el contrato del publisher, y los primitivos de UI**, sin tocar ninguna feature de negocio.
+Sprints siguientes introducen flujos en los que el backend necesita empujar eventos al frontend (oferta recibida, pago confirmado, cambio de estado de envío, payout liberado, reseña recibida). Antes de cablear cada uno por separado, este sprint fija de una sola vez **el transporte (Action Cable + Solid Cable), el contrato del publisher, y los primitivos de UI**, sin tocar ninguna feature de negocio.
 
 El sprint 3 entrega exclusivamente la infraestructura + un evento de prueba `:ping` end-to-end. Los consumers reales son issues separados en sprints 4+.
 

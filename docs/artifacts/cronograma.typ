@@ -193,7 +193,7 @@ Cronograma en formato planilla de trabajo por sprint, con tareas numeradas del b
 
   [Sprint 2],
   [US10],
-  [Observar ofertas de viaje],
+  [Observar ofertas de envío],
   [Equipo],
   [],
   [X],
@@ -229,7 +229,7 @@ Cronograma en formato planilla de trabajo por sprint, con tareas numeradas del b
 
   [Sprint 3],
   [US12],
-  [Aceptacion de viaje],
+  [Aceptacion de envío],
   [Equipo],
   [],
   [],
@@ -277,7 +277,7 @@ Cronograma en formato planilla de trabajo por sprint, con tareas numeradas del b
 
   [Sprint 5],
   [US17],
-  [Historial de viajes],
+  [Historial de envíos],
   [Equipo],
   [],
   [],
@@ -339,7 +339,7 @@ Cronograma en formato planilla de trabajo por sprint, con tareas numeradas del b
 
   [Sprint 7],
   [US23],
-  [Viajes compuestos],
+  [Envíos compuestos],
   [Equipo],
   [],
   [],

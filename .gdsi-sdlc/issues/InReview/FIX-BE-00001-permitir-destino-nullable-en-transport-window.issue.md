@@ -2,21 +2,25 @@
 tag: FIX-BE-00001
 title: Permitir destino nullable en TransportWindow (US4/US5 rework)
 priority: P1
-status: ready
+status: in_review
 created: '2026-05-22'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/211
 author: Claude Code
 github_issue: 211
 github_repo: tcorzo/fiuba-gestion-tp
-plan: docs/features/FIX/FIX-BE-00001/FIX-BE-00001-permitir-destino-nullable-en-transport-window.plan.md
+last_synced: 2026-05-25T03:38:24.193235+00:00Z
 labels:
-- FIX
+- bug
 - BE
 - FE
 - mvp
+- marketplace
 - us4
 - us5
+- transport-window
+- FIX
+plan: docs/features/FIX/FIX-BE-00001/FIX-BE-00001-permitir-destino-nullable-en-transport-window.plan.md
 ---
 
 ## Summary

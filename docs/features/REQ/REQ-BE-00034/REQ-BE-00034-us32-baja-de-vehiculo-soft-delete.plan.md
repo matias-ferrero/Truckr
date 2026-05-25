@@ -244,7 +244,7 @@ activerecord:
         attributes:
           base:
             has_active_windows: "No se puede dar de baja: el vehículo tiene ventanas de transporte activas. Dalas de baja primero."
-            has_pending_commitments: "No se puede dar de baja: el vehículo tiene ofertas pendientes o viajes en curso."
+            has_pending_commitments: "No se puede dar de baja: el vehículo tiene ofertas pendientes o envíos en curso."
       transport_window:
         attributes:
           base:

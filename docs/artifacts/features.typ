@@ -100,7 +100,7 @@
   ],
   table.cell(align: center + horizon)[
     #set par(justify: true)
-    *Viajes compuestos por múltiples envíos*
+    *Envíos compuestos por múltiples envíos*
   ],
   table.cell(align: center + horizon)[
     #set par(justify: true)

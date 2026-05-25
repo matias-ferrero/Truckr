@@ -38,6 +38,16 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | INF-GEN-00003 | team-performance: medir throughput por User Stories completadas vía ledger por sprint | DONE | GEN | 2026-05-20 | [#207](https://github.com/tcorzo/fiuba-gestion-tp/pull/207) |
 | FIX-BE-00001 | Permitir destino nullable en TransportWindow (US4/US5 rework) | RDY | BE | 2026-05-22 | [plan](FIX/FIX-BE-00001/FIX-BE-00001-permitir-destino-nullable-en-transport-window.plan.md) |
 | REQ-BE-00034 | Baja de vehículo por el transportista (soft delete, ADR-009) (US32) | RDY | BE | 2026-05-22 | [plan](REQ/REQ-BE-00034/REQ-BE-00034-us32-baja-de-vehiculo-soft-delete.plan.md) |
+| REQ-BE-00035 | Endpoints de índice y detalle de Envíos (Carrier / Shipper / detalle) (US17 + US39) | NEW | BE | 2026-05-24 | - |
+| REQ-FE-00022 | Listado de Envíos del Transportista (US17 — vista Carrier) | NEW | FE | 2026-05-24 | - |
+| REQ-FE-00023 | Listado de Envíos del Expedidor (US17 — vista Shipper) | NEW | FE | 2026-05-24 | - |
+| REQ-FE-00024 | Detalles de Envío (US39 — pantalla compartida con acciones contextuales por rol) | RDY | FE | 2026-05-24 | - |
+| REQ-FE-00025 | Selector de Direcciones — Ventana de Transporte (US48 — picker FE compartido) | RDY | FE | 2026-05-24 | [plan](REQ/REQ-FE-00025/REQ-FE-00025-us48-selector-direcciones-ventana-transporte.plan.md) |
+| REQ-FE-00026 | Selector de Direcciones — Carga (US49 — reuso del picker compartido) | RDY | FE | 2026-05-24 | [plan](REQ/REQ-FE-00026/REQ-FE-00026-us49-selector-direcciones-carga.plan.md) |
+| REQ-FE-00027 | Definir Radio de Recogida — input numérico + círculo arrastrable (US50) | RDY | FE | 2026-05-24 | [plan](REQ/REQ-FE-00027/REQ-FE-00027-us50-definir-radio-de-recogida.plan.md) |
+| REQ-FE-00028 | Mapa y Enlaces a Google Maps en Detalle de Envío (US51 — FE-only) | RDY | FE | 2026-05-24 | [plan](REQ/REQ-FE-00028/REQ-FE-00028-us51-mapa-enlaces-gmaps-detalle-envio.plan.md) |
+| REQ-BE-00036 | Migraciones y validaciones de lat/lng para TransportWindow y Cargo (US48 + US49) | RDY | BE | 2026-05-24 | [plan](REQ/REQ-BE-00036/REQ-BE-00036-us48-us49-lat-lng-migrations.plan.md) |
+| REQ-BE-00037 | pickup_radius_km column + Haversine matcher en el US5 scope (US50) | RDY | BE | 2026-05-24 | [plan](REQ/REQ-BE-00037/REQ-BE-00037-us50-pickup-radius-haversine-matcher.plan.md) |
 
 ## Legend
 

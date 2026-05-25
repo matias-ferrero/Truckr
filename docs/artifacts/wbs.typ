@@ -131,7 +131,7 @@
     let c-per-foto = (c-perfil-bx, -17.4)
     node(c-per-foto, hw, hh, [1.3.2 Actualización de \ foto de perfil])
     let c-per-historial = (c-perfil-bx, -18.6)
-    node(c-per-historial, hw, hh, [1.3.3 Historial de viajes])
+    node(c-per-historial, hw, hh, [1.3.3 Historial de envíos])
 
     let c-vehiculo = (cuentas-bx, -19.8)
     node(c-vehiculo, hw, hh, [1.4 Registro de Vehículo])
@@ -224,13 +224,13 @@
     let b-det-fotos = (b-det-bx, -21.0)
     node(b-det-fotos, hw, hh, [2.3.1 Ver fotos y \ descripción del camión])
     let b-det-precio = (b-det-bx, -22.2)
-    node(b-det-precio, hw, hh, [2.3.2 Ver estimación \ de costo del viaje])
+    node(b-det-precio, hw, hh, [2.3.2 Ver estimación \ de costo del envío])
     let b-det-hist = (b-det-bx, -23.4)
     node(
       b-det-hist,
       hw,
       hh,
-      [2.3.3 Ver historial de \ viajes del transportista],
+      [2.3.3 Ver historial de \ envíos del transportista],
     )
     let b-det-rese = (b-det-bx, -24.6)
     node(b-det-rese, hw, hh, [2.3.4 Ver reseñas \ del transportista])
@@ -310,12 +310,12 @@
     let r-vis-bx = branch-x(r-vis-ofertas.at(0))
     let r-vis-listado = (r-vis-bx, -16.2)
     node(r-vis-listado, hw, hh, [3.3.1 Listado de \ ofertas recibidas])
-    let r-vis-det-viaje = (r-vis-bx, -17.4)
+    let r-vis-det-envío = (r-vis-bx, -17.4)
     node(
-      r-vis-det-viaje,
+      r-vis-det-envío,
       hw,
       hh,
-      [3.3.2 Detalle de viaje \ (distancia, volumen, peso)],
+      [3.3.2 Detalle de envío \ (distancia, volumen, peso)],
     )
     let r-vis-det-cliente = (r-vis-bx, -18.6)
     node(
@@ -343,11 +343,11 @@
     node(r-fil-destino, hw, hh, [3.4.5 Filtrar por \ ubicación destino])
 
     let r-aceptacion = (reservas-bx, -28.2)
-    node(r-aceptacion, hw, hh, [3.5 Aceptación de Viaje])
+    node(r-aceptacion, hw, hh, [3.5 Aceptación de Envío])
 
     let r-acep-bx = branch-x(r-aceptacion.at(0))
     let r-acep-boton = (r-acep-bx, -29.4)
-    node(r-acep-boton, hw, hh, [3.5.1 Aceptar viaje])
+    node(r-acep-boton, hw, hh, [3.5.1 Aceptar envío])
     let r-acep-fecha = (r-acep-bx, -30.6)
     node(
       r-acep-fecha,
@@ -377,7 +377,7 @@
 
     trunk(r-vis-ofertas, r-vis-hist-cliente)
     branch(r-vis-ofertas, r-vis-listado, hw)
-    branch(r-vis-ofertas, r-vis-det-viaje, hw)
+    branch(r-vis-ofertas, r-vis-det-envío, hw)
     branch(r-vis-ofertas, r-vis-det-cliente, hw)
     branch(r-vis-ofertas, r-vis-hist-cliente, hw)
 
@@ -392,14 +392,14 @@
     branch(r-aceptacion, r-acep-boton, hw)
     branch(r-aceptacion, r-acep-fecha, hw)
 
-    // ── 4. Ejecución de Viajes ─────────────────────────────────────────────
+    // ── 4. Ejecución de Envíos ─────────────────────────────────────────────
     let ejecucion = (-6.5, -1.8)
-    node(ejecucion, hw, hh, [4. Ejecución \ de Viajes])
+    node(ejecucion, hw, hh, [4. Ejecución \ de Envíos])
 
     let ejecucion-bx = branch-x(ejecucion.at(0))
 
     let e-estados = (ejecucion-bx, -3.0)
-    node(e-estados, hw, hh, [4.1 Estados del Viaje])
+    node(e-estados, hw, hh, [4.1 Estados del Envío])
 
     let e-estados-bx = branch-x(e-estados.at(0))
     let e-est-retirado = (e-estados-bx, -4.2)
@@ -428,11 +428,11 @@
     node(e-track-destino, hw, hh, [4.3.3 Ver siguiente \ destino])
 
     let e-avanzados = (ejecucion-bx, -15.0)
-    node(e-avanzados, hw, hh, [4.4 Viajes Avanzados])
+    node(e-avanzados, hw, hh, [4.4 Envíos Avanzados])
 
     let e-avanz-bx = branch-x(e-avanzados.at(0))
     let e-avanz-comp = (e-avanz-bx, -16.2)
-    node(e-avanz-comp, hw, hh, [4.4.1 Viajes compuestos \ (múltiples envíos)])
+    node(e-avanz-comp, hw, hh, [4.4.1 Envíos compuestos \ (múltiples envíos)])
     let e-avanz-cadena = (e-avanz-bx, -17.4)
     node(e-avanz-cadena, hw, hh, [4.4.2 Encadenado \ de pedidos])
 
@@ -474,7 +474,7 @@
       p-cli-reserva,
       hw,
       hh,
-      [5.1.1 Realizar pago \ tras aceptación del viaje],
+      [5.1.1 Realizar pago \ tras aceptación del envío],
     )
     let p-cli-contacto = (p-cliente-bx, -5.4)
     node(
@@ -554,7 +554,7 @@
     let s-cot-valor = (s-cot-bx, -7.8)
     node(s-cot-valor, hw, hh, [6.2.1 Cálculo por \ valor declarado])
     let s-cot-dist = (s-cot-bx, -9.0)
-    node(s-cot-dist, hw, hh, [6.2.2 Cálculo por \ distancia del viaje])
+    node(s-cot-dist, hw, hh, [6.2.2 Cálculo por \ distancia del envío])
     let s-cot-vis = (s-cot-bx, -10.2)
     node(s-cot-vis, hw, hh, [6.2.3 Visualización del \ costo al cliente])
 
