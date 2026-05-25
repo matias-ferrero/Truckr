@@ -1,11 +1,23 @@
 name: Backend deploy
 
 on:
+  # Three trigger paths:
+  #   - push to main (paths backend/**)        →  deploys staging
+  #   - release published (release-please tag) →  deploys production
+  #   - workflow_dispatch                      →  deploys env from input
+  #
+  # We use `release: published` (not `push: tags: ['v*']`) because GitHub's
+  # `paths:` filter applies globally — a release-please tag commit only
+  # modifies CHANGELOG.md + version files, never backend/**, so a paths-
+  # filtered tag-push trigger would never fire. `release: published` runs
+  # without path filtering and fires exactly once per release.
   push:
     branches: [main]
     paths:
       - 'backend/**'
       - '.github/workflows/backend-deploy.yml'
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       env:
@@ -21,10 +33,10 @@ permissions:
 
 jobs:
   deploy:
-    name: deploy-${{ github.event.inputs.env || 'staging' }}
+    name: deploy-${{ github.event.inputs.env || (github.event_name == 'release' && 'production') || 'staging' }}
     runs-on: ubuntu-latest
     concurrency:
-      group: backend-deploy-${{ github.event.inputs.env || 'staging' }}
+      group: backend-deploy-${{ github.event.inputs.env || (github.event_name == 'release' && 'production') || 'staging' }}
       # Don't cancel a running deploy — mid-flight Kamal would leave a host in
       # an inconsistent state (proxy switched but old container running, etc.).
       cancel-in-progress: false
@@ -33,7 +45,7 @@ jobs:
         shell: bash
     env:
       AWS_REGION: sa-east-1
-      TRUCKR_ENV: ${{ github.event.inputs.env || 'staging' }}
+      TRUCKR_ENV: ${{ github.event.inputs.env || (github.event_name == 'release' && 'production') || 'staging' }}
 
     steps:
       - uses: actions/checkout@v4
