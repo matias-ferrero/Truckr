@@ -96,25 +96,34 @@ jobs:
         with:
           experimental: true
 
-      - name: Build frontend (deno task build → vite)
-        working-directory: frontend
-        run: deno task build
-
       - name: Configure AWS credentials (OIDC)
+        # Up-front so SSM resolution can run before the build — Vite inlines
+        # VITE_API_BASE_URL at build time, so it must be in env when
+        # `deno task build` runs, not at sync time.
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.GHA_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Resolve S3 bucket + CloudFront distribution from SSM
+      - name: Resolve infra from SSM
+        # Terraform owns the URL shape (see infra/envs/*/main.tf
+        # aws_ssm_parameter.api_base_url) — this step just reads it. Symmetric
+        # with /truckr/<env>/frontend_origin on the backend side so a custom
+        # domain rollout is a terraform-only change.
         run: |
           set -euo pipefail
+          VITE_API_BASE_URL=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/api_base_url" --query Parameter.Value --output text)
           FRONTEND_BUCKET=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/frontend_bucket" --query Parameter.Value --output text)
           CFD_ID=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/cloudfront_distribution_id" --query Parameter.Value --output text)
           {
+            echo "VITE_API_BASE_URL=$VITE_API_BASE_URL"
             echo "FRONTEND_BUCKET=$FRONTEND_BUCKET"
             echo "CFD_ID=$CFD_ID"
           } >> "$GITHUB_ENV"
+
+      - name: Build frontend (deno task build → vite)
+        working-directory: frontend
+        run: deno task build
 
       - name: Sync hashed assets (long-cache, immutable)
         # Vite emits hashed filenames for everything under dist/assets/, so

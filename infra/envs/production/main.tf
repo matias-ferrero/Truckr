@@ -92,6 +92,15 @@ resource "aws_ssm_parameter" "app_host" {
   value = module.ec2.app_host
 }
 
+# Public backend origin baked into the SPA bundle at build time as
+# VITE_API_BASE_URL. Kamal terminates TLS on :443 and forwards to the Rails
+# container on :80, so no port suffix.
+resource "aws_ssm_parameter" "api_base_url" {
+  name  = "/${local.project}/${local.env}/api_base_url"
+  type  = "String"
+  value = "https://${module.ec2.app_host}"
+}
+
 resource "aws_ssm_parameter" "frontend_bucket" {
   name  = "/${local.project}/${local.env}/frontend_bucket"
   type  = "String"
