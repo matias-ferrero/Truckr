@@ -30,6 +30,9 @@ on:
 permissions:
   id-token: write
   contents: read
+  # Needed by the "Wait for in-progress infra-apply" step below to list runs
+  # of the infra-apply workflow via the GitHub API.
+  actions: read
 
 jobs:
   deploy:
@@ -48,6 +51,47 @@ jobs:
       TRUCKR_ENV: ${{ github.event.inputs.env || (github.event_name == 'release' && 'production') || 'staging' }}
 
     steps:
+      - name: Wait for in-progress infra-apply
+        # Block deploys while an infra-apply run is in-flight or queued. A PR
+        # that adds a new SSM param + bumps the app can otherwise race the
+        # apply that mints the param, and the SSM resolve step below would
+        # fail with ParameterNotFound. Bidirectional via concurrency would
+        # over-serialize unrelated deploys, so we gate one-way: deploys wait
+        # on apply, not the reverse.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Same-event race: a push to main touching infra/** and backend/**
+          # triggers both workflows in parallel; the deploy worker often boots
+          # faster than infra-apply gets a runner. A brief head-start lets
+          # infra-apply register before our first poll. Skipped on
+          # workflow_dispatch — manual triggers don't share an event.
+          if [ "${{ github.event_name }}" = "push" ]; then
+            sleep 5
+          fi
+          for i in {1..60}; do
+            busy=$(gh run list \
+              --repo "${{ github.repository }}" \
+              --workflow=infra-apply.yml \
+              --status=in_progress \
+              --json databaseId --jq 'length')
+            queued=$(gh run list \
+              --repo "${{ github.repository }}" \
+              --workflow=infra-apply.yml \
+              --status=queued \
+              --json databaseId --jq 'length')
+            total=$((busy + queued))
+            if [ "$total" -eq 0 ]; then
+              echo "No in-progress or queued infra-apply runs — proceeding."
+              exit 0
+            fi
+            echo "Attempt $i/60: ${busy} in-progress + ${queued} queued infra-apply run(s); sleeping 30s..."
+            sleep 30
+          done
+          echo "::error::infra-apply still running after 30 minutes — aborting deploy"
+          exit 1
+
       - uses: actions/checkout@v4
 
       - uses: jdx/mise-action@v4
