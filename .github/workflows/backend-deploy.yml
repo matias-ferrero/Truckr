@@ -70,6 +70,7 @@ jobs:
           ECR_URL=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/ecr_repository_url" --query Parameter.Value --output text)
           EC2_INSTANCE_ID=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/ec2_instance_id" --query Parameter.Value --output text)
           APP_HOST=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/app_host" --query Parameter.Value --output text)
+          FRONTEND_ORIGIN=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/frontend_origin" --query Parameter.Value --output text)
           # ECR_URL is `<account>.dkr.ecr.<region>.amazonaws.com/<repo>`; the
           # `${VAR%/*}` strips the trailing `/<repo>` to get just the registry.
           ECR_REGISTRY_URL="${ECR_URL%/*}"
@@ -78,6 +79,7 @@ jobs:
             echo "ECR_REGISTRY_URL=$ECR_REGISTRY_URL"
             echo "EC2_INSTANCE_ID=$EC2_INSTANCE_ID"
             echo "APP_HOST=$APP_HOST"
+            echo "FRONTEND_ORIGIN=$FRONTEND_ORIGIN"
             # SSM proxy for Kamal's SSH. %h and %p are replaced by OpenSSH with
             # the resolved host (instance-id) and port.
             echo "KAMAL_SSH_PROXY_COMMAND=aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters portNumber=%p"

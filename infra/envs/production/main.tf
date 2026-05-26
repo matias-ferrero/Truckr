@@ -104,6 +104,14 @@ resource "aws_ssm_parameter" "cloudfront_distribution_id" {
   value = module.s3_frontend.cloudfront_distribution_id
 }
 
+# Public SPA origin baked into the Rails container so ActiveAdmin's
+# impersonation flow can redirect to the right /impersonate URL per env.
+resource "aws_ssm_parameter" "frontend_origin" {
+  name  = "/${local.project}/${local.env}/frontend_origin"
+  type  = "String"
+  value = "https://${module.s3_frontend.cloudfront_domain}"
+}
+
 output "ec2_public_ip" {
   value = module.ec2.public_ip
 }
