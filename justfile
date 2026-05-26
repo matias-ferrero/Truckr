@@ -132,6 +132,13 @@ team-performance-lint:
     uv run ruff format --check docs/scripts/team_performance
     uv run mypy docs/scripts/team_performance
 
+# ── Worktree review ────────────────────────────────────────────────────────
+
+# Boot an agent's worktree into a 3-pane kitty layout for manual UI review.
+# Usage: `just review REQ-FE-00026`  or  `just review` (fzf picker)
+review name="":
+    @script/review-worktree.sh {{ name }}
+
 # ── Utilities ───────────────────────────────────────────────────────────────
 
 # Format all .typ files with typstyle
