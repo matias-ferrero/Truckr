@@ -1,6 +1,16 @@
-# Deployment runbook — Truckr® staging
+# Deployment runbook — Truckr®
 
-Day-2 operations for the AWS staging environment provisioned by `infra/envs/staging/`. First-bootstrap steps live in [`infra/README.md`](../../infra/README.md); this file owns recurring operations.
+Day-2 operations for the AWS environments (`staging`, `production`) provisioned by `infra/envs/`. First-bootstrap steps live in [`infra/README.md`](../../infra/README.md); this file owns recurring operations.
+
+**Routine deploys are automatic via GitHub Actions** (workflows under `<repo-root>/.github/workflows/`):
+
+| Workflow | Staging trigger | Production trigger |
+|---|---|---|
+| `infra-apply.yml` | push to `main` (paths `infra/**`) | push to `main` (paths `infra/**`) |
+| `backend-deploy.yml` | push to `main` (paths `backend/**`) | release published by release-please |
+| `frontend-deploy.yml` | push to `main` (paths `frontend/**`) | release published by release-please |
+
+All three workflows authenticate to AWS via OIDC (no long-lived `AWS_ACCESS_KEY_ID` in repo secrets) and read infrastructure addresses from SSM Parameter Store. Operator follow-ups below cover state changes the workflows can't make themselves (key pair creation, secret rotation, manual recovery).
 
 | Component | Where |
 |---|---|
@@ -24,65 +34,77 @@ Day-2 operations for the AWS staging environment provisioned by `infra/envs/stag
 
 ---
 
-## First deploy (after `terraform apply`)
+## First deploy of a new env (after `terraform apply`)
 
-After `terraform apply` succeeds:
+The CD workflows assume both the AWS infrastructure (Phase 3 `infra-apply.yml`) and the prerequisite SSM parameters exist. When bootstrapping a brand-new env (beyond the current `staging` + `production`):
 
-```sh
-# 1. Read the outputs Kamal needs
-cd infra/envs/staging
-APP_HOST=$(terraform output -raw app_host)              # e.g. ip-54-210-15-77.sslip.io
-ECR_URL=$(terraform output -raw ecr_repository_url)
-EIP=$(terraform output -raw ec2_public_ip)
-
-# 2. Patch backend/config/deploy.yml — replace the three REPLACE_WITH_* placeholders
-#    with $APP_HOST (servers.web + proxy.host) and $ECR_URL (registry.server).
-#    See "Editing deploy.yml" below for the sed one-liner.
-
-# 3. Run kamal setup (installs Docker if missing, boots kamal-proxy, deploys first version)
-cd ../../../backend
-bundle exec kamal setup
-```
-
-`kamal setup` does: SSH connectivity check → install Docker on the box (idempotent; user_data already did this) → boot kamal-proxy → push image to ECR → pull on the box → start the container → register with the proxy → Let's Encrypt issues the cert (HTTP-01 challenge to `$APP_HOST`).
-
-Smoke test: `curl -fsS https://$APP_HOST/up` should return 200.
-
-### Editing `deploy.yml` after `terraform apply`
-
-The three `REPLACE_WITH_*` placeholders are intentionally non-templated. The fastest patch:
-
-```sh
-sed -i \
-  -e "s|REPLACE_WITH_app_host_OUTPUT|$APP_HOST|g" \
-  -e "s|REPLACE_WITH_ecr_repository_url_OUTPUT|$ECR_URL|g" \
-  backend/config/deploy.yml
-```
-
-The EIP and ECR URL are stable across redeploys, so you only do this once per environment.
+1. **Terraform apply** the new env directory (`infra/envs/<new-env>/`) — creates EC2, EIP, ECR, S3 + CloudFront, IAM role, and the 5 output SSM parameters. See `infra/README.md`.
+2. **Seed the `rails_master_key` SSM parameter** with the real `backend/config/master.key` (terraform's apply leaves it as the placeholder string):
+   ```sh
+   AWS_PROFILE=fiuba aws ssm put-parameter --overwrite \
+     --name /truckr/<new-env>/rails_master_key \
+     --value "$(cat backend/config/master.key)" \
+     --type SecureString
+   ```
+   Lifecycle `ignore_changes = [value]` keeps future terraform applies from reverting it.
+3. **(Optional) Seed admin credentials** if you want `rails db:seed` to bootstrap an admin user:
+   ```sh
+   aws ssm put-parameter --name /truckr/<new-env>/seed_admin_email --type SecureString --value <email>
+   aws ssm put-parameter --name /truckr/<new-env>/seed_admin_password --type SecureString --value <password>
+   ```
+   `.kamal/secrets` tolerates these being absent; the backend just won't seed.
+4. **Trigger the first backend deploy** via `gh workflow run backend-deploy.yml --field env=<new-env>` (or wait for a tag/push that fires the workflow). The first deploy:
+   - Builds image, pushes to shared ECR with a SHA tag.
+   - Pushes ephemeral SSH key via `ec2-instance-connect` (60s TTL).
+   - SSHes through SSM Session Manager to the EC2.
+   - Boots `kamal-proxy`, claims a Let's Encrypt cert via HTTP-01 on the EIP-derived sslip.io hostname.
+   - Smoke-checks `/up`.
+5. **Trigger the first frontend deploy** via `gh workflow run frontend-deploy.yml --field env=<new-env>`. First deploy populates the S3 bucket; subsequent runs sync diffs.
 
 ---
 
-## Rolling deploy
+## Routine deploys
 
-```sh
-cd backend
-bundle exec kamal deploy
-curl -fsS https://$APP_HOST/up
-```
+There's no operator action for normal release flow — everything is CD-driven:
 
-Kamal builds the image locally (amd64), pushes to ECR, pulls on the box, swaps containers via kamal-proxy with zero downtime, and prunes the old container. Average time on `t3.micro`: ~90s.
+| Change | What happens |
+|---|---|
+| Merge feature PR with `backend/**` changes | `backend-deploy.yml` fires on push to `main` → deploys staging only. Smoke test on `https://<app_host>/up`. |
+| Merge feature PR with `frontend/**` changes | `frontend-deploy.yml` fires → builds with `deno task build`, syncs to S3, invalidates `/index.html` on CloudFront. |
+| Merge release-please's Release PR | release-please-action tags `vX.Y.Z` + publishes the GitHub Release → both `backend-deploy.yml` and `frontend-deploy.yml` fire on `release: published` and deploy production. |
+| Merge feature PR with `infra/**` changes | `infra-apply.yml` runs `terraform apply` against staging first, then production. |
+
+Watch progress in the Actions tab. The workflows post sticky comments on `infra-plan` PRs (PR review) and fail-fast with `::error::` annotations if something's off.
 
 ---
 
 ## Rollback
 
-```sh
-bundle exec kamal app versions          # list tags
-bundle exec kamal rollback <prev-sha>    # roll back to a previous image
-```
+### Backend rollback (Kamal-based)
 
-Image tags are content-hashed by Kamal. If the bad version was deployed via `kamal deploy`, the previous tag is still in ECR (lifecycle policy: keep last 10).
+Kamal pins each deploy to a Docker image tagged with the git SHA. To roll back to a previous SHA:
+
+1. List recent image tags:
+   ```sh
+   AWS_PROFILE=fiuba aws ecr describe-images \
+     --repository-name truckr-backend \
+     --query 'sort_by(imageDetails,&imagePushedAt)[-10:].[imagePushedAt,imageTags[0]]' \
+     --output table
+   ```
+2. Trigger a manual deploy pinning that SHA via Kamal from the laptop (the CD workflow doesn't support arbitrary-SHA dispatch yet — see Break-glass below for the operator commands).
+
+### Frontend rollback
+
+Two options:
+
+1. **Revert the offending commit on `main`** → frontend-deploy fires again with the reverted state. Slow but auditable.
+2. **Manual re-sync from a previous build artifact** (Break-glass section below).
+
+There's no fancy versioning on the S3 bucket — `--delete` on `aws s3 sync` prunes old hashed assets. Don't enable bucket versioning lightly: it'd accumulate cost over time.
+
+### Infrastructure rollback
+
+`infra-apply.yml` has a refuse-on-destroy guard, but if a non-destructive change is bad: revert the offending commit on `main` and let CI re-apply the previous state. Terraform state stays consistent because every change goes through the workflow.
 
 ---
 
@@ -111,10 +133,19 @@ aws s3 cp ... # optional offsite copy via kamal accessory or scp
 
 ## Secret rotation (`RAILS_MASTER_KEY`)
 
-1. Generate new key: `cd backend && bundle exec rails credentials:edit` saves a fresh value if you regenerate `config/master.key`. Or generate via `openssl rand -hex 32`.
-2. Update SSM: `aws ssm put-parameter --name /truckr/staging/rails_master_key --value '<new>' --type SecureString --overwrite`
-3. Redeploy: `bundle exec kamal deploy` (every operator's `.kamal/secrets` will pull the new value from SSM on next deploy)
-4. Verify: `curl -fsS https://$APP_HOST/up` and check `bundle exec kamal app logs --grep "credentials"` for decryption errors.
+1. Generate / commit the new key locally: `cd backend && bundle exec rails credentials:edit` saves a fresh value if you regenerate `config/master.key`. Or generate via `openssl rand -hex 32`.
+2. Push to SSM for the env you're rotating:
+   ```sh
+   AWS_PROFILE=fiuba aws ssm put-parameter --overwrite \
+     --name /truckr/<env>/rails_master_key \
+     --value "$(cat backend/config/master.key)" \
+     --type SecureString
+   ```
+   The Phase 2 lifecycle `ignore_changes = [value]` on this resource means subsequent `terraform apply` runs won't revert it.
+3. Trigger a redeploy so containers boot with the new key:
+   - **Staging**: any push to `main` touching `backend/**`, or `gh workflow run backend-deploy.yml --field env=staging`.
+   - **Production**: cut a release (release-please) or `gh workflow run backend-deploy.yml --field env=production`.
+4. Verify: `curl -fsS https://<app_host>/up` and check workflow logs (or `bundle exec kamal app logs --grep "credentials"` from the laptop) for decryption errors.
 
 Frontend deploys do not consume the master key — no FE redeploy needed.
 
@@ -187,3 +218,73 @@ terraform destroy
 **Not destroyed by `terraform destroy`:** the remote-state S3 bucket (`truckr-tfstate-<account-id>`) and the DynamoDB lock table. These are managed by `infra/bootstrap.sh`; deleting them requires manual `aws s3 rb` + `aws dynamodb delete-table` if you want a clean slate.
 
 CloudFront distributions take ~15 min to fully delete; `terraform destroy` blocks until the disable+delete chain completes.
+
+---
+
+## Break-glass: manual deploy
+
+When CD is unavailable (GitHub down, OIDC misconfigured, urgent rollback, etc.), every CD step also runs from an operator's laptop. The Kamal config and `.kamal/secrets` use ERB / pass-through env vars so the laptop and CI paths share the same source of truth.
+
+### Backend (Kamal)
+
+```sh
+# 1. Set the env-picking var. Defaults to staging if unset.
+export TRUCKR_ENV=staging          # or production
+export AWS_REGION=sa-east-1
+export AWS_PROFILE=fiuba           # or whichever profile points at the account
+
+# 2. Resolve infra IDs from SSM (matches what backend-deploy.yml does).
+#    Staging deploys can skip this — the deploy.yml ERB fallback is the
+#    staging hostname. Production needs these set explicitly.
+export EC2_INSTANCE_ID=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/ec2_instance_id" --query Parameter.Value --output text)
+export APP_HOST=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/app_host" --query Parameter.Value --output text)
+export ECR_REGISTRY_URL=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/ecr_repository_url" --query Parameter.Value --output text | sed 's|/[^/]*$||')
+
+# 3. (Optional) Use SSM Session Manager as SSH transport (mirrors CI).
+#    Needs the session-manager-plugin installed locally.
+#    Without it, kamal uses direct SSH via the SG ingress rule on port 22.
+export KAMAL_SSH_PROXY_COMMAND='aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters portNumber=%p'
+
+# 4. Roll-forward / re-deploy current main
+cd backend
+bundle exec kamal deploy
+
+# 4a. Or roll-back to a specific previous SHA
+bundle exec kamal app versions     # list available image tags
+bundle exec kamal rollback <sha>
+
+# 5. Smoke
+curl -fsS "https://${APP_HOST}/up"
+```
+
+### Frontend
+
+```sh
+export TRUCKR_ENV=staging          # or production
+export AWS_REGION=sa-east-1
+export AWS_PROFILE=fiuba
+
+cd frontend
+deno task build
+
+FRONTEND_BUCKET=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/frontend_bucket" --query Parameter.Value --output text)
+CFD_ID=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/cloudfront_distribution_id" --query Parameter.Value --output text)
+
+aws s3 sync dist/ "s3://${FRONTEND_BUCKET}/" --delete \
+  --cache-control "max-age=31536000,public" --exclude index.html
+aws s3 cp dist/index.html "s3://${FRONTEND_BUCKET}/index.html" \
+  --cache-control "no-cache,no-store,must-revalidate"
+aws cloudfront create-invalidation --distribution-id "$CFD_ID" --paths "/index.html"
+```
+
+### Infrastructure
+
+For one-off targeted operations the workflow's destroy-guard would block (or AWS-side imports/state-mv):
+
+```sh
+AWS_PROFILE=fiuba terraform -chdir=infra/envs/${TRUCKR_ENV} plan   # always plan first
+AWS_PROFILE=fiuba terraform -chdir=infra/envs/${TRUCKR_ENV} apply \
+  -target=<module.something>                                       # targeted only when intentional
+```
+
+Avoid non-targeted `terraform apply` from a laptop — the workflow is the source of truth for non-targeted changes. Targeted applies are fine for the occasional surgical fix (e.g. the AdministratorAccess attachment in Phase 3 hotfix #251).

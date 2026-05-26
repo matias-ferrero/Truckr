@@ -1,0 +1,125 @@
+name: Frontend deploy
+
+on:
+  # Same trigger model as backend-deploy.yml:
+  #   - push to main (paths frontend/**)        →  deploys staging
+  #   - release published (release-please tag)  →  deploys production
+  #   - workflow_dispatch                       →  deploys env from input
+  #
+  # `release: published` instead of `push: tags: ['v*']` because a release-
+  # please tag commit only modifies CHANGELOG.md + version manifests, never
+  # frontend/** — a paths-filtered tag-push trigger would never fire.
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-deploy.yml'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      env:
+        description: 'Environment to deploy'
+        required: true
+        type: choice
+        options: [staging, production]
+        default: staging
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: deploy-${{ github.event.inputs.env || (github.event_name == 'release' && 'production') || 'staging' }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: frontend-deploy-${{ github.event.inputs.env || (github.event_name == 'release' && 'production') || 'staging' }}
+      # Don't cancel — `aws s3 sync` mid-flight could leave the bucket in a
+      # half-updated state where some hashed assets are old.
+      cancel-in-progress: false
+    defaults:
+      run:
+        shell: bash
+    env:
+      AWS_REGION: sa-east-1
+      TRUCKR_ENV: ${{ github.event.inputs.env || (github.event_name == 'release' && 'production') || 'staging' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v4
+        with:
+          experimental: true
+
+      - name: Build frontend (deno task build → vite)
+        working-directory: frontend
+        run: deno task build
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.GHA_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve S3 bucket + CloudFront distribution from SSM
+        run: |
+          set -euo pipefail
+          FRONTEND_BUCKET=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/frontend_bucket" --query Parameter.Value --output text)
+          CFD_ID=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/cloudfront_distribution_id" --query Parameter.Value --output text)
+          {
+            echo "FRONTEND_BUCKET=$FRONTEND_BUCKET"
+            echo "CFD_ID=$CFD_ID"
+          } >> "$GITHUB_ENV"
+
+      - name: Sync hashed assets (long-cache, immutable)
+        # Vite emits hashed filenames for everything under dist/assets/, so
+        # browsers can cache them forever. --delete prunes stale hashes.
+        # index.html is excluded here and handled separately below — it's
+        # the only file that needs to be fresh on every deploy.
+        run: |
+          aws s3 sync frontend/dist/ "s3://${FRONTEND_BUCKET}/" \
+            --delete \
+            --cache-control "max-age=31536000,public" \
+            --exclude index.html
+
+      - name: Upload index.html (no-cache)
+        # index.html references the hashed assets by name. If it were cached
+        # at the edge, users would hit stale references after a deploy.
+        run: |
+          aws s3 cp frontend/dist/index.html "s3://${FRONTEND_BUCKET}/index.html" \
+            --cache-control "no-cache,no-store,must-revalidate"
+
+      - name: Invalidate CloudFront /index.html
+        # Only /index.html needs invalidation — hashed assets are immutable.
+        # AWS gives 1000 free invalidation paths/month; one per deploy is fine.
+        run: |
+          set -euo pipefail
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
+            --distribution-id "$CFD_ID" \
+            --paths "/index.html" \
+            --query 'Invalidation.Id' --output text)
+          echo "Invalidation $INVALIDATION_ID queued; waiting for completion..."
+          aws cloudfront wait invalidation-completed \
+            --distribution-id "$CFD_ID" \
+            --id "$INVALIDATION_ID"
+          echo "Invalidation completed."
+
+      - name: Smoke test
+        # Confirm CloudFront serves the new index.html. We can't assert
+        # specific build content from CI without a build-time marker, so
+        # this is just an availability check.
+        run: |
+          set -euo pipefail
+          CF_DOMAIN=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/cloudfront_distribution_id" --query Parameter.Value --output text >/dev/null && \
+            aws cloudfront get-distribution --id "$CFD_ID" --query 'Distribution.DomainName' --output text)
+          for i in {1..5}; do
+            if curl --fail --silent --show-error --max-time 10 -o /dev/null "https://${CF_DOMAIN}/"; then
+              echo "Smoke OK on attempt $i — https://${CF_DOMAIN}/"
+              exit 0
+            fi
+            echo "Attempt $i: not ready, sleeping 15s..."
+            sleep 15
+          done
+          echo "::error::Smoke check failed: https://${CF_DOMAIN}/ did not return 200"
+          exit 1
