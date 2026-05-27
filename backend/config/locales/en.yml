@@ -15,6 +15,11 @@ en:
     carrier_role_required: "Carrier role required"
     shipper_role_required: "Shipper role required"
     rate_limited: "Too many attempts. Try again in 15 minutes."
+    payments:
+      unauthorized: "Only the shipper that owns this shipment can pay for it"
+      already_paid: "This shipment has already been paid"
+      shipment_not_accepted: "This shipment is not in an accepted state and cannot be paid"
+      generic: "We could not process the payment. Please try again."
     messages:
       password_complexity:
         upper: "must contain at least one uppercase letter"

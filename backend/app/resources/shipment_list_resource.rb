@@ -33,4 +33,17 @@ class ShipmentListResource
   attribute :latest_activity_at do |shipment|
     shipment.tracking_events.filter_map(&:recorded_at).max || shipment.updated_at
   end
+
+  # Display label for the other party — used by the listing row to mask /
+  # reveal the counterparty alongside the payment_state interlock
+  # (REQ-BE-00033 / AC1 / AC9). Falls back to nil for viewers with no
+  # role attached.
+  attribute :counterparty_display_name do |shipment|
+    user = params[:current_user]
+    if user&.shipper && shipment.cargo_offer.cargo.shipper_id == user.shipper.id
+      shipment.cargo_offer.carrier.legal_name
+    elsif user&.carrier && shipment.cargo_offer.carrier_id == user.carrier.id
+      shipment.cargo_offer.cargo.shipper.company_name
+    end
+  end
 end

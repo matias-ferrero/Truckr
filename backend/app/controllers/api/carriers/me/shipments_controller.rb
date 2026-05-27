@@ -15,7 +15,10 @@ module Api
         before_action :require_carrier!
 
         def index
-          shipments = Shipments::Index.for(scope: policy_scope(Shipment))
+          # `::` qualified — `Api::Shipments` (created by the nested payments
+          # route in REQ-BE-00033) would otherwise shadow the top-level
+          # `Shipments` module from this lexical scope.
+          shipments = ::Shipments::Index.for(scope: policy_scope(Shipment))
           render json: ShipmentListResource.new(
             shipments,
             params: { current_user: current_user }

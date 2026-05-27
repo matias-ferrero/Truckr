@@ -22,6 +22,8 @@ const CarrierDetail = lazy(() => import("./pages/public/CarrierDetail"));
 const CarrierMeRedirect = lazy(() => import("./pages/public/CarrierMeRedirect"));
 const CreateOfferPage = lazy(() => import("./pages/shipper/CreateOfferPage"));
 const ShipperShipmentsPage = lazy(() => import("./pages/shipper/ShipperShipmentsPage"));
+const ShipperPaymentPage = lazy(() => import("./pages/shipper/ShipperPaymentPage"));
+const ShipperPaymentSuccessPage = lazy(() => import("./pages/shipper/ShipperPaymentSuccessPage"));
 const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
 const CargoList   = lazy(() => import("./features/cargo/CargoList"));
 const CargoForm   = lazy(() => import("./features/cargo/CargoForm"));
@@ -156,6 +158,8 @@ export function AppRoutes() {
                             <Route path=":id/offers/new" element={<CreateOfferPage />} />
                         </Route>
                         <Route path="shipments" element={<ShipperShipmentsPage />} />
+                        <Route path="shipments/:id/pay" element={<ShipperPaymentPage />} />
+                        <Route path="shipments/:id/pay/success" element={<ShipperPaymentSuccessPage />} />
                     </Route>
                     <Route
                         path="/profile"

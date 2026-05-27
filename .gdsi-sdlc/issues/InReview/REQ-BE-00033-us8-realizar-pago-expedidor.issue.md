@@ -2,7 +2,7 @@
 tag: REQ-BE-00033
 title: US8 — Realizar pago del expedidor sobre Shipment aceptado (gateway mock)
 priority: P1
-status: ready
+status: in_review
 created: '2026-05-22'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/213

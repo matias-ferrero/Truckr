@@ -80,6 +80,12 @@ class Shipment < ApplicationRecord
                 "Shipment #{id}: transition #{from} -> #{new_status} is not allowed"
         end
 
+        # Payment validation: prevent transition from accepted if payment is pending
+        if from == :accepted && !payment_escrowed?
+          raise IllegalTransition,
+                "Shipment #{id}: cannot transition from accepted without escrowed payment"
+        end
+
         attrs = { status: new_status.to_s }
         if (col = STATUS_TIMESTAMP_COLUMNS[new_status])
           attrs[col] = at
@@ -95,6 +101,11 @@ class Shipment < ApplicationRecord
         )
       end
     end
+  end
+
+  # Payment status check: returns true if shipment has at least one escrowed payment
+  def payment_escrowed?
+    payments.exists?(state: :escrowed)
   end
 
   def self.ransackable_attributes(_auth_object = nil)

@@ -95,6 +95,7 @@ export default function ShipperShipmentsPage() {
                                 key={shipment.id}
                                 shipment={shipment}
                                 detailPath={`/shipper/shipments/${shipment.id}`}
+                                payHref={(s) => `/shipper/shipments/${s.id}/pay`}
                             />
                         ))}
                     </ul>

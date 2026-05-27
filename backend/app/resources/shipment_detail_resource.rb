@@ -71,6 +71,30 @@ class ShipmentDetailResource
     end
   end
 
+  # Contact info reveal — REQ-BE-00033 / US8 / AC9. Returns `nil` while no
+  # Payment is escrowed for the Shipment; once escrowed, exposes the
+  # counterparty's user contact triple to both sides of the trade.
+  attribute :counterparty_contact do |shipment|
+    next nil unless shipment.payments.any? { |p| p.state == "escrowed" }
+
+    user = params[:current_user]
+    role = Shipment::AvailableActions.active_role(shipment, user)
+
+    contact_user =
+      case role
+      when :carrier then shipment.cargo_offer.cargo.shipper.user
+      when :shipper then shipment.cargo_offer.carrier.user
+      end
+
+    next nil unless contact_user
+
+    {
+      full_name: contact_user.full_name,
+      email:     contact_user.email,
+      phone:     contact_user.phone
+    }
+  end
+
   attribute :payment, if: proc { |shipment| shipment.status != "cancelled" } do |shipment|
     payment = shipment.payments.max_by { |p| p.escrowed_at || p.created_at }
     next nil if payment.nil?

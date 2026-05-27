@@ -14,7 +14,8 @@ module Api
         before_action :require_shipper!
 
         def index
-          shipments = Shipments::Index.for(scope: policy_scope(Shipment))
+          # `::` qualified — see Api::Carriers::Me::ShipmentsController.
+          shipments = ::Shipments::Index.for(scope: policy_scope(Shipment))
           render json: ShipmentListResource.new(
             shipments,
             params: { current_user: current_user }

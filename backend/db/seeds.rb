@@ -22,15 +22,19 @@ end
 # Identity fixtures — REQ-BE-00020.
 # 2 Users, 1 Carrier, 1 Shipper, 1 Vehicle. Idempotent.
 identity_users = [
-  { email: "carrier1@truckr.test", full_name: "Carrier One", role: :carrier },
-  { email: "shipper1@truckr.test", full_name: "Shipper One", role: :shipper }
+  { email: "carrier1@truckr.test", full_name: "Carrier One", phone: "+54 11 5555-1111", role: :carrier },
+  { email: "shipper1@truckr.test", full_name: "Shipper One", phone: "+54 11 5555-2222", role: :shipper }
 ]
 
 identity_users.each do |spec|
   user = User.find_or_create_by!(email: spec[:email]) do |u|
     u.password  = "Password123"
     u.full_name = spec[:full_name]
+    u.phone     = spec[:phone]
   end
+
+  # Backfill phone for users that were seeded before the field was populated.
+  user.update!(phone: spec[:phone]) if user.phone.blank?
 
   if spec[:role] == :carrier
     carrier = Carrier.find_or_create_by!(user: user) do |c|
@@ -157,7 +161,8 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
   end
 end
 
-# Fulfilment fixtures — one shipment per FSM state.
+# Fulfilment fixtures — one shipment per FSM state, plus Payment rows for
+# states that imply escrow.
 #
 # Each combination gets its own dedicated TransportWindow + Cargo + CargoOffer
 # so the carrier and shipper list screens have representative data for every
@@ -168,6 +173,8 @@ end
 # FSM (ADR-012):
 #   accepted → pending_payment → in_transit → delivered
 #   cancelled is terminal from any non-terminal state
+# Payment escrow accompanies pending_payment / in_transit / delivered states
+# (US8 — REQ-BE-00033).
 FULFILMENT_COMBOS = [
   { status: "accepted",
     tw_from: -70, tw_to: -62, origin: "Santa Fe",   dest: "Tucumán",
@@ -256,7 +263,20 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
         attrs[:cancelled_at] = (offset + 2).days.ago
       end
 
-      Shipment.create!(attrs)
+      shipment = Shipment.create!(attrs)
+
+      # Payment escrow row for states that imply payment has been received
+      # (US8 — REQ-BE-00033). Skipped for accepted (pre-payment) and
+      # cancelled (no payment captured).
+      if %w[pending_payment in_transit delivered].include?(fx[:status])
+        Payment.find_or_create_by!(shipment: shipment) do |p|
+          p.amount_cents = offer.amount_cents
+          p.currency     = offer.currency
+          p.provider     = "fake"
+          p.state        = "escrowed"
+          p.escrowed_at  = (offset + 1).days.ago
+        end
+      end
     end
   end
 end

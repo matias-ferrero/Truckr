@@ -134,6 +134,52 @@ RSpec.describe "Api::Shipments", type: :request do
       end
     end
 
+    describe "counterparty_contact reveal (REQ-BE-00033 / AC9)" do
+      it "is null before any Payment is escrowed (carrier viewer)" do
+        sign_in carrier_user
+        get "/api/shipments/#{shipment.id}"
+
+        expect(JSON.parse(response.body)["counterparty_contact"]).to be_nil
+      end
+
+      it "is null before any Payment is escrowed (shipper viewer)" do
+        sign_in shipper_user
+        get "/api/shipments/#{shipment.id}"
+
+        expect(JSON.parse(response.body)["counterparty_contact"]).to be_nil
+      end
+
+      it "exposes the Carrier user's contact triple once the Payment is escrowed (shipper viewer)" do
+        carrier_user.update!(full_name: "Carrier Person", phone: "+54 11 5555-3333")
+        create(:payment, :escrowed, shipment: shipment)
+        sign_in shipper_user
+
+        get "/api/shipments/#{shipment.id}"
+
+        contact = JSON.parse(response.body)["counterparty_contact"]
+        expect(contact).to include(
+          "full_name" => "Carrier Person",
+          "email"     => carrier_user.email,
+          "phone"     => "+54 11 5555-3333"
+        )
+      end
+
+      it "exposes the Shipper user's contact triple once the Payment is escrowed (carrier viewer)" do
+        shipper_user.update!(full_name: "Shipper Person", phone: "+54 11 5555-4444")
+        create(:payment, :escrowed, shipment: shipment)
+        sign_in carrier_user
+
+        get "/api/shipments/#{shipment.id}"
+
+        contact = JSON.parse(response.body)["counterparty_contact"]
+        expect(contact).to include(
+          "full_name" => "Shipper Person",
+          "email"     => shipper_user.email,
+          "phone"     => "+54 11 5555-4444"
+        )
+      end
+    end
+
     describe "available_actions matrix (REQ-BE-00035 §4.4)" do
       def detail_for(user)
         sign_in user

@@ -16,7 +16,18 @@ export const shipmentsSharedContent = {
         delivered:       "Entregado",
         cancelled:       "Cancelado",
     },
+    paymentState: {
+        pending: "Pendiente de pago",
+        paid:    "Pagado",
+    },
     routeArrow: "→",
     detailLinkAria: (id: number, origin: string, destination: string, stateLabel: string) =>
         `Envío #${id}: de ${origin} a ${destination}, ${stateLabel}`,
+    row: {
+        counterpartyLabel:  "Contraparte",
+        counterpartyMasked: "Datos revelados al pagar",
+        payCta:             (amount: string) => `Pagar ${amount}`,
+        rowAria:            (id: number, origin: string, destination: string, stateLabel: string) =>
+            `Envío #${id}: de ${origin} a ${destination}, ${stateLabel}`,
+    },
 } as const;

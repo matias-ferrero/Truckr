@@ -30,6 +30,7 @@ function renderPage() {
             <Routes>
                 <Route path="/shipper/shipments" element={<ShipperShipmentsPage />} />
                 <Route path="/shipper/shipments/:id" element={<div>detail-screen</div>} />
+                <Route path="/shipper/shipments/:id/pay" element={<div>pay-screen</div>} />
             </Routes>
         </MemoryRouter>,
     );
@@ -80,7 +81,7 @@ describe("ShipperShipmentsPage", () => {
         });
     });
 
-    it("shows only state chip (no payment chip) for cancelled shipment", async () => {
+    it("shows only state chip for cancelled shipment", async () => {
         api.listShipperShipments.mockResolvedValue([makeShipment({ state: "cancelled" })]);
         renderPage();
         await waitFor(() => {
@@ -96,6 +97,13 @@ describe("ShipperShipmentsPage", () => {
         const link = await screen.findByRole("link", { name: /envío #42/i });
         await user.click(link);
         expect(await screen.findByText("detail-screen")).toBeInTheDocument();
+    });
+
+    it("row links point to /shipper/shipments/:id", async () => {
+        api.listShipperShipments.mockResolvedValue([makeShipment({ id: 42 })]);
+        renderPage();
+        const link = await screen.findByRole("link", { name: /envío #42/i });
+        expect(link).toHaveAttribute("href", "/shipper/shipments/42");
     });
 
     it("shows error panel with retry button on fetch failure", async () => {
@@ -117,10 +125,50 @@ describe("ShipperShipmentsPage", () => {
         expect(await screen.findByText("Aún no contrataste envíos")).toBeInTheDocument();
     });
 
-    it("row links point to /shipper/shipments/:id", async () => {
-        api.listShipperShipments.mockResolvedValue([makeShipment({ id: 42 })]);
+    it("renders a Pagar button on accepted shipments and navigates to /pay", async () => {
+        const user = userEvent.setup();
+        api.listShipperShipments.mockResolvedValue([
+            makeShipment({ id: 42, state: "accepted", amount_cents: 12_345_67 }),
+        ]);
         renderPage();
-        const link = await screen.findByRole("link", { name: /envío #42/i });
-        expect(link).toHaveAttribute("href", "/shipper/shipments/42");
+        const payButton = await screen.findByRole("button", { name: /^Pagar /i });
+        await user.click(payButton);
+        expect(await screen.findByText("pay-screen")).toBeInTheDocument();
+    });
+
+    it("does NOT render a Pagar button once payment has been escrowed", async () => {
+        api.listShipperShipments.mockResolvedValue([
+            makeShipment({ id: 42, state: "pending_payment" }),
+            makeShipment({ id: 43, state: "in_transit" }),
+        ]);
+        renderPage();
+        await screen.findByText("En tránsito");
+        expect(screen.queryByRole("button", { name: /^Pagar /i })).not.toBeInTheDocument();
+    });
+
+    it("shows the counterparty name unmasked once payment has landed", async () => {
+        api.listShipperShipments.mockResolvedValue([
+            makeShipment({
+                id: 42,
+                state: "delivered",
+                counterparty_display_name: "Transportes Demo SRL",
+            }),
+        ]);
+        renderPage();
+        expect(await screen.findByText("Transportes Demo SRL")).toBeInTheDocument();
+    });
+
+    it("masks the counterparty name while the shipment is awaiting payment", async () => {
+        api.listShipperShipments.mockResolvedValue([
+            makeShipment({
+                id: 42,
+                state: "accepted",
+                counterparty_display_name: "Transportes Demo SRL",
+            }),
+        ]);
+        renderPage();
+        await screen.findByText("Aceptado");
+        expect(screen.queryByText("Transportes Demo SRL")).not.toBeInTheDocument();
+        expect(screen.getByText("Datos revelados al pagar")).toBeInTheDocument();
     });
 });

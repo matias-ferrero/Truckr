@@ -61,8 +61,11 @@ Rails.application.routes.draw do
 
     # Multi-role shipment detail (REQ-BE-00035 §3.3). Authorisation is
     # Pundit-gated and translates a denied policy into 404 (not 403) — see
-    # Api::ShipmentsController.
-    resources :shipments, only: %i[show]
+    # Api::ShipmentsController. Nested under it: the Shipper-only payment
+    # checkout (REQ-BE-00033 / US8).
+    resources :shipments, only: %i[show] do
+      resources :payments, only: %i[create], module: "shipments"
+    end
 
     # Public read endpoints — anyone can browse a carrier's fleet.
     resources :carriers, only: %i[show] do

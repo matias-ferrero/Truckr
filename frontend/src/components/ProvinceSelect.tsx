@@ -38,15 +38,32 @@ type Props = {
     placeholder?: string;
 };
 
-export default function ProvinceSelect({ id, value, onChange, required, placeholder }: Props) {
+export default function ProvinceSelect(
+    { id, value, onChange, required, placeholder, ...rest }:
+        Props & Omit<React.SelectHTMLAttributes<HTMLSelectElement>, keyof Props>,
+) {
+    // When the field is required, the placeholder is "pick one" — render it
+    // disabled+hidden so users can't re-select the empty value, and only while
+    // the field is still empty.
+    // When the field is optional, the placeholder is "any/none" — render it as
+    // a normal selectable option so users can clear their choice.
+    const isRequired = required === true;
+    const placeholderLabel = placeholder ?? "—";
     return (
         <Select
             id={id}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             required={required}
+            {...rest}
         >
-            {!required && <option value="">{placeholder ?? "—"}</option>}
+            {isRequired
+                ? value === "" && (
+                    <option value="" disabled hidden>
+                        {placeholderLabel}
+                    </option>
+                )
+                : <option value="">{placeholderLabel}</option>}
             {AR_PROVINCES.map((p) => (
                 <option key={p} value={p}>
                     {p}

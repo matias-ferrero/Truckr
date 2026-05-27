@@ -40,7 +40,7 @@ export default defineConfig({
         },
         {
             command:
-                "cd ../backend && bundle exec rails db:test:prepare && bundle exec rails server -e test -p 3000",
+                "cd ../backend && bundle exec rails db:test:prepare && bundle exec rails db:seed && bundle exec rails server -e test -p 3000",
             url: "http://localhost:3000/up",
             reuseExistingServer: !isCI,
             timeout: 180_000,

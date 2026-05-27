@@ -66,17 +66,20 @@ RSpec.describe Shipment, type: :model do
     permitted.each do |from, to|
       it "transitions #{from} -> #{to}" do
         s = create(:shipment, from)
+        create(:payment, :escrowed, shipment: s) if from == :accepted
         expect { s.transition_to!(to) }.to change { s.reload.status.to_sym }.from(from).to(to)
       end
 
       it "stamps the matching timestamp column for #{to}" do
         s = create(:shipment, from)
+        create(:payment, :escrowed, shipment: s) if from == :accepted
         col = Shipment::STATUS_TIMESTAMP_COLUMNS[to]
         expect { s.transition_to!(to) }.to change { s.reload.public_send(col) }.from(nil)
       end
 
       it "emits a status_change tracking event for #{from} -> #{to}" do
         s = create(:shipment, from)
+        create(:payment, :escrowed, shipment: s) if from == :accepted
         expect { s.transition_to!(to) }.to change { s.tracking_events.count }.by(1)
         ev = s.tracking_events.order(:recorded_at).last
         expect(ev.kind).to eq("status_change")
@@ -113,8 +116,20 @@ RSpec.describe Shipment, type: :model do
   describe "#transition_to! — locking" do
     it "wraps the transition in a row lock" do
       s = create(:shipment, :accepted)
+      create(:payment, :escrowed, shipment: s)
       expect(s).to receive(:with_lock).and_call_original
       s.transition_to!(:pending_payment)
+    end
+  end
+
+  describe "#transition_to! — payment interlock" do
+    it "rejects accepted -> pending_payment when no escrowed payment exists" do
+      s = create(:shipment, :accepted)
+
+      expect {
+        s.transition_to!(:pending_payment)
+      }.to raise_error(Shipment::IllegalTransition, /without escrowed payment/)
+      expect(s.reload.status).to eq("accepted")
     end
   end
 

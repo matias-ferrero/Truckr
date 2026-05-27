@@ -285,6 +285,18 @@ export const handlers: RequestHandler[] = [
 
     http.get(`${API}/api/shippers/me/shipments`, () =>
         HttpResponse.json([fixtureShipment({ id: 42, state: "delivered" })])),
+
+    // REQ-BE-00033 — single-shipment detail used by the payment success
+    // screen to pull contact details after the escrow lands.
+    http.get(`${API}/api/shipments/:id`, ({ params }) =>
+        HttpResponse.json(fixtureShipmentDetail({ id: Number(params.id) }))),
+
+    // REQ-BE-00033 — POST /api/shipments/:id/payments. Default lands escrowed.
+    http.post(`${API}/api/shipments/:id/payments`, ({ params }) =>
+        HttpResponse.json(
+            { payment_id: 1, state: "escrowed", shipment_id: Number(params.id) },
+            { status: 201 },
+        )),
 ];
 
 function pagyHeaders(total: number): Record<string, string> {
@@ -306,6 +318,30 @@ export function fixtureShipment(overrides: Record<string, unknown> = {}) {
         amount_cents: 105_000_000,
         currency: "ARS",
         latest_activity_at: "2026-06-11T10:00:00Z",
+        counterparty_display_name: "Transportes Demo SRL",
+        ...overrides,
+    };
+}
+
+export function fixtureShipmentDetail(overrides: Record<string, unknown> = {}) {
+    return {
+        id: 31,
+        state: "delivered",
+        amount_cents: 105_000_000,
+        currency: "ARS",
+        counterparty: { kind: "carrier", id: 1, display_name: "Transportes Demo SRL" },
+        counterparty_contact: {
+            full_name: "Carrier Demo",
+            email: "carrier@demo.test",
+            phone: "+54 11 5555-1111",
+        },
+        payment: {
+            id: 1,
+            state: "escrowed",
+            amount_cents: 105_000_000,
+            currency: "ARS",
+            escrowed_at: "2026-06-11T10:05:00Z",
+        },
         ...overrides,
     };
 }

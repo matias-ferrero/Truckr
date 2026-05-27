@@ -80,7 +80,7 @@ describe("CarrierShipments", () => {
         });
     });
 
-    it("shows only state chip (no payment chip) for cancelled shipment", async () => {
+    it("shows only state chip for cancelled shipment", async () => {
         api.listCarrierShipments.mockResolvedValue([makeShipment({ state: "cancelled" })]);
         renderPage();
         await waitFor(() => {
@@ -104,6 +104,15 @@ describe("CarrierShipments", () => {
         const link = await screen.findByRole("link", { name: /envío #31/i });
         await user.click(link);
         expect(await screen.findByText("detail-screen")).toBeInTheDocument();
+    });
+
+    it("does NOT render a Pagar button on the carrier side (payment is shipper-only)", async () => {
+        api.listCarrierShipments.mockResolvedValue([
+            makeShipment({ id: 31, state: "pending_payment" }),
+        ]);
+        renderPage();
+        await screen.findByText("Pendiente de pago");
+        expect(screen.queryByRole("button", { name: /^Pagar /i })).not.toBeInTheDocument();
     });
 
     it("shows error panel with retry button on fetch failure", async () => {

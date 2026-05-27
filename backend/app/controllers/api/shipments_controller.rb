@@ -18,7 +18,11 @@ module Api
       shipment = Shipment
                  .eager_load(
                    :payments, :tracking_events,
-                   cargo_offer: [ :carrier, { cargo: :shipper }, { transport_window: { vehicle: :carrier } } ]
+                   cargo_offer: [
+                     { carrier: :user },
+                     { cargo: { shipper: :user } },
+                     { transport_window: { vehicle: :carrier } }
+                   ]
                  )
                  .find(params[:id])
       authorize shipment
