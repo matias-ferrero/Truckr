@@ -280,24 +280,11 @@ export const handlers: RequestHandler[] = [
         });
     }),
 
-    http.get(`${API}/api/carriers/me/shipments`, ({ request }) => {
-        const status = new URL(request.url).searchParams.get("status");
-        const all = [
-            {
-                id: 31,
-                cargo_offer_id: 11,
-                status: "pending_payment",
-                accepted_at: "2026-06-11T10:00:00Z",
-                picked_up_at: null,
-                delivered_at: null,
-                created_at: "2026-06-11T10:00:00Z",
-                updated_at: "2026-06-11T10:00:00Z",
-            },
-        ];
+    http.get(`${API}/api/carriers/me/shipments`, () =>
+        HttpResponse.json([fixtureShipment()])),
 
-        const filtered = status ? all.filter((item) => item.status === status) : all;
-        return HttpResponse.json(filtered, { headers: pagyHeaders(filtered.length) });
-    }),
+    http.get(`${API}/api/shippers/me/shipments`, () =>
+        HttpResponse.json([fixtureShipment({ id: 42, state: "delivered" })])),
 ];
 
 function pagyHeaders(total: number): Record<string, string> {
@@ -306,6 +293,20 @@ function pagyHeaders(total: number): Record<string, string> {
         "X-Page": "1",
         "X-Per-Page": "20",
         "X-Total-Pages": "1",
+    };
+}
+
+export function fixtureShipment(overrides: Record<string, unknown> = {}) {
+    return {
+        id: 31,
+        state: "accepted",
+        origin: "Av. Corrientes 1234, CABA",
+        destination: "Av. Colón 500, Córdoba",
+        created_at: "2026-06-11T10:00:00Z",
+        amount_cents: 105_000_000,
+        currency: "ARS",
+        latest_activity_at: "2026-06-11T10:00:00Z",
+        ...overrides,
     };
 }
 

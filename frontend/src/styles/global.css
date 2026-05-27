@@ -74,6 +74,12 @@
 
   /* Editorial accent — stamp only */
   --accent: oklch(45% 0.09 220);
+
+  /* Chip foreground ink — dark readable text on tinted chip backgrounds. */
+  --chip-ink-primary: oklch(36% 0.14 235);
+  --chip-ink-warning: oklch(36% 0.14 80);
+  --chip-ink-success: oklch(36% 0.13 150);
+  --chip-ink-error:   oklch(36% 0.16 25);
 }
 
 *,

@@ -106,23 +106,14 @@ describe("AppRoutes", () => {
                     },
                 })
             ),
-            http.get(`${API}/api/carriers/me/shipments`, () =>
-                HttpResponse.json([], {
-                    headers: {
-                        "X-Total": "0",
-                        "X-Page": "1",
-                        "X-Per-Page": "20",
-                        "X-Total-Pages": "1",
-                    },
-                })
-            ),
+            http.get(`${API}/api/carriers/me/shipments`, () => HttpResponse.json([])),
         );
 
         window.history.pushState({}, "", "/carrier/shipments");
         render(<AppRoutes />);
 
         await waitFor(() =>
-            expect(screen.getByRole("heading", { name: /mis viajes/i })).toBeInTheDocument()
+            expect(screen.getByRole("heading", { name: /mis envíos/i })).toBeInTheDocument()
         );
     });
 

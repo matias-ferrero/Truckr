@@ -4,9 +4,13 @@ import { useCurrentUser } from "../../auth/useCurrentUser";
 import { listMyVehicles, Vehicle } from "../../api/vehicles";
 import { listMyTransportWindows, TransportWindow } from "../../api/transport_windows";
 import { listMyCargoOffers, CargoOffer } from "../../api/cargoOffers";
+import { listCarrierShipments, listShipperShipments, Shipment } from "../../api/shipments";
+import { ShipmentStateChip } from "../../components/shipments/ShipmentStateChip";
+import { shipmentStateSortOrder } from "../../components/shipments/shipmentsSharedContent";
 import { dashboardContent, CARGO_OFFER_STATUS_LABEL, CARGO_OFFER_STATUS_BADGE_CLASS } from "./dashboardContent";
 import { MyCargosSection } from "./MyCargosSection";
 import "../../styles/dashboard.css";
+import "../../styles/shipments.css";
 
 const arDateFormatter = new Intl.DateTimeFormat("es-AR", {
     day: "2-digit",
@@ -36,6 +40,14 @@ function formatARS(cents: number): string {
 
 const dc = dashboardContent;
 
+function sortDashboardShipments(items: Shipment[]): Shipment[] {
+    return [...items].sort((a, b) => {
+        const stateDiff = shipmentStateSortOrder[a.state] - shipmentStateSortOrder[b.state];
+        if (stateDiff !== 0) return stateDiff;
+        return new Date(b.latest_activity_at).getTime() - new Date(a.latest_activity_at).getTime();
+    });
+}
+
 export function DashboardPage() {
     const { me, loading } = useCurrentUser();
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -46,9 +58,16 @@ export function DashboardPage() {
     const [cargoOffers, setCargoOffers]           = useState<CargoOffer[]>([]);
     const [cargoOffersTotal, setCargoOffersTotal] = useState(0);
 
+    const [shipments, setShipments] = useState<Shipment[]>([]);
+
     const isCarrier = me?.roles.includes("carrier");
 
     useEffect(() => {
+        const fetchShipments = isCarrier ? listCarrierShipments : listShipperShipments;
+        fetchShipments()
+            .then(items => setShipments(sortDashboardShipments(items)))
+            .catch(console.error);
+
         if (isCarrier) {
             listMyVehicles().then(res => setVehicles(res.items)).catch(console.error);
             listMyTransportWindows(1)
@@ -82,7 +101,7 @@ export function DashboardPage() {
         <main className="dashboardMain" id="main">
             <div className="dashboardContainer">
                 <header className="dashboardHero">
-                    <span className="dashboardHeroEyebrow">
+                    <span className={`dashboardHeroEyebrow${isCarrier ? " dashboardHeroEyebrow--carrier" : ""}`}>
                         {isCarrier ? dc.hero.eyebrow.carrier : dc.hero.eyebrow.shipper}
                     </span>
                     <h1 className="dashboardHeroTitle">{dc.hero.greeting(firstName)}</h1>
@@ -90,6 +109,66 @@ export function DashboardPage() {
                         {isCarrier ? dc.hero.lead.carrier : dc.hero.lead.shipper}
                     </p>
                 </header>
+
+                <section className="dashboardSection" aria-labelledby="section-trips">
+                    <div className="dashboardSectionHeader">
+                        <div className="dashboardSectionHeading">
+                            <span className="dashboardSectionIcon" aria-hidden="true"><IconTruck /></span>
+                            <h2 id="section-trips">{dc.trips.heading}</h2>
+                            {shipments.length > 0 && (
+                                <span className="dashboardSectionCount" aria-label={`${shipments.length} envíos`}>
+                                    {shipments.length}
+                                </span>
+                            )}
+                        </div>
+                        <Link
+                            to={isCarrier ? "/carrier/shipments" : "/shipper/shipments"}
+                            className="button buttonGhost"
+                        >
+                            {dc.trips.viewAll}
+                        </Link>
+                    </div>
+                    <div className="dashboardCardList">
+                        {shipments.length === 0 ? (
+                            <div className="dashboardEmpty" role="status">
+                                <span className="dashboardEmptyIcon" aria-hidden="true"><IconRoute /></span>
+                                <div>
+                                    <span className="dashboardEmptyTitle">{dc.trips.emptyTitle}</span>
+                                    <span className="dashboardEmptyHint">{dc.trips.emptyHint}</span>
+                                </div>
+                            </div>
+                        ) : (
+                            shipments.slice(0, 3).map(s => (
+                                <Link
+                                    key={s.id}
+                                    to={isCarrier ? `/carrier/shipments/${s.id}` : `/shipper/shipments/${s.id}`}
+                                    className={`dashboardCard${isCarrier ? " dashboardCard--sky" : " dashboardCard--cream"}`}
+                                >
+                                    <div className="dashboardCardHead">
+                                        <ShipmentStateChip state={s.state} />
+                                    </div>
+                                    <h3
+                                        className="dashboardCardTitle"
+                                        aria-label={`${formatAddress(s.origin)} a ${formatAddress(s.destination)}`}
+                                    >
+                                        {formatAddress(s.origin)}
+                                        <span aria-hidden="true"> → </span>
+                                        {formatAddress(s.destination)}
+                                        <IconArrowRight className="arrow" />
+                                    </h3>
+                                    <div className="dashboardCardMeta">
+                                        <IconMoney />
+                                        <span>{formatARS(s.amount_cents)}</span>
+                                    </div>
+                                    <div className="dashboardCardMeta">
+                                        <IconCalendar />
+                                        <span>{formatDate(s.latest_activity_at)}</span>
+                                    </div>
+                                </Link>
+                            ))
+                        )}
+                    </div>
+                </section>
 
                 {!isCarrier && <MyCargosSection />}
 
@@ -156,35 +235,12 @@ export function DashboardPage() {
                     </section>
                 )}
 
-                <section className="dashboardSection" aria-labelledby="section-trips">
-                    <div className="dashboardSectionHeader">
-                        <div className="dashboardSectionHeading">
-                            <span className="dashboardSectionIcon" aria-hidden="true"><IconTruck /></span>
-                            <h2 id="section-trips">{dc.trips.heading}</h2>
-                        </div>
-                        {isCarrier && (
-                            <Link to="/carrier/shipments" className="button buttonGhost">
-                                {dc.trips.viewAll}
-                            </Link>
-                        )}
-                    </div>
-                    <div className="dashboardCardList">
-                        <div className="dashboardEmpty" role="status">
-                            <span className="dashboardEmptyIcon" aria-hidden="true"><IconRoute /></span>
-                            <div>
-                                <span className="dashboardEmptyTitle">{dc.trips.emptyTitle}</span>
-                                <span className="dashboardEmptyHint">{dc.trips.emptyHint}</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
                 {isCarrier && (
                     <>
                         <section className="dashboardSection" aria-labelledby="section-availability">
                             <div className="dashboardSectionHeader">
                                 <div className="dashboardSectionHeading">
-                                    <span className="dashboardSectionIcon dashboardSectionIcon--cream" aria-hidden="true"><IconCalendar /></span>
+                                    <span className="dashboardSectionIcon dashboardSectionIcon--sky" aria-hidden="true"><IconCalendar /></span>
                                     <h2 id="section-availability">{dc.carrier.availability.heading}</h2>
                                     <span className="dashboardSectionCount" aria-label={`${windowsTotal} ventanas`}>
                                         {windowsTotal}
@@ -208,7 +264,7 @@ export function DashboardPage() {
                                         <Link
                                             key={w.id}
                                             to={`/carrier/availability/${w.id}`}
-                                            className="dashboardCard dashboardCard--cream"
+                                            className="dashboardCard dashboardCard--sky"
                                         >
                                             <div className="dashboardCardHead">
                                                 <span className="dashboardCardEyebrow">
@@ -233,8 +289,8 @@ export function DashboardPage() {
                                         </Link>
                                     ))
                                 )}
-                                <Link to="/carrier/availability/new" className="dashboardCard dashboardCard--cream dashboardCardNew dashboardCardNew--cream" aria-label={dc.carrier.availability.newLabel}>
-                                    <span className="dashboardCardNewIcon dashboardCardNewIcon--cream" aria-hidden="true"><IconPlus /></span>
+                                <Link to="/carrier/availability/new" className="dashboardCard dashboardCard--sky dashboardCardNew dashboardCardNew--sky" aria-label={dc.carrier.availability.newLabel}>
+                                    <span className="dashboardCardNewIcon dashboardCardNewIcon--sky" aria-hidden="true"><IconPlus /></span>
                                     <span className="dashboardCardNewLabel">{dc.carrier.availability.newLabel}</span>
                                 </Link>
                             </div>
@@ -243,7 +299,7 @@ export function DashboardPage() {
                         <section className="dashboardSection" aria-labelledby="section-vehicles">
                             <div className="dashboardSectionHeader">
                                 <div className="dashboardSectionHeading">
-                                    <span className="dashboardSectionIcon dashboardSectionIcon--cream" aria-hidden="true"><IconVehicle /></span>
+                                    <span className="dashboardSectionIcon dashboardSectionIcon--sky" aria-hidden="true"><IconVehicle /></span>
                                     <h2 id="section-vehicles">{dc.carrier.fleet.heading}</h2>
                                     <span className="dashboardSectionCount" aria-label={`${vehicles.length} vehículos`}>
                                         {vehicles.length}
@@ -267,7 +323,7 @@ export function DashboardPage() {
                                         <Link
                                             key={v.id}
                                             to={`/carrier/vehicle/${v.id}`}
-                                            className="dashboardCard dashboardCard--cream"
+                                            className="dashboardCard dashboardCard--sky"
                                         >
                                             <div className="dashboardCardHead">
                                                 <span className="dashboardCardEyebrow">{dc.carrier.fleet.plateLabel}</span>
@@ -283,7 +339,7 @@ export function DashboardPage() {
                                         </Link>
                                     ))
                                 )}
-                                <Link to="/carrier/vehicle/new" className="dashboardCard dashboardCard--cream dashboardCardNew dashboardCardNew--cream" aria-label={dc.carrier.fleet.addLabel}>
+                                <Link to="/carrier/vehicle/new" className="dashboardCard dashboardCard--sky dashboardCardNew dashboardCardNew--sky" aria-label={dc.carrier.fleet.addLabel}>
                                     <span className="dashboardCardNewIcon" aria-hidden="true"><IconPlus /></span>
                                     <span className="dashboardCardNewLabel">{dc.carrier.fleet.addLabel}</span>
                                 </Link>

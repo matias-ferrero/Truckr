@@ -6,8 +6,7 @@
    :root in global.css — no raw hex (DESIGN.md / stylelint). */
 
 .shipperPage {
-    --page-bg: var(--surface-2);
-    /* Status semantics — page-local. Use global `--brand-success` and `--brand-warning` from :root. */
+    --page-bg: oklch(97% 0.025 82);
 
     background: var(--page-bg);
     color: var(--ink);
@@ -16,8 +15,42 @@
     flex-direction: column;
 }
 
+/* Shipper voice: Manifest Cream colored header */
+.shipperPage .appHeader {
+    background: color-mix(in oklab, var(--brand-secondary) 24%, var(--surface));
+    border-bottom: 3px solid color-mix(in oklab, var(--brand-secondary) 65%, transparent);
+}
+
+.shipperPage .appHeaderBrand {
+    color: var(--ink);
+}
+
 .shipperMain {
     flex: 1;
+}
+
+/* Shipper voice: Manifest Cream accent on header and key sections */
+.shipperMain .listHeader {
+    padding-bottom: var(--space-4);
+    border-bottom: 2px solid color-mix(in oklab, var(--brand-secondary) 35%, transparent);
+}
+
+/* Override landing's fluid sectionTitle with a fixed product-UI scale. */
+.shipperMain .sectionTitle {
+    font-size: 1.875rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.04em;
+    max-width: 32ch;
+    color: var(--ink);
+}
+
+.shipperMain .sectionLead {
+    font-size: 1.0625rem;
+    font-weight: 400;
+    line-height: 1.6;
+    max-width: 48ch;
+    color: var(--ink-2);
 }
 
 /* ── Status filter ───────────────────────────────────────────────────── */
@@ -79,7 +112,7 @@
     padding: 4px 0 0;
 }
 
-.cargoCard .cardActions > .button {
+.cargoCard .cardActions>.button {
     flex: 0 0 auto;
 }
 
@@ -127,6 +160,7 @@
     .cargoCard {
         transition: none;
     }
+
     .cargoCard:hover,
     .cargoCard:focus-within {
         transform: none;
@@ -299,6 +333,7 @@
     .matchCard {
         transition: none;
     }
+
     .matchCard:hover,
     .matchCard:focus-visible {
         transform: none;

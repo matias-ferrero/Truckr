@@ -1,15 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, buttonVariants } from "../../components/ui/button";
-import { listCarrierShipments } from "../../api/shipments";
+import { listShipperShipments } from "../../api/shipments";
 import type { Shipment } from "../../api/shipments";
 import { ShipmentListRow } from "../../components/shipments/ShipmentListRow";
 import { SkeletonRows } from "../../components/shipments/SkeletonRows";
 import { shipmentStateSortOrder } from "../../components/shipments/shipmentsSharedContent";
-import { offersAndShipmentsContent } from "./offersAndShipmentsContent";
+import { shipperShipmentsContent as t } from "./shipperShipmentsContent";
 import "../../styles/shipments.css";
-
-const t = offersAndShipmentsContent.shipments;
 
 type PageState =
     | { status: "loading" }
@@ -22,13 +20,13 @@ function sortShipments(items: Shipment[]): Shipment[] {
     );
 }
 
-export default function CarrierShipments() {
+export default function ShipperShipmentsPage() {
     const [state, setState] = useState<PageState>({ status: "loading" });
 
     const load = useCallback(async () => {
         setState({ status: "loading" });
         try {
-            const items = await listCarrierShipments();
+            const items = await listShipperShipments();
             setState({ status: "ready", items: sortShipments(items) });
         } catch (error) {
             setState({ status: "error", message: (error as Error).message });
@@ -40,7 +38,7 @@ export default function CarrierShipments() {
     }, [load]);
 
     return (
-        <main className="page carrierMain" id="main">
+        <main className="page shipperMain" id="main">
             <div className="container">
                 <header className="listHeader">
                     <div className="shipmentListHeader">
@@ -58,7 +56,7 @@ export default function CarrierShipments() {
 
                 {state.status === "loading" && (
                     <ul
-                        className="shipmentList shipmentList--carrier"
+                        className="shipmentList shipmentList--shipper"
                         aria-busy="true"
                         aria-label={t.loadingLabel}
                         role="status"
@@ -77,26 +75,26 @@ export default function CarrierShipments() {
                 )}
 
                 {state.status === "ready" && state.items.length === 0 && (
-                    <div className="shipmentEmptyState shipmentEmptyState--carrier">
+                    <div className="shipmentEmptyState shipmentEmptyState--shipper">
                         <div className="shipmentEmptyContent">
                             <h2 className="shipmentEmptyTitle">
                                 {t.emptyTitle}
                             </h2>
                             <p className="shipmentEmptyLead">{t.emptyLead}</p>
                         </div>
-                        <Link to="/carrier/cargo-offers" className={buttonVariants({ variant: "primary", size: "sm" })}>
+                        <Link to="/shipper/cargos/new" className={buttonVariants({ variant: "primary", size: "sm" })}>
                             {t.emptyCtaLabel}
                         </Link>
                     </div>
                 )}
 
                 {state.status === "ready" && state.items.length > 0 && (
-                    <ul className="shipmentList shipmentList--carrier" aria-label={t.listLabel}>
+                    <ul className="shipmentList shipmentList--shipper" aria-label={t.listLabel}>
                         {state.items.map((shipment) => (
                             <ShipmentListRow
                                 key={shipment.id}
                                 shipment={shipment}
-                                detailPath={`/carrier/shipments/${shipment.id}`}
+                                detailPath={`/shipper/shipments/${shipment.id}`}
                             />
                         ))}
                     </ul>

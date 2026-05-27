@@ -43,7 +43,10 @@ const mountAt = (path: string) =>
 
 describe("RequireCarrier", () => {
     it("redirects anonymous users to /login", async () => {
-        // Default handler: /me → 401
+        // Explicitly force 401 regardless of any JWT in storage from concurrent tests.
+        server.use(http.get(`${API}/api/auth/me`, () =>
+            HttpResponse.json({ error: "unauthorized" }, { status: 401 }),
+        ));
         mountAt("/carrier/vehicles");
         expect(await screen.findByText("login-screen")).toBeInTheDocument();
     });

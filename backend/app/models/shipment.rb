@@ -13,25 +13,25 @@
 #                  │       cancelled        │  (terminal from accepted or in_transit)
 #                  └────────────────────────┘
 #
-# Permissive at the model layer: model accepts any allowed pair without
-# checking sprint-scope interlocks (e.g. "no cancel after an escrowed
-# Payment"). The Shipments::Cancel service (REQ-BE-00033) layers those
-# checks on top.
+# Model-level interlock: any transition that leaves `accepted` requires at
+# least one escrowed Payment linked to the shipment.
 class Shipment < ApplicationRecord
   class IllegalTransition < StandardError; end
 
   ALLOWED_TRANSITIONS = {
-    accepted:   [ :in_transit, :cancelled ],
-    in_transit: [ :delivered, :cancelled ],
-    delivered:  [],
-    cancelled:  []
+    accepted:        [ :pending_payment, :cancelled ],
+    pending_payment: [ :in_transit, :cancelled ],
+    in_transit:      [ :delivered, :cancelled ],
+    delivered:       [],
+    cancelled:       []
   }.freeze
 
   STATUS_TIMESTAMP_COLUMNS = {
-    accepted:   :accepted_at,
-    in_transit: :picked_up_at,
-    delivered:  :delivered_at,
-    cancelled:  :cancelled_at
+    accepted:        :accepted_at,
+    pending_payment: :payment_received_at,
+    in_transit:      :picked_up_at,
+    delivered:       :delivered_at,
+    cancelled:       :cancelled_at
   }.freeze
 
   STATUSES = ALLOWED_TRANSITIONS.keys.map(&:to_s).freeze
@@ -59,7 +59,7 @@ class Shipment < ApplicationRecord
   validate :timestamps_match_status
 
   # ── Scopes ────────────────────────────────────────────────────────────
-  scope :active,      -> { where(status: %w[accepted in_transit]) }
+  scope :active,      -> { where(status: %w[accepted pending_payment in_transit]) }
   scope :completed,   -> { where(status: %w[delivered]) }
   scope :in_progress, -> { active }
 
@@ -98,8 +98,8 @@ class Shipment < ApplicationRecord
   end
 
   def self.ransackable_attributes(_auth_object = nil)
-     %w[id cargo_offer_id status accepted_at picked_up_at delivered_at cancelled_at
-        discarded_at created_at updated_at]
+    %w[id cargo_offer_id status accepted_at payment_received_at picked_up_at
+       delivered_at cancelled_at discarded_at created_at updated_at]
   end
 
   def self.ransackable_associations(_auth_object = nil)
@@ -114,6 +114,8 @@ class Shipment < ApplicationRecord
     case status.to_sym
     when :accepted
       errors.add(:accepted_at, "must be set when accepted") if accepted_at.blank?
+    when :pending_payment
+      errors.add(:payment_received_at, "must be set when pending_payment") if payment_received_at.blank?
     when :in_transit
       errors.add(:picked_up_at, "must be set when in transit") if picked_up_at.blank?
     when :delivered

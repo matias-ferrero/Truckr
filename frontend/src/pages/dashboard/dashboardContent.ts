@@ -9,15 +9,15 @@ export const dashboardContent = {
             shipper:  "Panel · Expedidor",
         },
         lead: {
-            carrier: "Acá vas a ver tus viajes, tu disponibilidad y los vehículos que tenés cargados.",
-            shipper:  "Acá vas a ver tus viajes y solicitudes de cotización.",
+            carrier: "Acá vas a ver tus envíos, tu disponibilidad y los vehículos que tenés cargados.",
+            shipper:  "Acá vas a ver tus envíos y solicitudes de cotización.",
         },
     },
     trips: {
-        heading:    "Mis viajes",
-        viewAll:    "Ver mis viajes",
-        emptyTitle: "Todavía no tenés viajes",
-        emptyHint:  "Cuando se confirme tu primer viaje vas a verlo acá.",
+        heading:    "Mis envíos",
+        viewAll:    "Ver mis envíos",
+        emptyTitle: "Todavía no tenés envíos",
+        emptyHint:  "Cuando se confirme tu primer envío vas a verlo acá.",
     },
     carrier: {
         availability: {

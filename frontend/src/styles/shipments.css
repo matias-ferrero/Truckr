@@ -1,0 +1,460 @@
+/* Shared styles for Carrier and Shipper shipment list screens (US17). */
+
+/* ── List header: title + count ─────────────────────────────────────── */
+
+.shipmentListHeader {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.shipmentListCount {
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--ink-3);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    padding-bottom: 2px;
+}
+
+/* ── Shipment list container ────────────────────────────────────────── */
+
+.shipmentList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+/* ── Voice modifiers ───────────────────────────────────────────────── */
+
+.shipmentList--carrier {
+    border-color: var(--border-sky);
+    border-top-width: 3px;
+}
+
+.shipmentList--carrier .shipmentRow {
+    border-bottom-color: var(--border-sky);
+}
+
+.shipmentList--carrier .shipmentRowLink,
+.shipmentList--carrier .shipmentRowSkeleton {
+    background: color-mix(in oklab, var(--brand-primary) 10%, var(--surface));
+}
+
+@media (hover: hover) {
+    .shipmentList--carrier .shipmentRowLink:hover {
+        background: color-mix(in oklab, var(--brand-primary) 18%, var(--surface));
+    }
+}
+
+.shipmentList--shipper {
+    border-color: var(--border-cream);
+    border-top-width: 3px;
+}
+
+.shipmentList--shipper .shipmentRow {
+    border-bottom-color: var(--border-cream);
+}
+
+.shipmentList--shipper .shipmentRowLink,
+.shipmentList--shipper .shipmentRowSkeleton {
+    background: var(--surface-2);
+}
+
+@media (hover: hover) {
+    .shipmentList--shipper .shipmentRowLink:hover {
+        background: var(--surface-3);
+    }
+}
+
+/* ── Row ────────────────────────────────────────────────────────────── */
+
+.shipmentRow {
+    border-bottom: 1px solid var(--border);
+}
+
+.shipmentRow:last-child {
+    border-bottom: none;
+}
+
+.shipmentRowLink {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+    text-decoration: none;
+    color: var(--ink);
+    background: var(--surface);
+    transition: background 150ms var(--ease-out);
+    min-height: 84px;
+}
+
+@media (hover: hover) {
+    .shipmentRowLink:hover {
+        background: var(--surface-2);
+    }
+}
+
+.shipmentRowLink:focus-visible {
+    outline: 3px solid color-mix(in oklab, var(--brand-primary) 70%, var(--ink));
+    outline-offset: -3px;
+}
+
+.shipmentList--shipper .shipmentRowLink:focus-visible {
+    outline-color: color-mix(in oklab, var(--brand-secondary) 85%, var(--ink));
+}
+
+.shipmentRowMain {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+/* ── Row headline: route (primary) + amount (right) ─────────────────── */
+
+.shipmentRowHeadline {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.shipmentRowRoute {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-sm);
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    overflow: hidden;
+}
+
+.shipmentRowRouteText {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.shipmentRowArrow {
+    color: var(--ink-3);
+    font-weight: 400;
+    flex-shrink: 0;
+}
+
+.shipmentRowAmount {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-lg);
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* ── Row subline: chips + date ──────────────────────────────────────── */
+
+.shipmentRowSubline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.shipmentRowChips {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.shipmentRowDate {
+    font-size: var(--text-xs);
+    color: var(--ink-3);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* ── Chevron ────────────────────────────────────────────────────────── */
+
+.shipmentRowChevron {
+    font-size: 1.25rem;
+    color: var(--ink-3);
+    flex-shrink: 0;
+    transition: color 150ms var(--ease-out), transform 150ms var(--ease-out);
+}
+
+@media (hover: hover) {
+    .shipmentRowLink:hover .shipmentRowChevron {
+        color: var(--ink-2);
+        transform: translateX(3px);
+    }
+}
+
+/* ── Skeleton loading rows ──────────────────────────────────────────── */
+
+.shipmentRowSkeleton {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+    min-height: 84px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    pointer-events: none;
+}
+
+.shipmentRowSkeleton:last-child {
+    border-bottom: none;
+}
+
+.skeletonHeadline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+}
+
+.skeletonSubline {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.skeletonPill {
+    height: 22px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--border) 60%, var(--surface));
+    animation: skeletonPulse 1.4s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+.skeletonLine {
+    height: 14px;
+    border-radius: 4px;
+    background: color-mix(in oklab, var(--border) 60%, var(--surface));
+    animation: skeletonPulse 1.4s ease-in-out infinite;
+}
+
+.skeletonChipState {
+    width: 80px;
+}
+
+.skeletonChipPayment {
+    width: 128px;
+}
+
+.skeletonLineRoute {
+    flex: 1;
+    min-width: 120px;
+}
+
+.skeletonLineAmount {
+    width: 100px;
+}
+
+.skeletonLineDate {
+    width: 72px;
+    margin-left: auto;
+}
+
+@keyframes skeletonPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.42;
+    }
+}
+
+/* ── State chips ────────────────────────────────────────────────────── */
+
+.shipmentStateChip,
+.paymentStateChip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.shipmentStateChip--accepted {
+    background: color-mix(in oklab, var(--brand-primary) 18%, var(--paper));
+    color: var(--chip-ink-primary);
+}
+
+.shipmentStateChip--pending_payment {
+    background: color-mix(in oklab, var(--brand-warning) 22%, var(--paper));
+    color: var(--chip-ink-warning);
+}
+
+.shipmentStateChip--in_transit {
+    background: color-mix(in oklab, var(--brand-warning) 22%, var(--paper));
+    color: var(--chip-ink-warning);
+}
+
+.shipmentStateChip--delivered {
+    background: color-mix(in oklab, var(--brand-success) 22%, var(--paper));
+    color: var(--chip-ink-success);
+}
+
+.shipmentStateChip--cancelled {
+    background: color-mix(in oklab, var(--brand-error) 15%, var(--paper));
+    color: var(--chip-ink-error);
+}
+
+.paymentStateChip--pending {
+    background: color-mix(in oklab, var(--brand-warning) 18%, var(--paper));
+    color: var(--chip-ink-warning);
+}
+
+.paymentStateChip--paid {
+    background: color-mix(in oklab, var(--brand-success) 18%, var(--paper));
+    color: var(--chip-ink-success);
+}
+
+/* ── Error state ────────────────────────────────────────────────────── */
+
+.shipmentErrorPanel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    background: color-mix(in oklab, var(--brand-error) 8%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--brand-error) 30%, transparent);
+    border-radius: var(--radius-md);
+}
+
+.shipmentErrorPanel p {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+}
+
+/* ── Empty state ────────────────────────────────────────────────────── */
+
+.shipmentEmptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-5);
+    padding: var(--space-7) var(--space-6);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.shipmentEmptyState--carrier {
+    background: color-mix(in oklab, var(--brand-primary) 6%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--brand-primary) 18%, transparent);
+    border-top: 3px solid color-mix(in oklab, var(--brand-primary) 35%, transparent);
+}
+
+.shipmentEmptyState--shipper {
+    background: color-mix(in oklab, var(--brand-secondary) 8%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--brand-secondary) 28%, transparent);
+    border-top: 3px solid color-mix(in oklab, var(--brand-secondary) 45%, transparent);
+}
+
+.shipmentEmptyContent {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.shipmentEmptyTitle {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+}
+
+.shipmentEmptyLead {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+    line-height: 1.6;
+    max-width: 52ch;
+}
+
+/* ── Mobile ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+    .shipmentRowLink {
+        padding: var(--space-3) var(--space-4);
+    }
+
+    .shipmentRowHeadline {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-1);
+    }
+
+    .shipmentRowRoute {
+        font-size: var(--text-sm);
+    }
+
+    /* Keep amount one step above route at mobile to preserve financial hierarchy. */
+    .shipmentRowAmount {
+        font-size: var(--text-base);
+    }
+
+    .shipmentEmptyState {
+        gap: var(--space-4);
+        padding: var(--space-6) var(--space-4);
+        align-items: center;
+        text-align: center;
+    }
+
+    .shipmentEmptyTitle {
+        font-size: 1.1rem;
+        justify-content: center;
+    }
+
+    .shipmentEmptyLead {
+        color: var(--ink-3);
+    }
+
+    .shipmentEmptyState a {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .skeletonPill,
+    .skeletonLine {
+        animation: none;
+    }
+
+    .shipmentRowChevron {
+        transition: none;
+    }
+}

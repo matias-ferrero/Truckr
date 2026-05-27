@@ -81,31 +81,13 @@ RSpec.describe "Api::Carriers::Me::Shipments", type: :request do
         expect(ids).to eq([ bumped_ship.id, recent_ship.id, old_ship.id ])
       end
 
-      it "emits payment_state derived (paid when escrowed Payment exists)" do
-        shipment = carrier_shipment(carrier)
-        create(:payment, :escrowed, shipment: shipment)
+      it "includes pending_payment shipments in the list" do
+        create(:shipment, :pending_payment, cargo_offer: create(:cargo_offer, :accepted, carrier: carrier))
 
         get "/api/carriers/me/shipments"
 
-        row = JSON.parse(response.body).first
-        expect(row["payment_state"]).to eq("paid")
-      end
-
-      it "emits payment_state pending when no escrowed Payment exists" do
-        carrier_shipment(carrier)
-
-        get "/api/carriers/me/shipments"
-
-        expect(JSON.parse(response.body).first["payment_state"]).to eq("pending")
-      end
-
-      it "omits payment_state when shipment is cancelled" do
-        create(:shipment, :cancelled, cargo_offer: create(:cargo_offer, :accepted, carrier: carrier))
-
-        get "/api/carriers/me/shipments"
-
-        row = JSON.parse(response.body).first
-        expect(row).not_to have_key("payment_state")
+        states = JSON.parse(response.body).map { |s| s["state"] }
+        expect(states).to include("pending_payment")
       end
 
       it "exposes the shape required by US17 (REQ-BE-00035 §4.1)" do
@@ -115,9 +97,10 @@ RSpec.describe "Api::Carriers::Me::Shipments", type: :request do
 
         row = JSON.parse(response.body).first
         expect(row.keys).to include(
-          "id", "state", "payment_state", "origin", "destination",
+          "id", "state", "origin", "destination",
           "created_at", "amount_cents", "currency", "latest_activity_at"
         )
+        expect(row.keys).not_to include("payment_state")
       end
     end
   end

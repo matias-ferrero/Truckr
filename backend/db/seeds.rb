@@ -157,29 +157,106 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
   end
 end
 
-# Fulfilment fixtures — REQ-BE-00022.
-# One Shipment per state for any available CargoOffer rows. Idempotent.
-if defined?(CargoOffer) && defined?(Shipment) && CargoOffer.exists?
-  Shipment::STATUSES.each_with_index do |state, i|
-    cargo_offer = CargoOffer.offset(i).first or next
-    next if Shipment.with_discarded.exists?(cargo_offer_id: cargo_offer.id)
+# Fulfilment fixtures — one shipment per FSM state.
+#
+# Each combination gets its own dedicated TransportWindow + Cargo + CargoOffer
+# so the carrier and shipper list screens have representative data for every
+# chip variant. Windows use past date ranges and active: false so they don't
+# appear in marketplace search and don't trigger the no_vehicle_overlap guard
+# (which only checks active windows). Idempotent.
+#
+# FSM (ADR-012):
+#   accepted → pending_payment → in_transit → delivered
+#   cancelled is terminal from any non-terminal state
+FULFILMENT_COMBOS = [
+  { status: "accepted",
+    tw_from: -70, tw_to: -62, origin: "Santa Fe",   dest: "Tucumán",
+    cargo_desc: "Equipos industriales" },
+  { status: "pending_payment",
+    tw_from: -61, tw_to: -53, origin: "Entre Ríos", dest: "Salta",
+    cargo_desc: "Insumos médicos" },
+  { status: "in_transit",
+    tw_from: -52, tw_to: -44, origin: "Corrientes", dest: "Jujuy",
+    cargo_desc: "Maquinaria agrícola" },
+  { status: "delivered",
+    tw_from: -43, tw_to: -35, origin: "Misiones",   dest: "Catamarca",
+    cargo_desc: "Autopartes" },
+  { status: "cancelled",
+    tw_from: -34, tw_to: -26, origin: "Chaco",      dest: "La Rioja",
+    cargo_desc: "Bebidas y licores" }
+].freeze
 
-    attrs = { cargo_offer: cargo_offer, status: state }
-    case state
-    when "accepted"
-      attrs[:accepted_at] = 2.hours.ago
-    when "in_transit"
-      attrs[:accepted_at] = 4.hours.ago
-      attrs[:picked_up_at] = 1.hour.ago
-    when "delivered"
-      attrs[:accepted_at] = 1.day.ago
-      attrs[:picked_up_at] = 4.hours.ago
-      attrs[:delivered_at] = 30.minutes.ago
-    when "cancelled"
-      attrs[:accepted_at] = 2.hours.ago
-      attrs[:cancelled_at] = 30.minutes.ago
+if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
+   Carrier.any? && Shipper.any?
+
+  carrier = Carrier.first
+  shipper = Shipper.first
+  vehicle = carrier.vehicles.first
+
+  if vehicle
+    FULFILMENT_COMBOS.each do |fx|
+      tw = TransportWindow.find_or_create_by!(
+        vehicle: vehicle,
+        origin_province:      fx[:origin],
+        destination_province: fx[:dest]
+      ) do |w|
+        w.price_per_km   = 1_500.0
+        w.max_km         = 1_200
+        w.available_from = fx[:tw_from].days.from_now
+        w.available_to   = fx[:tw_to].days.from_now
+        w.active         = false
+        w.status         = "reserved"
+      end
+
+      cargo = Cargo.find_or_create_by!(
+        shipper: shipper, cargo_description: fx[:cargo_desc]
+      ) do |c|
+        c.pickup_address       = "Av. Principal 100, #{fx[:origin]}"
+        c.delivery_address     = "Av. Central 200, #{fx[:dest]}"
+        c.pickup_zone          = fx[:origin]
+        c.delivery_zone        = fx[:dest]
+        c.pickup_window_start  = (fx[:tw_from] - 2).days.from_now
+        c.pickup_window_end    = (fx[:tw_to]   + 2).days.from_now
+        c.weight_kg            = 2_500.0
+        c.volume_cm3           = 15_000_000
+        c.declared_value_cents = 50_000_000
+      end
+
+      offer = CargoOffer.find_or_create_by!(
+        cargo: cargo, carrier: carrier, transport_window: tw
+      ) do |co|
+        co.amount_cents = 12_000_000
+        co.currency     = "ARS"
+        co.status       = "accepted"
+        co.accepted_at  = (fx[:tw_from].abs + 5).days.ago
+        co.expires_at   = (fx[:tw_from].abs - 2).days.ago
+      end
+
+      next if Shipment.with_discarded.exists?(cargo_offer_id: offer.id)
+
+      attrs = { cargo_offer: offer, status: fx[:status] }
+      offset = fx[:tw_from].abs
+      case fx[:status]
+      when "accepted"
+        attrs[:accepted_at]         = (offset + 4).days.ago
+      when "pending_payment"
+        attrs[:accepted_at]         = (offset + 6).days.ago
+        attrs[:payment_received_at] = (offset + 4).days.ago
+      when "in_transit"
+        attrs[:accepted_at]         = (offset + 8).days.ago
+        attrs[:payment_received_at] = (offset + 6).days.ago
+        attrs[:picked_up_at]        = (offset + 4).days.ago
+      when "delivered"
+        attrs[:accepted_at]         = (offset + 10).days.ago
+        attrs[:payment_received_at] = (offset + 8).days.ago
+        attrs[:picked_up_at]        = (offset + 6).days.ago
+        attrs[:delivered_at]        = (offset + 2).days.ago
+      when "cancelled"
+        attrs[:accepted_at]  = (offset + 4).days.ago
+        attrs[:cancelled_at] = (offset + 2).days.ago
+      end
+
+      Shipment.create!(attrs)
     end
-
-    Shipment.create!(attrs)
   end
 end

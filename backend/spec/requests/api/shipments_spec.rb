@@ -83,10 +83,11 @@ RSpec.describe "Api::Shipments", type: :request do
 
         body = JSON.parse(response.body)
         expect(body.keys).to include(
-          "id", "state", "payment_state", "amount_cents", "currency",
+          "id", "state", "amount_cents", "currency",
           "cargo", "vehicle", "counterparty", "payment", "tracking_events",
           "available_actions"
         )
+        expect(body.keys).not_to include("payment_state")
         expect(body["cargo"]).to include("id" => cargo.id, "origin" => cargo.pickup_address)
         expect(body["cargo"]).to have_key("pickup_lat")
         expect(body["cargo"]).to have_key("delivery_lng")
@@ -99,7 +100,6 @@ RSpec.describe "Api::Shipments", type: :request do
 
         body = JSON.parse(response.body)
         expect(body["payment"]).to include("id" => payment.id, "state" => "escrowed")
-        expect(body["payment_state"]).to eq("paid")
       end
 
       it "exposes null payment when none exists" do
@@ -107,7 +107,6 @@ RSpec.describe "Api::Shipments", type: :request do
 
         body = JSON.parse(response.body)
         expect(body["payment"]).to be_nil
-        expect(body["payment_state"]).to eq("pending")
       end
 
       it "sorts tracking_events ascending by occurred_at" do

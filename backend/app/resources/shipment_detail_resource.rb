@@ -15,10 +15,6 @@ class ShipmentDetailResource
     shipment.status
   end
 
-  attribute :payment_state, if: proc { |shipment| shipment.status != "cancelled" } do |shipment|
-    shipment.payments.any? { |p| p.state == "escrowed" } ? "paid" : "pending"
-  end
-
   attribute :amount_cents do |shipment|
     shipment.cargo_offer.amount_cents
   end

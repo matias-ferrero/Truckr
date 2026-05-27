@@ -153,7 +153,8 @@ describe("DashboardPage", () => {
         expect(screen.getByText(/panel · expedidor/i)).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mis cargas/i })).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mis ofertas/i })).toBeInTheDocument();
-        expect(screen.getByRole("heading", { level: 2, name: /mis viajes/i })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 2, name: /mis envíos/i })).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: /ver mis envíos/i })).toHaveAttribute("href", "/shipper/shipments");
         expect(screen.queryByRole("heading", { level: 2, name: /mi disponibilidad/i })).toBeNull();
         expect(screen.queryByRole("heading", { level: 2, name: /mi flota/i })).toBeNull();
         // The free-form transport-window search section was removed (plan §9 D9).
@@ -193,7 +194,7 @@ describe("DashboardPage", () => {
     it("shows the empty-state for trips (no real trips API yet)", () => {
         mockMe(fakeMe());
         renderPage();
-        expect(screen.getByText(/todavía no tenés viajes/i)).toBeInTheDocument();
+        expect(screen.getByText(/todavía no tenés envíos/i)).toBeInTheDocument();
         // Filters and "new trip" CTA were dropped along with the mocked trip data —
         // they implied features the backend doesn't ship yet.
         expect(screen.queryByRole("button", { name: /^todos$/i })).toBeNull();
@@ -223,7 +224,7 @@ describe("DashboardPage", () => {
         expect(screen.getByText(/panel · transportista/i)).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mi disponibilidad/i })).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: /mi flota/i })).toBeInTheDocument();
-        expect(screen.getByRole("link", { name: /ver mis viajes/i })).toHaveAttribute("href", "/carrier/shipments");
+        expect(screen.getByRole("link", { name: /ver mis envíos/i })).toHaveAttribute("href", "/carrier/shipments");
 
         await waitFor(() => {
             expect(screen.getByRole("heading", { level: 3, name: "Centro a Pilar" })).toBeInTheDocument();

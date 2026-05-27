@@ -22,6 +22,12 @@ FactoryBot.define do
       delivered_at  { 30.minutes.ago }
     end
 
+    trait :pending_payment do
+      status               { "pending_payment" }
+      accepted_at          { 4.hours.ago }
+      payment_received_at  { 1.hour.ago }
+    end
+
     trait :cancelled do
       status        { "cancelled" }
       accepted_at   { 2.hours.ago }

@@ -21,6 +21,7 @@ const CarrierShipments = lazy(() => import("./pages/carrier/CarrierShipments"));
 const CarrierDetail = lazy(() => import("./pages/public/CarrierDetail"));
 const CarrierMeRedirect = lazy(() => import("./pages/public/CarrierMeRedirect"));
 const CreateOfferPage = lazy(() => import("./pages/shipper/CreateOfferPage"));
+const ShipperShipmentsPage = lazy(() => import("./pages/shipper/ShipperShipmentsPage"));
 const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
 const CargoList   = lazy(() => import("./features/cargo/CargoList"));
 const CargoForm   = lazy(() => import("./features/cargo/CargoForm"));
@@ -144,14 +145,17 @@ export function AppRoutes() {
                         <Route path="/carriers/me" element={<CarrierMeRedirect />} />
                         <Route path="/carriers/:id" element={<CarrierDetail />} />
                     </Route>
-                    {/* US27 — "Mis cargas" + cargo-scoped offer flow (REQ-BE-00032). */}
-                    <Route path="/shipper/cargos" element={<ShipperLayout />}>
-                        <Route index element={<CargoList />} />
-                        <Route path="new" element={<CargoForm mode="new" />} />
-                        <Route path=":id" element={<CargoDetail />} />
-                        <Route path=":id/edit" element={<CargoForm mode="edit" />} />
-                        <Route path=":id/matches" element={<CargoMatches />} />
-                        <Route path=":id/offers/new" element={<CreateOfferPage />} />
+                    {/* US27 + US17 — Shipper flows under a shared layout. */}
+                    <Route path="/shipper" element={<ShipperLayout />}>
+                        <Route path="cargos">
+                            <Route index element={<CargoList />} />
+                            <Route path="new" element={<CargoForm mode="new" />} />
+                            <Route path=":id" element={<CargoDetail />} />
+                            <Route path=":id/edit" element={<CargoForm mode="edit" />} />
+                            <Route path=":id/matches" element={<CargoMatches />} />
+                            <Route path=":id/offers/new" element={<CreateOfferPage />} />
+                        </Route>
+                        <Route path="shipments" element={<ShipperShipmentsPage />} />
                     </Route>
                     <Route
                         path="/profile"

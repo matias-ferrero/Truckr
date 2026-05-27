@@ -74,6 +74,12 @@
     color: var(--ink);
 }
 
+/* Carrier eyebrow uses sky/blue voice after role-color swap. */
+.dashboardHeroEyebrow--carrier {
+    background: var(--tint-sky);
+    border-color: var(--border-sky);
+}
+
 .dashboardHeroEyebrow::before {
     content: "";
     width: 8px;
@@ -134,8 +140,11 @@
     color: var(--ink);
 }
 
-/* Carrier-voice variant — used on "Mi disponibilidad" and "Mi flota":
-   the carrier's own inventory deserves the honey stamp. */
+/* Section icon tints — voice-keyed. Carrier = sky, Shipper = cream. */
+.dashboardSectionIcon--sky {
+    background: var(--tint-sky);
+}
+
 .dashboardSectionIcon--cream {
     background: var(--tint-cream);
 }
@@ -243,9 +252,19 @@ a.dashboardCard:focus-visible {
     transform: translateY(-1px);
 }
 
-/* Carrier-voice card — used inside the carrier inventory sections
-   (Mi disponibilidad, Mi flota). Cream border + honey ambient lift,
-   so the carrier's own stuff visually lives on their voice. */
+/* Carrier-voice card — sky/blue variant (Mi disponibilidad, Mi flota, Mis envíos). */
+.dashboardCard--sky {
+    border-color: var(--border-sky);
+    box-shadow: 0 4px 14px color-mix(in oklab, var(--brand-primary) 16%, transparent);
+}
+
+a.dashboardCard--sky:hover,
+a.dashboardCard--sky:focus-visible {
+    border-color: color-mix(in oklab, var(--brand-primary) 92%, var(--ink));
+    box-shadow: 0 12px 28px color-mix(in oklab, var(--brand-primary) 28%, transparent);
+}
+
+/* Shipper-voice card — cream/amber variant (Mis envíos). */
 .dashboardCard--cream {
     border-color: var(--border-cream);
     box-shadow: 0 4px 14px color-mix(in oklab, var(--brand-secondary) 16%, transparent);
@@ -394,8 +413,14 @@ a.dashboardCard:focus-visible {
     color: var(--ink);
 }
 
-/* Carrier-voice "new" tile — pairs with .dashboardCard--cream so the
-   carrier's add-actions stay in their own voice. */
+/* Carrier-voice "new" tile — sky/blue variant. */
+.dashboardCardNew--sky:hover,
+.dashboardCardNew--sky:focus-visible {
+    border-color: color-mix(in oklab, var(--brand-primary) 90%, var(--ink));
+    background: color-mix(in oklab, var(--brand-primary) 16%, var(--brand-neutral));
+}
+
+/* Shipper-voice "new" tile — cream/amber variant. */
 .dashboardCardNew--cream:hover,
 .dashboardCardNew--cream:focus-visible {
     border-color: color-mix(in oklab, var(--brand-secondary) 90%, var(--ink));
@@ -412,6 +437,15 @@ a.dashboardCard:focus-visible {
     background: var(--tint-sky);
     color: var(--ink);
     transition: background 180ms var(--ease-out);
+}
+
+.dashboardCardNewIcon--sky {
+    background: var(--tint-sky);
+}
+
+.dashboardCardNew--sky:hover .dashboardCardNewIcon,
+.dashboardCardNew--sky:focus-visible .dashboardCardNewIcon {
+    background: color-mix(in oklab, var(--brand-primary) 75%, var(--brand-neutral));
 }
 
 .dashboardCardNewIcon--cream {
@@ -456,9 +490,13 @@ a.dashboardCard:focus-visible {
     color: var(--ink-2);
 }
 
-/* When the empty state lives inside a carrier-voiced section, the
-   dashed border switches to cream so it doesn't fight the surrounding
-   honey card grid. */
+/* When the empty state lives inside a carrier-voiced (sky) section, use sky border. */
+.dashboardSection:has(.dashboardCard--sky) .dashboardEmpty {
+    border-color: var(--border-sky);
+    background: color-mix(in oklab, var(--brand-neutral) 92%, var(--brand-primary));
+}
+
+/* When the empty state lives inside a shipper-voiced (cream) section, use cream border. */
 .dashboardSection:has(.dashboardCard--cream) .dashboardEmpty {
     border-color: var(--border-cream);
     background: color-mix(in oklab, var(--brand-neutral) 92%, var(--brand-secondary));

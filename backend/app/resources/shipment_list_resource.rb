@@ -3,9 +3,8 @@
 # Alba resource for the Carrier / Shipper shipment index endpoints
 # (REQ-BE-00035 §3.1, §3.2, §4.1).
 #
-# Shape per row (US17): id, state, payment_state (derived; omitted if
-# cancelled), origin, destination, created_at, amount_cents, currency,
-# latest_activity_at.
+# Shape per row (US17): id, state, origin, destination, created_at,
+# amount_cents, currency, latest_activity_at.
 class ShipmentListResource
   include Alba::Resource
 
@@ -13,10 +12,6 @@ class ShipmentListResource
 
   attribute :state do |shipment|
     shipment.status
-  end
-
-  attribute :payment_state, if: proc { |shipment| shipment.status != "cancelled" } do |shipment|
-    shipment.payments.any? { |p| p.state == "escrowed" } ? "paid" : "pending"
   end
 
   attribute :origin do |shipment|

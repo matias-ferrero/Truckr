@@ -46,6 +46,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         let cancelled = false;
+        // Snapshot the token before the async fetch so we can detect if a
+        // concurrent flow (e.g. the impersonation page storing a new JWT via
+        // setJwt just before window.location.replace) replaces it while the
+        // request is in-flight. Without this guard, clearJwt() would wipe the
+        // freshly stored impersonation token when the anonymous bootstrap 401
+        // resolves after the new token has already been saved.
+        const tokenAtMount = getJwt();
         (async () => {
             try {
                 // Bootstrap: probe /me. If a JWT is in storage, apiFetch
@@ -55,8 +62,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (!cancelled) setMe(meRes);
             } catch (err) {
                 if (err instanceof ApiError && err.status === 401) {
-                    // Stored token (if any) is no longer valid — drop it.
-                    clearJwt();
+                    // Only clear the token if it is still the same one we sent
+                    // and the component is still mounted. If another flow has
+                    // since stored a fresh token (impersonation race), leave it.
+                    if (!cancelled && getJwt() === tokenAtMount) clearJwt();
                 } else if (!cancelled) {
                     console.error("Auth bootstrap failed", err);
                 }

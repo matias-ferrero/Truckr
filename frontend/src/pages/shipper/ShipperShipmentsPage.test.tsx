@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import CarrierShipments from "./CarrierShipments";
+import ShipperShipmentsPage from "./ShipperShipmentsPage";
 import * as shipmentsApi from "../../api/shipments";
 import type { Shipment } from "../../api/shipments";
 
@@ -12,8 +12,8 @@ const api = vi.mocked(shipmentsApi);
 
 function makeShipment(overrides: Partial<Shipment> = {}): Shipment {
     return {
-        id: 31,
-        state: "accepted",
+        id: 42,
+        state: "delivered",
         origin: "Av. Corrientes 1234, CABA",
         destination: "Av. Colón 500, Córdoba",
         created_at: "2026-06-11T10:00:00Z",
@@ -26,10 +26,10 @@ function makeShipment(overrides: Partial<Shipment> = {}): Shipment {
 
 function renderPage() {
     return render(
-        <MemoryRouter initialEntries={["/carrier/shipments"]}>
+        <MemoryRouter initialEntries={["/shipper/shipments"]}>
             <Routes>
-                <Route path="/carrier/shipments" element={<CarrierShipments />} />
-                <Route path="/carrier/shipments/:id" element={<div>detail-screen</div>} />
+                <Route path="/shipper/shipments" element={<ShipperShipmentsPage />} />
+                <Route path="/shipper/shipments/:id" element={<div>detail-screen</div>} />
             </Routes>
         </MemoryRouter>,
     );
@@ -39,41 +39,41 @@ beforeEach(() => {
     vi.resetAllMocks();
 });
 
-describe("CarrierShipments", () => {
+describe("ShipperShipmentsPage", () => {
     it("shows loading skeleton while fetching", () => {
-        api.listCarrierShipments.mockReturnValue(new Promise(() => {}));
+        api.listShipperShipments.mockReturnValue(new Promise(() => {}));
         renderPage();
         expect(screen.getByRole("status")).toBeInTheDocument();
         expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true");
     });
 
     it("shows the page heading", async () => {
-        api.listCarrierShipments.mockResolvedValue([]);
+        api.listShipperShipments.mockResolvedValue([]);
         renderPage();
         expect(await screen.findByRole("heading", { name: "Mis Envíos" })).toBeInTheDocument();
     });
 
-    it("shows empty state when there are no shipments", async () => {
-        api.listCarrierShipments.mockResolvedValue([]);
+    it("shows shipper-specific empty state copy", async () => {
+        api.listShipperShipments.mockResolvedValue([]);
         renderPage();
-        expect(await screen.findByText("Aún no realizaste envíos")).toBeInTheDocument();
-        expect(screen.getByText(/Aceptá una oferta/)).toBeInTheDocument();
+        expect(await screen.findByText("Aún no contrataste envíos")).toBeInTheDocument();
+        expect(screen.getByText(/Publicá una carga/)).toBeInTheDocument();
     });
 
     it("renders a row for each shipment", async () => {
-        api.listCarrierShipments.mockResolvedValue([
-            makeShipment({ id: 31 }),
-            makeShipment({ id: 32, state: "in_transit" }),
+        api.listShipperShipments.mockResolvedValue([
+            makeShipment({ id: 42, state: "delivered" }),
+            makeShipment({ id: 43, state: "in_transit" }),
         ]);
         renderPage();
         await waitFor(() => {
-            expect(screen.getByText("Aceptado")).toBeInTheDocument();
+            expect(screen.getByText("Entregado")).toBeInTheDocument();
             expect(screen.getByText("En tránsito")).toBeInTheDocument();
         });
     });
 
     it("shows pending_payment state chip", async () => {
-        api.listCarrierShipments.mockResolvedValue([makeShipment({ state: "pending_payment" })]);
+        api.listShipperShipments.mockResolvedValue([makeShipment({ state: "pending_payment" })]);
         renderPage();
         await waitFor(() => {
             expect(screen.getByText("Pendiente de pago")).toBeInTheDocument();
@@ -81,7 +81,7 @@ describe("CarrierShipments", () => {
     });
 
     it("shows only state chip (no payment chip) for cancelled shipment", async () => {
-        api.listCarrierShipments.mockResolvedValue([makeShipment({ state: "cancelled" })]);
+        api.listShipperShipments.mockResolvedValue([makeShipment({ state: "cancelled" })]);
         renderPage();
         await waitFor(() => {
             expect(screen.getByText("Cancelado")).toBeInTheDocument();
@@ -89,25 +89,17 @@ describe("CarrierShipments", () => {
         expect(screen.queryByText("Pendiente de pago")).not.toBeInTheDocument();
     });
 
-    it("shows delivered chip", async () => {
-        api.listCarrierShipments.mockResolvedValue([makeShipment({ state: "delivered" })]);
-        renderPage();
-        await waitFor(() => {
-            expect(screen.getByText("Entregado")).toBeInTheDocument();
-        });
-    });
-
     it("navigates to detail when row link is clicked", async () => {
         const user = userEvent.setup();
-        api.listCarrierShipments.mockResolvedValue([makeShipment({ id: 31 })]);
+        api.listShipperShipments.mockResolvedValue([makeShipment({ id: 42 })]);
         renderPage();
-        const link = await screen.findByRole("link", { name: /envío #31/i });
+        const link = await screen.findByRole("link", { name: /envío #42/i });
         await user.click(link);
         expect(await screen.findByText("detail-screen")).toBeInTheDocument();
     });
 
     it("shows error panel with retry button on fetch failure", async () => {
-        api.listCarrierShipments.mockRejectedValue(new Error("Network error"));
+        api.listShipperShipments.mockRejectedValue(new Error("Network error"));
         renderPage();
         expect(await screen.findByRole("alert")).toBeInTheDocument();
         expect(screen.getByText(/No pudimos cargar tus envíos/)).toBeInTheDocument();
@@ -116,23 +108,19 @@ describe("CarrierShipments", () => {
 
     it("retries fetch when retry button is clicked", async () => {
         const user = userEvent.setup();
-        api.listCarrierShipments
+        api.listShipperShipments
             .mockRejectedValueOnce(new Error("Network error"))
             .mockResolvedValue([]);
         renderPage();
         await screen.findByRole("alert");
         await user.click(screen.getByRole("button", { name: "Reintentar" }));
-        expect(await screen.findByText("Aún no realizaste envíos")).toBeInTheDocument();
+        expect(await screen.findByText("Aún no contrataste envíos")).toBeInTheDocument();
     });
 
-    it("shows origin and destination in the row", async () => {
-        api.listCarrierShipments.mockResolvedValue([
-            makeShipment({ origin: "CABA", destination: "Mendoza" }),
-        ]);
+    it("row links point to /shipper/shipments/:id", async () => {
+        api.listShipperShipments.mockResolvedValue([makeShipment({ id: 42 })]);
         renderPage();
-        await waitFor(() => {
-            expect(screen.getByText(/CABA/)).toBeInTheDocument();
-            expect(screen.getByText(/Mendoza/)).toBeInTheDocument();
-        });
+        const link = await screen.findByRole("link", { name: /envío #42/i });
+        expect(link).toHaveAttribute("href", "/shipper/shipments/42");
     });
 });

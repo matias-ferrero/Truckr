@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_25_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_26_000000) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -168,6 +168,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_200000) do
     t.datetime "delivered_at"
     t.datetime "discarded_at"
     t.datetime "estimated_delivery_at"
+    t.datetime "payment_received_at"
     t.datetime "picked_up_at"
     t.datetime "settled_at"
     t.string "status", default: "accepted", null: false
@@ -176,7 +177,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_200000) do
     t.index ["cargo_offer_id"], name: "index_shipments_on_cargo_offer_id", unique: true
     t.index ["discarded_at"], name: "index_shipments_on_discarded_at"
     t.index ["status"], name: "index_shipments_on_status"
-    t.check_constraint "status IN ('accepted','in_transit','delivered','cancelled')", name: "shipments_status_check"
+    t.check_constraint "status IN ('accepted','pending_payment','in_transit','delivered','cancelled')", name: "shipments_status_check"
   end
 
   create_table "shippers", force: :cascade do |t|

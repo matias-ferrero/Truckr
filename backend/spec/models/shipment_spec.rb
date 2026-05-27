@@ -11,8 +11,8 @@ RSpec.describe Shipment, type: :model do
   describe "validations" do
     it { is_expected.to validate_presence_of(:cargo_offer_id) }
 
-    it "STATUSES contains the canonical 4 states" do
-      expect(described_class::STATUSES).to eq(%w[accepted in_transit delivered cancelled])
+    it "STATUSES contains the canonical 5 states" do
+      expect(described_class::STATUSES).to eq(%w[accepted pending_payment in_transit delivered cancelled])
     end
 
     it "rejects unknown status assignments via the enum" do
@@ -44,20 +44,23 @@ RSpec.describe Shipment, type: :model do
     it "is frozen and contains the canonical map" do
       expect(described_class::ALLOWED_TRANSITIONS).to be_frozen
       expect(described_class::ALLOWED_TRANSITIONS).to eq(
-        accepted:   [ :in_transit, :cancelled ],
-        in_transit: [ :delivered, :cancelled ],
-        delivered:  [],
-        cancelled:  []
+        accepted:        [ :pending_payment, :cancelled ],
+        pending_payment: [ :in_transit, :cancelled ],
+        in_transit:      [ :delivered, :cancelled ],
+        delivered:       [],
+        cancelled:       []
       )
     end
   end
 
   describe "#transition_to! — permitted transitions" do
     permitted = [
-      [ :accepted,   :in_transit ],
-      [ :accepted,   :cancelled  ],
-      [ :in_transit, :delivered  ],
-      [ :in_transit, :cancelled  ]
+      [ :accepted,        :pending_payment ],
+      [ :accepted,        :cancelled       ],
+      [ :pending_payment, :in_transit      ],
+      [ :pending_payment, :cancelled       ],
+      [ :in_transit,      :delivered       ],
+      [ :in_transit,      :cancelled       ]
     ]
 
     permitted.each do |from, to|
@@ -85,11 +88,15 @@ RSpec.describe Shipment, type: :model do
 
   describe "#transition_to! — rejected transitions" do
     rejected = [
-      [ :delivered,  :in_transit ],
-      [ :delivered,  :cancelled  ],
-      [ :cancelled,  :in_transit ],
-      [ :accepted,   :delivered  ],
-      [ :in_transit, :accepted   ]
+      [ :accepted,        :in_transit      ],
+      [ :accepted,        :delivered       ],
+      [ :pending_payment, :accepted        ],
+      [ :pending_payment, :delivered       ],
+      [ :in_transit,      :accepted        ],
+      [ :in_transit,      :pending_payment ],
+      [ :delivered,       :in_transit      ],
+      [ :delivered,       :cancelled       ],
+      [ :cancelled,       :in_transit      ]
     ]
 
     rejected.each do |from, to|
@@ -107,18 +114,19 @@ RSpec.describe Shipment, type: :model do
     it "wraps the transition in a row lock" do
       s = create(:shipment, :accepted)
       expect(s).to receive(:with_lock).and_call_original
-      s.transition_to!(:in_transit)
+      s.transition_to!(:pending_payment)
     end
   end
 
   describe "scopes" do
-    let!(:accepted)   { create(:shipment, :accepted) }
-    let!(:in_transit) { create(:shipment, :in_transit) }
-    let!(:delivered)  { create(:shipment, :delivered) }
-    let!(:cancelled)  { create(:shipment, :cancelled) }
+    let!(:accepted)        { create(:shipment, :accepted) }
+    let!(:pending_payment) { create(:shipment, :pending_payment) }
+    let!(:in_transit)      { create(:shipment, :in_transit) }
+    let!(:delivered)       { create(:shipment, :delivered) }
+    let!(:cancelled)       { create(:shipment, :cancelled) }
 
-    it ".active includes only accepted + in_transit" do
-      expect(Shipment.active).to match_array([ accepted, in_transit ])
+    it ".active includes accepted + pending_payment + in_transit" do
+      expect(Shipment.active).to match_array([ accepted, pending_payment, in_transit ])
     end
 
     it ".completed includes delivered shipments" do
@@ -126,7 +134,7 @@ RSpec.describe Shipment, type: :model do
     end
 
     it ".in_progress matches .active" do
-      expect(Shipment.in_progress).to match_array([ accepted, in_transit ])
+      expect(Shipment.in_progress).to match_array([ accepted, pending_payment, in_transit ])
     end
   end
 

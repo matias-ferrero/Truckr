@@ -72,10 +72,10 @@ RSpec.describe "Api::Shippers::Me::Shipments", type: :request do
         expect(ids).to eq([ recent_ship.id, old_ship.id ])
       end
 
-      it "omits payment_state on cancelled shipments" do
+      it "does not include payment_state in response" do
         cargo = create(:cargo, shipper: shipper)
         offer = create(:cargo_offer, :accepted, cargo: cargo)
-        create(:shipment, :cancelled, cargo_offer: offer)
+        create(:shipment, :accepted, cargo_offer: offer)
 
         get "/api/shippers/me/shipments"
 
