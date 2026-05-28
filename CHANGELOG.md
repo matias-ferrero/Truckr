@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.2](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.2.1...v0.2.2) (2026-05-28)
+
+
+### Features
+
+* **carrier:** offers inbox and acceptance flow — REQ-FE-00017 (US10) and REQ-BE-00024 (US12) ([#221](https://github.com/tcorzo/fiuba-gestion-tp/issues/221)) ([11991f1](https://github.com/tcorzo/fiuba-gestion-tp/commit/11991f131bc131d7ccab9477ed6a8ac3ee2701e0))
+* **deploy:** bake VITE_API_BASE_URL into frontend build per env ([#270](https://github.com/tcorzo/fiuba-gestion-tp/issues/270)) ([e888c71](https://github.com/tcorzo/fiuba-gestion-tp/commit/e888c71beaedbf948ac2c94e55c19652dba779f1))
+* **deploy:** wire FRONTEND_ORIGIN through SSM into the Rails container ([#268](https://github.com/tcorzo/fiuba-gestion-tp/issues/268)) ([64eb5fc](https://github.com/tcorzo/fiuba-gestion-tp/commit/64eb5fce53743e32a28ce01d73c389fa23928968))
+* **fulfilment:** add Carrier and Shipper shipment list screens (US17) ([#258](https://github.com/tcorzo/fiuba-gestion-tp/issues/258)) ([13f8cc6](https://github.com/tcorzo/fiuba-gestion-tp/commit/13f8cc6f938d7f5e74b4d7ffb6ee171e573ff4bc))
+* **fulfilment:** add Shipment index & detail endpoints (US17 + US39) ([#248](https://github.com/tcorzo/fiuba-gestion-tp/issues/248)) ([8f3ab60](https://github.com/tcorzo/fiuba-gestion-tp/commit/8f3ab605bc980bc3160cf6e1a24f25f0e887fbdc))
+* **marketplace:** allow nullable destination on TransportWindow ([#227](https://github.com/tcorzo/fiuba-gestion-tp/issues/227)) ([d80bac6](https://github.com/tcorzo/fiuba-gestion-tp/commit/d80bac6ba4c64294fd9a2e6e424ee49ad7b30776))
+* **payments:** add shipper payment flow with fake gateway (US8) ([#272](https://github.com/tcorzo/fiuba-gestion-tp/issues/272)) ([58f4a8b](https://github.com/tcorzo/fiuba-gestion-tp/commit/58f4a8b2dc24292eae999dab85140dea4d20c83d))
+
+
+### Bug Fixes
+
+* **fulfilment:** align Shipment FSM with ADR-012 and add Payment model ([#247](https://github.com/tcorzo/fiuba-gestion-tp/issues/247)) ([7d1ce0b](https://github.com/tcorzo/fiuba-gestion-tp/commit/7d1ce0b0bb3111e227992394f286dd9df097ce4b))
+
 ## [0.2.1](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.2.0...v0.2.1) (2026-05-23)
 
 
