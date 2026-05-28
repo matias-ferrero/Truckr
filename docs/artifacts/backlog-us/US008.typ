@@ -11,9 +11,8 @@ para reservar el servicio y cumplir con mi parte del trato.
 
 *Criterios de Aceptación:*
 + Una vez aceptado el envío por el transportista, se habilita la opción de realizar el pago.
-+ Tras confirmar el pago, el envío se muestra al expedidor con la etiqueta «A recoger» (vista derivada del estado `accepted` más la presencia del pago en `escrowed`), sin que esto implique una transición del FSM de Shipment.
++ Tras confirmar el pago, el envío se muestra al expedidor con la etiqueta «En tránsito».
 + Una vez completado el pago, se otorgan los datos de contacto del transportista.
-+ Si el pago falla, se muestra un mensaje de error y se permite reintentar sin perder el contexto de la oferta.
 + El monto del pago corresponde al precio acordado en la oferta aceptada.
 
 // ── Plataforma del Transportista ──────────────────────────────────────────
