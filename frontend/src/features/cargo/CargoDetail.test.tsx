@@ -12,47 +12,55 @@ const api = vi.mocked(cargoApi);
 
 function makeCargo(over: Partial<Cargo> = {}): Cargo {
     return {
-        id: 7,
-        shipper_id: 1,
-        status: "open",
-        cargo_description: "Pallets de electrodomésticos",
-        pickup_address: "Av. Corrientes 1234",
-        delivery_address: "Av. Colón 500",
-        pickup_zone: "Buenos Aires",
-        delivery_zone: "Córdoba",
-        pickup_window_start: "2026-06-01T08:00:00Z",
-        pickup_window_end: "2026-06-03T18:00:00Z",
-        weight_kg: "1500.0",
-        volume_cm3: 3_000_000,
+        id:                   7,
+        shipper_id:           1,
+        status:               "open",
+        cargo_description:    "Pallets de electrodomésticos",
+        pickup_address:       "Av. Corrientes 1234",
+        pickup_lat:           "-34.603722",
+        pickup_lng:           "-58.381592",
+        pickup_locality:      "CABA",
+        pickup_admin_area:    "Buenos Aires",
+        delivery_address:     "Av. Colón 500",
+        delivery_lat:         "-31.420083",
+        delivery_lng:         "-64.188776",
+        delivery_locality:    "Córdoba",
+        delivery_admin_area:  "Córdoba",
+        pickup_window_start:  "2026-06-01T08:00:00Z",
+        pickup_window_end:    "2026-06-03T18:00:00Z",
+        weight_kg:            "1500.0",
+        volume_cm3:           3_000_000,
         declared_value_cents: 5_000_000,
-        cancelled_at: null,
-        created_at: "",
-        updated_at: "",
-        editable: true,
+        cancelled_at:         null,
+        created_at:           "",
+        updated_at:           "",
+        editable:             true,
         pending_offers_count: 0,
-        cargo_offers: [],
+        cargo_offers:         [],
         ...over,
     };
 }
 
 function makeOffer(over: Partial<CargoOffer> = {}): CargoOffer {
     return {
-        id: 11,
-        cargo_id: 7,
-        carrier_id: 1,
+        id:                  11,
+        cargo_id:            7,
+        carrier_id:          1,
         transport_window_id: 5,
-        amount_cents: 105_000_000,
-        currency: "ARS",
-        status: "pending",
-        expires_at: "2026-05-27T10:00:00Z",
-        created_at: "",
-        updated_at: "",
+        amount_cents:        105_000_000,
+        currency:            "ARS",
+        status:              "pending",
+        expires_at:          "2026-05-27T10:00:00Z",
+        created_at:          "",
+        updated_at:          "",
         transport_window: {
-            id: 5,
-            origin_province: "Buenos Aires",
-            origin_locality: null,
-            destination_province: "Córdoba",
-            destination_locality: null,
+            id:                     5,
+            origin_locality:        "CABA",
+            origin_admin_area:      "Buenos Aires",
+            destination_locality:   "Córdoba",
+            destination_admin_area: "Córdoba",
+            available_from:         "2026-05-25T00:00:00Z",
+            available_to:           "2026-06-10T00:00:00Z",
         },
         ...over,
     };
@@ -79,7 +87,7 @@ describe("CargoDetail — open cargo", () => {
         renderDetail();
         expect(
             await screen.findByRole("heading", {
-                name: "Buenos Aires → Córdoba",
+                name: "CABA, Buenos Aires → Córdoba, Córdoba",
             }),
         ).toBeInTheDocument();
         expect(
@@ -123,7 +131,7 @@ describe("CargoDetail — open cargo", () => {
         expect(within(offersSection).getByText("Pendiente"))
             .toBeInTheDocument();
         expect(
-            within(offersSection).getByText("Buenos Aires → Córdoba"),
+            within(offersSection).getByText("CABA, Buenos Aires → Córdoba, Córdoba"),
         ).toBeInTheDocument();
     });
 });
@@ -248,7 +256,7 @@ describe("CargoDetail — error state", () => {
         await user.click(screen.getByRole("button", { name: "Reintentar" }));
         expect(
             await screen.findByRole("heading", {
-                name: "Buenos Aires → Córdoba",
+                name: "CABA, Buenos Aires → Córdoba, Córdoba",
             }),
         ).toBeInTheDocument();
     });

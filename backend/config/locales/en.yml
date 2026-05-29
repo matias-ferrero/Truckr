@@ -28,6 +28,10 @@ en:
   activerecord:
     errors:
       models:
+        transport_window:
+          attributes:
+            base:
+              open_destination_partial: "destination fields must all be set or all blank"
         cargo_offer:
           attributes:
             estimated_km:

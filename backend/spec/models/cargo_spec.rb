@@ -16,8 +16,10 @@ RSpec.describe Cargo, type: :model do
 
     it { is_expected.to validate_presence_of(:pickup_address) }
     it { is_expected.to validate_presence_of(:delivery_address) }
-    it { is_expected.to validate_presence_of(:pickup_zone) }
-    it { is_expected.to validate_presence_of(:delivery_zone) }
+    it { is_expected.to validate_presence_of(:pickup_locality) }
+    it { is_expected.to validate_presence_of(:pickup_admin_area) }
+    it { is_expected.to validate_presence_of(:delivery_locality) }
+    it { is_expected.to validate_presence_of(:delivery_admin_area) }
     it { is_expected.to validate_presence_of(:cargo_description) }
     it { is_expected.to validate_presence_of(:pickup_window_start) }
     it { is_expected.to validate_presence_of(:pickup_window_end) }
@@ -39,6 +41,41 @@ RSpec.describe Cargo, type: :model do
     end
   end
 
+  describe "coordinate validations" do
+    %i[pickup_lat delivery_lat].each do |attr|
+      it "requires #{attr}" do
+        cargo = build(:cargo, attr => nil)
+        expect(cargo).not_to be_valid
+        expect(cargo.errors[attr]).to be_present
+      end
+
+      it "rejects #{attr} outside [-90, 90]" do
+        expect(build(:cargo, attr => -91)).not_to be_valid
+        expect(build(:cargo, attr =>  91)).not_to be_valid
+      end
+    end
+
+    %i[pickup_lng delivery_lng].each do |attr|
+      it "requires #{attr}" do
+        cargo = build(:cargo, attr => nil)
+        expect(cargo).not_to be_valid
+        expect(cargo.errors[attr]).to be_present
+      end
+
+      it "rejects #{attr} outside [-180, 180]" do
+        expect(build(:cargo, attr => -181)).not_to be_valid
+        expect(build(:cargo, attr =>  181)).not_to be_valid
+      end
+    end
+
+    it "accepts boundary values (-90, 90, -180, 180)" do
+      cargo = build(:cargo,
+                    pickup_lat: -90,   pickup_lng: -180,
+                    delivery_lat: 90,  delivery_lng: 180)
+      expect(cargo).to be_valid
+    end
+  end
+
   describe "associations" do
     it { is_expected.to belong_to(:shipper) }
     it { is_expected.to have_many(:cargo_offers).dependent(:destroy) }
@@ -48,14 +85,6 @@ RSpec.describe Cargo, type: :model do
       create(:cargo_offer, :pending, cargo: cargo)
       accepted = create(:cargo_offer, :accepted, cargo: cargo)
       expect(cargo.reload.accepted_cargo_offer).to eq(accepted)
-    end
-  end
-
-  describe "zone normalization" do
-    it "transliterates the zone fields on save" do
-      cargo = create(:cargo, pickup_zone: "Córdoba", delivery_zone: "Tucumán")
-      expect(cargo.pickup_zone_normalized).to eq("cordoba")
-      expect(cargo.delivery_zone_normalized).to eq("tucuman")
     end
   end
 
@@ -143,9 +172,13 @@ RSpec.describe Cargo, type: :model do
   end
 
   describe "#matching_windows" do
+    # CABA → Córdoba cargo. The factory defaults already pin the cargo there
+    # via origin_lat/lng / delivery_lat/lng — no zone strings consulted.
     let(:cargo) do
       create(:cargo,
-             pickup_zone: "Buenos Aires", delivery_zone: "Córdoba", weight_kg: 1500,
+             pickup_lat: -34.603722, pickup_lng: -58.381592,   # CABA
+             delivery_lat: -31.420083, delivery_lng: -64.188776, # Córdoba
+             weight_kg: 1500,
              pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now)
     end
     let(:vehicle) { create(:vehicle, max_load_kg: 5000) }
@@ -153,14 +186,18 @@ RSpec.describe Cargo, type: :model do
     def make_window(overrides = {})
       create(:transport_window, {
         vehicle:           vehicle,
-        origin_province:   "Buenos Aires",
-        destination_province: "Córdoba",
+        origin_lat:        -34.603722,  # CABA
+        origin_lng:        -58.381592,
+        destination_lat:   -31.420083,  # Córdoba
+        destination_lng:   -64.188776,
+        pickup_radius_km:  50,
+        dropoff_radius_km: 50,
         available_from:    2.days.from_now,
         available_to:      10.days.from_now
       }.merge(overrides))
     end
 
-    it "returns windows whose zone, dates and capacity match" do
+    it "returns windows whose origin + destination pins and capacity match" do
       win = make_window
       expect(cargo.matching_windows).to include(win)
     end
@@ -183,14 +220,23 @@ RSpec.describe Cargo, type: :model do
       expect(cargo.matching_windows).not_to include(win)
     end
 
-    it "excludes windows whose origin zone does not match" do
-      win = make_window(origin_province: "Mendoza")
+    it "excludes windows whose origin pin is too far from the cargo pickup" do
+      win = make_window(origin_lat: -24.7821, origin_lng: -65.4232, # Salta
+                        pickup_radius_km: 50)
       expect(cargo.matching_windows).not_to include(win)
     end
 
-    it "includes open-destination windows (destination_province nil)" do
+    it "excludes bounded-destination windows whose pin is too far from the cargo delivery" do
+      win = make_window(destination_lat: -38.005477, destination_lng: -57.542611, # Mar del Plata
+                        dropoff_radius_km: 20)
+      expect(cargo.matching_windows).not_to include(win)
+    end
+
+    it "includes open-destination windows regardless of cargo delivery" do
       win = create(:transport_window, :open_destination,
-                   vehicle: vehicle, origin_province: "Buenos Aires",
+                   vehicle: vehicle,
+                   origin_lat: -34.603722, origin_lng: -58.381592, # CABA
+                   pickup_radius_km: 50,
                    available_from: 2.days.from_now, available_to: 10.days.from_now)
       expect(cargo.matching_windows).to include(win)
     end

@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import type { CargoMatch } from "../../types/Cargo";
 import { cargosContent } from "./cargosContent";
+import { haversineKm } from "../../lib/geo";
+import { formatRoute } from "../../lib/format-place";
 
 const t = cargosContent.match;
 
@@ -15,26 +17,34 @@ function formatDate(iso: string): string {
 type Props = {
     cargoId: number;
     match: CargoMatch;
+    /** Cargo pickup point — used to compute the displayed Haversine distance. */
+    pickup?: { lat: number; lng: number };
 };
 
 /**
  * One result in the cargo-scoped transport-window search
  * (`/shipper/cargos/:id/matches`) — a `TransportWindow` that can carry the
  * cargo. The whole card is a single `<Link>` straight into the cargo-scoped
- * offer flow (plan §9 D6): one action per result, no separate button. No
- * distance is shown — Haversine is deferred to the GMaps follow-up.
+ * offer flow (plan §9 D6): one action per result, no separate button. When the
+ * caller supplies the cargo's `pickup` coords, the card shows the Haversine
+ * distance from pickup to the window's origin.
  */
-export default function MatchCard({ cargoId, match }: Props) {
-    const originStr = match.origin_locality
-        ? `${match.origin_province}, ${match.origin_locality}`
-        : match.origin_province;
-    const destinationStr = match.destination_province
-        ? (match.destination_locality
-            ? `${match.destination_province}, ${match.destination_locality}`
-            : match.destination_province)
-        : null;
-    const route = cargosContent.list.route(originStr, destinationStr);
+export default function MatchCard({ cargoId, match, pickup }: Props) {
+    const hasDestination = match.destination_lat !== null;
+    const route = formatRoute(
+        { locality: match.origin_locality, admin_area: match.origin_admin_area },
+        hasDestination
+            ? { locality: match.destination_locality, admin_area: match.destination_admin_area }
+            : null,
+        cargosContent.list.openDestinationLabel,
+    );
     const carrierName = match.carrier.display_name ?? t.carrierFallback;
+    const distanceKm = pickup
+        ? haversineKm(pickup, {
+            lat: Number(match.origin_lat),
+            lng: Number(match.origin_lng),
+        })
+        : null;
 
     return (
         <li>
@@ -72,6 +82,11 @@ export default function MatchCard({ cargoId, match }: Props) {
                         {" · "}
                         {t.pricePerKm(match.price_per_km)}
                     </p>
+                    {distanceKm !== null && (
+                        <p className="matchMeta matchDistance">
+                            {t.distanceKm(distanceKm)}
+                        </p>
+                    )}
                 </Link>
                 <div className="cardActions matchCardActions">
                     <Link

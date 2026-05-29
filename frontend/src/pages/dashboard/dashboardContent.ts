@@ -21,13 +21,15 @@ export const dashboardContent = {
     },
     carrier: {
         availability: {
-            heading:        "Mi disponibilidad",
-            viewAll:        "Ver todas",
-            emptyTitle:     "Todavía no publicaste disponibilidad",
-            emptyHint:      "Sumá ventanas para que los expedidores te encuentren.",
-            newLabel:       "Nueva disponibilidad",
-            statusActive:   "Publicada",
-            statusInactive: "Sin publicar",
+            heading:              "Mi disponibilidad",
+            viewAll:              "Ver todas",
+            emptyTitle:           "Todavía no publicaste disponibilidad",
+            emptyHint:            "Sumá ventanas para que los expedidores te encuentren.",
+            newLabel:             "Nueva disponibilidad",
+            statusActive:         "Publicada",
+            statusInactive:       "Sin publicar",
+            openDestinationLabel: "Cualquier destino",
+            routeAria:            (route: string) => `Ruta ${route}`,
         },
         fleet: {
             heading:    "Mi flota",

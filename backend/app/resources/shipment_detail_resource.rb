@@ -31,10 +31,10 @@ class ShipmentDetailResource
       destination: cargo.delivery_address,
       description: cargo.cargo_description,
       weight_kg: cargo.weight_kg,
-      pickup_lat:   cargo.has_attribute?(:pickup_lat)   ? cargo.read_attribute(:pickup_lat)   : nil,
-      pickup_lng:   cargo.has_attribute?(:pickup_lng)   ? cargo.read_attribute(:pickup_lng)   : nil,
-      delivery_lat: cargo.has_attribute?(:delivery_lat) ? cargo.read_attribute(:delivery_lat) : nil,
-      delivery_lng: cargo.has_attribute?(:delivery_lng) ? cargo.read_attribute(:delivery_lng) : nil
+      pickup_lat:   cargo.pickup_lat,
+      pickup_lng:   cargo.pickup_lng,
+      delivery_lat: cargo.delivery_lat,
+      delivery_lng: cargo.delivery_lng
     }
   end
 

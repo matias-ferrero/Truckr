@@ -4,6 +4,7 @@ import { getCargo, getMatches } from "./api";
 import type { Cargo, CargoMatch } from "../../types/Cargo";
 import { cargosContent } from "./cargosContent";
 import MatchCard from "./MatchCard";
+import { formatRoute } from "../../lib/format-place";
 import { Alert } from "../../components/ui/alert";
 
 const t = cargosContent.matchesScreen;
@@ -110,7 +111,11 @@ export default function CargoMatches() {
     }
 
     const { cargo } = state;
-    const route = cargosContent.list.route(cargo.pickup_zone, cargo.delivery_zone);
+    const route = formatRoute(
+        { locality: cargo.pickup_locality, admin_area: cargo.pickup_admin_area },
+        { locality: cargo.delivery_locality, admin_area: cargo.delivery_admin_area },
+        cargosContent.list.openDestinationLabel,
+    );
 
     return (
         <main className="page" id="main">
@@ -209,6 +214,10 @@ export default function CargoMatches() {
                                             key={m.id}
                                             cargoId={cargo.id}
                                             match={m}
+                                            pickup={{
+                                                lat: Number(cargo.pickup_lat),
+                                                lng: Number(cargo.pickup_lng),
+                                            }}
                                         />
                                     ))}
                                 </ul>

@@ -696,6 +696,16 @@
     display: grid;
     grid-template-rows: auto 1fr auto;
     transition: transform 120ms ease, box-shadow 120ms ease;
+    /* Allow the grid track to enforce its 1fr width even when a child
+       (eg. a long Google formatted_address in .windowRoute) reports a
+       wider min-content. Without this, the title widens the card past
+       its column. */
+    min-width: 0;
+}
+
+.windowCardHeader,
+.windowCardBody {
+    min-width: 0;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -1220,4 +1230,53 @@
     .fieldGrid {
         grid-template-columns: 1fr;
     }
+}
+
+/* RadiusControl (US50 / REQ-FE-00027 + REQ-BE-00039 AC12) — input + minimal
+   Google Map with editable circle. Kept visually quiet so it nests cleanly
+   under its AddressPicker without competing for attention. Role-parameterised:
+   the same shell renders the pickup or dropoff circle. */
+.radiusControl {
+    display: grid;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.radiusLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.radiusHelp {
+    font-size: 12px;
+    color: var(--ink-2);
+    margin: 0;
+}
+
+.radiusError {
+    font-size: 12px;
+    font-weight: 600;
+    color: color-mix(in oklab, var(--brand-error) 80%, var(--ink));
+    margin: 0;
+}
+
+.radiusPlaceholder {
+    font-size: 13px;
+    color: var(--ink-2);
+    margin: 0;
+    padding: 16px;
+    border: 1px dashed color-mix(in oklab, var(--border) 70%, transparent);
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--paper) 92%, var(--ink));
+    text-align: center;
+}
+
+.radiusMap {
+    height: 220px;
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    background: color-mix(in oklab, var(--paper) 92%, var(--ink));
 }

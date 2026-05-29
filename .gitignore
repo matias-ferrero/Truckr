@@ -36,6 +36,12 @@ eggs/
 .eggs/
 lib/
 lib64/
+
+# Backend (Rails) uses its own lib/ for in-app code (e.g. Truckr::Geo) — keep tracked.
+!backend/lib/
+!backend/lib/**
+!backend/spec/lib/
+!backend/spec/lib/**
 parts/
 sdist/
 var/

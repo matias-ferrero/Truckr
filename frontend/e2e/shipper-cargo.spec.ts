@@ -6,16 +6,16 @@ import { test, expect } from "@playwright/test";
 //
 // Requires real seeded fixtures the standalone FE env does not provide:
 //   1. An authenticated Shipper (login via /api/auth/login).
-//   2. A seeded Carrier with at least one active TransportWindow whose zones
-//      + dates + vehicle capacity match the cargo published below, so the
-//      matches screen shows at least one result.
+//   2. A seeded Carrier with at least one active TransportWindow whose
+//      origin/destination pins + radii + dates + vehicle capacity match the
+//      cargo published below, so the matches screen shows at least one result.
 //
 // Per plan §5, ship with `test.skip` until db/seeds.rb provides those
 // fixtures. Un-skip once the backend half is deployed with seeds.
 test.describe("Shipper — cargo-first offer funnel (REQ-BE-00032 / US27)", () => {
     test.skip(
         true,
-        "needs a seeded shipper + a zone/date/capacity-compatible active transport window",
+        "needs a seeded shipper + an address/date/capacity-compatible active transport window",
     );
 
     test("dashboard → publish cargo → matches → offer → offer appears", async ({ page }) => {
@@ -36,10 +36,12 @@ test.describe("Shipper — cargo-first offer funnel (REQ-BE-00032 / US27)", () =
         await page.fill("#cargo_description", "Pallets de electrodomésticos");
         await page.fill("#weight_kg", "1500");
         await page.fill("#declared_value_cents", "5000000");
-        await page.fill("#pickup_address", "Av. Corrientes 1234, CABA");
-        await page.fill("#delivery_address", "Av. Colón 500, Córdoba");
-        await page.selectOption("#pickup_zone", "Buenos Aires");
-        await page.selectOption("#delivery_zone", "Córdoba");
+        // Address-driven matching (REQ-BE-00039): the form now exposes a
+        // single AddressPicker per side that captures address + lat/lng +
+        // locality + admin_area. The seeded fixture should fill those via
+        // the picker once the auth/Places stubs land.
+        await page.getByLabel(/dirección de retiro/i).fill("Av. Corrientes 1234, CABA");
+        await page.getByLabel(/dirección de entrega/i).fill("Av. Colón 500, Córdoba");
         await page.fill("#pickup_window_start", "2026-06-01T08:00");
         await page.fill("#pickup_window_end", "2026-06-03T18:00");
         await page.click('button:has-text("Publicar carga")');

@@ -8,7 +8,13 @@ import {
     updateTransportWindow,
 } from "../../api/transport_windows";
 import VehicleSelect from "../../components/VehicleSelect";
-import ProvinceSelect from "../../components/ProvinceSelect";
+import { AddressPicker, type AddressPickerValue } from "../../components/AddressPicker";
+import {
+    RadiusControl,
+    RADIUS_DEFAULT_KM,
+    RADIUS_MAX_KM,
+    RADIUS_MIN_KM,
+} from "../../components/RadiusControl";
 import { carrierContent } from "./carrierContent";
 import { Alert } from "../../components/ui/alert";
 import { Button } from "../../components/ui/button";
@@ -18,31 +24,39 @@ import { Input } from "../../components/ui/input";
 type Mode = "new" | "edit";
 
 const f = carrierContent.availability.form;
-const l = carrierContent.availability.list;
 
+// REQ-BE-00039 / ADR-014: the form holds origin + optional destination as
+// AddressPickerValue (which now carries locality + admin_area parsed by the
+// shared `parsePlace` helper). Two RadiusControl mounts share the same min/max.
 type Draft = {
     vehicle_id: number | null;
-    origin_province: string;
-    origin_locality: string;
-    destination_province: string;
-    destination_locality: string;
+    origin: AddressPickerValue | null;
+    destination: AddressPickerValue | null;
     price_per_km: string;
     max_km: string;
+    pickup_radius_km: number;
+    dropoff_radius_km: number;
     available_from: string;
     available_to: string;
 };
 
 const empty: Draft = {
-    vehicle_id:           null,
-    origin_province:      "Buenos Aires",
-    origin_locality:      "",
-    destination_province: "",
-    destination_locality: "",
-    price_per_km:         "",
-    max_km:               "",
-    available_from:       "",
-    available_to:         "",
+    vehicle_id:        null,
+    origin:            null,
+    destination:       null,
+    price_per_km:      "",
+    max_km:            "",
+    pickup_radius_km:  RADIUS_DEFAULT_KM,
+    dropoff_radius_km: RADIUS_DEFAULT_KM,
+    available_from:    "",
+    available_to:      "",
 };
+
+function toNumber(n: string | number | null | undefined): number | null {
+    if (n === null || n === undefined || n === "") return null;
+    const v = typeof n === "number" ? n : Number(n);
+    return Number.isFinite(v) ? v : null;
+}
 
 function toLocalDate(iso: string | null | undefined): string {
     if (!iso) return "";
@@ -56,16 +70,36 @@ function todayDate(): string {
 }
 
 function fromWindow(tw: TransportWindow): Draft {
+    const oLat = toNumber(tw.origin_lat);
+    const oLng = toNumber(tw.origin_lng);
+    const dLat = toNumber(tw.destination_lat);
+    const dLng = toNumber(tw.destination_lng);
     return {
-        vehicle_id:           tw.vehicle_id,
-        origin_province:      tw.origin_province,
-        origin_locality:      tw.origin_locality ?? "",
-        destination_province: tw.destination_province ?? "",
-        destination_locality: tw.destination_locality ?? "",
-        price_per_km:         tw.price_per_km,
-        max_km:               String(tw.max_km),
-        available_from:       toLocalDate(tw.available_from),
-        available_to:         toLocalDate(tw.available_to),
+        vehicle_id: tw.vehicle_id,
+        origin:     oLat != null && oLng != null
+            ? {
+                text:       tw.origin_address,
+                lat:        oLat,
+                lng:        oLng,
+                locality:   tw.origin_locality,
+                admin_area: tw.origin_admin_area,
+            }
+            : null,
+        destination: dLat != null && dLng != null
+            ? {
+                text:       tw.destination_address ?? "",
+                lat:        dLat,
+                lng:        dLng,
+                locality:   tw.destination_locality ?? "",
+                admin_area: tw.destination_admin_area ?? "",
+            }
+            : null,
+        price_per_km:      tw.price_per_km,
+        max_km:            String(tw.max_km),
+        pickup_radius_km:  tw.pickup_radius_km,
+        dropoff_radius_km: tw.dropoff_radius_km ?? RADIUS_DEFAULT_KM,
+        available_from:    toLocalDate(tw.available_from),
+        available_to:      toLocalDate(tw.available_to),
     };
 }
 
@@ -105,9 +139,17 @@ export default function TransportWindowForm({ mode }: Props) {
         return () => { cancelled = true; };
     }, [editingId]);
 
-    function set(key: keyof Draft, value: string | number | null) {
-        setDraft((prev) => ({ ...prev, [key]: value }));
-        if (serverErrors[key]) setServerErrors((prev) => ({ ...prev, [key]: [] }));
+    function set<K extends keyof Draft>(key: K, value: Draft[K]) {
+        setDraft((prev) => {
+            const next = { ...prev, [key]: value };
+            // Clearing the destination address must also reset the dropoff radius
+            // so a partially-filled destination block never reaches the server.
+            if (key === "destination" && value === null) {
+                next.dropoff_radius_km = RADIUS_DEFAULT_KM;
+            }
+            return next;
+        });
+        if (serverErrors[key as string]) setServerErrors((prev) => ({ ...prev, [key as string]: [] }));
     }
 
     function fieldError(key: string): string | undefined {
@@ -120,8 +162,30 @@ export default function TransportWindowForm({ mode }: Props) {
             setError(f.vehicleRequired);
             return;
         }
+        if (!draft.origin) {
+            setError(f.originPinRequired);
+            return;
+        }
         if (!draft.available_from || !draft.available_to) {
             setError(f.saveError);
+            return;
+        }
+        if (
+            !Number.isInteger(draft.pickup_radius_km) ||
+            draft.pickup_radius_km < RADIUS_MIN_KM ||
+            draft.pickup_radius_km > RADIUS_MAX_KM
+        ) {
+            setError(f.pickupRadiusOutOfRange);
+            return;
+        }
+        if (
+            draft.destination && (
+                !Number.isInteger(draft.dropoff_radius_km) ||
+                draft.dropoff_radius_km < RADIUS_MIN_KM ||
+                draft.dropoff_radius_km > RADIUS_MAX_KM
+            )
+        ) {
+            setError(f.dropoffRadiusOutOfRange);
             return;
         }
         setLoading(true);
@@ -129,15 +193,23 @@ export default function TransportWindowForm({ mode }: Props) {
         setServerErrors({});
         try {
             const payload: TransportWindowDraft = {
-                vehicle_id:           draft.vehicle_id,
-                origin_province:      draft.origin_province,
-                origin_locality:      draft.origin_locality.trim() || null,
-                destination_province: draft.destination_province.trim() || null,
-                destination_locality: draft.destination_locality.trim() || null,
-                price_per_km:         draft.price_per_km,
-                max_km:               draft.max_km,
-                available_from:       draft.available_from + "T00:00",
-                available_to:         draft.available_to + "T23:59",
+                vehicle_id:             draft.vehicle_id,
+                origin_address:         draft.origin.text.trim(),
+                origin_locality:        (draft.origin.locality ?? "").trim(),
+                origin_admin_area:      (draft.origin.admin_area ?? "").trim(),
+                origin_lat:             draft.origin.lat,
+                origin_lng:             draft.origin.lng,
+                destination_address:    draft.destination ? draft.destination.text.trim() : null,
+                destination_locality:   draft.destination ? (draft.destination.locality ?? "").trim() : null,
+                destination_admin_area: draft.destination ? (draft.destination.admin_area ?? "").trim() : null,
+                destination_lat:        draft.destination?.lat ?? null,
+                destination_lng:        draft.destination?.lng ?? null,
+                price_per_km:           draft.price_per_km,
+                max_km:                 draft.max_km,
+                pickup_radius_km:       draft.pickup_radius_km,
+                dropoff_radius_km:      draft.destination ? draft.dropoff_radius_km : null,
+                available_from:         draft.available_from + "T00:00",
+                available_to:           draft.available_to + "T23:59",
             };
             if (editingId) {
                 await updateTransportWindow(editingId, payload);
@@ -160,6 +232,12 @@ export default function TransportWindowForm({ mode }: Props) {
     }
 
     const todayMin = todayDate();
+    const destinationPin = draft.destination
+        ? { lat: draft.destination.lat, lng: draft.destination.lng }
+        : null;
+    const originPin = draft.origin
+        ? { lat: draft.origin.lat, lng: draft.origin.lng }
+        : null;
 
     if (hydrating) {
         return (
@@ -230,73 +308,80 @@ export default function TransportWindowForm({ mode }: Props) {
                         <legend className="zoneGroupLegend">{f.originLegend}</legend>
                         <div className="zoneGroupFields">
                             <FormField
-                                id="origin_province"
-                                label={<>{f.fields.originProvince} <span aria-hidden="true" className="requiredStar">*</span></>}
-                                error={fieldError("origin_province")}
+                                id="origin_address"
+                                label={<>{f.fields.originAddress} <span aria-hidden="true" className="requiredStar">*</span></>}
+                                help={f.fields.originAddressHelp}
+                                error={
+                                    fieldError("origin_address")
+                                    ?? fieldError("origin_locality")
+                                    ?? fieldError("origin_admin_area")
+                                    ?? fieldError("origin_lat")
+                                    ?? fieldError("origin_lng")
+                                }
                             >
-                                <ProvinceSelect
-                                    id="origin_province"
-                                    value={draft.origin_province}
-                                    onChange={(v) => {
-                                        set("origin_province", v);
-                                        if (!v) set("origin_locality", "");
-                                    }}
+                                <AddressPicker
+                                    id="origin_address"
+                                    name="origin"
+                                    value={draft.origin}
+                                    onChange={(v) => set("origin", v)}
                                     required
                                 />
                             </FormField>
-
-                            <FormField
-                                id="origin_locality"
-                                label={f.fields.originLocality}
-                                help={f.fields.originLocalityHelp}
-                                error={fieldError("origin_locality")}
-                            >
-                                <Input
-                                    id="origin_locality"
-                                    type="text"
-                                    value={draft.origin_locality}
-                                    onChange={(e) => set("origin_locality", e.target.value)}
-                                    disabled={!draft.origin_province}
-                                />
-                            </FormField>
                         </div>
+                        <RadiusControl
+                            id="pickup_radius_km"
+                            name="pickup_radius_km"
+                            role="pickup"
+                            pin={originPin}
+                            value={draft.pickup_radius_km}
+                            onChange={(v) => set("pickup_radius_km", v)}
+                            label={f.fields.pickupRadiusKm}
+                            help={f.fields.pickupRadiusKmHelp}
+                            placeholderWhenNoPin={f.fields.pickupRadiusKmNoOrigin}
+                            error={fieldError("pickup_radius_km")}
+                            required
+                        />
                     </fieldset>
 
                     <fieldset className="zoneGroup zoneGroupDestination">
                         <legend className="zoneGroupLegend">{f.destinationLegend}</legend>
                         <div className="zoneGroupFields">
                             <FormField
-                                id="destination_province"
-                                label={f.fields.destinationProvince}
-                                help={f.fields.destinationProvinceHelp}
-                                error={fieldError("destination_province")}
+                                id="destination_address"
+                                label={f.fields.destinationAddress}
+                                help={f.fields.destinationAddressHelp}
+                                error={
+                                    fieldError("destination_address")
+                                    ?? fieldError("destination_locality")
+                                    ?? fieldError("destination_admin_area")
+                                    ?? fieldError("destination_lat")
+                                    ?? fieldError("destination_lng")
+                                    ?? fieldError("base")
+                                }
                             >
-                                <ProvinceSelect
-                                    id="destination_province"
-                                    value={draft.destination_province}
-                                    onChange={(v) => {
-                                        set("destination_province", v);
-                                        if (!v) set("destination_locality", "");
-                                    }}
-                                    placeholder={l.destinationAny}
-                                />
-                            </FormField>
-
-                            <FormField
-                                id="destination_locality"
-                                label={f.fields.destinationLocality}
-                                help={f.fields.destinationLocalityHelp}
-                                error={fieldError("destination_locality")}
-                            >
-                                <Input
-                                    id="destination_locality"
-                                    type="text"
-                                    value={draft.destination_locality}
-                                    onChange={(e) => set("destination_locality", e.target.value)}
-                                    disabled={!draft.destination_province}
+                                <AddressPicker
+                                    id="destination_address"
+                                    name="destination"
+                                    value={draft.destination}
+                                    onChange={(v) => set("destination", v)}
                                 />
                             </FormField>
                         </div>
+                        {destinationPin && (
+                            <RadiusControl
+                                id="dropoff_radius_km"
+                                name="dropoff_radius_km"
+                                role="dropoff"
+                                pin={destinationPin}
+                                value={draft.dropoff_radius_km}
+                                onChange={(v) => set("dropoff_radius_km", v)}
+                                label={f.fields.dropoffRadiusKm}
+                                help={f.fields.dropoffRadiusKmHelp}
+                                placeholderWhenNoPin={f.fields.dropoffRadiusKmNoDestination}
+                                error={fieldError("dropoff_radius_km")}
+                                required
+                            />
+                        )}
                     </fieldset>
 
                     <div className="windowFormNumericFields">

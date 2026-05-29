@@ -12,9 +12,15 @@ RSpec.describe "Api::Cargos", type: :request do
     {
       cargo_description:    "Pallets de electrodomésticos",
       pickup_address:       "Av. Corrientes 1234, CABA",
+      pickup_locality:      "CABA",
+      pickup_admin_area:    "Ciudad Autónoma de Buenos Aires",
       delivery_address:     "Av. Colón 500, Córdoba",
-      pickup_zone:          "Buenos Aires",
-      delivery_zone:        "Córdoba",
+      delivery_locality:    "Córdoba",
+      delivery_admin_area:  "Córdoba",
+      pickup_lat:           "-34.603722",
+      pickup_lng:           "-58.381592",
+      delivery_lat:         "-31.420083",
+      delivery_lng:         "-64.188776",
       pickup_window_start:  3.days.from_now.iso8601,
       pickup_window_end:    5.days.from_now.iso8601,
       weight_kg:            "1500",
@@ -88,7 +94,9 @@ RSpec.describe "Api::Cargos", type: :request do
         before do
           vehicle = create(:vehicle, max_load_kg: 5000, carrier: carrier_user.carrier)
           create(:transport_window, vehicle: vehicle,
-                 origin_province: "Buenos Aires", destination_province: "Córdoba",
+                 origin_lat: -34.603722, origin_lng: -58.381592,
+                 destination_lat: -31.420083, destination_lng: -64.188776,
+                 pickup_radius_km: 50, dropoff_radius_km: 50,
                  available_from: 2.days.from_now, available_to: 10.days.from_now)
         end
 
@@ -131,6 +139,25 @@ RSpec.describe "Api::Cargos", type: :request do
           expect(JSON.parse(response.body).dig("error", "code")).to eq("unprocessable")
         end
       end
+
+      response(422, "missing delivery_lng → 422 with details on the field") do
+        let(:payload) { { cargo: valid_attrs.except(:delivery_lng) } }
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body.dig("error", "code")).to eq("unprocessable")
+          expect(body.dig("error", "details", "delivery_lng")).to be_present
+        end
+      end
+
+      response(422, "lat outside [-90, 90] → 422") do
+        let(:payload) { { cargo: valid_attrs.merge(pickup_lat: "91.0") } }
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body.dig("error", "details", "pickup_lat")).to be_present
+        end
+      end
     end
   end
 
@@ -153,6 +180,16 @@ RSpec.describe "Api::Cargos", type: :request do
           expect(body["id"]).to eq(cargo.id)
           expect(body["cargo_offers"].size).to eq(1)
           expect(body["pending_offers_count"]).to eq(1)
+        end
+      end
+
+      response(200, "includes pickup/delivery coordinates in the payload") do
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body["pickup_lat"]).to   eq(cargo.pickup_lat.to_s)
+          expect(body["pickup_lng"]).to   eq(cargo.pickup_lng.to_s)
+          expect(body["delivery_lat"]).to eq(cargo.delivery_lat.to_s)
+          expect(body["delivery_lng"]).to eq(cargo.delivery_lng.to_s)
         end
       end
 
@@ -235,14 +272,16 @@ RSpec.describe "Api::Cargos", type: :request do
   path "/api/cargos/{id}/matches" do
     parameter name: :id, in: :path, type: :integer
 
-    get("list zone-compatible transport windows for a cargo") do
+    get("list address-driven matching transport windows for a cargo") do
       tags "Cargos"
       produces "application/json"
       security [ bearer_auth: [] ]
 
       let(:cargo) do
         create(:cargo, shipper: shipper_user.shipper,
-               pickup_zone: "Buenos Aires", delivery_zone: "Córdoba", weight_kg: 1500,
+               pickup_lat: -34.603722, pickup_lng: -58.381592,
+               delivery_lat: -31.420083, delivery_lng: -64.188776,
+               weight_kg: 1500,
                pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now)
       end
       let(:id) { cargo.id }
@@ -256,28 +295,38 @@ RSpec.describe "Api::Cargos", type: :request do
       response(200, "returns matching windows; excludes inactive, contended and incompatible ones") do
         let!(:match) do
           create(:transport_window, vehicle: big_vehicle,
-                 origin_province: "Buenos Aires", destination_province: "Córdoba",
+                 origin_lat: -34.603722, origin_lng: -58.381592,
+                 destination_lat: -31.420083, destination_lng: -64.188776,
+                 pickup_radius_km: 50, dropoff_radius_km: 50,
                  available_from: 2.days.from_now, available_to: 10.days.from_now)
         end
         let!(:inactive) do
           create(:transport_window, vehicle: big_vehicle, active: false,
-                 origin_province: "Buenos Aires", destination_province: "Córdoba",
+                 origin_lat: -34.603722, origin_lng: -58.381592,
+                 destination_lat: -31.420083, destination_lng: -64.188776,
+                 pickup_radius_km: 50, dropoff_radius_km: 50,
                  available_from: 2.days.from_now, available_to: 10.days.from_now)
         end
         let!(:wrong_zone) do
           create(:transport_window, vehicle: big_vehicle,
-                 origin_province: "Mendoza", destination_province: "Salta",
+                 origin_lat: -32.889458, origin_lng: -68.844734, # Mendoza
+                 destination_lat: -24.7821, destination_lng: -65.4232, # Salta
+                 pickup_radius_km: 50, dropoff_radius_km: 50,
                  available_from: 2.days.from_now, available_to: 10.days.from_now)
         end
         let!(:too_small) do
           tiny = create(:vehicle, max_load_kg: 100, carrier: carrier_user.carrier)
           create(:transport_window, vehicle: tiny,
-                 origin_province: "Buenos Aires", destination_province: "Córdoba",
+                 origin_lat: -34.603722, origin_lng: -58.381592,
+                 destination_lat: -31.420083, destination_lng: -64.188776,
+                 pickup_radius_km: 50, dropoff_radius_km: 50,
                  available_from: 2.days.from_now, available_to: 10.days.from_now)
         end
         let!(:contended) do
           win = create(:transport_window, vehicle: big_vehicle,
-                       origin_province: "Buenos Aires", destination_province: "Córdoba",
+                       origin_lat: -34.603722, origin_lng: -58.381592,
+                 destination_lat: -31.420083, destination_lng: -64.188776,
+                 pickup_radius_km: 50, dropoff_radius_km: 50,
                        available_from: 2.days.from_now, available_to: 10.days.from_now)
           create(:cargo_offer, :pending, transport_window: win,
                  cargo: create(:cargo, pickup_window_start: 3.days.from_now, pickup_window_end: 5.days.from_now))
@@ -287,7 +336,10 @@ RSpec.describe "Api::Cargos", type: :request do
         run_test! do |response|
           body = JSON.parse(response.body)
           expect(body.map { |w| w["id"] }).to contain_exactly(match.id)
+          # No server-side distance_km — Haversine runs on the client against
+          # origin_lat / origin_lng, which the frontend needs in the payload.
           expect(body.first).not_to have_key("distance_km")
+          expect(body.first).to include("origin_lat", "origin_lng")
           expect(body.first["carrier"]).to include("legal_name", "rating_avg")
         end
       end
@@ -297,6 +349,62 @@ RSpec.describe "Api::Cargos", type: :request do
 
         run_test! do |response|
           expect(JSON.parse(response.body).dig("error", "code")).to eq("forbidden")
+        end
+      end
+
+      # Geographic filter — windows whose origin sits farther than their own
+      # `pickup_radius_km` from the cargo pickup must be excluded.
+      response(200, "excludes windows whose origin is outside their pickup_radius_km") do
+        let!(:near) do
+          create(:transport_window, vehicle: big_vehicle,
+                 origin_lat: -34.603722, origin_lng: -58.381592,
+                 destination_lat: -31.420083, destination_lng: -64.188776,
+                 pickup_radius_km: 50, dropoff_radius_km: 50,
+                 origin_lat: -34.603722, origin_lng: -58.381592,
+                 pickup_radius_km: 50,
+                 available_from: 2.days.from_now, available_to: 10.days.from_now)
+        end
+        let!(:far) do
+          create(:transport_window, vehicle: big_vehicle,
+                 origin_lat: -34.603722, origin_lng: -58.381592,
+                 destination_lat: -31.420083, destination_lng: -64.188776,
+                 pickup_radius_km: 50, dropoff_radius_km: 50,
+                 origin_lat: -24.7821, origin_lng: -65.4232, # Salta — ~1300 km from CABA
+                 pickup_radius_km: 50,
+                 available_from: 11.days.from_now, available_to: 19.days.from_now)
+        end
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body.map { |w| w["id"] }).to contain_exactly(near.id)
+        end
+      end
+
+      # sort=distance must reorder the matches ascending by Haversine distance
+      # from the cargo pickup (US5 AC8).
+      parameter name: :sort, in: :query, type: :string, required: false
+      response(200, "orders matches ascending by distance when sort=distance") do
+        let(:sort) { "distance" }
+        # Both within their own radius of the CABA cargo, but La Plata is the
+        # farther of the two — distance ordering must surface CABA first.
+        let!(:la_plata) do
+          create(:transport_window, vehicle: big_vehicle,
+                 origin_lat: -34.921450, origin_lng: -57.954529, # ~56 km from CABA
+                 destination_lat: -31.420083, destination_lng: -64.188776,
+                 pickup_radius_km: 100, dropoff_radius_km: 50,
+                 available_from: 2.days.from_now, available_to: 6.days.from_now)
+        end
+        let!(:caba) do
+          create(:transport_window, vehicle: big_vehicle,
+                 origin_lat: -34.603722, origin_lng: -58.381592, # 0 km from CABA
+                 destination_lat: -31.420083, destination_lng: -64.188776,
+                 pickup_radius_km: 50, dropoff_radius_km: 50,
+                 available_from: 3.days.from_now, available_to: 8.days.from_now)
+        end
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body.map { |w| w["id"] }).to eq([ caba.id, la_plata.id ])
         end
       end
     end

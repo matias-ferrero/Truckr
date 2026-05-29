@@ -42,12 +42,13 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REQ-FE-00022 | Listado de Envíos del Transportista (US17 — vista Carrier) | NEW | FE | 2026-05-24 | - |
 | REQ-FE-00023 | Listado de Envíos del Expedidor (US17 — vista Shipper) | NEW | FE | 2026-05-24 | - |
 | REQ-FE-00024 | Detalles de Envío (US39 — pantalla compartida con acciones contextuales por rol) | RDY | FE | 2026-05-24 | - |
-| REQ-FE-00025 | Selector de Direcciones — Ventana de Transporte (US48 — picker FE compartido) | RDY | FE | 2026-05-24 | [plan](REQ/REQ-FE-00025/REQ-FE-00025-us48-selector-direcciones-ventana-transporte.plan.md) |
-| REQ-FE-00026 | Selector de Direcciones — Carga (US49 — reuso del picker compartido) | RDY | FE | 2026-05-24 | [plan](REQ/REQ-FE-00026/REQ-FE-00026-us49-selector-direcciones-carga.plan.md) |
-| REQ-FE-00027 | Definir Radio de Recogida — input numérico + círculo arrastrable (US50) | RDY | FE | 2026-05-24 | [plan](REQ/REQ-FE-00027/REQ-FE-00027-us50-definir-radio-de-recogida.plan.md) |
+| REQ-FE-00025 | Selector de Direcciones — Ventana de Transporte (US48 — picker FE compartido) | IR | FE | 2026-05-24 | [plan](REQ/REQ-FE-00025/REQ-FE-00025-us48-selector-direcciones-ventana-transporte.plan.md) |
+| REQ-FE-00026 | Selector de Direcciones — Carga (US49 — reuso del picker compartido) | IR | FE | 2026-05-24 | [plan](REQ/REQ-FE-00026/REQ-FE-00026-us49-selector-direcciones-carga.plan.md) |
+| REQ-FE-00027 | Definir Radio de Recogida — input numérico + círculo arrastrable (US50) | IR | FE | 2026-05-24 | [plan](REQ/REQ-FE-00027/REQ-FE-00027-us50-definir-radio-de-recogida.plan.md) |
 | REQ-FE-00028 | Mapa y Enlaces a Google Maps en Detalle de Envío (US51 — FE-only) | RDY | FE | 2026-05-24 | [plan](REQ/REQ-FE-00028/REQ-FE-00028-us51-mapa-enlaces-gmaps-detalle-envio.plan.md) |
-| REQ-BE-00036 | Migraciones y validaciones de lat/lng para TransportWindow y Cargo (US48 + US49) | RDY | BE | 2026-05-24 | [plan](REQ/REQ-BE-00036/REQ-BE-00036-us48-us49-lat-lng-migrations.plan.md) |
-| REQ-BE-00037 | pickup_radius_km column + Haversine matcher en el US5 scope (US50) | RDY | BE | 2026-05-24 | [plan](REQ/REQ-BE-00037/REQ-BE-00037-us50-pickup-radius-haversine-matcher.plan.md) |
+| REQ-BE-00036 | Migraciones y validaciones de lat/lng para TransportWindow y Cargo (US48 + US49) | IR | BE | 2026-05-24 | [plan](REQ/REQ-BE-00036/REQ-BE-00036-us48-us49-lat-lng-migrations.plan.md) |
+| REQ-BE-00037 | pickup_radius_km column + Haversine matcher en el US5 scope (US50) | IR | BE | 2026-05-24 | [plan](REQ/REQ-BE-00037/REQ-BE-00037-us50-pickup-radius-haversine-matcher.plan.md) |
+| REQ-BE-00039 | Migrate to address-driven matching, drop province matchers, add dropoff radius (US52, ADR-014) | RDY | BE | 2026-05-26 | [plan](REQ/REQ-BE-00039/REQ-BE-00039-address-driven-matching.plan.md) · [#267](https://github.com/tcorzo/fiuba-gestion-tp/issues/267) |
 | REQ-BE-00042 | US20 — Crear Reseña de Transportista (Shipper→Carrier, fullstack) | NEW | BE | 2026-05-29 | [#281](https://github.com/tcorzo/fiuba-gestion-tp/issues/281) |
 | REQ-BE-00043 | US26 — Visualizar Reseñas de Transportista (fullstack) | NEW | BE | 2026-05-29 | [#282](https://github.com/tcorzo/fiuba-gestion-tp/issues/282) |
 | REQ-BE-00044 | US30 — Crear Reseña de Expedidor (Carrier→Shipper, fullstack) | NEW | BE | 2026-05-29 | [#283](https://github.com/tcorzo/fiuba-gestion-tp/issues/283) |

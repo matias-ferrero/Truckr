@@ -10,20 +10,29 @@ const BASE = "http://localhost:3000";
 
 function makeWindow(overrides = {}) {
     return {
-        id: 1,
-        vehicle_id: 10,
-        origin_province: "Buenos Aires",
-        origin_locality: null,
-        destination_province: "Córdoba",
-        destination_locality: null,
-        price_per_km: "1500.0",
-        max_km: 1200,
-        available_from: "2026-05-15T00:00:00.000Z",
-        available_to: "2026-05-25T00:00:00.000Z",
-        active: true,
-        vehicle: { id: 10, make: "MB", model: "Sprinter", plate: "AA001XX", vehicle_type: "truck_small" },
-        created_at: "2026-05-11T00:00:00.000Z",
-        updated_at: "2026-05-11T00:00:00.000Z",
+        id:                     1,
+        vehicle_id:             10,
+        origin_address:         "Av. Corrientes 1234, CABA",
+        origin_locality:        "CABA",
+        origin_admin_area:      "Ciudad Autónoma de Buenos Aires",
+        origin_lat:             "-34.603722",
+        origin_lng:             "-58.381592",
+        destination_address:    "Av. Colón 500, Córdoba",
+        destination_locality:   "Córdoba",
+        destination_admin_area: "Córdoba",
+        destination_lat:        "-31.420083",
+        destination_lng:        "-64.188776",
+        pickup_radius_km:       10,
+        dropoff_radius_km:      10,
+        price_per_km:           "1500.0",
+        max_km:                 1200,
+        available_from:         "2026-05-15T00:00:00.000Z",
+        available_to:           "2026-05-25T00:00:00.000Z",
+        active:                 true,
+        cargo_offers_count:     0,
+        vehicle:                { id: 10, make: "MB", model: "Sprinter", plate: "AA001XX", vehicle_type: "truck_small" },
+        created_at:             "2026-05-11T00:00:00.000Z",
+        updated_at:             "2026-05-11T00:00:00.000Z",
         ...overrides,
     };
 }
@@ -60,21 +69,30 @@ describe("createTransportWindow", () => {
     it("POSTs with transport_window wrapper and returns created window", async () => {
         mockFetch(makeWindow(), 201);
         const draft = {
-            vehicle_id: 10,
-            origin_province: "BsAs",
-            origin_locality: null,
-            destination_province: "Córdoba",
-            destination_locality: null,
-            price_per_km: "1500",
-            max_km: "1200",
-            available_from: "2026-05-15T00:00",
-            available_to: "2026-05-25T00:00",
+            vehicle_id:             10,
+            origin_address:         "Av. Corrientes 1234, CABA",
+            origin_locality:        "CABA",
+            origin_admin_area:      "Ciudad Autónoma de Buenos Aires",
+            origin_lat:             -34.603722,
+            origin_lng:             -58.381592,
+            destination_address:    "Av. Colón 500, Córdoba",
+            destination_locality:   "Córdoba",
+            destination_admin_area: "Córdoba",
+            destination_lat:        -31.420083,
+            destination_lng:        -64.188776,
+            price_per_km:           "1500",
+            max_km:                 "1200",
+            pickup_radius_km:       10,
+            dropoff_radius_km:      10,
+            available_from:         "2026-05-15T00:00",
+            available_to:           "2026-05-25T00:00",
         };
         const result = await createTransportWindow(draft);
         expect(result.id).toBe(1);
         const call = vi.mocked(fetch).mock.calls[0]!;
         const body = JSON.parse(call[1]!.body as string);
         expect(body).toHaveProperty("transport_window.vehicle_id", 10);
+        expect(body).toHaveProperty("transport_window.origin_locality", "CABA");
     });
 });
 

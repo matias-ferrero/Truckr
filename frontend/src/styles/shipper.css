@@ -204,6 +204,43 @@
     flex-wrap: wrap;
 }
 
+.cargoMapPreview {
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    min-height: 280px;
+}
+
+.cargoMapPreviewIdle,
+.cargoMapPreviewError {
+    place-content: center;
+    text-align: center;
+}
+
+.cargoMapPreviewTitle {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--ink);
+}
+
+.cargoMapPreviewHelp {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+}
+
+.cargoMapPreviewCanvas {
+    width: 100%;
+    height: 240px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface-muted, var(--surface));
+}
+
 /* ── Cargo detail ────────────────────────────────────────────────────── */
 
 .backLink {

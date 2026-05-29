@@ -54,19 +54,24 @@ module Api
           current_carrier.transport_windows.includes(:vehicle, :cargo_offers).find(params[:id])
         end
 
+        TW_LOCATION_PARAMS = %i[
+          origin_address origin_locality origin_admin_area origin_lat origin_lng
+          destination_address destination_locality destination_admin_area
+          destination_lat destination_lng
+          pickup_radius_km dropoff_radius_km
+        ].freeze
+        private_constant :TW_LOCATION_PARAMS
+
         def create_params
           params.require(:transport_window).permit(
-            :vehicle_id,
-            :origin_province, :origin_locality,
-            :destination_province, :destination_locality,
+            :vehicle_id, *TW_LOCATION_PARAMS,
             :price_per_km, :max_km, :available_from, :available_to
           )
         end
 
         def update_params
           params.require(:transport_window).permit(
-            :origin_province, :origin_locality,
-            :destination_province, :destination_locality,
+            *TW_LOCATION_PARAMS,
             :price_per_km, :max_km, :available_from, :available_to, :active
           )
         end

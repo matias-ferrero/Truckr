@@ -8,6 +8,7 @@ import { listCarrierShipments, listShipperShipments, Shipment } from "../../api/
 import { ShipmentStateChip } from "../../components/shipments/ShipmentStateChip";
 import { shipmentStateSortOrder } from "../../components/shipments/shipmentsSharedContent";
 import { dashboardContent, CARGO_OFFER_STATUS_LABEL, CARGO_OFFER_STATUS_BADGE_CLASS } from "./dashboardContent";
+import { formatRoute } from "../../lib/format-place";
 import { MyCargosSection } from "./MyCargosSection";
 import "../../styles/dashboard.css";
 import "../../styles/shipments.css";
@@ -271,17 +272,25 @@ export function DashboardPage() {
                                                     {w.active ? dc.carrier.availability.statusActive : dc.carrier.availability.statusInactive}
                                                 </span>
                                             </div>
-                                            <h3
-                                                className="dashboardCardTitle"
-                                                aria-label={`${w.origin_province} a ${w.destination_province ?? "Destino abierto"}`}
-                                            >
-                                                {w.origin_locality ? `${w.origin_province}, ${w.origin_locality}` : w.origin_province}
-                                                <span aria-hidden="true"> → </span>
-                                                {w.destination_province
-                                                    ? (w.destination_locality ? `${w.destination_province}, ${w.destination_locality}` : w.destination_province)
-                                                    : "Destino abierto"}
-                                                <IconArrowRight className="arrow" />
-                                            </h3>
+                                            {(() => {
+                                                const hasDestination = w.destination_lat !== null;
+                                                const route = formatRoute(
+                                                    { locality: w.origin_locality, admin_area: w.origin_admin_area },
+                                                    hasDestination
+                                                        ? { locality: w.destination_locality, admin_area: w.destination_admin_area }
+                                                        : null,
+                                                    dc.carrier.availability.openDestinationLabel,
+                                                );
+                                                return (
+                                                    <h3
+                                                        className="dashboardCardTitle"
+                                                        aria-label={dc.carrier.availability.routeAria(route)}
+                                                    >
+                                                        {route}
+                                                        <IconArrowRight className="arrow" />
+                                                    </h3>
+                                                );
+                                            })()}
                                             <div className="dashboardCardMeta">
                                                 <IconCalendar />
                                                 <span>{formatDate(w.available_from)} – {formatDate(w.available_to)}</span>

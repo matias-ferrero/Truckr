@@ -2,7 +2,7 @@
 tag: REQ-FE-00026
 title: Selector de Direcciones — Carga (US49 — reuso del picker compartido)
 priority: P1
-status: ready
+status: in_review
 created: '2026-05-24'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/240

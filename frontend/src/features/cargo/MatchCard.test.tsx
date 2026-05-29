@@ -7,20 +7,29 @@ import type { CargoMatch } from "../../types/Cargo";
 
 function makeMatch(over: Partial<CargoMatch> = {}): CargoMatch {
     return {
-        id: 5,
-        origin_province: "Buenos Aires",
-        origin_locality: null,
-        destination_province: "Córdoba",
-        destination_locality: null,
-        price_per_km: "1500.0",
-        max_km: 1000,
-        available_from: "2026-05-25T00:00:00Z",
-        available_to: "2026-06-10T00:00:00Z",
+        id:                     5,
+        origin_address:         "Av. Corrientes 1234, CABA",
+        origin_locality:        "CABA",
+        origin_admin_area:      "Buenos Aires",
+        origin_lat:             "-34.603722",
+        origin_lng:             "-58.381592",
+        destination_address:    "Av. Colón 500, Córdoba",
+        destination_locality:   "Córdoba",
+        destination_admin_area: "Córdoba",
+        destination_lat:        "-31.420083",
+        destination_lng:        "-64.188776",
+        pickup_radius_km:       10,
+        dropoff_radius_km:      10,
+        price_per_km:           "1500.0",
+        max_km:                 1000,
+        available_from:         "2026-05-25T00:00:00Z",
+        available_to:           "2026-06-10T00:00:00Z",
+        active:                 true,
         vehicle: {
-            id: 10,
-            make: "Volvo",
-            model: "FH",
-            plate: "AB123CD",
+            id:          10,
+            make:        "Volvo",
+            model:       "FH",
+            plate:       "AB123CD",
             max_load_kg: "8000.0",
         },
         carrier: { id: 1, display_name: "Transportes del Sur", rating_avg: "4.7" },
@@ -33,7 +42,11 @@ function LocationProbe() {
     return <div data-testid="loc">{loc.pathname + loc.search}</div>;
 }
 
-function renderCard(match: CargoMatch, cargoId = 7) {
+function renderCard(
+    match: CargoMatch,
+    cargoId = 7,
+    pickup?: { lat: number; lng: number },
+) {
     return render(
         <MemoryRouter initialEntries={["/start"]}>
             <Routes>
@@ -41,7 +54,11 @@ function renderCard(match: CargoMatch, cargoId = 7) {
                     path="/start"
                     element={
                         <ul>
-                            <MatchCard cargoId={cargoId} match={match} />
+                            <MatchCard
+                                cargoId={cargoId}
+                                match={match}
+                                pickup={pickup}
+                            />
                         </ul>
                     }
                 />
@@ -58,7 +75,7 @@ function renderCard(match: CargoMatch, cargoId = 7) {
 describe("MatchCard", () => {
     it("renders the window route, carrier and capacity", () => {
         renderCard(makeMatch());
-        expect(screen.getByText("Buenos Aires → Córdoba")).toBeInTheDocument();
+        expect(screen.getByText("CABA, Buenos Aires → Córdoba, Córdoba")).toBeInTheDocument();
         expect(
             screen.getByText("Transportista: Transportes del Sur"),
         ).toBeInTheDocument();
@@ -70,9 +87,9 @@ describe("MatchCard", () => {
         ).toBeInTheDocument();
     });
 
-    it("renders province and locality when locality is present", () => {
-        renderCard(makeMatch({ origin_locality: "CABA", destination_locality: "Córdoba Capital" }));
-        expect(screen.getByText("Buenos Aires, CABA → Córdoba, Córdoba Capital")).toBeInTheDocument();
+    it("renders locality only when admin_area is empty", () => {
+        renderCard(makeMatch({ origin_admin_area: "", destination_admin_area: "" }));
+        expect(screen.getByText("CABA → Córdoba")).toBeInTheDocument();
     });
 
     it("falls back to a generic carrier label when display_name is null", () => {
@@ -95,9 +112,33 @@ describe("MatchCard", () => {
         );
     });
 
-    it("shows 'Destino abierto' when destination_province is null", () => {
-        renderCard(makeMatch({ destination_province: null, destination_locality: null }));
-        expect(screen.getByText("Buenos Aires → Destino abierto")).toBeInTheDocument();
+    it("shows the open-destination label when destination_lat is null", () => {
+        renderCard(makeMatch({
+            destination_address:    null,
+            destination_locality:   null,
+            destination_admin_area: null,
+            destination_lat:        null,
+            destination_lng:        null,
+            dropoff_radius_km:      null,
+        }));
+        expect(screen.getByText("CABA, Buenos Aires → Cualquier destino")).toBeInTheDocument();
+    });
+
+    it("renders Haversine distance from cargo pickup when pickup coords are supplied", () => {
+        // CABA pickup vs La Plata origin (~50–60 km) — same fixture pair the
+        // backend Geo spec uses. Tolerate the exact rounded km because the
+        // user-visible copy is what we care about, not the integer.
+        renderCard(
+            makeMatch({ origin_lat: "-34.921450", origin_lng: "-57.954529" }),
+            7,
+            { lat: -34.603722, lng: -58.381592 },
+        );
+        expect(screen.getByText(/^A \d+ km del retiro$/)).toBeInTheDocument();
+    });
+
+    it("hides the distance line when no pickup coords are supplied", () => {
+        renderCard(makeMatch());
+        expect(screen.queryByText(/del retiro/)).not.toBeInTheDocument();
     });
 
     it("includes a button to open the carrier public profile", async () => {

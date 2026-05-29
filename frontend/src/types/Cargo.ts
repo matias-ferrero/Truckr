@@ -1,10 +1,10 @@
-/* Frontend domain types for the Cargo publication funnel (US27 / REQ-BE-00032).
+/* Frontend domain types for the Cargo publication funnel (US27 / REQ-BE-00032,
+ * REQ-BE-00039 / ADR-014).
  *
  * These mirror the backend Alba serializers (`CargoResource`,
  * `CargoMatchResource`) field-for-field. Wire keys are snake_case — they are
  * the JSON contract, not internal camelCase identifiers, so they stay
- * snake_case here on purpose. First domain-type module in the FE; sets the
- * convention for future `types/` entries.
+ * snake_case here on purpose.
  */
 
 /** Cargo publication lifecycle — no intermediate `offered` state (plan §2.2). */
@@ -35,19 +35,31 @@ export type CargoVehicleSummary = {
 };
 
 /**
- * A `TransportWindow` that can carry the cargo — zone-string matched
- * (plan §2.3). No `distance_km`: Haversine is deferred to the GMaps follow-up.
+ * A `TransportWindow` that can carry the cargo — address-driven bbox + dual
+ * Haversine matched on the backend (REQ-BE-00039 / ADR-014). `*_lat` / `*_lng`
+ * arrive as decimal strings (Rails `DECIMAL(9,6)` → JSON string) so the
+ * client can run Haversine against the cargo's pickup point and display the
+ * distance per match. Destination fields are null on "destino abierto" windows.
  */
 export type CargoMatch = {
     id: number;
-    origin_province: string;
-    origin_locality: string | null;
-    destination_province: string | null;
+    origin_address: string;
+    origin_locality: string;
+    origin_admin_area: string;
+    origin_lat: string;
+    origin_lng: string;
+    destination_address: string | null;
     destination_locality: string | null;
+    destination_admin_area: string | null;
+    destination_lat: string | null;
+    destination_lng: string | null;
     price_per_km: string;
     max_km: number;
+    pickup_radius_km: number;
+    dropoff_radius_km: number | null;
     available_from: string;
     available_to: string;
+    active: boolean;
     vehicle: CargoVehicleSummary;
     carrier: CargoCarrierSummary;
 };
@@ -66,10 +78,12 @@ export type CargoOffer = {
     updated_at: string;
     transport_window?: {
         id: number;
-        origin_province: string;
-        origin_locality: string | null;
-        destination_province: string | null;
+        origin_locality: string;
+        origin_admin_area: string;
         destination_locality: string | null;
+        destination_admin_area: string | null;
+        available_from: string;
+        available_to: string;
     };
 };
 
@@ -80,9 +94,15 @@ export type Cargo = {
     status: CargoStatus;
     cargo_description: string;
     pickup_address: string;
+    pickup_lat: string;
+    pickup_lng: string;
+    pickup_locality: string;
+    pickup_admin_area: string;
     delivery_address: string;
-    pickup_zone: string;
-    delivery_zone: string;
+    delivery_lat: string;
+    delivery_lng: string;
+    delivery_locality: string;
+    delivery_admin_area: string;
     pickup_window_start: string;
     pickup_window_end: string;
     weight_kg: string;
@@ -102,9 +122,15 @@ export type Cargo = {
 export type CargoDraft = {
     cargo_description: string;
     pickup_address: string;
+    pickup_lat: number;
+    pickup_lng: number;
+    pickup_locality: string;
+    pickup_admin_area: string;
     delivery_address: string;
-    pickup_zone: string;
-    delivery_zone: string;
+    delivery_lat: number;
+    delivery_lng: number;
+    delivery_locality: string;
+    delivery_admin_area: string;
     pickup_window_start: string;
     pickup_window_end: string;
     weight_kg: string;

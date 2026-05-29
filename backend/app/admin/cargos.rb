@@ -1,11 +1,18 @@
 ActiveAdmin.register Cargo do
   permit_params :shipper_id, :status, :pickup_address, :delivery_address,
-                :pickup_zone, :delivery_zone, :pickup_window_start, :pickup_window_end,
+                :pickup_locality, :pickup_admin_area,
+                :delivery_locality, :delivery_admin_area,
+                :pickup_lat, :pickup_lng, :delivery_lat, :delivery_lng,
+                :pickup_window_start, :pickup_window_end,
                 :cargo_description, :weight_kg, :volume_cm3, :declared_value_cents,
                 :cancellation_reason
 
   filter :shipper
   filter :status, as: :select, collection: Cargo::STATUSES
+  filter :pickup_locality
+  filter :delivery_locality
+  filter :pickup_admin_area
+  filter :delivery_admin_area
   filter :pickup_window_start
   filter :weight_kg
 
@@ -14,8 +21,8 @@ ActiveAdmin.register Cargo do
     id_column
     column :shipper
     column :status
-    column :pickup_zone
-    column :delivery_zone
+    column(:pickup) { |c| "#{c.pickup_locality}, #{c.pickup_admin_area}" }
+    column(:delivery) { |c| "#{c.delivery_locality}, #{c.delivery_admin_area}" }
     column :pickup_window_start
     column :pickup_window_end
     column :weight_kg
@@ -30,9 +37,15 @@ ActiveAdmin.register Cargo do
       row :shipper
       row :status
       row :pickup_address
+      row :pickup_locality
+      row :pickup_admin_area
+      row :pickup_lat
+      row :pickup_lng
       row :delivery_address
-      row :pickup_zone
-      row :delivery_zone
+      row :delivery_locality
+      row :delivery_admin_area
+      row :delivery_lat
+      row :delivery_lng
       row :pickup_window_start
       row :pickup_window_end
       row :cargo_description
@@ -51,9 +64,15 @@ ActiveAdmin.register Cargo do
       f.input :shipper
       f.input :status, as: :select, collection: Cargo::STATUSES
       f.input :pickup_address
+      f.input :pickup_locality
+      f.input :pickup_admin_area
+      f.input :pickup_lat
+      f.input :pickup_lng
       f.input :delivery_address
-      f.input :pickup_zone
-      f.input :delivery_zone
+      f.input :delivery_locality
+      f.input :delivery_admin_area
+      f.input :delivery_lat
+      f.input :delivery_lng
       f.input :pickup_window_start
       f.input :pickup_window_end
       f.input :cargo_description

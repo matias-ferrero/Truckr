@@ -16,6 +16,7 @@
         "react-dom": "npm:react-dom@18.2.0",
         "react-router-dom": "npm:react-router-dom@6.26.2",
         "react-dropzone": "npm:react-dropzone@14.2.10",
+        "@googlemaps/js-api-loader": "npm:@googlemaps/js-api-loader@1.16.10",
         "clsx": "npm:clsx@2.1.1",
         "tailwind-merge": "npm:tailwind-merge@2.5.4",
         "class-variance-authority": "npm:class-variance-authority@0.7.1",

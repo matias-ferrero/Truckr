@@ -25,10 +25,8 @@ es:
       models:
         transport_window:
           attributes:
-            origin_locality:
-              requires_province: "requiere que se especifique la provincia de origen"
-            destination_locality:
-              requires_province: "requiere que se especifique la provincia de destino"
+            base:
+              open_destination_partial: "los campos de destino deben estar todos completos o todos vacíos"
         cargo_offer:
           attributes:
             estimated_km:

@@ -4,6 +4,7 @@ import { createCargoOffer } from "../../api/cargoOffers";
 import { getCargo, getMatches } from "../../features/cargo/api";
 import type { Cargo, CargoMatch } from "../../types/Cargo";
 import { offerContent } from "./offerContent";
+import { formatRoute } from "../../lib/format-place";
 import { FormField } from "../../components/ui/form-field";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
@@ -174,9 +175,10 @@ export default function CreateOfferPage() {
                         {t.cargoSection.heading}
                     </h2>
                     <p className="offerSummaryRoute">
-                        {t.cargoSection.route(
-                            cargo.pickup_zone,
-                            cargo.delivery_zone,
+                        {formatRoute(
+                            { locality: cargo.pickup_locality, admin_area: cargo.pickup_admin_area },
+                            { locality: cargo.delivery_locality, admin_area: cargo.delivery_admin_area },
+                            t.openDestinationLabel,
                         )}
                     </p>
                     <p className="cargoCardDescription">
@@ -216,15 +218,12 @@ export default function CreateOfferPage() {
                         {t.windowSection.heading}
                     </h2>
                     <p className="offerSummaryRoute">
-                        {t.windowSection.route(
-                            window.origin_locality
-                                ? `${window.origin_province}, ${window.origin_locality}`
-                                : window.origin_province,
-                            window.destination_province
-                                ? (window.destination_locality
-                                    ? `${window.destination_province}, ${window.destination_locality}`
-                                    : window.destination_province)
+                        {formatRoute(
+                            { locality: window.origin_locality, admin_area: window.origin_admin_area },
+                            window.destination_lat !== null
+                                ? { locality: window.destination_locality, admin_area: window.destination_admin_area }
                                 : null,
+                            t.openDestinationLabel,
                         )}
                     </p>
                     <p className="offerSummaryMeta">

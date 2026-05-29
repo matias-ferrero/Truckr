@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_26_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_27_000000) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -93,20 +93,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_26_000000) do
     t.datetime "created_at", null: false
     t.integer "declared_value_cents", null: false
     t.string "delivery_address", null: false
-    t.string "delivery_zone"
-    t.string "delivery_zone_normalized"
+    t.text "delivery_admin_area", null: false
+    t.decimal "delivery_lat", precision: 9, scale: 6, null: false
+    t.decimal "delivery_lng", precision: 9, scale: 6, null: false
+    t.text "delivery_locality", null: false
     t.string "pickup_address", null: false
+    t.text "pickup_admin_area", null: false
+    t.decimal "pickup_lat", precision: 9, scale: 6, null: false
+    t.decimal "pickup_lng", precision: 9, scale: 6, null: false
+    t.text "pickup_locality", null: false
     t.datetime "pickup_window_end", null: false
     t.datetime "pickup_window_start", null: false
-    t.string "pickup_zone"
-    t.string "pickup_zone_normalized"
     t.integer "shipper_id", null: false
     t.string "status", default: "open", null: false
     t.datetime "updated_at", null: false
     t.integer "volume_cm3"
     t.decimal "weight_kg", precision: 10, scale: 2, null: false
-    t.index ["delivery_zone_normalized"], name: "index_cargos_on_delivery_zone_normalized"
-    t.index ["pickup_zone_normalized"], name: "index_cargos_on_pickup_zone_normalized"
     t.index ["shipper_id"], name: "index_cargos_on_shipper_id"
     t.index ["status"], name: "index_cargos_on_status"
   end
@@ -213,25 +215,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_26_000000) do
     t.datetime "available_from", null: false
     t.datetime "available_to", null: false
     t.datetime "created_at", null: false
-    t.string "destination_locality"
-    t.string "destination_locality_normalized"
-    t.string "destination_province"
-    t.string "destination_province_normalized"
+    t.text "destination_address"
+    t.text "destination_admin_area"
+    t.decimal "destination_lat", precision: 9, scale: 6
+    t.decimal "destination_lng", precision: 9, scale: 6
+    t.text "destination_locality"
+    t.integer "dropoff_radius_km"
     t.integer "max_km", null: false
-    t.string "origin_locality"
-    t.string "origin_locality_normalized"
-    t.string "origin_province", null: false
-    t.string "origin_province_normalized"
+    t.text "origin_address", null: false
+    t.text "origin_admin_area", null: false
+    t.decimal "origin_lat", precision: 9, scale: 6, null: false
+    t.decimal "origin_lng", precision: 9, scale: 6, null: false
+    t.text "origin_locality", null: false
+    t.integer "pickup_radius_km", default: 10, null: false
     t.decimal "price_per_km", precision: 10, scale: 2, null: false
     t.string "status", default: "open", null: false
     t.datetime "updated_at", null: false
     t.integer "vehicle_id", null: false
     t.index ["active"], name: "index_transport_windows_on_active"
     t.index ["available_from", "available_to"], name: "index_transport_windows_on_available_from_and_available_to"
-    t.index ["destination_locality_normalized"], name: "index_transport_windows_on_destination_locality_normalized"
-    t.index ["destination_province_normalized"], name: "index_transport_windows_on_destination_province_normalized"
-    t.index ["origin_locality_normalized"], name: "index_transport_windows_on_origin_locality_normalized"
-    t.index ["origin_province_normalized"], name: "index_transport_windows_on_origin_province_normalized"
     t.index ["status"], name: "index_transport_windows_on_status"
     t.index ["vehicle_id", "available_from", "available_to"], name: "idx_tw_on_vehicle_and_window"
     t.index ["vehicle_id"], name: "index_transport_windows_on_vehicle_id"

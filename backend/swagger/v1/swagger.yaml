@@ -198,7 +198,7 @@ paths:
         '201':
           description: created — status open, body includes matches
         '422':
-          description: missing cargo params
+          description: lat outside [-90, 90] → 422
       requestBody:
         content:
           application/json:
@@ -224,7 +224,7 @@ paths:
       - bearer_auth: []
       responses:
         '200':
-          description: returns the cargo with nested offers
+          description: includes pickup/delivery coordinates in the payload
         '403':
           description: another shipper's cargo is forbidden
         '404':
@@ -270,15 +270,20 @@ paths:
       schema:
         type: integer
     get:
-      summary: list zone-compatible transport windows for a cargo
+      summary: list address-driven matching transport windows for a cargo
       tags:
       - Cargos
       security:
       - bearer_auth: []
+      parameters:
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
       responses:
         '200':
-          description: returns matching windows; excludes inactive, contended and
-            incompatible ones
+          description: orders matches ascending by distance when sort=distance
         '403':
           description: another shipper's cargo is forbidden
   "/api/carriers/me/transport_windows":
@@ -352,7 +357,12 @@ paths:
                   type: object
                   required:
                   - vehicle_id
-                  - origin_province
+                  - origin_address
+                  - origin_locality
+                  - origin_admin_area
+                  - origin_lat
+                  - origin_lng
+                  - pickup_radius_km
                   - price_per_km
                   - max_km
                   - available_from
@@ -360,16 +370,35 @@ paths:
                   properties:
                     vehicle_id:
                       type: integer
-                    origin_province:
+                    origin_address:
                       type: string
                     origin_locality:
                       type: string
-                      nullable: true
-                    destination_province:
+                    origin_admin_area:
+                      type: string
+                    origin_lat:
+                      type: number
+                    origin_lng:
+                      type: number
+                    destination_address:
                       type: string
                       nullable: true
                     destination_locality:
                       type: string
+                      nullable: true
+                    destination_admin_area:
+                      type: string
+                      nullable: true
+                    destination_lat:
+                      type: number
+                      nullable: true
+                    destination_lng:
+                      type: number
+                      nullable: true
+                    pickup_radius_km:
+                      type: integer
+                    dropoff_radius_km:
+                      type: integer
                       nullable: true
                     price_per_km:
                       type: number
@@ -465,16 +494,25 @@ paths:
                 transport_window:
                   type: object
                   properties:
-                    origin_province:
+                    origin_address:
                       type: string
                     origin_locality:
                       type: string
-                      nullable: true
-                    destination_province:
+                    origin_admin_area:
+                      type: string
+                    destination_address:
                       type: string
                       nullable: true
                     destination_locality:
                       type: string
+                      nullable: true
+                    destination_admin_area:
+                      type: string
+                      nullable: true
+                    pickup_radius_km:
+                      type: integer
+                    dropoff_radius_km:
+                      type: integer
                       nullable: true
                     price_per_km:
                       type: number
@@ -627,37 +665,6 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorEnvelope"
-  "/api/transport_windows":
-    parameters:
-    - name: origin_province
-      in: query
-      required: true
-      schema:
-        type: string
-    - name: destination_province
-      in: query
-      required: true
-      schema:
-        type: string
-    - name: date_from
-      in: query
-      required: true
-      schema:
-        type: string
-    - name: date_to
-      in: query
-      required: true
-      schema:
-        type: string
-    get:
-      summary: search carriers by province and date range
-      tags:
-      - Transport Windows
-      responses:
-        '200':
-          description: includes open-destination windows when filtering by destination
-        '422':
-          description: invalid date format
 servers:
 - url: http://localhost:3000
   description: Local dev
@@ -812,16 +819,35 @@ components:
           type: integer
         vehicle_id:
           type: integer
-        origin_province:
+        origin_address:
           type: string
         origin_locality:
           type: string
-          nullable: true
-        destination_province:
+        origin_admin_area:
+          type: string
+        origin_lat:
+          type: string
+        origin_lng:
+          type: string
+        destination_address:
           type: string
           nullable: true
         destination_locality:
           type: string
+          nullable: true
+        destination_admin_area:
+          type: string
+          nullable: true
+        destination_lat:
+          type: string
+          nullable: true
+        destination_lng:
+          type: string
+          nullable: true
+        pickup_radius_km:
+          type: integer
+        dropoff_radius_km:
+          type: integer
           nullable: true
         price_per_km:
           type: string

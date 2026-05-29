@@ -4,30 +4,43 @@ import { createCargo, fieldErrorsFrom, getCargo, updateCargo } from "./api";
 import type { Cargo, CargoDraft } from "../../types/Cargo";
 import { cargosContent } from "./cargosContent";
 import { Alert } from "../../components/ui/alert";
+import { AddressPicker, type AddressPickerValue } from "../../components/AddressPicker";
 import { Button } from "../../components/ui/button";
 import { FormField } from "../../components/ui/form-field";
 import { Input } from "../../components/ui/input";
-import { Select } from "../../components/ui/select";
 import { Textarea } from "../../components/ui/textarea";
+import CargoMapPreview from "./CargoMapPreview";
 
 const f = cargosContent.form;
 
 type Mode = "new" | "edit";
 
-const EMPTY: CargoDraft = {
-    cargo_description: "",
-    pickup_address: "",
-    delivery_address: "",
-    pickup_zone: "",
-    delivery_zone: "",
-    pickup_window_start: "",
-    pickup_window_end: "",
-    weight_kg: "",
-    volume_cm3: "",
+// REQ-BE-00039 / ADR-014: the form holds pickup + delivery as
+// AddressPickerValue (now carrying parsed locality + admin_area). No separate
+// zone selects — locality/admin_area are derived at the wire boundary.
+type Draft = {
+    cargo_description: string;
+    pickup: AddressPickerValue | null;
+    delivery: AddressPickerValue | null;
+    pickup_window_start: string;
+    pickup_window_end: string;
+    weight_kg: string;
+    volume_cm3: string;
+    /** Whole ARS pesos as typed; converted to cents at the wire boundary. */
+    declared_value_cents: string;
+};
+
+const EMPTY: Draft = {
+    cargo_description:    "",
+    pickup:               null,
+    delivery:             null,
+    pickup_window_start:  "",
+    pickup_window_end:    "",
+    weight_kg:            "",
+    volume_cm3:           "",
     declared_value_cents: "",
 };
 
-/** Trims an ISO datetime to the `<input type="datetime-local">` shape. */
 function toLocalDatetime(iso: string): string {
     if (!iso) return "";
     const d = new Date(iso);
@@ -35,23 +48,46 @@ function toLocalDatetime(iso: string): string {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function draftFromCargo(c: Cargo): CargoDraft {
+function toNumber(n: string | number | null | undefined): number | null {
+    if (n === null || n === undefined || n === "") return null;
+    const v = typeof n === "number" ? n : Number(n);
+    return Number.isFinite(v) ? v : null;
+}
+
+function draftFromCargo(c: Cargo): Draft {
+    const pLat = toNumber(c.pickup_lat);
+    const pLng = toNumber(c.pickup_lng);
+    const dLat = toNumber(c.delivery_lat);
+    const dLng = toNumber(c.delivery_lng);
     return {
         cargo_description: c.cargo_description,
-        pickup_address: c.pickup_address,
-        delivery_address: c.delivery_address,
-        pickup_zone: c.pickup_zone,
-        delivery_zone: c.delivery_zone,
-        pickup_window_start: toLocalDatetime(c.pickup_window_start),
-        pickup_window_end: toLocalDatetime(c.pickup_window_end),
-        weight_kg: c.weight_kg,
-        volume_cm3: c.volume_cm3 != null ? String(c.volume_cm3) : "",
-        declared_value_cents: String(c.declared_value_cents),
+        pickup:            pLat != null && pLng != null
+            ? {
+                text:       c.pickup_address,
+                lat:        pLat,
+                lng:        pLng,
+                locality:   c.pickup_locality,
+                admin_area: c.pickup_admin_area,
+            }
+            : null,
+        delivery: dLat != null && dLng != null
+            ? {
+                text:       c.delivery_address,
+                lat:        dLat,
+                lng:        dLng,
+                locality:   c.delivery_locality,
+                admin_area: c.delivery_admin_area,
+            }
+            : null,
+        pickup_window_start:  toLocalDatetime(c.pickup_window_start),
+        pickup_window_end:    toLocalDatetime(c.pickup_window_end),
+        weight_kg:            c.weight_kg,
+        volume_cm3:           c.volume_cm3 != null ? String(c.volume_cm3) : "",
+        declared_value_cents: String(Math.round(c.declared_value_cents / 100)),
     };
 }
 
-/** Inline client-side validation — plain rules, no form library (plan §2.6). */
-function validate(draft: CargoDraft): Record<string, string> {
+function validate(draft: Draft): Record<string, string> {
     const e = f.errors;
     const errors: Record<string, string> = {};
 
@@ -59,12 +95,8 @@ function validate(draft: CargoDraft): Record<string, string> {
     if (desc.length === 0) errors.cargo_description = e.cargoDescriptionRequired;
     else if (desc.length > 200) errors.cargo_description = e.cargoDescriptionTooLong;
 
-    if (draft.pickup_address.trim() === "") errors.pickup_address = e.pickupAddressRequired;
-    if (draft.delivery_address.trim() === "") {
-        errors.delivery_address = e.deliveryAddressRequired;
-    }
-    if (draft.pickup_zone === "") errors.pickup_zone = e.pickupZoneRequired;
-    if (draft.delivery_zone === "") errors.delivery_zone = e.deliveryZoneRequired;
+    if (draft.pickup === null) errors.pickup_address = e.pickupAddressRequired;
+    if (draft.delivery === null) errors.delivery_address = e.deliveryAddressRequired;
 
     if (draft.pickup_window_start === "") {
         errors.pickup_window_start = e.pickupWindowStartRequired;
@@ -94,6 +126,36 @@ function validate(draft: CargoDraft): Record<string, string> {
     return errors;
 }
 
+function arsToCents(ars: string): string {
+    const v = parseFloat(ars);
+    if (!Number.isFinite(v)) return ars;
+    return String(Math.round(v * 100));
+}
+
+function toWireDraft(draft: Draft): CargoDraft {
+    // `validate` guarantees pickup/delivery are non-null by the time we reach here.
+    const p = draft.pickup!;
+    const d = draft.delivery!;
+    return {
+        cargo_description:    draft.cargo_description,
+        pickup_address:       p.text,
+        pickup_lat:           p.lat,
+        pickup_lng:           p.lng,
+        pickup_locality:      (p.locality ?? "").trim(),
+        pickup_admin_area:    (p.admin_area ?? "").trim(),
+        delivery_address:     d.text,
+        delivery_lat:         d.lat,
+        delivery_lng:         d.lng,
+        delivery_locality:    (d.locality ?? "").trim(),
+        delivery_admin_area:  (d.admin_area ?? "").trim(),
+        pickup_window_start:  draft.pickup_window_start,
+        pickup_window_end:    draft.pickup_window_end,
+        weight_kg:            draft.weight_kg,
+        volume_cm3:           draft.volume_cm3,
+        declared_value_cents: arsToCents(draft.declared_value_cents),
+    };
+}
+
 type Props = { mode: Mode };
 
 export default function CargoForm({ mode }: Props) {
@@ -101,7 +163,7 @@ export default function CargoForm({ mode }: Props) {
     const params = useParams<{ id: string }>();
     const editingId = mode === "edit" && params.id ? Number(params.id) : null;
 
-    const [draft, setDraft] = useState<CargoDraft>(EMPTY);
+    const [draft, setDraft] = useState<Draft>(EMPTY);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -126,9 +188,20 @@ export default function CargoForm({ mode }: Props) {
         };
     }, [editingId]);
 
-    function set(key: keyof CargoDraft, value: string) {
+    function set<K extends keyof Draft>(key: K, value: Draft[K]) {
         setDraft((prev) => ({ ...prev, [key]: value }));
         setErrors((prev) => {
+            if (!prev[key as string]) return prev;
+            const next = { ...prev };
+            delete next[key as string];
+            return next;
+        });
+    }
+
+    function setAddress(side: "pickup" | "delivery", value: AddressPickerValue | null) {
+        setDraft((prev) => ({ ...prev, [side]: value }));
+        setErrors((prev) => {
+            const key = side === "pickup" ? "pickup_address" : "delivery_address";
             if (!prev[key]) return prev;
             const next = { ...prev };
             delete next[key];
@@ -147,9 +220,10 @@ export default function CargoForm({ mode }: Props) {
         setSubmitting(true);
         setSubmitError(null);
         try {
+            const wire = toWireDraft(draft);
             const saved = editingId != null
-                ? await updateCargo(editingId, draft)
-                : await createCargo(draft);
+                ? await updateCargo(editingId, wire)
+                : await createCargo(wire);
             navigate(`/shipper/cargos/${saved.id}`);
         } catch (err) {
             const fieldErrors = fieldErrorsFrom(err);
@@ -200,11 +274,13 @@ export default function CargoForm({ mode }: Props) {
                     <p className="sectionLead">
                         {mode === "edit" ? f.editLead : f.newLead}
                     </p>
+                    <p className="requiredNote">{f.allRequired}</p>
                 </header>
 
                 <form
                     className="cargoForm"
                     aria-labelledby="cargo-form-title"
+                    aria-busy={submitting}
                     onSubmit={handleSubmit}
                     noValidate
                 >
@@ -213,7 +289,6 @@ export default function CargoForm({ mode }: Props) {
                             {submitError}
                         </Alert>
                     )}
-                    <p className="requiredNote">{f.allRequired}</p>
 
                     <fieldset className="cargoFormSection">
                         <legend className="cargoFormLegend">
@@ -239,6 +314,7 @@ export default function CargoForm({ mode }: Props) {
                             <FormField
                                 id="weight_kg"
                                 label={f.fields.weightKg}
+                                help={f.fields.weightKgHelp}
                                 error={errors.weight_kg}
                                 required
                             >
@@ -271,6 +347,7 @@ export default function CargoForm({ mode }: Props) {
                             <FormField
                                 id="declared_value_cents"
                                 label={f.fields.declaredValue}
+                                help={f.fields.declaredValueHelp}
                                 error={errors.declared_value_cents}
                                 required
                             >
@@ -294,79 +371,37 @@ export default function CargoForm({ mode }: Props) {
                         <FormField
                             id="pickup_address"
                             label={f.fields.pickupAddress}
+                            help={f.fields.pickupAddressHelp}
                             error={errors.pickup_address}
                             required
                         >
-                            <Input
+                            <AddressPicker
                                 id="pickup_address"
-                                value={draft.pickup_address}
-                                onChange={(e) =>
-                                    set("pickup_address", e.target.value)}
-                                autoComplete="shipping street-address"
+                                name="pickup_address"
+                                value={draft.pickup}
+                                onChange={(v) => setAddress("pickup", v)}
+                                required
                             />
                         </FormField>
                         <FormField
                             id="delivery_address"
                             label={f.fields.deliveryAddress}
+                            help={f.fields.deliveryAddressHelp}
                             error={errors.delivery_address}
                             required
                         >
-                            <Input
+                            <AddressPicker
                                 id="delivery_address"
-                                value={draft.delivery_address}
-                                onChange={(e) =>
-                                    set("delivery_address", e.target.value)}
-                                autoComplete="billing street-address"
+                                name="delivery_address"
+                                value={draft.delivery}
+                                onChange={(v) => setAddress("delivery", v)}
+                                required
                             />
                         </FormField>
-                        <div className="cargoFormGrid">
-                            <FormField
-                                id="pickup_zone"
-                                label={f.fields.pickupZone}
-                                help={f.fields.zoneHelp}
-                                error={errors.pickup_zone}
-                                required
-                            >
-                                <Select
-                                    id="pickup_zone"
-                                    value={draft.pickup_zone}
-                                    onChange={(e) =>
-                                        set("pickup_zone", e.target.value)}
-                                >
-                                    <option value="">
-                                        {f.fields.zoneDefault}
-                                    </option>
-                                    {f.provinces.map((p) => (
-                                        <option key={p} value={p}>
-                                            {p}
-                                        </option>
-                                    ))}
-                                </Select>
-                            </FormField>
-                            <FormField
-                                id="delivery_zone"
-                                label={f.fields.deliveryZone}
-                                help={f.fields.zoneHelp}
-                                error={errors.delivery_zone}
-                                required
-                            >
-                                <Select
-                                    id="delivery_zone"
-                                    value={draft.delivery_zone}
-                                    onChange={(e) =>
-                                        set("delivery_zone", e.target.value)}
-                                >
-                                    <option value="">
-                                        {f.fields.zoneDefault}
-                                    </option>
-                                    {f.provinces.map((p) => (
-                                        <option key={p} value={p}>
-                                            {p}
-                                        </option>
-                                    ))}
-                                </Select>
-                            </FormField>
-                        </div>
+                        <CargoMapPreview
+                            pickup={draft.pickup}
+                            delivery={draft.delivery}
+                        />
                     </fieldset>
 
                     <fieldset className="cargoFormSection">

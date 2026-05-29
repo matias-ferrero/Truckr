@@ -16,5 +16,6 @@ para que los expedidores cuya carga coincida con mi ruta y fecha me encuentren y
 + Se debe asociar uno de los vehículos previamente registrados por el transportista (US14).
 + Se puede indicar un precio por kilómetro para el servicio.
 + Se debe indicar el radio de recogida del origen (`pickup_radius_km`) que el transportista está dispuesto a desviarse para retirar cargas — ver US50.
++ Cuando el destino está definido (no es destino abierto), se debe indicar también el radio de entrega (`dropoff_radius_km`) que el transportista está dispuesto a desviarse para entregar cargas — ver US52. Cuando el destino es abierto, este campo queda oculto y se persiste `NULL`.
 + Una vez completados los datos necesarios, se puede confirmar la publicación de la ventana.
 + La ventana aparece en los resultados de búsqueda de los expedidores cuya carga, ruta y fecha coincidan (US4 + US5).

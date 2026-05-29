@@ -11,6 +11,7 @@ import {
 import { Button, buttonVariants } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
 import { carrierContent } from "./carrierContent";
+import { formatRoute } from "../../lib/format-place";
 
 const t = carrierContent.availability.list;
 
@@ -31,13 +32,21 @@ function fmtPrice(p: string): string {
     return Number(p).toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
 
-function fmtZone(province: string, locality: string | null): string {
-    return locality ? `${province}, ${locality}` : province;
-}
-
-function fmtZoneOrOpen(province: string | null, locality: string | null): string {
-    if (!province) return t.destinationAny;
-    return locality ? `${province}, ${locality}` : province;
+function fmtRoute(tw: {
+    origin_locality: string;
+    origin_admin_area: string;
+    destination_locality: string | null;
+    destination_admin_area: string | null;
+    destination_lat: string | number | null;
+}): string {
+    const hasDestination = tw.destination_lat !== null;
+    return formatRoute(
+        { locality: tw.origin_locality, admin_area: tw.origin_admin_area },
+        hasDestination
+            ? { locality: tw.destination_locality, admin_area: tw.destination_admin_area }
+            : null,
+        t.destinationAny,
+    );
 }
 
 export default function TransportWindowList() {
@@ -332,7 +341,7 @@ export default function TransportWindowList() {
                     <>
                         <ul className="windowGrid" aria-label={t.gridLabel}>
                             {state.items.map((tw) => {
-                                const route = `${fmtZone(tw.origin_province, tw.origin_locality)} → ${fmtZoneOrOpen(tw.destination_province, tw.destination_locality)}`;
+                                const route = fmtRoute(tw);
                                 return (
                                 <li key={tw.id} className={`windowCard${tw.active ? "" : " isInactive"}`}>
                                     <div className="windowCardHeader">
@@ -474,7 +483,7 @@ export default function TransportWindowList() {
                     </h2>
                     {confirmDelete && (
                         <p className="confirmDialogRoute">
-                            {fmtZone(confirmDelete.origin_province, confirmDelete.origin_locality)} → {fmtZoneOrOpen(confirmDelete.destination_province, confirmDelete.destination_locality)}
+                            {fmtRoute(confirmDelete)}
                         </p>
                     )}
                     <p className="confirmDialogText">{t.deleteConfirm}</p>
@@ -508,7 +517,7 @@ export default function TransportWindowList() {
                     </h2>
                     {blockedDelete && (
                         <p className="confirmDialogRoute">
-                            {fmtZone(blockedDelete.origin_province, blockedDelete.origin_locality)} → {fmtZoneOrOpen(blockedDelete.destination_province, blockedDelete.destination_locality)}
+                            {fmtRoute(blockedDelete)}
                         </p>
                     )}
                     <p className="confirmDialogText">{t.deleteBlockedBody}</p>

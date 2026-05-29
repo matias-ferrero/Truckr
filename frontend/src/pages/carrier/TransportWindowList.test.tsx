@@ -11,21 +11,29 @@ const mockApi = vi.mocked(twApi);
 
 function makeWindow(overrides: Partial<twApi.TransportWindow> = {}): twApi.TransportWindow {
     return {
-        id: 1,
-        vehicle_id: 10,
-        origin_province: "Buenos Aires",
-        origin_locality: null,
-        destination_province: "Córdoba",
-        destination_locality: null,
-        price_per_km: "1500.0",
-        max_km: 1200,
-        available_from: "2026-05-15T00:00:00.000Z",
-        available_to: "2026-05-25T00:00:00.000Z",
-        active: true,
-        cargo_offers_count: 0,
-        vehicle: { id: 10, make: "MB", model: "Sprinter", plate: "AA001XX", vehicle_type: "truck_small" },
-        created_at: "2026-05-11T00:00:00.000Z",
-        updated_at: "2026-05-11T00:00:00.000Z",
+        id:                     1,
+        vehicle_id:             10,
+        origin_address:         "Av. Corrientes 1234, CABA",
+        origin_locality:        "CABA",
+        origin_admin_area:      "Buenos Aires",
+        origin_lat:             "-34.603722",
+        origin_lng:             "-58.381592",
+        destination_address:    "Av. Colón 500, Córdoba",
+        destination_locality:   "Córdoba",
+        destination_admin_area: "Córdoba",
+        destination_lat:        "-31.420083",
+        destination_lng:        "-64.188776",
+        pickup_radius_km:       10,
+        dropoff_radius_km:      10,
+        price_per_km:           "1500.0",
+        max_km:                 1200,
+        available_from:         "2026-05-15T00:00:00.000Z",
+        available_to:           "2026-05-25T00:00:00.000Z",
+        active:                 true,
+        cargo_offers_count:     0,
+        vehicle:                { id: 10, make: "MB", model: "Sprinter", plate: "AA001XX", vehicle_type: "truck_small" },
+        created_at:             "2026-05-11T00:00:00.000Z",
+        updated_at:             "2026-05-11T00:00:00.000Z",
         ...overrides,
     };
 }
@@ -78,28 +86,25 @@ describe("TransportWindowList", () => {
         mockApi.listMyTransportWindows.mockResolvedValue(makeResult([makeWindow()]));
         renderList();
         await waitFor(() => {
-            expect(screen.getByText(/Buenos Aires → Córdoba/i)).toBeInTheDocument();
+            expect(screen.getByText(/CABA, Buenos Aires → Córdoba, Córdoba/i)).toBeInTheDocument();
         });
         expect(screen.getByText(/Visible/i)).toBeInTheDocument();
     });
 
-    it("shows province and locality in route when locality is present", async () => {
+    it("renders the open-destination label when destination_lat is null", async () => {
         mockApi.listMyTransportWindows.mockResolvedValue(
-            makeResult([makeWindow({ origin_locality: "CABA", destination_locality: "Córdoba Capital" })])
+            makeResult([makeWindow({
+                destination_address:    null,
+                destination_locality:   null,
+                destination_admin_area: null,
+                destination_lat:        null,
+                destination_lng:        null,
+                dropoff_radius_km:      null,
+            })])
         );
         renderList();
         await waitFor(() => {
-            expect(screen.getByText(/Buenos Aires, CABA → Córdoba, Córdoba Capital/i)).toBeInTheDocument();
-        });
-    });
-
-    it("shows 'Destino abierto' label when destination_province is null", async () => {
-        mockApi.listMyTransportWindows.mockResolvedValue(
-            makeResult([makeWindow({ destination_province: null, destination_locality: null })])
-        );
-        renderList();
-        await waitFor(() => {
-            expect(screen.getByText(/Buenos Aires → Destino abierto/i)).toBeInTheDocument();
+            expect(screen.getByText(/CABA, Buenos Aires → Cualquier destino/i)).toBeInTheDocument();
         });
     });
 
@@ -232,7 +237,7 @@ describe("TransportWindowList", () => {
 
         // Item removed from list immediately (optimistic)
         await waitFor(() => {
-            expect(screen.queryByText(/Buenos Aires → Córdoba/i)).not.toBeInTheDocument();
+            expect(screen.queryByText(/CABA, Buenos Aires → Córdoba, Córdoba/i)).not.toBeInTheDocument();
         });
         // Undo toast appears
         expect(screen.getByRole("status")).toHaveTextContent(/ventana eliminada/i);
@@ -310,7 +315,7 @@ describe("TransportWindowList", () => {
         await userEvent.click(screen.getByRole("button", { name: /entendido/i }));
         expect(mockApi.deleteTransportWindow).not.toHaveBeenCalled();
         // Item still visible in the list
-        expect(screen.getByText(/Buenos Aires → Córdoba/i)).toBeInTheDocument();
+        expect(screen.getByText(/CABA, Buenos Aires → Córdoba, Córdoba/i)).toBeInTheDocument();
     });
 
     it("navigates to new window form when n is pressed", async () => {

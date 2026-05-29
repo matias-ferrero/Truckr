@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { CarrierDetail as CarrierDetailDto, getCarrier } from "../../api/carriers";
 import { ApiError } from "../../api";
 import { publicContent } from "./publicContent";
+import { formatRoute } from "../../lib/format-place";
 import { Button, buttonVariants } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
 import { AuthContext } from "../../auth/AuthContext";
@@ -225,9 +226,12 @@ function ZonesSection({
                         {windows.map((w) => (
                             <li key={w.id} className="zoneItem">
                                 <span className="zoneRoute">
-                                    {t.zoneLine(
-                                        t.formatZone(w.origin_province, w.origin_locality),
-                                        t.formatZoneOrOpen(w.destination_province, w.destination_locality),
+                                    {formatRoute(
+                                        { locality: w.origin_locality, admin_area: w.origin_admin_area },
+                                        w.destination_lat !== null
+                                            ? { locality: w.destination_locality, admin_area: w.destination_admin_area }
+                                            : null,
+                                        t.openDestinationLabel,
                                     )}
                                 </span>
                                 <span className="zonePrice">

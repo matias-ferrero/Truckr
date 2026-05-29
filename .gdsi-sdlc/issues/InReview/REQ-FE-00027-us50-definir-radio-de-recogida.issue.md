@@ -2,7 +2,7 @@
 tag: REQ-FE-00027
 title: Definir Radio de Recogida — input numérico + círculo arrastrable (US50)
 priority: P1
-status: ready
+status: in_review
 created: '2026-05-24'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/241

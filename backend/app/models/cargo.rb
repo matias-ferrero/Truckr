@@ -20,22 +20,33 @@ class Cargo < ApplicationRecord
     accepted:  [],
     cancelled: []
   }.freeze
+  LAT_RANGE = -90..90
+  LNG_RANGE = -180..180
 
   belongs_to :shipper, inverse_of: :cargos
   has_many   :cargo_offers, dependent: :destroy, inverse_of: :cargo
   has_one    :accepted_cargo_offer, -> { where(status: "accepted") },
              class_name: "CargoOffer", inverse_of: :cargo
 
-  before_save :normalize_zone_fields
-
   validates :cargo_description, presence: true, length: { maximum: 200 }
-  validates :pickup_address, :delivery_address, :pickup_zone, :delivery_zone, presence: true
+  validates :pickup_address, :delivery_address,
+            :pickup_locality, :pickup_admin_area,
+            :delivery_locality, :delivery_admin_area,
+            presence: true
   validates :status, inclusion: { in: STATUSES }
   validates :weight_kg, numericality: { greater_than: 0 }
   validates :volume_cm3, numericality: { greater_than: 0, only_integer: true }, allow_nil: true
   validates :declared_value_cents,
             numericality: { greater_than_or_equal_to: 0, only_integer: true }
   validates :pickup_window_start, :pickup_window_end, presence: true
+  validates :pickup_lat, :delivery_lat,
+            presence: true,
+            numericality: { greater_than_or_equal_to: LAT_RANGE.begin,
+                            less_than_or_equal_to:    LAT_RANGE.end }
+  validates :pickup_lng, :delivery_lng,
+            presence: true,
+            numericality: { greater_than_or_equal_to: LNG_RANGE.begin,
+                            less_than_or_equal_to:    LNG_RANGE.end }
   validate  :pickup_window_is_coherent
 
   scope :for_shipper, ->(shipper) { where(shipper_id: shipper.id) }
@@ -45,32 +56,27 @@ class Cargo < ApplicationRecord
   def cancellable? = status == "open" && accepted_cargo_offer.nil?
 
   # Returns the TransportWindows that match this Cargo for the purposes of
-  # offering (US4/US5): active, no pending/accepted contender, origin and
-  # destination zone substring-match, availability overlaps pickup window,
-  # vehicle can carry the weight. Open-destination windows match any delivery zone.
+  # offering (US4/US5/US52 per ADR-014): active, no pending/accepted contender,
+  # availability overlaps pickup window, vehicle can carry the weight, origin
+  # pin within bbox + pickup_radius_km of the cargo's pickup, and (if the
+  # window has a destination) destination pin within dropoff_radius_km of the
+  # cargo's delivery. Open-destination windows skip the dropoff filter. No
+  # province / locality strings consulted at any layer — pure Haversine.
   def matching_windows
     blocked = CargoOffer.where(status: %w[pending accepted]).select(:transport_window_id)
-    base    = TransportWindow.active.where.not(id: blocked)
 
-    date_params = {
-      available_from_lteq: pickup_window_end,
-      available_to_gteq:   pickup_window_start
-    }
+    pre_filtered = TransportWindow
+      .active
+      .where.not(id: blocked)
+      .where("available_from <= ? AND available_to >= ?", pickup_window_end, pickup_window_start)
+      .joins(:vehicle).where("vehicles.max_load_kg >= ?", weight_kg)
+      .within_bbox_of(pickup_lat, pickup_lng, TransportWindow::PICKUP_RADIUS_KM_MAX)
 
-    fixed_dest = base.ransack(
-      origin_province_normalized_cont:      pickup_zone_normalized,
-      destination_province_normalized_cont: delivery_zone_normalized,
-      **date_params
-    ).result(distinct: true)
-
-    open_dest = base.ransack(
-      origin_province_normalized_cont: pickup_zone_normalized,
-      **date_params
-    ).result(distinct: true).where(destination_province_normalized: nil)
-
-    fixed_dest.or(open_dest)
-              .joins(:vehicle).where("vehicles.max_load_kg >= ?", weight_kg)
-              .includes(vehicle: { carrier: :user }).order(:available_from)
+    # Haversine passes run LAST — they materialise the relation in Ruby.
+    pre_filtered.within_pickup_radius_of(self)
+                .within_dropoff_radius_of(self)
+                .includes(vehicle: { carrier: :user })
+                .order(:available_from)
   end
 
   # Atomically advances `status`, validates the transition against the table
@@ -97,8 +103,10 @@ class Cargo < ApplicationRecord
   end
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[id shipper_id status pickup_address delivery_address pickup_zone delivery_zone
-       pickup_zone_normalized delivery_zone_normalized pickup_window_start pickup_window_end
+    %w[id shipper_id status pickup_address delivery_address
+       pickup_locality pickup_admin_area delivery_locality delivery_admin_area
+       pickup_lat pickup_lng delivery_lat delivery_lng
+       pickup_window_start pickup_window_end
        cargo_description weight_kg volume_cm3 declared_value_cents created_at updated_at]
   end
 
@@ -107,11 +115,6 @@ class Cargo < ApplicationRecord
   end
 
   private
-
-  def normalize_zone_fields
-    self.pickup_zone_normalized   = I18n.transliterate(pickup_zone.to_s).downcase   if pickup_zone.present?
-    self.delivery_zone_normalized = I18n.transliterate(delivery_zone.to_s).downcase if delivery_zone.present?
-  end
 
   def pickup_window_is_coherent
     return if pickup_window_start.blank? || pickup_window_end.blank?

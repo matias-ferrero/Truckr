@@ -62,14 +62,14 @@ identity_users.each do |spec|
 end
 
 # Marketplace fixtures — REQ-BE-00021 (post-rename REF-BE-00002; schema +
-# validations updated by REQ-BE-00032). Seeds Cargo publications + CargoOffer
-# bids consistent with every model rule: TransportWindows on a vehicle never
-# overlap; a Cargo weighs within the vehicle's capacity; a CargoOffer's Cargo
-# pickup window overlaps the target window; a window holds at most one
-# pending/accepted offer (window-lock). cargo1 carries two parallel offers;
-# cargo2 is left un-offered so its detail demos the matches view against the
-# still-free tw3. Idempotent. Skips silently when the dependent Identity rows
-# have not been seeded yet.
+# validations updated by REQ-BE-00032; address-driven location shape via
+# REQ-BE-00039 / ADR-014). Seeds Cargo publications + CargoOffer bids consistent
+# with every model rule: TransportWindows on a vehicle never overlap; a Cargo
+# weighs within the vehicle's capacity; a CargoOffer's Cargo pickup window
+# overlaps the target window; a window holds at most one pending/accepted offer
+# (window-lock). cargo1 carries two parallel offers; cargo2 is left un-offered
+# so its detail demos the matches view against the still-free tw3. Idempotent.
+# Skips silently when the dependent Identity rows have not been seeded yet.
 if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
    Carrier.any? && Shipper.any? && Vehicle.any?
 
@@ -81,33 +81,63 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
     # Three non-overlapping windows on the same vehicle — TransportWindow
     # rejects overlapping active windows per vehicle.
     tw1 = TransportWindow.find_or_create_by!(
-      vehicle: vehicle, origin_province: "Buenos Aires", destination_province: "Córdoba"
+      vehicle: vehicle, origin_locality: "CABA", destination_locality: "Córdoba"
     ) do |w|
-      w.price_per_km   = 1500.0
-      w.max_km         = 1200
-      w.available_from = 1.day.from_now
-      w.available_to   = 9.days.from_now
-      w.active         = true
+      w.origin_address       = "Puerto de Buenos Aires, CABA"
+      w.origin_admin_area    = "Ciudad Autónoma de Buenos Aires"
+      w.destination_address  = "Av. Sabattini 5500, Córdoba"
+      w.destination_admin_area = "Córdoba"
+      w.price_per_km    = 1500.0
+      w.max_km          = 1200
+      w.available_from  = 1.day.from_now
+      w.available_to    = 9.days.from_now
+      w.active          = true
+      w.origin_lat       = -34.603722 # CABA
+      w.origin_lng       = -58.381592
+      w.destination_lat  = -31.420083 # Córdoba
+      w.destination_lng  = -64.188776
+      w.pickup_radius_km = 50
+      w.dropoff_radius_km = 50
     end
 
     tw2 = TransportWindow.find_or_create_by!(
-      vehicle: vehicle, origin_province: "Rosario", destination_province: "Mendoza"
+      vehicle: vehicle, origin_locality: "Rosario", destination_locality: "Mendoza"
     ) do |w|
-      w.price_per_km   = 1700.0
-      w.max_km         = 900
-      w.available_from = 11.days.from_now
-      w.available_to   = 19.days.from_now
-      w.active         = true
+      w.origin_address       = "Av. Pellegrini 1500, Rosario"
+      w.origin_admin_area    = "Santa Fe"
+      w.destination_address  = "Av. San Martín 1100, Mendoza"
+      w.destination_admin_area = "Mendoza"
+      w.price_per_km    = 1700.0
+      w.max_km          = 900
+      w.available_from  = 11.days.from_now
+      w.available_to    = 19.days.from_now
+      w.active          = true
+      w.origin_lat       = -32.946820 # Rosario
+      w.origin_lng       = -60.639317
+      w.destination_lat  = -32.889458 # Mendoza
+      w.destination_lng  = -68.844734
+      w.pickup_radius_km = 80
+      w.dropoff_radius_km = 80
     end
 
     tw3 = TransportWindow.find_or_create_by!(
-      vehicle: vehicle, origin_province: "La Plata", destination_province: "Mar del Plata"
+      vehicle: vehicle, origin_locality: "La Plata", destination_locality: "Mar del Plata"
     ) do |w|
-      w.price_per_km   = 1400.0
-      w.max_km         = 500
-      w.available_from = 21.days.from_now
-      w.available_to   = 29.days.from_now
-      w.active         = true
+      w.origin_address       = "Av. 7 1200, La Plata"
+      w.origin_admin_area    = "Buenos Aires"
+      w.destination_address  = "Av. Luro 3500, Mar del Plata"
+      w.destination_admin_area = "Buenos Aires"
+      w.price_per_km    = 1400.0
+      w.max_km          = 500
+      w.available_from  = 21.days.from_now
+      w.available_to    = 29.days.from_now
+      w.active          = true
+      w.origin_lat       = -34.921450 # La Plata
+      w.origin_lng       = -57.954529
+      w.destination_lat  = -38.005477 # Mar del Plata
+      w.destination_lng  = -57.542611
+      w.pickup_radius_km = 30
+      w.dropoff_radius_km = 30
     end
 
     # Cargo weights stay within the seeded vehicle's 5 t capacity so the
@@ -117,9 +147,15 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
       shipper: shipper, cargo_description: "Pallets de granos"
     ) do |c|
       c.pickup_address       = "Puerto de Buenos Aires"
+      c.pickup_locality      = "CABA"
+      c.pickup_admin_area    = "Ciudad Autónoma de Buenos Aires"
       c.delivery_address     = "Av. Sabattini 5500, Córdoba"
-      c.pickup_zone          = "Buenos Aires"
-      c.delivery_zone        = "Córdoba"
+      c.delivery_locality    = "Córdoba"
+      c.delivery_admin_area  = "Córdoba"
+      c.pickup_lat           = -34.603722 # CABA
+      c.pickup_lng           = -58.381592
+      c.delivery_lat         = -31.420083 # Córdoba
+      c.delivery_lng         = -64.188776
       c.pickup_window_start  = 5.days.from_now
       c.pickup_window_end    = 15.days.from_now
       c.weight_kg            = 4_200.0
@@ -131,9 +167,15 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
       shipper: shipper, cargo_description: "Materiales de construcción"
     ) do |c|
       c.pickup_address       = "Av. 7 1200, La Plata"
+      c.pickup_locality      = "La Plata"
+      c.pickup_admin_area    = "Buenos Aires"
       c.delivery_address     = "Av. Luro 3500, Mar del Plata"
-      c.pickup_zone          = "La Plata"
-      c.delivery_zone        = "Mar del Plata"
+      c.delivery_locality    = "Mar del Plata"
+      c.delivery_admin_area  = "Buenos Aires"
+      c.pickup_lat           = -34.921450 # La Plata
+      c.pickup_lng           = -57.954529
+      c.delivery_lat         = -38.005477 # Mar del Plata
+      c.delivery_lng         = -57.542611
       c.pickup_window_start  = 22.days.from_now
       c.pickup_window_end    = 27.days.from_now
       c.weight_kg            = 3_800.0
@@ -177,19 +219,39 @@ end
 # (US8 — REQ-BE-00033).
 FULFILMENT_COMBOS = [
   { status: "accepted",
-    tw_from: -70, tw_to: -62, origin: "Santa Fe",   dest: "Tucumán",
+    tw_from: -70, tw_to: -62,
+    origin: "Santa Fe", origin_admin: "Santa Fe",
+    dest: "Tucumán", dest_admin: "Tucumán",
+    origin_lat: -31.633333, origin_lng: -60.700000,
+    dest_lat:   -26.808285, dest_lng:   -65.217590,
     cargo_desc: "Equipos industriales" },
   { status: "pending_payment",
-    tw_from: -61, tw_to: -53, origin: "Entre Ríos", dest: "Salta",
+    tw_from: -61, tw_to: -53,
+    origin: "Paraná", origin_admin: "Entre Ríos",
+    dest: "Salta", dest_admin: "Salta",
+    origin_lat: -31.732222, origin_lng: -60.528611,
+    dest_lat:   -24.788195, dest_lng:   -65.410344,
     cargo_desc: "Insumos médicos" },
   { status: "in_transit",
-    tw_from: -52, tw_to: -44, origin: "Corrientes", dest: "Jujuy",
+    tw_from: -52, tw_to: -44,
+    origin: "Corrientes", origin_admin: "Corrientes",
+    dest: "Jujuy", dest_admin: "Jujuy",
+    origin_lat: -27.469440, origin_lng: -58.830278,
+    dest_lat:   -24.184832, dest_lng:   -65.302181,
     cargo_desc: "Maquinaria agrícola" },
   { status: "delivered",
-    tw_from: -43, tw_to: -35, origin: "Misiones",   dest: "Catamarca",
+    tw_from: -43, tw_to: -35,
+    origin: "Posadas", origin_admin: "Misiones",
+    dest: "San Fernando del Valle de Catamarca", dest_admin: "Catamarca",
+    origin_lat: -27.367222, origin_lng: -55.896944,
+    dest_lat:   -28.468611, dest_lng:   -65.779167,
     cargo_desc: "Autopartes" },
   { status: "cancelled",
-    tw_from: -34, tw_to: -26, origin: "Chaco",      dest: "La Rioja",
+    tw_from: -34, tw_to: -26,
+    origin: "Resistencia", origin_admin: "Chaco",
+    dest: "La Rioja", dest_admin: "La Rioja",
+    origin_lat: -27.451100, origin_lng: -58.986622,
+    dest_lat:   -29.411778, dest_lng:   -66.855750,
     cargo_desc: "Bebidas y licores" }
 ].freeze
 
@@ -204,24 +266,40 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
     FULFILMENT_COMBOS.each do |fx|
       tw = TransportWindow.find_or_create_by!(
         vehicle: vehicle,
-        origin_province:      fx[:origin],
-        destination_province: fx[:dest]
+        origin_locality:      fx[:origin],
+        destination_locality: fx[:dest]
       ) do |w|
-        w.price_per_km   = 1_500.0
-        w.max_km         = 1_200
-        w.available_from = fx[:tw_from].days.from_now
-        w.available_to   = fx[:tw_to].days.from_now
-        w.active         = false
-        w.status         = "reserved"
+        w.origin_address       = "Av. Principal 100, #{fx[:origin]}"
+        w.origin_admin_area    = fx[:origin_admin]
+        w.destination_address  = "Av. Central 200, #{fx[:dest]}"
+        w.destination_admin_area = fx[:dest_admin]
+        w.price_per_km    = 1_500.0
+        w.max_km          = 1_200
+        w.available_from  = fx[:tw_from].days.from_now
+        w.available_to    = fx[:tw_to].days.from_now
+        w.active          = false
+        w.status          = "reserved"
+        w.origin_lat      = fx[:origin_lat]
+        w.origin_lng      = fx[:origin_lng]
+        w.destination_lat = fx[:dest_lat]
+        w.destination_lng = fx[:dest_lng]
+        w.pickup_radius_km  = 50
+        w.dropoff_radius_km = 50
       end
 
       cargo = Cargo.find_or_create_by!(
         shipper: shipper, cargo_description: fx[:cargo_desc]
       ) do |c|
         c.pickup_address       = "Av. Principal 100, #{fx[:origin]}"
+        c.pickup_locality      = fx[:origin]
+        c.pickup_admin_area    = fx[:origin_admin]
         c.delivery_address     = "Av. Central 200, #{fx[:dest]}"
-        c.pickup_zone          = fx[:origin]
-        c.delivery_zone        = fx[:dest]
+        c.delivery_locality    = fx[:dest]
+        c.delivery_admin_area  = fx[:dest_admin]
+        c.pickup_lat           = fx[:origin_lat]
+        c.pickup_lng           = fx[:origin_lng]
+        c.delivery_lat         = fx[:dest_lat]
+        c.delivery_lng         = fx[:dest_lng]
         c.pickup_window_start  = (fx[:tw_from] - 2).days.from_now
         c.pickup_window_end    = (fx[:tw_to]   + 2).days.from_now
         c.weight_kg            = 2_500.0

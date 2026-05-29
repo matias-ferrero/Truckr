@@ -25,15 +25,21 @@ function mockFetch(body: unknown, status = 200, headers: Record<string, string> 
 }
 
 const draft: CargoDraft = {
-    cargo_description: "Pallets",
-    pickup_address: "Calle 1",
-    delivery_address: "Calle 2",
-    pickup_zone: "Buenos Aires",
-    delivery_zone: "Córdoba",
-    pickup_window_start: "2026-06-01T08:00",
-    pickup_window_end: "2026-06-03T18:00",
-    weight_kg: "1500",
-    volume_cm3: "3000000",
+    cargo_description:    "Pallets",
+    pickup_address:       "Calle 1",
+    pickup_lat:           -34.603722,
+    pickup_lng:           -58.381592,
+    pickup_locality:      "CABA",
+    pickup_admin_area:    "Buenos Aires",
+    delivery_address:     "Calle 2",
+    delivery_lat:         -31.420083,
+    delivery_lng:         -64.188776,
+    delivery_locality:    "Córdoba",
+    delivery_admin_area:  "Córdoba",
+    pickup_window_start:  "2026-06-01T08:00",
+    pickup_window_end:    "2026-06-03T18:00",
+    weight_kg:            "1500",
+    volume_cm3:           "3000000",
     declared_value_cents: "5000000",
 };
 
@@ -158,12 +164,12 @@ describe("getMatches", () => {
 describe("fieldErrorsFrom", () => {
     it("flattens an ApiError details map to first messages", () => {
         const err = new ApiError(422, "x", "x", {
-            weight_kg: ["debe ser positivo"],
-            pickup_zone: ["es requerida", "otro"],
+            weight_kg:       ["debe ser positivo"],
+            pickup_locality: ["es requerida", "otro"],
         });
         expect(fieldErrorsFrom(err)).toEqual({
-            weight_kg: "debe ser positivo",
-            pickup_zone: "es requerida",
+            weight_kg:       "debe ser positivo",
+            pickup_locality: "es requerida",
         });
     });
 

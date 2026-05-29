@@ -28,8 +28,10 @@ export type CarrierCargoOfferShipper = {
 
 export type CarrierCargoOfferTransportWindow = {
     id: number;
-    origin_zone: string;
-    destination_zone: string;
+    origin_locality: string;
+    origin_admin_area: string;
+    destination_locality: string | null;
+    destination_admin_area: string | null;
     available_from: string;
     available_to: string;
     price_per_km: string;

@@ -5,11 +5,13 @@ module Api
   # REQ-BE-00032). Six endpoints: index / show / create / update / destroy /
   # matches.
   #
-  # `matches` runs zone-string matching (see plan §2.3 — no Haversine, no
-  # distance_km): a TransportWindow matches a Cargo when it is active, has no
-  # contending CargoOffer, its zones substring-match the Cargo's zones, its
-  # availability overlaps the pickup window, and its vehicle can carry the
-  # weight.
+  # `matches` runs pure address-driven matching (US52 / REQ-BE-00039 /
+  # ADR-014): a TransportWindow matches a Cargo when it is active, has no
+  # contending CargoOffer, availability overlaps the pickup window, vehicle
+  # can carry the weight, its origin pin is within `pickup_radius_km` of the
+  # cargo's pickup point (Haversine), and — if the window has a destination —
+  # its destination pin is within `dropoff_radius_km` of the cargo's delivery
+  # point. Open-destination windows skip the dropoff filter.
   #
   # `destroy` is a soft-cancel cascade: the Cargo transitions to `cancelled`
   # and every `pending` sibling CargoOffer is expired, all in one transaction.
@@ -60,9 +62,14 @@ module Api
     end
 
     # GET /api/cargos/:id/matches
+    #
+    # `sort=distance` re-orders by Haversine distance from the cargo's pickup
+    # point ascending (US5 AC8). Default ordering remains by `available_from`.
     def matches
       authorize @cargo
-      render_collection(CargoMatchResource, @cargo.matching_windows)
+      windows = @cargo.matching_windows
+      windows = windows.order_by_distance_to(@cargo) if params[:sort] == "distance"
+      render_collection(CargoMatchResource, windows)
     end
 
     private
@@ -74,7 +81,10 @@ module Api
     def cargo_params
       params.require(:cargo).permit(
         :cargo_description, :pickup_address, :delivery_address,
-        :pickup_zone, :delivery_zone, :pickup_window_start, :pickup_window_end,
+        :pickup_locality, :pickup_admin_area,
+        :delivery_locality, :delivery_admin_area,
+        :pickup_lat, :pickup_lng, :delivery_lat, :delivery_lng,
+        :pickup_window_start, :pickup_window_end,
         :weight_kg, :volume_cm3, :declared_value_cents
       )
     end

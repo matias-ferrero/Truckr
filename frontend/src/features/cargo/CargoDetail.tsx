@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { cancelCargo, getCargo } from "./api";
 import type { Cargo, CargoOffer } from "../../types/Cargo";
 import { cargosContent } from "./cargosContent";
+import { formatRoute } from "../../lib/format-place";
 import { Alert } from "../../components/ui/alert";
 import { Button } from "../../components/ui/button";
 
@@ -136,7 +137,11 @@ export default function CargoDetail() {
                 <header className="detailHeader">
                     <div>
                         <h1 className="sectionTitle">
-                            {t.summary.route(cargo.pickup_zone, cargo.delivery_zone)}
+                            {formatRoute(
+                                { locality: cargo.pickup_locality, admin_area: cargo.pickup_admin_area },
+                                { locality: cargo.delivery_locality, admin_area: cargo.delivery_admin_area },
+                                t.summary.openDestinationLabel,
+                            )}
                         </h1>
                         <span
                             className={`statusBadge ${
@@ -329,15 +334,12 @@ function OfferRow({ offer }: { offer: CargoOffer }) {
             </span>
             <span className="offerRoute">
                 {window
-                    ? t.offers.window(
-                        window.origin_locality
-                            ? `${window.origin_province}, ${window.origin_locality}`
-                            : window.origin_province,
-                        window.destination_province
-                            ? (window.destination_locality
-                                ? `${window.destination_province}, ${window.destination_locality}`
-                                : window.destination_province)
-                            : "Destino abierto",
+                    ? formatRoute(
+                        { locality: window.origin_locality, admin_area: window.origin_admin_area },
+                        window.destination_locality || window.destination_admin_area
+                            ? { locality: window.destination_locality, admin_area: window.destination_admin_area }
+                            : null,
+                        t.summary.openDestinationLabel,
                     )
                     : `#${offer.transport_window_id}`}
             </span>

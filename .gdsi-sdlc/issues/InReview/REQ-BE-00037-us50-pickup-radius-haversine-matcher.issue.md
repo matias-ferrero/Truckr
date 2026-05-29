@@ -2,7 +2,7 @@
 tag: REQ-BE-00037
 title: pickup_radius_km column + Haversine matcher en el US5 scope (US50)
 priority: P1
-status: ready
+status: in_review
 created: '2026-05-24'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/235

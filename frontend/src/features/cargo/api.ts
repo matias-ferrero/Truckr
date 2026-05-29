@@ -125,9 +125,9 @@ export function fieldErrorsFrom(err: unknown): Record<string, string> {
 }
 
 /** Drops empty optional fields (volume) so the backend treats them as nil. */
-function serializeDraft(draft: CargoDraft): Record<string, string> {
+function serializeDraft(draft: CargoDraft): Record<string, string | number> {
     const { volume_cm3, ...rest } = draft;
-    const body: Record<string, string> = { ...rest };
+    const body: Record<string, string | number> = { ...rest };
     if (volume_cm3.trim() !== "") body.volume_cm3 = volume_cm3;
     return body;
 }

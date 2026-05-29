@@ -2,7 +2,7 @@
 tag: REQ-FE-00025
 title: Selector de Direcciones — Ventana de Transporte (US48 — picker FE compartido)
 priority: P1
-status: ready
+status: in_review
 created: '2026-05-24'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/239

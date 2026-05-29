@@ -41,20 +41,29 @@ function mockMe(me: ReturnType<typeof fakeMe> | null, loading = false) {
 
 function fakeWindow(over: Partial<transportWindowsApi.TransportWindow> = {}): transportWindowsApi.TransportWindow {
     return {
-        id: 1,
-        vehicle_id: 1,
-        origin_province: "Centro",
-        origin_locality: null,
-        destination_province: "Pilar",
-        destination_locality: null,
-        price_per_km: "150.00",
-        max_km: 100,
-        available_from: "2026-06-01T09:00:00.000Z",
-        available_to: "2026-06-30T18:00:00.000Z",
-        active: true,
-        vehicle: { id: 1, make: "MB", model: "Sprinter", plate: "AAA111", vehicle_type: "van" },
-        created_at: "",
-        updated_at: "",
+        id:                     1,
+        vehicle_id:             1,
+        origin_address:         "Centro",
+        origin_locality:        "Centro",
+        origin_admin_area:      "Buenos Aires",
+        origin_lat:             "-34.603722",
+        origin_lng:             "-58.381592",
+        destination_address:    "Pilar",
+        destination_locality:   "Pilar",
+        destination_admin_area: "Buenos Aires",
+        destination_lat:        "-34.458500",
+        destination_lng:        "-58.914600",
+        pickup_radius_km:       10,
+        dropoff_radius_km:      10,
+        price_per_km:           "150.00",
+        max_km:                 100,
+        available_from:         "2026-06-01T09:00:00.000Z",
+        available_to:           "2026-06-30T18:00:00.000Z",
+        active:                 true,
+        cargo_offers_count:     0,
+        vehicle:                { id: 1, make: "MB", model: "Sprinter", plate: "AAA111", vehicle_type: "van" },
+        created_at:             "",
+        updated_at:             "",
         ...over,
     };
 }
@@ -209,12 +218,19 @@ describe("DashboardPage", () => {
         });
         (transportWindowsApi.listMyTransportWindows as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
             items: [
-                fakeWindow({ origin_province: "Centro",
-        origin_locality: null, destination_province: "Pilar",
-        destination_locality: null }),
-                fakeWindow({ id: 2, origin_province: "San Isidro",
-        origin_locality: null, destination_province: "CABA",
-        destination_locality: null }),
+                fakeWindow({
+                    origin_locality:      "Centro",
+                    origin_admin_area:    "Buenos Aires",
+                    destination_locality: "Pilar",
+                    destination_admin_area: "Buenos Aires",
+                }),
+                fakeWindow({
+                    id:                   2,
+                    origin_locality:      "San Isidro",
+                    origin_admin_area:    "Buenos Aires",
+                    destination_locality: "CABA",
+                    destination_admin_area: "Ciudad Autónoma de Buenos Aires",
+                }),
             ],
             meta: { total: 2, page: 1, perPage: 20, totalPages: 1 },
         });
@@ -227,8 +243,8 @@ describe("DashboardPage", () => {
         expect(screen.getByRole("link", { name: /ver mis envíos/i })).toHaveAttribute("href", "/carrier/shipments");
 
         await waitFor(() => {
-            expect(screen.getByRole("heading", { level: 3, name: "Centro a Pilar" })).toBeInTheDocument();
-            expect(screen.getByRole("heading", { level: 3, name: "San Isidro a CABA" })).toBeInTheDocument();
+            expect(screen.getByRole("heading", { level: 3, name: /Centro, Buenos Aires → Pilar, Buenos Aires/ })).toBeInTheDocument();
+            expect(screen.getByRole("heading", { level: 3, name: /San Isidro, Buenos Aires → CABA, Ciudad Autónoma de Buenos Aires/ })).toBeInTheDocument();
             expect(screen.getByText("AAA111")).toBeInTheDocument();
         });
         expect(screen.getByText(/mb sprinter/i)).toBeInTheDocument();

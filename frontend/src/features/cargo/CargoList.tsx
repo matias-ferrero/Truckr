@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { listCargos, type CargoListMeta } from "./api";
 import type { Cargo, CargoStatus } from "../../types/Cargo";
 import { cargosContent } from "./cargosContent";
+import { formatRoute } from "../../lib/format-place";
 
 const t = cargosContent.list;
 
@@ -127,12 +128,17 @@ export default function CargoList() {
                                     <div className="cargoCardHeader">
                                         <span
                                             className="cargoRoute"
-                                            title={t.route(
-                                                c.pickup_zone,
-                                                c.delivery_zone,
+                                            title={formatRoute(
+                                                { locality: c.pickup_locality, admin_area: c.pickup_admin_area },
+                                                { locality: c.delivery_locality, admin_area: c.delivery_admin_area },
+                                                t.openDestinationLabel,
                                             )}
                                         >
-                                            {t.route(c.pickup_zone, c.delivery_zone)}
+                                            {formatRoute(
+                                                { locality: c.pickup_locality, admin_area: c.pickup_admin_area },
+                                                { locality: c.delivery_locality, admin_area: c.delivery_admin_area },
+                                                t.openDestinationLabel,
+                                            )}
                                         </span>
                                         <span
                                             className={`statusBadge ${

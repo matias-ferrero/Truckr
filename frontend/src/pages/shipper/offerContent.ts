@@ -13,9 +13,9 @@ export const offerContent = {
     loadingLabel: "Cargando los datos de la oferta",
     loadError: "No pudimos cargar la carga o la ventana de transporte.",
     backToCargo: "← Volver a la carga",
+    openDestinationLabel: "Cualquier destino",
     cargoSection: {
         heading: "Tu carga",
-        route: (from: string, to: string) => `${from} → ${to}`,
         pickup: "Retiro",
         delivery: "Entrega",
         pickupWindow: "Ventana de retiro",
@@ -24,7 +24,6 @@ export const offerContent = {
     },
     windowSection: {
         heading: "Ventana de transporte",
-        route: (from: string, to: string) => `${from} → ${to}`,
         carrier: (name: string) => `Transportista: ${name}`,
         carrierFallback: "Transportista",
         vehicle: (make: string, model: string, plate: string) =>

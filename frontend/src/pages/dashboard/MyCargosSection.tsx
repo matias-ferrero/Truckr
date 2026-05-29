@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { listCargos } from "../../features/cargo/api";
 import type { Cargo, CargoStatus } from "../../types/Cargo";
 import { cargosContent } from "../../features/cargo/cargosContent";
+import { formatRoute } from "../../lib/format-place";
 
 const t = cargosContent.dashboardSection;
 
@@ -152,9 +153,10 @@ export function MyCargosSection() {
 }
 
 function CargoMiniCard({ cargo }: { cargo: Cargo }) {
-    const route = cargosContent.list.route(
-        cargo.pickup_zone,
-        cargo.delivery_zone,
+    const route = formatRoute(
+        { locality: cargo.pickup_locality, admin_area: cargo.pickup_admin_area },
+        { locality: cargo.delivery_locality, admin_area: cargo.delivery_admin_area },
+        cargosContent.list.openDestinationLabel,
     );
     const isOpen = cargo.status === "open";
     // Open cargo → transport-window search; non-open → detail (plan §9 D3).

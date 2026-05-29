@@ -3,7 +3,7 @@ tag: REQ-BE-00036
 title: Migraciones y validaciones de lat/lng para TransportWindow y Cargo (US48 +
   US49)
 priority: P1
-status: ready
+status: in_review
 created: '2026-05-24'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/234

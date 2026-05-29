@@ -6,13 +6,16 @@
 # would recurse back into the Cargo).
 #
 # On the `create` response the controller passes `matches:` so the freshly
-# published Cargo ships its initial zone-match list inline; otherwise the
+# published Cargo ships its initial match list inline; otherwise the
 # `matches` attribute is omitted (`nil`).
 class CargoResource
   include Alba::Resource
 
   attributes :id, :shipper_id, :status, :cargo_description,
-             :pickup_address, :delivery_address, :pickup_zone, :delivery_zone,
+             :pickup_address, :delivery_address,
+             :pickup_locality, :pickup_admin_area,
+             :delivery_locality, :delivery_admin_area,
+             :pickup_lat, :pickup_lng, :delivery_lat, :delivery_lng,
              :pickup_window_start, :pickup_window_end,
              :weight_kg, :volume_cm3, :declared_value_cents,
              :cancelled_at, :cancellation_reason, :created_at, :updated_at
@@ -40,13 +43,13 @@ class CargoResource
         created_at: offer.created_at,
         updated_at: offer.updated_at,
         transport_window: window && {
-          id:                   window.id,
-          origin_province:      window.origin_province,
-          origin_locality:      window.origin_locality,
-          destination_province: window.destination_province,
-          destination_locality: window.destination_locality,
-          available_from:       window.available_from,
-          available_to:         window.available_to
+          id:                     window.id,
+          origin_locality:        window.origin_locality,
+          origin_admin_area:      window.origin_admin_area,
+          destination_locality:   window.destination_locality,
+          destination_admin_area: window.destination_admin_area,
+          available_from:         window.available_from,
+          available_to:           window.available_to
         }
       }
     end

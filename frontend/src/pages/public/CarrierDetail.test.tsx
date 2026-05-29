@@ -63,17 +63,25 @@ function fakeCarrier(over: Partial<CarrierDetailDto> = {}): CarrierDetailDto {
         ],
         transport_windows: [
             {
-                id: 7,
-                vehicle_id: 1,
-                origin_province: "Buenos Aires",
-                origin_locality: null,
-                destination_province: "Rosario",
-                destination_locality: null,
-                price_per_km: "1500.50",
-                max_km: 1200,
-                available_from: "2026-06-01T00:00:00Z",
-                available_to: "2026-06-30T00:00:00Z",
-                active: true,
+                id:                     7,
+                vehicle_id:             1,
+                origin_address:         "Av. Corrientes 1234, CABA",
+                origin_locality:        "CABA",
+                origin_admin_area:      "Buenos Aires",
+                origin_lat:             "-34.603722",
+                origin_lng:             "-58.381592",
+                destination_address:    "Rosario",
+                destination_locality:   "Rosario",
+                destination_admin_area: "Santa Fe",
+                destination_lat:        "-32.946820",
+                destination_lng:        "-60.639317",
+                pickup_radius_km:       10,
+                dropoff_radius_km:      10,
+                price_per_km:           "1500.50",
+                max_km:                 1200,
+                available_from:         "2026-06-01T00:00:00Z",
+                available_to:           "2026-06-30T00:00:00Z",
+                active:                 true,
             },
         ],
         created_at: "",
@@ -116,26 +124,34 @@ describe("CarrierDetail", () => {
         vi.mocked(carriersApi.getCarrier).mockResolvedValueOnce(fakeCarrier());
         renderAt("/carriers/42");
 
-        expect(await screen.findByText(/buenos aires → rosario/i)).toBeInTheDocument();
+        expect(await screen.findByText(/CABA, Buenos Aires → Rosario, Santa Fe/i)).toBeInTheDocument();
         expect(screen.getByText(/\$1500\.50 \/ km/)).toBeInTheDocument();
     });
 
-    it("renders province and locality in route when locality is present", async () => {
+    it("renders locality, admin_area on both sides of the route", async () => {
         vi.mocked(carriersApi.getCarrier).mockResolvedValueOnce(
             fakeCarrier({
                 transport_windows: [
                     {
-                        id: 7,
-                        vehicle_id: 1,
-                        origin_province: "Buenos Aires",
-                        origin_locality: "CABA",
-                        destination_province: "Córdoba",
-                        destination_locality: "Córdoba Capital",
-                        price_per_km: "1500.50",
-                        max_km: 1200,
-                        available_from: "2026-06-01T00:00:00Z",
-                        available_to: "2026-06-30T00:00:00Z",
-                        active: true,
+                        id:                     7,
+                        vehicle_id:             1,
+                        origin_address:         "Av. Corrientes 1234, CABA",
+                        origin_locality:        "CABA",
+                        origin_admin_area:      "Buenos Aires",
+                        origin_lat:             "-34.603722",
+                        origin_lng:             "-58.381592",
+                        destination_address:    "Córdoba Capital",
+                        destination_locality:   "Córdoba Capital",
+                        destination_admin_area: "Córdoba",
+                        destination_lat:        "-31.420083",
+                        destination_lng:        "-64.188776",
+                        pickup_radius_km:       10,
+                        dropoff_radius_km:      10,
+                        price_per_km:           "1500.50",
+                        max_km:                 1200,
+                        available_from:         "2026-06-01T00:00:00Z",
+                        available_to:           "2026-06-30T00:00:00Z",
+                        active:                 true,
                     },
                 ],
             }),
@@ -143,7 +159,7 @@ describe("CarrierDetail", () => {
         renderAt("/carriers/42");
 
         expect(
-            await screen.findByText(/Buenos Aires, CABA → Córdoba, Córdoba Capital/i),
+            await screen.findByText(/CABA, Buenos Aires → Córdoba Capital, Córdoba/i),
         ).toBeInTheDocument();
     });
 
@@ -175,29 +191,37 @@ describe("CarrierDetail", () => {
         expect(screen.queryByRole("img", { name: /foto de mercedes-benz/i })).toBeNull();
     });
 
-    it("renders 'Destino abierto' for open-destination transport windows", async () => {
+    it("renders the open-destination label for open-destination transport windows", async () => {
         vi.mocked(carriersApi.getCarrier).mockResolvedValueOnce(
             fakeCarrier({
                 transport_windows: [
                     {
-                        id: 8,
-                        vehicle_id: 1,
-                        origin_province: "Buenos Aires",
-                        origin_locality: null,
-                        destination_province: null,
-                        destination_locality: null,
-                        price_per_km: "1200.00",
-                        max_km: 800,
-                        available_from: "2026-06-01T00:00:00Z",
-                        available_to: "2026-06-30T00:00:00Z",
-                        active: true,
+                        id:                     8,
+                        vehicle_id:             1,
+                        origin_address:         "Av. Corrientes 1234, CABA",
+                        origin_locality:        "CABA",
+                        origin_admin_area:      "Buenos Aires",
+                        origin_lat:             "-34.603722",
+                        origin_lng:             "-58.381592",
+                        destination_address:    null,
+                        destination_locality:   null,
+                        destination_admin_area: null,
+                        destination_lat:        null,
+                        destination_lng:        null,
+                        pickup_radius_km:       10,
+                        dropoff_radius_km:      null,
+                        price_per_km:           "1200.00",
+                        max_km:                 800,
+                        available_from:         "2026-06-01T00:00:00Z",
+                        available_to:           "2026-06-30T00:00:00Z",
+                        active:                 true,
                     },
                 ],
             }),
         );
         renderAt("/carriers/42");
 
-        expect(await screen.findByText(/Buenos Aires → Destino abierto/i)).toBeInTheDocument();
+        expect(await screen.findByText(/CABA, Buenos Aires → Cualquier destino/i)).toBeInTheDocument();
     });
 
     it("falls back to descriptionFallback when the carrier has no description", async () => {

@@ -9,22 +9,28 @@ class CarrierDetailResource < CarrierResource
 
   many :vehicles, resource: VehicleResource
 
-  # TransportWindowResource doesn't exist on this branch (lands with PR #163);
-  # serialise inline until it's available, then switch to `many`.
   attribute :transport_windows do |carrier|
     carrier.active_transport_windows.map do |w|
       {
-        id:                    w.id,
-        vehicle_id:            w.vehicle_id,
-        origin_province:       w.origin_province,
-        origin_locality:       w.origin_locality,
-        destination_province:  w.destination_province,
-        destination_locality:  w.destination_locality,
-        price_per_km:          w.price_per_km.to_s,
-        max_km:                w.max_km,
-        available_from:        w.available_from&.iso8601,
-        available_to:          w.available_to&.iso8601,
-        active:                w.active
+        id:                     w.id,
+        vehicle_id:             w.vehicle_id,
+        origin_address:         w.origin_address,
+        origin_locality:        w.origin_locality,
+        origin_admin_area:      w.origin_admin_area,
+        destination_address:    w.destination_address,
+        destination_locality:   w.destination_locality,
+        destination_admin_area: w.destination_admin_area,
+        origin_lat:             w.origin_lat,
+        origin_lng:             w.origin_lng,
+        destination_lat:        w.destination_lat,
+        destination_lng:        w.destination_lng,
+        pickup_radius_km:       w.pickup_radius_km,
+        dropoff_radius_km:      w.dropoff_radius_km,
+        price_per_km:           w.price_per_km.to_s,
+        max_km:                 w.max_km,
+        available_from:         w.available_from&.iso8601,
+        available_to:           w.available_to&.iso8601,
+        active:                 w.active
       }
     end
   end

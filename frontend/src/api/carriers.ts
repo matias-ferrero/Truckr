@@ -1,14 +1,22 @@
 import { apiFetch } from "../api";
 import type { Vehicle } from "./vehicles";
 
-// Wire format mirrors CarrierDetailResource on the backend.
+// Wire format mirrors CarrierDetailResource on the backend (REQ-BE-00039).
 export type TransportWindow = {
     id: number;
     vehicle_id: number;
-    origin_province: string;
-    origin_locality: string | null;
-    destination_province: string | null;
+    origin_address: string;
+    origin_locality: string;
+    origin_admin_area: string;
+    origin_lat: string | number;
+    origin_lng: string | number;
+    destination_address: string | null;
     destination_locality: string | null;
+    destination_admin_area: string | null;
+    destination_lat: string | number | null;
+    destination_lng: string | number | null;
+    pickup_radius_km: number;
+    dropoff_radius_km: number | null;
     price_per_km: string;
     max_km: number;
     available_from: string;

@@ -8,15 +8,25 @@ export type TransportWindowVehicle = {
     vehicle_type: string;
 };
 
+// REQ-BE-00039 / ADR-014: address-driven shape. `origin_*` is always set; the
+// destination block is either fully populated or fully null ("destino abierto").
 export type TransportWindow = {
     id: number;
     vehicle_id: number;
-    origin_province: string;
-    origin_locality: string | null;
-    destination_province: string | null;
+    origin_address: string;
+    origin_locality: string;
+    origin_admin_area: string;
+    origin_lat: string | number;
+    origin_lng: string | number;
+    destination_address: string | null;
     destination_locality: string | null;
+    destination_admin_area: string | null;
+    destination_lat: string | number | null;
+    destination_lng: string | number | null;
     price_per_km: string;
     max_km: number;
+    pickup_radius_km: number;
+    dropoff_radius_km: number | null;
     available_from: string;
     available_to: string;
     active: boolean;
@@ -40,12 +50,20 @@ export type TransportWindowListResult = {
 
 export type TransportWindowDraft = {
     vehicle_id: number;
-    origin_province: string;
-    origin_locality: string | null;
-    destination_province: string | null;
+    origin_address: string;
+    origin_locality: string;
+    origin_admin_area: string;
+    origin_lat: number;
+    origin_lng: number;
+    destination_address: string | null;
     destination_locality: string | null;
+    destination_admin_area: string | null;
+    destination_lat: number | null;
+    destination_lng: number | null;
     price_per_km: string;
     max_km: string;
+    pickup_radius_km: number;
+    dropoff_radius_km: number | null;
     available_from: string;
     available_to: string;
 };

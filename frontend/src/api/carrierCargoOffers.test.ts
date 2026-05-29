@@ -35,8 +35,10 @@ function pendingOffer() {
         shipper: { id: 1, name: "Test User" },
         transport_window: {
             id: 5,
-            origin_zone: "Buenos Aires",
-            destination_zone: "Córdoba",
+            origin_locality: "CABA",
+            origin_admin_area: "Buenos Aires",
+            destination_locality: "Córdoba",
+            destination_admin_area: "Córdoba",
             available_from: "2026-06-11T08:00:00Z",
             available_to: "2026-06-16T18:00:00Z",
             price_per_km: "1500.0",

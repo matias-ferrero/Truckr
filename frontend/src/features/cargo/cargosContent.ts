@@ -3,33 +3,6 @@
  * the i18n bundle until a real i18n library replaces it. Components must read
  * every string from here — never inline literals. */
 
-const PROVINCES = [
-    "Buenos Aires",
-    "Catamarca",
-    "Chaco",
-    "Chubut",
-    "Ciudad Autónoma de Buenos Aires",
-    "Córdoba",
-    "Corrientes",
-    "Entre Ríos",
-    "Formosa",
-    "Jujuy",
-    "La Pampa",
-    "La Rioja",
-    "Mendoza",
-    "Misiones",
-    "Neuquén",
-    "Río Negro",
-    "Salta",
-    "San Juan",
-    "San Luis",
-    "Santa Cruz",
-    "Santa Fe",
-    "Santiago del Estero",
-    "Tierra del Fuego",
-    "Tucumán",
-] as const;
-
 export const cargosContent = {
     statusLabel: {
         open: "Abierta",
@@ -56,7 +29,8 @@ export const cargosContent = {
         emptyCta: "Publicá tu primera carga",
         filterLabel: "Filtrar por estado",
         filterAll: "Todas",
-        route: (from: string, to: string | null) => `${from} → ${to ?? "Destino abierto"}`,
+        openDestinationLabel: "Cualquier destino",
+        route: (from: string, to: string | null) => `${from} → ${to ?? "Cualquier destino"}`,
         pickupWindow: (from: string, to: string) =>
             from === to ? from : `${from} – ${to}`,
         offersCount: (n: number) =>
@@ -91,26 +65,27 @@ export const cargosContent = {
             cargoDescription: "Descripción de la carga",
             cargoDescriptionHelp: "Hasta 200 caracteres.",
             pickupAddress: "Dirección de retiro",
+            pickupAddressHelp:
+                "Buscá una dirección y elegila del listado — capturamos sus coordenadas.",
             deliveryAddress: "Dirección de entrega",
-            pickupZone: "Zona de retiro",
-            deliveryZone: "Zona de entrega",
-            zoneHelp: "Provincia o región — la usamos para buscar transportistas.",
-            zoneDefault: "Seleccioná una zona",
+            deliveryAddressHelp:
+                "Buscá una dirección y elegila del listado — capturamos sus coordenadas.",
             pickupWindowStart: "Retiro desde",
             pickupWindowEnd: "Retiro hasta",
             weightKg: "Peso (kg)",
+            weightKgHelp: "Hasta una decimal.",
             volumeCm3: "Volumen (cm³)",
-            volumeOptional: "Opcional.",
+            volumeOptional: "Opcional. Número entero.",
             declaredValue: "Valor declarado (ARS)",
+            declaredValueHelp: "Pesos argentinos enteros — sin centavos.",
         },
-        provinces: PROVINCES,
         errors: {
             cargoDescriptionRequired: "Ingresá una descripción de la carga.",
             cargoDescriptionTooLong: "La descripción no puede superar los 200 caracteres.",
-            pickupAddressRequired: "Ingresá la dirección de retiro.",
-            deliveryAddressRequired: "Ingresá la dirección de entrega.",
-            pickupZoneRequired: "Elegí la zona de retiro.",
-            deliveryZoneRequired: "Elegí la zona de entrega.",
+            pickupAddressRequired:
+                "Confirmá una dirección de retiro desde el listado.",
+            deliveryAddressRequired:
+                "Confirmá una dirección de entrega desde el listado.",
             pickupWindowStartRequired: "Ingresá la fecha de inicio del retiro.",
             pickupWindowEndRequired: "Ingresá la fecha de fin del retiro.",
             pickupWindowEndBeforeStart:
@@ -126,6 +101,16 @@ export const cargosContent = {
             update: "Guardar cambios",
             saving: "Guardando…",
             cancel: "Cancelar",
+        },
+        mapPreview: {
+            title: "Vista previa del recorrido",
+            help:
+                "Confirmá las dos direcciones para ver los pines de retiro y entrega.",
+            pickupLabel: "Retiro",
+            deliveryLabel: "Entrega",
+            unavailable:
+                "No pudimos cargar el mapa. Las coordenadas se guardan igual.",
+            regionLabel: "Mapa con los pines de retiro y entrega",
         },
     },
 
@@ -144,7 +129,8 @@ export const cargosContent = {
             offers: "Mis ofertas",
         },
         summary: {
-            route: (from: string, to: string | null) => `${from} → ${to ?? "Destino abierto"}`,
+            openDestinationLabel: "Cualquier destino",
+            route: (from: string, to: string | null) => `${from} → ${to ?? "Cualquier destino"}`,
             pickup: "Retiro",
             delivery: "Entrega",
             pickupWindow: "Ventana de retiro",
@@ -223,6 +209,8 @@ export const cargosContent = {
         capacity: (kg: string) => `Capacidad: ${kg} kg`,
         availability: (from: string, to: string) => `Disponible ${from} – ${to}`,
         pricePerKm: (price: string) => `$${price} / km`,
+        distanceKm: (km: number) =>
+            km < 1 ? "Menos de 1 km del retiro" : `A ${Math.round(km)} km del retiro`,
         offerCtaAria: (route: string) => `Ofertar para el tramo ${route}`,
     },
 

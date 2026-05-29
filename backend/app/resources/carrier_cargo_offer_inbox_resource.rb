@@ -27,8 +27,8 @@ class CarrierCargoOfferInboxResource
   end
 
   one :transport_window do
-    attributes :id, :origin_province, :origin_locality,
-               :destination_province, :destination_locality,
+    attributes :id, :origin_locality, :origin_admin_area,
+               :destination_locality, :destination_admin_area,
                :available_from, :available_to, :price_per_km,
                :max_km, :status
   end
