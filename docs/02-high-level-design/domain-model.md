@@ -262,7 +262,7 @@ Cardinalities: `Cargo` 1:N `CargoOffer`; `TransportWindow` 1:N `CargoOffer`; `Ca
 
 ### 4.1 `Shipment` finite-state machine
 
-Schema (key attributes): `cargo_offer_id` (unique), `carrier_id`, `shipper_id`, `vehicle_id` (NOT NULL — frozen at acceptance, copied from the accepted `CargoOffer.vehicle_id`; this is the truck that physically performs the shipment, immutable for traceability), `status` (see FSM), `pickup_at`, `delivered_at`, `settled_at`, `cancelled_at`, `deleted_at` (soft-delete, ADR-009).
+Schema (key attributes): `cargo_offer_id` (unique), `carrier_id`, `shipper_id`, `vehicle_id` (NOT NULL — frozen at acceptance, copied from the accepted `CargoOffer.vehicle_id`; this is the truck that physically performs the shipment, immutable for traceability), `status` (see FSM), `pickup_at`, `delivered_at`, `settled_at`, `cancelled_at`, `discarded_at` (soft-delete, ADR-009).
 
 States: `draft → offered → accepted → in_transit → delivered → settled`. Branch: `cancelled`. Modelled by hand (no `aasm` / `state_machines` gem) until the complexity warrants one. Soft-deleted (ADR-009).
 
@@ -293,7 +293,7 @@ Key attributes: `shipment_id` (unique), `polyline` (text), `waypoints_json` (tex
 
 ## 5. Commerce (CONCEPTUAL)
 
-Soft-delete enabled on `Payment` and `ArcaInvoice` per ADR-009. `InsurancePolicy` is hard-deleted; expired policies remain queryable through their `status` column.
+Soft-delete enabled on `Payment`, `ArcaInvoice` and `Vehicle` per ADR-009. `InsurancePolicy` is hard-deleted; expired policies remain queryable through their `status` column.
 
 ### 5.1 `Payment` (Shipper-initiated charge with escrow semantics)
 

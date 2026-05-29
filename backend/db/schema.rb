@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_27_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_27_010000) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -256,6 +256,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_27_000000) do
     t.integer "carrier_id", null: false
     t.datetime "created_at", null: false
     t.text "description"
+    t.datetime "discarded_at"
     t.boolean "gps_enabled", default: false, null: false
     t.integer "height_cm"
     t.integer "length_cm"
@@ -270,6 +271,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_27_000000) do
     t.integer "year"
     t.index ["carrier_id"], name: "index_vehicles_on_carrier_id"
     t.index ["carrier_id"], name: "index_vehicles_on_carrier_id_lookup"
+    t.index ["discarded_at"], name: "index_vehicles_on_discarded_at"
     t.index ["plate"], name: "index_vehicles_on_plate", unique: true
   end
 

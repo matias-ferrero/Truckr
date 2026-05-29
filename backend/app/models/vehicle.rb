@@ -14,6 +14,30 @@ class Vehicle < ApplicationRecord
   has_many :transport_windows, dependent: :destroy, inverse_of: :vehicle
   has_many_attached :photos
 
+  # ── Soft-delete (ADR-009) ─────────────────────────────────────────────
+  default_scope { where(discarded_at: nil) }
+  scope :discarded,      -> { unscope(where: :discarded_at).where.not(discarded_at: nil) }
+  scope :with_discarded, -> { unscope(where: :discarded_at) }
+
+  class NotDiscardable < StandardError; end
+
+  # No-bang: returns true / false. Populates `errors` when guard fails so
+  # controllers can render a 422 with i18n-keyed messages.
+  def discard
+    return false unless can_be_discarded?
+    update(discarded_at: Time.current)
+  end
+
+  # Bang: raise on guard failure. Useful for specs / admin scripts.
+  def discard!
+    raise NotDiscardable, errors.full_messages.join("; ") unless can_be_discarded?
+    update!(discarded_at: Time.current)
+  end
+
+  def discarded?
+    discarded_at.present?
+  end
+
   before_save :compute_volume_cm3
   before_destroy :ensure_no_active_commitments
 
@@ -84,15 +108,58 @@ class Vehicle < ApplicationRecord
   end
 
   # Refuses to hard-delete if any TransportWindow on this Vehicle has a live
-  # (non-terminal) CargoOffer tied to it. Tolerates CargoOffer being absent at
-  # boot — REQ-BE-00021 introduces it.
+  # (pending) CargoOffer tied to it.
   def ensure_no_active_commitments
     return unless defined?(CargoOffer) && defined?(TransportWindow)
 
     has_live_offer = CargoOffer.joins(:transport_window)
                                .where(transport_windows: { vehicle_id: id })
-                               .where.not(status: %w[expired cancelled])
+                               .where(status: "pending")
                                .exists?
     throw(:abort) if has_live_offer
+  end
+
+  # Predicate used by `discard` / `discard!`. Populates `errors` with
+  # i18n-friendly keys when the discard is rejected due to active windows,
+  # pending commitments, or in-progress shipments.
+  #
+  # A vehicle can be discarded if:
+  # - It has no active TransportWindow (active=true)
+  # - It has no pending/live CargoOffer (non-terminal offers)
+  # - All its related Shipments (via active TransportWindow -> CargoOffer) are
+  #   in terminal or payment-pending states (delivered, cancelled, pending_payment)
+  def can_be_discarded?
+    return false unless defined?(TransportWindow) && defined?(CargoOffer) && defined?(Shipment)
+
+    # Guard 1: no active transport windows
+    if transport_windows.active.exists?
+      errors.add(:base, :has_active_windows)
+      return false
+    end
+
+    # Guard 2: no live cargo offers on inactive windows (but exclude accepted offers
+    # and terminal offers, which don't represent active commitments)
+    # Live offers = pending offers only (states: expired, cancelled, accepted, rejected, paid are terminal or handled by shipment state)
+    has_live_offer = CargoOffer.joins(:transport_window)
+                   .where(transport_windows: { vehicle_id: id })
+                   .where(status: "pending")
+                   .exists?
+    if has_live_offer
+      errors.add(:base, :has_pending_commitments)
+      return false
+    end
+
+    # Guard 3: no shipments in in-transit or accepted (active) states
+    # Shipments in delivered, cancelled, or pending_payment are allowed.
+    has_active_shipment = Shipment.joins(cargo_offer: :transport_window)
+                                   .where(transport_windows: { vehicle_id: id })
+                                   .where(status: %w[accepted in_transit])
+                                   .exists?
+    if has_active_shipment
+      errors.add(:base, :has_active_shipments)
+      return false
+    end
+
+    true
   end
 end

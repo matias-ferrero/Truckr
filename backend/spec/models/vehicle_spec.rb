@@ -1,3 +1,100 @@
+# frozen_string_literal: true
+
+require "rails_helper"
+
+RSpec.describe Vehicle, type: :model do
+  describe "discard semantics (ADR-009)" do
+    let(:vehicle) { create(:vehicle) }
+
+    it "discards a vehicle with no commitments" do
+      expect(vehicle.discard).to be true
+      expect(vehicle.reload.discarded?).to be true
+    end
+
+    it "rejects discard when there are active transport windows" do
+      create(:transport_window, vehicle: vehicle, active: true)
+      expect(vehicle.discard).to be_falsey
+      expect(vehicle.errors.details[:base].first[:error]).to eq(:has_active_windows)
+    end
+
+    it "rejects discard when there are pending commitments (cargo offers)" do
+      cargo_offer = create(:cargo_offer, status: "pending")  # Pending (live) offer
+      tw = cargo_offer.transport_window
+      tw.update!(vehicle: vehicle, active: false)
+      expect(vehicle.discard).to be_falsey
+      expect(vehicle.errors.details[:base].first[:error]).to eq(:has_pending_commitments)
+    end
+
+    it "allows discard when cargo offer is accepted (controlled by shipment state)" do
+      v = create(:vehicle)
+      cargo_offer = create(:cargo_offer, status: "accepted")  # Accepted offer
+      tw = cargo_offer.transport_window
+      tw.update!(vehicle: v, active: false)  # Set to inactive
+      # Create a shipment in a terminal state; accepted offer should not block
+      create(:shipment, cargo_offer: cargo_offer, status: "delivered", delivered_at: 1.hour.ago)
+      expect(v.discard).to be true
+    end
+
+    it "allows discard when cargo offer is rejected (terminal state)" do
+      v = create(:vehicle)
+      cargo_offer = create(:cargo_offer, status: "rejected")  # Rejected offer (terminal)
+      tw = cargo_offer.transport_window
+      tw.update!(vehicle: v, active: false)  # Set to inactive
+      expect(v.discard).to be true
+    end
+
+    it "discard! raises Vehicle::NotDiscardable when guards fail" do
+      create(:transport_window, vehicle: vehicle, active: true)
+      expect { vehicle.discard! }.to raise_error(Vehicle::NotDiscardable)
+    end
+
+    it "default scope excludes discarded records" do
+      id = vehicle.id
+      vehicle.update!(discarded_at: Time.current)
+      expect { Vehicle.find(id) }.to raise_error(ActiveRecord::RecordNotFound)
+      expect(Vehicle.with_discarded.find(id)).to be_present
+    end
+
+    it "allows discard when shipments are in terminal states (delivered, cancelled)" do
+      # Create a separate vehicle for this test to avoid plate conflicts
+      v = create(:vehicle)
+      cargo_offer = create(:cargo_offer, status: "expired")  # Terminal offer
+      tw = cargo_offer.transport_window
+      tw.update!(vehicle: v, active: false)  # Set to inactive
+      create(:shipment, cargo_offer: cargo_offer, status: "delivered", delivered_at: 1.hour.ago)
+      expect(v.discard).to be true
+    end
+
+    it "allows discard when shipments are pending_payment" do
+      v = create(:vehicle)
+      cargo_offer = create(:cargo_offer, status: "expired")  # Terminal offer
+      tw = cargo_offer.transport_window
+      tw.update!(vehicle: v, active: false)  # Set to inactive
+      create(:shipment, cargo_offer: cargo_offer, status: "pending_payment", payment_received_at: Time.current)
+      expect(v.discard).to be true
+    end
+
+    it "rejects discard when there is a shipment in accepted state" do
+      v = create(:vehicle)
+      cargo_offer = create(:cargo_offer, status: "expired")  # Terminal offer
+      tw = cargo_offer.transport_window
+      tw.update!(vehicle: v, active: false)
+      create(:shipment, cargo_offer: cargo_offer, status: "accepted", accepted_at: Time.current)
+      expect(v.discard).to be_falsey
+      expect(v.errors.details[:base].first[:error]).to eq(:has_active_shipments)
+    end
+
+    it "rejects discard when there is a shipment in in_transit state" do
+      v = create(:vehicle)
+      cargo_offer = create(:cargo_offer, status: "expired")  # Terminal offer
+      tw = cargo_offer.transport_window
+      tw.update!(vehicle: v, active: false)
+      create(:shipment, cargo_offer: cargo_offer, status: "in_transit", picked_up_at: Time.current)
+      expect(v.discard).to be_falsey
+      expect(v.errors.details[:base].first[:error]).to eq(:has_active_shipments)
+    end
+  end
+end
 require "rails_helper"
 
 RSpec.describe Vehicle, type: :model do

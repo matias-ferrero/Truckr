@@ -45,3 +45,10 @@ en:
               exceeds_vehicle_capacity: "exceeds the vehicle's load capacity"
             volume_cm3:
               exceeds_vehicle_capacity: "exceeds the vehicle's volume capacity"
+        vehicle:
+          attributes:
+            base:
+              has_active_windows: "vehicle has active transport windows and cannot be discarded"
+              has_pending_commitments: "vehicle has pending commitments (offers or in-progress shipments) and cannot be discarded"
+              has_active_shipments: "vehicle has shipments in progress and cannot be discarded"
+              vehicle_must_be_kept_when_active: "cannot be active when its vehicle has been discarded"

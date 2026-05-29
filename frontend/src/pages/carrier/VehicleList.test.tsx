@@ -65,7 +65,7 @@ describe("VehicleList", () => {
         expect(await screen.findByText(/BBB222/)).toBeInTheDocument();
     });
 
-    it("calls deleteVehicle when the user confirms deletion in the dialog", async () => {
+    it("calls deleteVehicle when the user confirms discard in the dialog", async () => {
         vi.mocked(vehiclesApi.listMyVehicles).mockResolvedValueOnce({
             items: [fakeVehicle({ id: 7 })],
             meta: { total: 1, page: 1, perPage: 20, totalPages: 1 },
@@ -78,14 +78,15 @@ describe("VehicleList", () => {
 
         render(<MemoryRouter><VehicleList /></MemoryRouter>);
         const user = userEvent.setup();
-        const deleteBtn = await screen.findByRole("button", { name: /^eliminar$/i });
+        const deleteBtn = await screen.findByRole("button", { name: /^dar de baja$/i });
         await user.click(deleteBtn);
 
         const dialog = await screen.findByRole("dialog");
-        const confirmBtn = within(dialog).getByRole("button", { name: /^eliminar$/i });
+        const confirmBtn = within(dialog).getByRole("button", { name: /^dar de baja$/i });
         await user.click(confirmBtn);
 
         await waitFor(() => expect(vehiclesApi.deleteVehicle).toHaveBeenCalledWith(7));
+        expect(await screen.findByText(/vehículo dado de baja/i)).toBeInTheDocument();
     });
 
     it("does not delete when the dialog is cancelled", async () => {
@@ -97,7 +98,7 @@ describe("VehicleList", () => {
 
         render(<MemoryRouter><VehicleList /></MemoryRouter>);
         const user = userEvent.setup();
-        const deleteBtn = await screen.findByRole("button", { name: /^eliminar$/i });
+        const deleteBtn = await screen.findByRole("button", { name: /^dar de baja$/i });
         await user.click(deleteBtn);
 
         const dialog = await screen.findByRole("dialog");
@@ -105,5 +106,55 @@ describe("VehicleList", () => {
         await user.click(cancelBtn);
 
         expect(vehiclesApi.deleteVehicle).not.toHaveBeenCalled();
+    });
+
+    it("shows a blocked banner with a Mis Ventanas link when active windows prevent discard", async () => {
+        vi.mocked(vehiclesApi.listMyVehicles).mockResolvedValue({
+            items: [fakeVehicle({ id: 11 })],
+            meta: { total: 1, page: 1, perPage: 20, totalPages: 1 },
+        });
+        vi.mocked(vehiclesApi.deleteVehicle).mockRejectedValue({
+            status: 422,
+            body: {
+                error: {
+                    details: {
+                        base: ["No podés dar de baja este vehículo porque todavía tiene ventanas activas."],
+                    },
+                },
+            },
+        });
+
+        render(<MemoryRouter><VehicleList /></MemoryRouter>);
+        const user = userEvent.setup();
+        await user.click(await screen.findByRole("button", { name: /^dar de baja$/i }));
+        await user.click(within(await screen.findByRole("dialog")).getByRole("button", { name: /^dar de baja$/i }));
+
+        expect(await screen.findByRole("alert")).toHaveTextContent(/ventanas activas/i);
+        expect(screen.getByRole("link", { name: /ir a mis ventanas/i })).toHaveAttribute("href", "/carrier/availability");
+    });
+
+    it("shows a blocked banner with a cargo-offers link when pending commitments prevent discard", async () => {
+        vi.mocked(vehiclesApi.listMyVehicles).mockResolvedValue({
+            items: [fakeVehicle({ id: 12 })],
+            meta: { total: 1, page: 1, perPage: 20, totalPages: 1 },
+        });
+        vi.mocked(vehiclesApi.deleteVehicle).mockRejectedValue({
+            status: 422,
+            body: {
+                error: {
+                    details: {
+                        base: ["No podés dar de baja este vehículo porque tiene ofertas o viajes pendientes."],
+                    },
+                },
+            },
+        });
+
+        render(<MemoryRouter><VehicleList /></MemoryRouter>);
+        const user = userEvent.setup();
+        await user.click(await screen.findByRole("button", { name: /^dar de baja$/i }));
+        await user.click(within(await screen.findByRole("dialog")).getByRole("button", { name: /^dar de baja$/i }));
+
+        expect(await screen.findByRole("alert")).toHaveTextContent(/ofertas o viajes pendientes/i);
+        expect(screen.getByRole("link", { name: /ir a la bandeja de ofertas/i })).toHaveAttribute("href", "/carrier/cargo-offers");
     });
 });

@@ -27,6 +27,7 @@ es:
           attributes:
             base:
               open_destination_partial: "los campos de destino deben estar todos completos o todos vacíos"
+              vehicle_must_be_kept_when_active: "la ventana no puede estar activa si su vehículo fue dado de baja"
         cargo_offer:
           attributes:
             estimated_km:
@@ -39,3 +40,9 @@ es:
               exceeds_vehicle_capacity: "excede la capacidad de carga del vehículo"
             volume_cm3:
               exceeds_vehicle_capacity: "excede la capacidad volumétrica del vehículo"
+        vehicle:
+          attributes:
+            base:
+              has_active_windows: "el vehículo tiene ventanas de transporte activas y no puede darse de baja"
+              has_pending_commitments: "el vehículo tiene compromisos pendientes (ofertas o envíos en curso) y no puede darse de baja"
+              has_active_shipments: "el vehículo tiene envíos en curso y no puede darse de baja"

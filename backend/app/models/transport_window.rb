@@ -15,7 +15,7 @@ class TransportWindow < ApplicationRecord
   PICKUP_RADIUS_KM_MIN = 1
   PICKUP_RADIUS_KM_MAX = 200
 
-  belongs_to :vehicle, inverse_of: :transport_windows
+  belongs_to :vehicle, -> { unscope(where: :discarded_at) }, inverse_of: :transport_windows
   has_many :cargo_offers, dependent: :restrict_with_error, inverse_of: :transport_window
 
   delegate :carrier, to: :vehicle, allow_nil: true
@@ -57,6 +57,8 @@ class TransportWindow < ApplicationRecord
 
   scope :active, -> { where(active: true) }
   scope :marketplace_open, -> { where(status: "open") }
+
+  validate :vehicle_must_be_kept_when_active
 
   # SQL prefilter: any window whose origin pin sits inside the axis-aligned
   # bounding box of radius `radius_km` around the given point. Cheap, indexable
@@ -136,6 +138,12 @@ class TransportWindow < ApplicationRecord
   end
 
   private
+
+  def vehicle_must_be_kept_when_active
+    return unless active
+    return if vehicle.nil?
+    errors.add(:base, :vehicle_must_be_kept_when_active) if vehicle.discarded?
+  end
 
   def open_destination_consistency
     fields = {

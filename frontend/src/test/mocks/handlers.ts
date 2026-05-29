@@ -28,6 +28,29 @@ function meBody(email: string, fullName: string, roles: string[]) {
     };
 }
 
+function fixtureVehicle(overrides: Record<string, unknown> = {}) {
+    return {
+        id: 7,
+        carrier_id: 1,
+        make: "Mercedes-Benz",
+        model: "Sprinter",
+        year: 2022,
+        plate: "AAA111",
+        vehicle_type: "truck_small",
+        max_load_kg: "3500.00",
+        length_cm: 500,
+        width_cm: 200,
+        height_cm: 220,
+        volume_cm3: 22_000_000,
+        gps_enabled: false,
+        description: null,
+        photos: [],
+        created_at: "2026-05-20T10:00:00Z",
+        updated_at: "2026-05-20T10:00:00Z",
+        ...overrides,
+    };
+}
+
 export const handlers: RequestHandler[] = [
     // /me: 200 when the request carries Authorization, 401 otherwise.
     // Tests can override with server.use() for richer scenarios.
@@ -86,6 +109,53 @@ export const handlers: RequestHandler[] = [
     }),
 
     http.delete(`${API}/api/auth/logout`, () => new HttpResponse(null, { status: 204 })),
+
+    http.get(`${API}/api/carriers/me/vehicles`, ({ request }) => {
+        if (!request.headers.get("Authorization")) {
+            return HttpResponse.json(
+                { error: { code: "unauthorized", message: "Autenticación requerida" } },
+                { status: 401 },
+            );
+        }
+        return HttpResponse.json([fixtureVehicle()], { headers: pagyHeaders(1) });
+    }),
+
+    http.delete(`${API}/api/carriers/me/vehicles/:id`, ({ request, params }) => {
+        if (!request.headers.get("Authorization")) {
+            return HttpResponse.json(
+                { error: { code: "unauthorized", message: "Autenticación requerida" } },
+                { status: 401 },
+            );
+        }
+        const id = Number(params.id);
+        if (id === 404) {
+            return HttpResponse.json(
+                {
+                    error: {
+                        code: "unprocessable",
+                        details: {
+                            base: ["No podés dar de baja este vehículo porque todavía tiene ventanas activas."],
+                        },
+                    },
+                },
+                { status: 422 },
+            );
+        }
+        if (id === 405) {
+            return HttpResponse.json(
+                {
+                    error: {
+                        code: "unprocessable",
+                        details: {
+                            base: ["No podés dar de baja este vehículo porque tiene ofertas o viajes pendientes."],
+                        },
+                    },
+                },
+                { status: 422 },
+            );
+        }
+        return new HttpResponse(null, { status: 204 });
+    }),
 
     // ── Cargo funnel (US27 / REQ-BE-00032) ──────────────────────────────────
     // Default handlers exercise the golden path. Individual specs override

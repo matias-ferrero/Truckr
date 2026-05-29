@@ -14,7 +14,7 @@ entity "payments" as p {
   status : string [pending, escrowed, released, refunded, disputed, failed]
   escrowed_at : datetime
   released_at : datetime
-  deleted_at : datetime
+  discarded_at : datetime
   * created_at : datetime
   * updated_at : datetime
 }
@@ -43,7 +43,7 @@ entity "arca_invoices" as inv {
   currency : string = 'ARS'
   emitted_at : datetime
   status : string [pending, emitted, rejected]
-  deleted_at : datetime
+  discarded_at : datetime
   * created_at : datetime
   * updated_at : datetime
 }
@@ -52,7 +52,7 @@ p }o--|| inv : "triggers invoice"
 ip ||--|| inv : "(optional) premium invoiced"
 
 note bottom
-  Soft-delete on payments and arca_invoices (deleted_at; ADR-009).
+  Soft-delete on payments and arca_invoices (discarded_at; ADR-009). Vehicles were added to the ADR-009 soft-delete list in 2026-05-22; their soft-delete column is `discarded_at` as well.
   Insurance policies are hard-deleted; expired policies remain queryable
   via status. Currency stored as ISO 4217 string, default 'ARS'.
   shipper_id on arca_invoices is the fiscal counter-party (the only

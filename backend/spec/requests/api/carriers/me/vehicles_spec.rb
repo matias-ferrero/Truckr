@@ -144,6 +144,26 @@ RSpec.describe "Api::Carriers::Me::Vehicles", type: :request do
       expect(response).to have_http_status(:no_content)
       expect(carrier.vehicles.reload).to contain_exactly(b)
     end
+
+    it "rejects discard when vehicle has active windows" do
+      v = create(:vehicle, carrier: carrier)
+      create(:transport_window, vehicle: v, active: true)
+      delete "/api/carriers/me/vehicles/#{v.id}"
+      expect(response).to have_http_status(:unprocessable_entity)
+      body = JSON.parse(response.body)
+      expect(body.dig("error", "details", "base")).to be_present
+    end
+
+    it "rejects discard when vehicle has pending commitments (cargo offers)" do
+      v = create(:vehicle, carrier: carrier)
+      cargo_offer = create(:cargo_offer, carrier: carrier, status: "pending")
+      tw = cargo_offer.transport_window
+      tw.update!(vehicle: v, active: false)
+      delete "/api/carriers/me/vehicles/#{v.id}"
+      expect(response).to have_http_status(:unprocessable_entity)
+      body = JSON.parse(response.body)
+      expect(body.dig("error", "details", "base")).to be_present
+    end
   end
 
   describe "multi-vehicle scenario (REQ-BE-00010)" do

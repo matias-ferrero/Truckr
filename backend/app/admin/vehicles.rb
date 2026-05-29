@@ -50,4 +50,12 @@ ActiveAdmin.register Vehicle do
     end
     f.actions
   end
+
+  controller do
+    # Show all vehicles in Admin (including soft-deleted) so admins can
+    # inspect or restore via console. ADR-009 convention: use `with_discarded`.
+    def scoped_collection
+      Vehicle.with_discarded
+    end
+  end
 end

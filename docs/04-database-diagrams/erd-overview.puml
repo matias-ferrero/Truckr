@@ -44,7 +44,7 @@ shipment ||--o| ins
 shipment ||--o| inv
 
 note bottom
-  Soft-deleted entities (ADR-009): shipments, payments, arca_invoices.
+  Soft-deleted entities (ADR-009): shipments, payments, arca_invoices, vehicles (column: discarded_at).
   Lat / lng stored as DECIMAL(9,6) columns Phase 0/1 (ADR-010).
 
   Cross-context Vehicle linkage: a Vehicle is committed at quote time

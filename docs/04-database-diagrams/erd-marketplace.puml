@@ -64,7 +64,7 @@ tw ||--o{ co : "targeted by"
 note bottom
   Lat / lng stored as DECIMAL(9,6) columns (ADR-010); no spatial index.
   PKs are bigint (ADR-007). Currency stored as ISO 4217 string,
-  default 'ARS'. Hard-deleted (ADR-009).
+  default 'ARS'. Soft-deleted entities per ADR-009 include shipments, payments, arca_invoices and vehicles (field name: `discarded_at`).
 
   Authorship: the Shipper authors `cargo_offers` against a chosen
   `transport_window`. The Carrier accepts or rejects. On accept, the

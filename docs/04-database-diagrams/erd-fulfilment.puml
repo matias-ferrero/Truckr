@@ -47,7 +47,7 @@ s ||--o{ te : "emits"
 s ||--o| r : "has planned route"
 
 note bottom
-  Soft-delete on shipments (deleted_at; ADR-009). Lat / lng on
+  Soft-delete on shipments (discarded_at; ADR-009). Lat / lng on
   tracking_events stored as DECIMAL(9,6) (ADR-010); no spatial index
   Phase 0/1. FSM transitions documented in
   docs/02-high-level-design/domain-model.md § 4.1.

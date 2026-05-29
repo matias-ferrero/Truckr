@@ -1,3 +1,23 @@
+# frozen_string_literal: true
+
+require "rails_helper"
+
+RSpec.describe TransportWindow, type: :model do
+  it "resolves its vehicle even if the vehicle is discarded" do
+    vehicle = create(:vehicle)
+    window = create(:transport_window, vehicle: vehicle)
+    vehicle.update!(discarded_at: Time.current)
+    expect(window.reload.vehicle.id).to eq(vehicle.id)
+  end
+
+  it "is invalid when active and its vehicle is discarded" do
+    vehicle = create(:vehicle)
+    vehicle.update!(discarded_at: Time.current)
+    window = build(:transport_window, vehicle: vehicle, active: true)
+    expect(window.valid?).to be_falsey
+    expect(window.errors.details[:base].first[:error]).to eq(:vehicle_must_be_kept_when_active)
+  end
+end
 require "rails_helper"
 
 RSpec.describe TransportWindow, type: :model do

@@ -17,6 +17,13 @@ type LoadState =
     | { status: "ready"; items: Vehicle[]; meta: VehicleListMeta }
     | { status: "error"; message: string };
 
+type DiscardErrorKind = "windows" | "commitments" | "generic";
+
+type DiscardError = {
+    message: string;
+    kind: DiscardErrorKind;
+};
+
 export default function VehicleList() {
     const location = useLocation();
     const highlightId = (location.state as { highlightId?: number } | null)?.highlightId;
@@ -25,6 +32,16 @@ export default function VehicleList() {
     const [state, setState] = useState<LoadState>({ status: "loading" });
     const [pendingDelete, setPendingDelete] = useState<number | null>(null);
     const [confirmTarget, setConfirmTarget] = useState<number | null>(null);
+    const [discardNotice, setDiscardNotice] = useState<string | null>(null);
+    const [discardError, setDiscardError] = useState<DiscardError | null>(null);
+    const discardNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const clearDiscardNoticeTimer = () => {
+        if (discardNoticeTimerRef.current) {
+            clearTimeout(discardNoticeTimerRef.current);
+            discardNoticeTimerRef.current = null;
+        }
+    };
 
     const reload = useCallback(async (nextPage = page) => {
         setState({ status: "loading" });
@@ -36,6 +53,10 @@ export default function VehicleList() {
         }
     }, [page]);
 
+    useEffect(() => () => {
+        clearDiscardNoticeTimer();
+    }, []);
+
     useEffect(() => {
         reload(page);
     }, [reload, page]);
@@ -43,8 +64,25 @@ export default function VehicleList() {
     async function performDelete(id: number) {
         setConfirmTarget(null);
         setPendingDelete(id);
+        setDiscardError(null);
         try {
             await deleteVehicle(id);
+            setDiscardNotice(t.discardSuccess);
+            clearDiscardNoticeTimer();
+            discardNoticeTimerRef.current = setTimeout(() => setDiscardNotice(null), 5000);
+            await reload(page);
+        } catch (e) {
+            const err = e as { status?: number; body?: { error?: { details?: { base?: string[] } } } };
+            const base = err.body?.error?.details?.base?.[0] ?? null;
+            const kind: DiscardErrorKind = base?.match(/ventan|window/i)
+                ? "windows"
+                : base?.match(/compromet|pendiente|ofert/i)
+                    ? "commitments"
+                    : "generic";
+            setDiscardError({
+                kind,
+                message: base ?? t.discardFailed,
+            });
             await reload(page);
         } finally {
             setPendingDelete(null);
@@ -66,6 +104,47 @@ export default function VehicleList() {
                         {t.addCta}
                     </Link>
                 </header>
+
+                {discardNotice && (
+                    <div className="savedBanner" role="status" aria-live="polite">
+                        <span>{discardNotice}</span>
+                        <button
+                            className="savedBannerClose"
+                            aria-label={t.dismissBanner}
+                            onClick={() => setDiscardNotice(null)}
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
+
+                {discardError && (
+                    <div className="errorBanner" role="alert" aria-live="assertive">
+                        <span>{discardError.message}</span>
+                        {discardError.kind === "windows" ? (
+                            <Link
+                                to="/carrier/availability"
+                                className="savedBannerUndo"
+                            >
+                                {t.discardBlockedWindowsCta}
+                            </Link>
+                        ) : discardError.kind === "commitments" ? (
+                            <Link
+                                to="/carrier/cargo-offers"
+                                className="savedBannerUndo"
+                            >
+                                {t.discardBlockedCommitmentsCta}
+                            </Link>
+                        ) : null}
+                        <button
+                            className="savedBannerClose"
+                            aria-label={t.dismissBanner}
+                            onClick={() => setDiscardError(null)}
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
 
                 {state.status === "loading" && (
                     <ul
@@ -152,7 +231,7 @@ export default function VehicleList() {
                                             disabled={pendingDelete === v.id}
                                             className="flex-1"
                                         >
-                                            {pendingDelete === v.id ? t.deleting : t.delete}
+                                            {pendingDelete === v.id ? t.discarding : t.discard}
                                         </Button>
                                     </div>
                                 </li>

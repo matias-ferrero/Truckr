@@ -51,8 +51,11 @@ module Api
         def destroy
           vehicle = current_carrier.vehicles.find(params[:id])
           authorize vehicle
-          vehicle.destroy!
-          head :no_content
+          if vehicle.discard
+            head :no_content
+          else
+            render json: { error: { code: "unprocessable", details: vehicle.errors.as_json } }, status: :unprocessable_entity
+          end
         end
 
         private

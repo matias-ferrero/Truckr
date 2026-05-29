@@ -22,7 +22,7 @@ The ERDs in this folder describe the **drafted** data model (v1), produced under
 - Timestamps (`created_at`, `updated_at`) are explicit.
 - Required fields are prefixed with `*`.
 - Enum-like columns are typed as `string` to keep the SQLite Phase-0/1 schema portable (ADR-002); allowed values listed in brackets.
-- Soft-delete (`deleted_at`) appears only on `shipments`, `payments`, `arca_invoices` (ADR-009).
+- Soft-delete (`discarded_at`) appears on `shipments`, `payments`, `arca_invoices` and `vehicles` (ADR-009 — Vehicle was added in 2026-05-22 to preserve historical traceability).
 - Latitude / longitude are `decimal(9,6)` columns (ADR-010); no spatial index until Phase 2.
 
 ## Rendering

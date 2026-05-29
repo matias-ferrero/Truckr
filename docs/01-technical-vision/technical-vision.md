@@ -106,13 +106,13 @@ The project is transitioning from the **planning phase** (product artifacts, USM
 ### ADR-009 — Selective soft-delete (audit-bearing entities only)
 
 **Context**: Soft-delete (`deleted_at` column + a `kept` scope) preserves historical rows for legal / fiscal / audit reasons but complicates every query and every unique index (`WHERE deleted_at IS NULL`). Universal soft-delete is overkill for catalog-like entities; universal hard-delete breaks ARCA traceability for shipments and payments.
-**Decision**:
+**Decision (amended 2026-05-22 — REQ-BE-00034)**:
 
-- **Soft-delete enabled** on `Shipment`, `Payment`, `ArcaInvoice` — these carry fiscal / contractual significance.
-- **Hard-delete** on `Carrier`, `Shipper`, `Vehicle`, `TransportWindow`, `CargoOffer`, `Quote`, `TrackingEvent`, `Route`, `InsurancePolicy`. Cascade rules expressed via Rails `dependent: :destroy` / `:nullify` per relation (specifics in `domain-model.md`).
+- **Soft-delete enabled** on `Shipment`, `Payment`, `ArcaInvoice` and `Vehicle` — these carry fiscal / contractual significance or must be preserved for historical traceability (Vehicle is preserved because of the Shipment ← CargoOffer ← TransportWindow ← Vehicle chain).
+- **Hard-delete** on `Carrier`, `Shipper`, `TransportWindow`, `CargoOffer`, `Quote`, `TrackingEvent`, `Route`, `InsurancePolicy`. Cascade rules expressed via Rails `dependent: :destroy` / `:nullify` per relation (specifics in `domain-model.md`).
 - No gem mandated. The Phase-0 implementation is a `deleted_at` column, a default scope (`where(deleted_at: nil)`) only on the three audit-bearing models, and explicit `unscoped` for admin reads.
 
-**Consequences**: Most tables stay simple. Unique indexes on the three soft-deleted tables must be partial (`WHERE deleted_at IS NULL`) where uniqueness is meaningful — supported in SQLite ≥ 3.8 (our target). Reports that need historical rows must use `unscoped` explicitly.
+**Consequences**: Most tables stay simple. Unique indexes on the soft-deleted tables must be partial (`WHERE discarded_at IS NULL`) where uniqueness is meaningful — supported in SQLite ≥ 3.8 (our target). The canonical column name is `discarded_at` (historical references to `deleted_at` in older docs remain as historical notes). Reports that need historical rows must use `unscoped` / `with_discarded` explicitly.
 
 ### ADR-010 — Geo storage: lat/lng columns, application-level distance math
 
