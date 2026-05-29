@@ -1,16 +1,15 @@
-== US26: Visualizar Reseñas de Transportista
+== US54: Visualizar Reseñas de Expedidor
 
 *Release:* Release 2 \
 *Prioridad:* Media \
 *Épica:* Después del Envío
 
 *Descripción:*
-Como expedidor,
-quiero leer reseñas sobre los transportistas,
+Como transportista,
+quiero leer reseñas sobre los expedidores,
 para consultar las experiencias de otros antes de contratar un servicio.
 
 *Criterios de Aceptación:*
-+ Las reseñas de un transportista son visibles en su perfil para todos los usuarios.
-+ Se muestra el promedio de puntuación del transportista junto a las reseñas individuales.
++ Las reseñas de un expedidor son visibles en su perfil para todos los usuarios.
 
 // ═══════════════════════════════════════════════════════════════════════════

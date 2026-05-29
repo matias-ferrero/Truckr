@@ -99,6 +99,18 @@
 
 #include "backlog-us/US051.typ"
 
+#include "backlog-us/US052.typ"
+
+#include "backlog-us/US053.typ"
+
+#include "backlog-us/US020.typ"
+
+#include "backlog-us/US026.typ"
+
+#include "backlog-us/US030.typ"
+
+#include "backlog-us/US054.typ"
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Post MVP — Release 2
 // ═══════════════════════════════════════════════════════════════════════════
@@ -113,9 +125,13 @@
 
 #include "backlog-us/US011.typ"
 
-#include "backlog-us/US016.typ"
+#include "backlog-us/US028.typ"
 
-#include "backlog-us/US020.typ"
+#include "backlog-us/US029.typ"
+
+#include "backlog-us/US055.typ"
+
+#include "backlog-us/US056.typ"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Post MVP — Release 3
@@ -129,6 +145,8 @@
 )[Post MVP — Release 3]]
 #line(length: 100%, stroke: 1.5pt + rgb("#6AA84F"))
 
+#include "backlog-us/US016.typ"
+
 #include "backlog-us/US021.typ"
 
 #include "backlog-us/US022.typ"
@@ -138,5 +156,3 @@
 #include "backlog-us/US024.typ"
 
 #include "backlog-us/US025.typ"
-
-#include "backlog-us/US026.typ"
