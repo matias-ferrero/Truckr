@@ -48,6 +48,10 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REQ-FE-00028 | Mapa y Enlaces a Google Maps en Detalle de Envío (US51 — FE-only) | RDY | FE | 2026-05-24 | [plan](REQ/REQ-FE-00028/REQ-FE-00028-us51-mapa-enlaces-gmaps-detalle-envio.plan.md) |
 | REQ-BE-00036 | Migraciones y validaciones de lat/lng para TransportWindow y Cargo (US48 + US49) | RDY | BE | 2026-05-24 | [plan](REQ/REQ-BE-00036/REQ-BE-00036-us48-us49-lat-lng-migrations.plan.md) |
 | REQ-BE-00037 | pickup_radius_km column + Haversine matcher en el US5 scope (US50) | RDY | BE | 2026-05-24 | [plan](REQ/REQ-BE-00037/REQ-BE-00037-us50-pickup-radius-haversine-matcher.plan.md) |
+| REQ-BE-00042 | US20 — Crear Reseña de Transportista (Shipper→Carrier, fullstack) | NEW | BE | 2026-05-29 | [#281](https://github.com/tcorzo/fiuba-gestion-tp/issues/281) |
+| REQ-BE-00043 | US26 — Visualizar Reseñas de Transportista (fullstack) | NEW | BE | 2026-05-29 | [#282](https://github.com/tcorzo/fiuba-gestion-tp/issues/282) |
+| REQ-BE-00044 | US30 — Crear Reseña de Expedidor (Carrier→Shipper, fullstack) | NEW | BE | 2026-05-29 | [#283](https://github.com/tcorzo/fiuba-gestion-tp/issues/283) |
+| REQ-BE-00045 | US54 — Visualizar Reseñas de Expedidor (fullstack) | NEW | BE | 2026-05-29 | [#284](https://github.com/tcorzo/fiuba-gestion-tp/issues/284) |
 
 ## Legend
 
