@@ -110,11 +110,12 @@ class ShipmentDetailResource
 
   attribute :tracking_events do |shipment|
     shipment.tracking_events.sort_by(&:recorded_at).map do |te|
-      {
-        id:          te.id,
-        kind:        te.kind,
-        occurred_at: te.recorded_at
-      }
+      entry = { id: te.id, kind: te.kind, occurred_at: te.recorded_at }
+      if te.kind == "status_change"
+        entry[:from_status] = te.from_status
+        entry[:to_status]   = te.to_status
+      end
+      entry
     end
   end
 

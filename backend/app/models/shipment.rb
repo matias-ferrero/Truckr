@@ -2,11 +2,11 @@
 
 # Shipment — Fulfilment context aggregate root.
 #
-# Canonical FSM (ADR-012, amended 2026-05-24):
+# Canonical FSM (ADR-012, amended 2026-05-30):
 #
-#                ┌─────────────┐   ┌────────────┐   ┌───────────┐
+#                ┌─────────────┐   ┌────────────┐    ┌───────────┐
 #                │  accepted   │──▶│ in_transit │──▶│ delivered │
-#                └─────────────┘   └────────────┘   └───────────┘
+#                └─────────────┘   └────────────┘    └───────────┘
 #                       │                 │
 #                       ▼                 ▼
 #                  ┌────────────────────────┐
@@ -15,23 +15,23 @@
 #
 # Model-level interlock: any transition that leaves `accepted` requires at
 # least one escrowed Payment linked to the shipment.
+# Payment state is tracked via the payments association (payment_escrowed?)
+# rather than a separate FSM state — accepted stays accepted after payment.
 class Shipment < ApplicationRecord
   class IllegalTransition < StandardError; end
 
   ALLOWED_TRANSITIONS = {
-    accepted:        [ :pending_payment, :cancelled ],
-    pending_payment: [ :in_transit, :cancelled ],
-    in_transit:      [ :delivered, :cancelled ],
-    delivered:       [],
-    cancelled:       []
+    accepted:   [ :in_transit, :cancelled ],
+    in_transit: [ :delivered, :cancelled ],
+    delivered:  [],
+    cancelled:  []
   }.freeze
 
   STATUS_TIMESTAMP_COLUMNS = {
-    accepted:        :accepted_at,
-    pending_payment: :payment_received_at,
-    in_transit:      :picked_up_at,
-    delivered:       :delivered_at,
-    cancelled:       :cancelled_at
+    accepted:   :accepted_at,
+    in_transit: :picked_up_at,
+    delivered:  :delivered_at,
+    cancelled:  :cancelled_at
   }.freeze
 
   STATUSES = ALLOWED_TRANSITIONS.keys.map(&:to_s).freeze
@@ -57,9 +57,10 @@ class Shipment < ApplicationRecord
   validates :cargo_offer_id, presence: true, uniqueness: true
   validates :status,         presence: true, inclusion: { in: STATUSES }
   validate :timestamps_match_status
+  validate :in_transit_or_delivered_requires_escrowed_payment
 
   # ── Scopes ────────────────────────────────────────────────────────────
-  scope :active,      -> { where(status: %w[accepted pending_payment in_transit]) }
+  scope :active,      -> { where(status: %w[accepted in_transit]) }
   scope :completed,   -> { where(status: %w[delivered]) }
   scope :in_progress, -> { active }
 
@@ -103,13 +104,19 @@ class Shipment < ApplicationRecord
     end
   end
 
-  # Payment status check: returns true if shipment has at least one escrowed payment
+  # Payment status check: returns true if shipment has at least one escrowed payment.
+  # Checks loaded records first so callers in serializers (where payments are eager-loaded)
+  # don't pay an extra SQL round-trip.
   def payment_escrowed?
-    payments.exists?(state: :escrowed)
+    if payments.loaded?
+      payments.any? { |p| p.state == "escrowed" }
+    else
+      payments.exists?(state: :escrowed)
+    end
   end
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[id cargo_offer_id status accepted_at payment_received_at picked_up_at
+    %w[id cargo_offer_id status accepted_at picked_up_at
        delivered_at cancelled_at discarded_at created_at updated_at]
   end
 
@@ -119,14 +126,19 @@ class Shipment < ApplicationRecord
 
   private
 
+  def in_transit_or_delivered_requires_escrowed_payment
+    return unless %w[in_transit delivered].include?(status.to_s)
+    return if payments.where(state: "escrowed").exists?
+
+    errors.add(:base, "cannot be in_transit or delivered without an escrowed payment")
+  end
+
   def timestamps_match_status
     return if status.blank?
 
     case status.to_sym
     when :accepted
       errors.add(:accepted_at, "must be set when accepted") if accepted_at.blank?
-    when :pending_payment
-      errors.add(:payment_received_at, "must be set when pending_payment") if payment_received_at.blank?
     when :in_transit
       errors.add(:picked_up_at, "must be set when in transit") if picked_up_at.blank?
     when :delivered

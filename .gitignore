@@ -242,3 +242,6 @@ infra/envs/*/.terraform.lock.hcl
 infra/envs/*/*.tfstate
 infra/envs/*/*.tfstate.backup
 infra/envs/*/tfplan*
+
+# JS/TS tooling caches — never commit from any subproject
+node_modules/

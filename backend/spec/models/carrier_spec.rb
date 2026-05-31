@@ -5,7 +5,7 @@ RSpec.describe Carrier, type: :model do
     subject { build(:carrier) }
 
     it { is_expected.to validate_uniqueness_of(:user_id) }
-    it { is_expected.to validate_uniqueness_of(:tax_id).allow_blank }
+    it { is_expected.to validate_uniqueness_of(:tax_id).allow_blank.ignoring_case_sensitivity }
     it { is_expected.to validate_numericality_of(:rating_avg).is_greater_than_or_equal_to(0).is_less_than_or_equal_to(5) }
     it { is_expected.to validate_numericality_of(:completed_shipments).only_integer.is_greater_than_or_equal_to(0) }
 

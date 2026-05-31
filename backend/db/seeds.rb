@@ -212,11 +212,11 @@ end
 # appear in marketplace search and don't trigger the no_vehicle_overlap guard
 # (which only checks active windows). Idempotent.
 #
-# FSM (ADR-012):
-#   accepted → pending_payment → in_transit → delivered
-#   cancelled is terminal from any non-terminal state
-# Payment escrow accompanies pending_payment / in_transit / delivered states
-# (US8 — REQ-BE-00033).
+# FSM (ADR-012, amended 2026-05-30):
+#   accepted → in_transit → delivered
+#   cancelled is terminal from accepted or in_transit
+# Payment escrow accompanies in_transit / delivered states (US8 — REQ-BE-00033).
+# accepted + escrowed payment means carrier can start_transit (see US39 fixture B).
 FULFILMENT_COMBOS = [
   { status: "accepted",
     tw_from: -70, tw_to: -62,
@@ -225,13 +225,6 @@ FULFILMENT_COMBOS = [
     origin_lat: -31.633333, origin_lng: -60.700000,
     dest_lat:   -26.808285, dest_lng:   -65.217590,
     cargo_desc: "Equipos industriales" },
-  { status: "pending_payment",
-    tw_from: -61, tw_to: -53,
-    origin: "Paraná", origin_admin: "Entre Ríos",
-    dest: "Salta", dest_admin: "Salta",
-    origin_lat: -31.732222, origin_lng: -60.528611,
-    dest_lat:   -24.788195, dest_lng:   -65.410344,
-    cargo_desc: "Insumos médicos" },
   { status: "in_transit",
     tw_from: -52, tw_to: -44,
     origin: "Corrientes", origin_admin: "Corrientes",
@@ -319,43 +312,270 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
 
       next if Shipment.with_discarded.exists?(cargo_offer_id: offer.id)
 
-      attrs = { cargo_offer: offer, status: fx[:status] }
+      # All shipments start in accepted; payment + status updates applied after
+      # so that the escrowed-payment invariant is never violated on create.
+      attrs = { cargo_offer: offer, status: "accepted" }
       offset = fx[:tw_from].abs
       case fx[:status]
       when "accepted"
-        attrs[:accepted_at]         = (offset + 4).days.ago
-      when "pending_payment"
-        attrs[:accepted_at]         = (offset + 6).days.ago
-        attrs[:payment_received_at] = (offset + 4).days.ago
+        attrs[:accepted_at] = (offset + 4).days.ago
       when "in_transit"
-        attrs[:accepted_at]         = (offset + 8).days.ago
-        attrs[:payment_received_at] = (offset + 6).days.ago
-        attrs[:picked_up_at]        = (offset + 4).days.ago
+        attrs[:accepted_at] = (offset + 8).days.ago
       when "delivered"
-        attrs[:accepted_at]         = (offset + 10).days.ago
-        attrs[:payment_received_at] = (offset + 8).days.ago
-        attrs[:picked_up_at]        = (offset + 6).days.ago
-        attrs[:delivered_at]        = (offset + 2).days.ago
+        attrs[:accepted_at] = (offset + 10).days.ago
       when "cancelled"
-        attrs[:accepted_at]  = (offset + 4).days.ago
-        attrs[:cancelled_at] = (offset + 2).days.ago
+        attrs[:accepted_at] = (offset + 4).days.ago
       end
 
       shipment = Shipment.create!(attrs)
 
-      # Payment escrow row for states that imply payment has been received
-      # (US8 — REQ-BE-00033). Skipped for accepted (pre-payment) and
-      # cancelled (no payment captured).
-      if %w[pending_payment in_transit delivered].include?(fx[:status])
+      # Payment escrow row for in_transit / delivered; must exist before
+      # advancing status (model validates escrowed payment for those states).
+      if %w[in_transit delivered].include?(fx[:status])
         Payment.find_or_create_by!(shipment: shipment) do |p|
           p.amount_cents = offer.amount_cents
           p.currency     = offer.currency
           p.provider     = "fake"
           p.state        = "escrowed"
-          p.escrowed_at  = (offset + 1).days.ago
+          p.escrowed_at  = (offset + 6).days.ago
+        end
+
+        shipment.update!(picked_up_at: (offset + 4).days.ago, status: "in_transit")
+
+        if fx[:status] == "delivered"
+          shipment.update!(delivered_at: (offset + 2).days.ago, status: "delivered")
         end
       end
+
+      if fx[:status] == "cancelled"
+        shipment.update!(cancelled_at: (offset + 2).days.ago, status: "cancelled")
+      end
     end
+  end
+end
+
+# US39 ShipmentDetailPage fixtures (REQ-FE-00024) ─────────────────────────────
+#
+# Two additions:
+#   A. Tracking events for each FULFILMENT_COMBOS shipment so the
+#      TrackingEventTimeline component has data to render (TC-07 → TC-12).
+#   B. One "accepted + escrowed" Shipment — the only seeded combo where
+#      AvailableActions emits "start_transit" for the Carrier (TC-04/05/06).
+#      State stays `accepted` after payment (ADR-012 amendment 2026-05-30).
+#   C. A second carrier/shipper pair for unauthorized-access tests (TC-14).
+#
+# Event lifecycle specification (authoritative reference for REQ-BE-00038)
+# ─────────────────────────────────────────────────────────────────────────
+# Every state-mutating action on a Shipment or its Payment must append a
+# TrackingEvent so the detail-page timeline gives a complete audit trail.
+#
+# Trigger                                 Kind emitted          Notes
+# ──────────────────────────────────────  ────────────────────  ─────────────
+# Shipper accepts a CargoOffer            shipment_accepted     Initial creation
+# Shipper pays (payment reaches escrow)   payment_escrowed      Payment service
+# Payment attempt fails                   payment_failed        Payment service
+# Carrier calls start_transit             shipment_in_transit   FSM: accepted→in_transit
+# Carrier calls deliver                   shipment_delivered    FSM: in_transit→delivered
+# Any party cancels                       shipment_cancelled    FSM: *→cancelled
+# GPS location ping                       gps_update            POST /api/trips/:id/locations
+# Staff note                              note                  ActiveAdmin
+#
+# Current state: REQ-BE-00038 is not yet implemented. Events below are seeded
+# manually. status_change (from/to_status) is used for FSM transitions until
+# REQ-BE-00038 activates the dedicated kinds above. The TrackingEventTimeline
+# component includes a status_change adapter that will be removed once
+# REQ-BE-00038 lands and all shipments carry dedicated-kind events.
+if defined?(Carrier) && defined?(Shipper) && Carrier.any? && Shipper.any?
+  carrier = Carrier.first
+  shipper = Shipper.first
+  vehicle = carrier.vehicles.first
+
+  # A. Tracking events ────────────────────────────────────────────────────────
+  # Complete event history for each FULFILMENT_COMBOS shipment.
+  # Timestamps follow the same offset formula used to create the shipments:
+  #   offset = tw_from.abs
+  #   shipment_accepted  = (offset + N).days.ago  (matches accepted_at)
+  #   payment_escrowed   = (offset + 6).days.ago  (matches Payment#escrowed_at)
+  #   accepted→in_transit= (offset + 4).days.ago  (matches picked_up_at)
+  #   in_transit→delivered=(offset + 2).days.ago  (matches delivered_at)
+  #   *→cancelled        = (offset + 2).days.ago  (matches cancelled_at)
+  #
+  # Idempotency: lifecycle kinds (shipment_accepted, payment_escrowed) are
+  # unique per shipment; status_change is unique per from→to pair.
+  [
+    {
+      desc: "Equipos industriales",  # accepted, offset=70, accepted_at=74.days.ago
+      events: [
+        { kind: "shipment_accepted", days_ago: 74 }
+      ]
+    },
+    {
+      desc: "Maquinaria agrícola",   # in_transit, offset=52, accepted_at=60.days.ago
+      events: [
+        { kind: "shipment_accepted",                                 days_ago: 60 },
+        { kind: "payment_escrowed",                                  days_ago: 58 },
+        { kind: "status_change", from: "accepted", to: "in_transit", days_ago: 56 }
+      ]
+    },
+    {
+      desc: "Autopartes",            # delivered, offset=43, accepted_at=53.days.ago
+      events: [
+        { kind: "shipment_accepted",                                    days_ago: 53 },
+        { kind: "payment_escrowed",                                     days_ago: 49 },
+        { kind: "status_change", from: "accepted",   to: "in_transit", days_ago: 47 },
+        { kind: "status_change", from: "in_transit", to: "delivered",  days_ago: 45 }
+      ]
+    },
+    {
+      desc: "Bebidas y licores",     # cancelled, offset=34, accepted_at=38.days.ago
+      events: [
+        { kind: "shipment_accepted",                                  days_ago: 38 },
+        { kind: "status_change", from: "accepted", to: "cancelled",  days_ago: 36 }
+      ]
+    }
+  ].each do |fx|
+    cargo    = Cargo.find_by(cargo_description: fx[:desc])
+    next unless cargo
+    offer    = CargoOffer.find_by(cargo: cargo)
+    next unless offer
+    shipment = Shipment.with_discarded.find_by(cargo_offer_id: offer.id)
+    next unless shipment
+
+    fx[:events].each do |ev|
+      exists =
+        if ev[:kind] == "status_change"
+          shipment.tracking_events.where(kind: "status_change",
+                                         from_status: ev[:from],
+                                         to_status:   ev[:to]).exists?
+        else
+          shipment.tracking_events.where(kind: ev[:kind]).exists?
+        end
+      next if exists
+
+      attrs = { kind: ev[:kind], recorded_at: ev[:days_ago].days.ago }
+      attrs[:from_status] = ev[:from] if ev.key?(:from)
+      attrs[:to_status]   = ev[:to]   if ev.key?(:to)
+      shipment.tracking_events.create!(attrs)
+    end
+  end
+
+  # B. Accepted + escrowed fixture (TC-04/05/06) ─────────────────────────────
+  # Represents a shipment where payment is escrowed but carrier hasn't started
+  # transit yet. AvailableActions emits "start_transit" for this carrier.
+  # State stays `accepted` after payment — the escrowed Payment row signals
+  # that the carrier can proceed (ADR-012 amendment 2026-05-30).
+  if vehicle
+    tw_us39 = TransportWindow.find_or_create_by!(
+      vehicle: vehicle, origin_locality: "San Luis", destination_locality: "Bahía Blanca"
+    ) do |w|
+      w.origin_address         = "Av. Illia 750, San Luis"
+      w.origin_admin_area      = "San Luis"
+      w.destination_address    = "Av. Alem 600, Bahía Blanca"
+      w.destination_admin_area = "Buenos Aires"
+      w.price_per_km           = 1_600.0
+      w.max_km                 = 900
+      w.available_from         = 200.days.ago
+      w.available_to           = 192.days.ago
+      w.active                 = false
+      w.status                 = "reserved"
+      w.origin_lat             = -33.295553
+      w.origin_lng             = -66.335030
+      w.destination_lat        = -38.716671
+      w.destination_lng        = -62.270833
+      w.pickup_radius_km       = 50
+      w.dropoff_radius_km      = 50
+    end
+
+    cargo_us39 = Cargo.find_or_create_by!(
+      shipper: shipper, cargo_description: "Encomiendas urgentes"
+    ) do |c|
+      c.pickup_address       = "Av. Illia 750, San Luis"
+      c.pickup_locality      = "San Luis"
+      c.pickup_admin_area    = "San Luis"
+      c.delivery_address     = "Av. Alem 600, Bahía Blanca"
+      c.delivery_locality    = "Bahía Blanca"
+      c.delivery_admin_area  = "Buenos Aires"
+      c.pickup_lat           = -33.295553
+      c.pickup_lng           = -66.335030
+      c.delivery_lat         = -38.716671
+      c.delivery_lng         = -62.270833
+      c.pickup_window_start  = 198.days.ago
+      c.pickup_window_end    = 194.days.ago
+      c.weight_kg            = 1_200.0
+      c.volume_cm3           = 5_000_000
+      c.declared_value_cents = 25_000_000
+    end
+
+    offer_us39 = CargoOffer.find_or_create_by!(
+      cargo: cargo_us39, carrier: carrier, transport_window: tw_us39
+    ) do |co|
+      co.amount_cents = 9_500_000
+      co.currency     = "ARS"
+      co.status       = "accepted"
+      co.accepted_at  = 196.days.ago
+      co.expires_at   = 201.days.ago
+    end
+
+    unless Shipment.with_discarded.exists?(cargo_offer_id: offer_us39.id)
+      shipment_us39 = Shipment.create!(
+        cargo_offer: offer_us39,
+        status:      "accepted",
+        accepted_at: 195.days.ago
+      )
+      Payment.create!(
+        shipment:     shipment_us39,
+        amount_cents: offer_us39.amount_cents,
+        currency:     offer_us39.currency,
+        provider:     "fake",
+        state:        "escrowed",
+        escrowed_at:  194.days.ago
+      )
+    end
+
+    # Tracking events for the accepted+escrowed shipment (TC-04/05/06).
+    if (ship_us39 = Shipment.with_discarded.find_by(cargo_offer_id: offer_us39.id))
+      ship_us39.tracking_events.find_or_create_by!(kind: "shipment_accepted") do |te|
+        te.recorded_at = 195.days.ago
+      end
+      ship_us39.tracking_events.find_or_create_by!(kind: "payment_escrowed") do |te|
+        te.recorded_at = 194.days.ago
+      end
+    end
+  end
+
+  # C. Second carrier/shipper pair for unauthorized-access test (TC-14) ──────
+  carrier2_user = User.find_or_create_by!(email: "carrier2@truckr.test") do |u|
+    u.password  = "Password123"
+    u.full_name = "Carrier Two"
+    u.phone     = "+54 11 5555-3333"
+  end
+  carrier2_user.update!(phone: "+54 11 5555-3333") if carrier2_user.phone.blank?
+
+  shipper2_user = User.find_or_create_by!(email: "shipper2@truckr.test") do |u|
+    u.password  = "Password123"
+    u.full_name = "Shipper Two"
+    u.phone     = "+54 11 5555-4444"
+  end
+  shipper2_user.update!(phone: "+54 11 5555-4444") if shipper2_user.phone.blank?
+
+  carrier2 = Carrier.find_or_create_by!(user: carrier2_user) do |c|
+    c.legal_name = "Carrier Two Express SRL"
+    c.tax_id     = "30#{format('%08d', carrier2_user.id)}9"
+    c.base_city  = "Córdoba"
+    c.province   = "Córdoba"
+  end
+
+  Vehicle.find_or_create_by!(carrier: carrier2) do |v|
+    v.plate        = "ZZ#{format('%03d', carrier2_user.id)}YY"
+    v.make         = "Iveco"
+    v.model        = "Stralis"
+    v.max_load_kg  = 7_000.0
+    v.vehicle_type = "truck_small"
+  end
+
+  Shipper.find_or_create_by!(user: shipper2_user) do |s|
+    s.company_name = "Shipper Two Logística S.A."
+    s.tax_id       = "20#{format('%08d', shipper2_user.id)}3"
   end
 end
 
@@ -492,13 +712,10 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
   end
 
   unless Shipment.with_discarded.exists?(cargo_offer_id: offer_cc.id)
-    Shipment.create!(
-      cargo_offer:         offer_cc,
-      status:              "in_transit",
-      accepted_at:         85.days.ago,
-      payment_received_at: 84.days.ago,
-      picked_up_at:        83.days.ago
-    )
+    ship_cc = Shipment.create!(cargo_offer: offer_cc, status: "accepted", accepted_at: 85.days.ago)
+    Payment.create!(shipment: ship_cc, amount_cents: offer_cc.amount_cents, currency: offer_cc.currency,
+                    provider: "fake", state: "escrowed", escrowed_at: 84.days.ago)
+    ship_cc.update!(status: "in_transit", picked_up_at: 83.days.ago)
   end
 
   # ── DD004XX ── clean vehicle, no commitments (Cases 1 / 11 / 12) ─────────
@@ -627,14 +844,11 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
   end
 
   unless Shipment.with_discarded.exists?(cargo_offer_id: offer_ff.id)
-    Shipment.create!(
-      cargo_offer:         offer_ff,
-      status:              "delivered",
-      accepted_at:         65.days.ago,
-      payment_received_at: 64.days.ago,
-      picked_up_at:        63.days.ago,
-      delivered_at:        60.days.ago
-    )
+    ship_ff = Shipment.create!(cargo_offer: offer_ff, status: "accepted", accepted_at: 65.days.ago)
+    Payment.create!(shipment: ship_ff, amount_cents: offer_ff.amount_cents, currency: offer_ff.currency,
+                    provider: "fake", state: "escrowed", escrowed_at: 64.days.ago)
+    ship_ff.update!(status: "in_transit", picked_up_at: 63.days.ago)
+    ship_ff.update!(status: "delivered",  delivered_at: 60.days.ago)
   end
 
   # ── GG007XX ── already discarded (Cases 7 / 9 / 10) ─────────────────────
@@ -703,15 +917,64 @@ if defined?(Carrier) && defined?(Shipper) && defined?(Vehicle) &&
   end
 
   unless Shipment.with_discarded.exists?(cargo_offer_id: offer_gg.id)
-    Shipment.create!(
-      cargo_offer:         offer_gg,
-      status:              "delivered",
-      accepted_at:         55.days.ago,
-      payment_received_at: 54.days.ago,
-      picked_up_at:        53.days.ago,
-      delivered_at:        50.days.ago
-    )
+    ship_gg = Shipment.create!(cargo_offer: offer_gg, status: "accepted", accepted_at: 55.days.ago)
+    Payment.create!(shipment: ship_gg, amount_cents: offer_gg.amount_cents, currency: offer_gg.currency,
+                    provider: "fake", state: "escrowed", escrowed_at: 54.days.ago)
+    ship_gg.update!(status: "in_transit", picked_up_at: 53.days.ago)
+    ship_gg.update!(status: "delivered",  delivered_at: 50.days.ago)
   end
 
   v_gg.update!(discarded_at: 30.days.ago) if v_gg.discarded_at.nil?
+
+  # Tracking events for soft-delete fixture shipments that have had FSM
+  # transitions. Complete histories following the same lifecycle spec above.
+  [
+    { cargo_desc: "Maquinaria industrial (CC003XX)",  # in_transit
+      events: [
+        { kind: "shipment_accepted",                                 days_ago: 85 },
+        { kind: "payment_escrowed",                                  days_ago: 84 },
+        { kind: "status_change", from: "accepted", to: "in_transit", days_ago: 83 }
+      ]
+    },
+    { cargo_desc: "Autopartes (FF006XX)",             # delivered
+      events: [
+        { kind: "shipment_accepted",                                    days_ago: 65 },
+        { kind: "payment_escrowed",                                     days_ago: 64 },
+        { kind: "status_change", from: "accepted",   to: "in_transit", days_ago: 63 },
+        { kind: "status_change", from: "in_transit", to: "delivered",  days_ago: 60 }
+      ]
+    },
+    { cargo_desc: "Yerba mate (GG007XX)",             # delivered
+      events: [
+        { kind: "shipment_accepted",                                    days_ago: 55 },
+        { kind: "payment_escrowed",                                     days_ago: 54 },
+        { kind: "status_change", from: "accepted",   to: "in_transit", days_ago: 53 },
+        { kind: "status_change", from: "in_transit", to: "delivered",  days_ago: 50 }
+      ]
+    }
+  ].each do |fx|
+    cargo    = Cargo.find_by(cargo_description: fx[:cargo_desc])
+    next unless cargo
+    offer    = CargoOffer.find_by(cargo: cargo)
+    next unless offer
+    shipment = Shipment.with_discarded.find_by(cargo_offer_id: offer.id)
+    next unless shipment
+
+    fx[:events].each do |ev|
+      exists =
+        if ev[:kind] == "status_change"
+          shipment.tracking_events.where(kind: "status_change",
+                                         from_status: ev[:from],
+                                         to_status:   ev[:to]).exists?
+        else
+          shipment.tracking_events.where(kind: ev[:kind]).exists?
+        end
+      next if exists
+
+      attrs = { kind: ev[:kind], recorded_at: ev[:days_ago].days.ago }
+      attrs[:from_status] = ev[:from] if ev.key?(:from)
+      attrs[:to_status]   = ev[:to]   if ev.key?(:to)
+      shipment.tracking_events.create!(attrs)
+    end
+  end
 end

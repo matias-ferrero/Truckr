@@ -20,6 +20,7 @@ function makeShipment(overrides: Partial<Shipment> = {}): Shipment {
         amount_cents: 105_000_000,
         currency: "ARS",
         latest_activity_at: "2026-06-11T10:00:00Z",
+        payment_escrowed: false,
         ...overrides,
     };
 }
@@ -72,21 +73,12 @@ describe("CarrierShipments", () => {
         });
     });
 
-    it("shows pending_payment state chip", async () => {
-        api.listCarrierShipments.mockResolvedValue([makeShipment({ state: "pending_payment" })]);
-        renderPage();
-        await waitFor(() => {
-            expect(screen.getByText("Pendiente de pago")).toBeInTheDocument();
-        });
-    });
-
     it("shows only state chip for cancelled shipment", async () => {
         api.listCarrierShipments.mockResolvedValue([makeShipment({ state: "cancelled" })]);
         renderPage();
         await waitFor(() => {
             expect(screen.getByText("Cancelado")).toBeInTheDocument();
         });
-        expect(screen.queryByText("Pendiente de pago")).not.toBeInTheDocument();
     });
 
     it("shows delivered chip", async () => {
@@ -108,10 +100,10 @@ describe("CarrierShipments", () => {
 
     it("does NOT render a Pagar button on the carrier side (payment is shipper-only)", async () => {
         api.listCarrierShipments.mockResolvedValue([
-            makeShipment({ id: 31, state: "pending_payment" }),
+            makeShipment({ id: 31, state: "accepted", payment_escrowed: false }),
         ]);
         renderPage();
-        await screen.findByText("Pendiente de pago");
+        await screen.findByText("Aceptado");
         expect(screen.queryByRole("button", { name: /^Pagar /i })).not.toBeInTheDocument();
     });
 

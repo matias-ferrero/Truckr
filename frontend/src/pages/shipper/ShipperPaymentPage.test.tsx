@@ -33,6 +33,21 @@ function renderPage(path = "/shipper/shipments/31/pay") {
     );
 }
 
+function renderPageWithHistory() {
+    return render(
+        <MemoryRouter
+            initialEntries={["/shipper/shipments/31", "/shipper/shipments/31/pay"]}
+            initialIndex={1}
+        >
+            <Routes>
+                <Route path="/shipper/shipments/:id" element={<div>detail-screen</div>} />
+                <Route path="/shipper/shipments/:id/pay" element={<ShipperPaymentPage />} />
+                <Route path="/shipper/shipments/:id/pay/success" element={<div>success-screen</div>} />
+            </Routes>
+        </MemoryRouter>,
+    );
+}
+
 async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
     await user.type(screen.getByLabelText(/número de tarjeta/i), "4242 4242 4242 4242");
     await user.type(screen.getByLabelText(/vencimiento/i), "12/30");
@@ -138,6 +153,16 @@ describe("ShipperPaymentPage", () => {
         const alert = await screen.findByRole("alert");
         expect(alert).toBeInTheDocument();
         expect(screen.getByRole("button", { name: /^Realizar pago$/ })).toBeEnabled();
+    });
+
+    it("cancel button navigates back to the previous page", async () => {
+        const user = userEvent.setup();
+        renderPageWithHistory();
+        await screen.findByRole("heading", { name: "Pagar envío" });
+        await user.click(screen.getByRole("button", { name: /^cancelar$/i }));
+        const leaveButton = await screen.findByRole("button", { name: /sí, abandonar/i });
+        await user.click(leaveButton);
+        expect(await screen.findByText("detail-screen")).toBeInTheDocument();
     });
 
     it("redirects to the list when the shipment detail returns 403/404", async () => {

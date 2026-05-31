@@ -34,8 +34,15 @@ class ShipmentListResource
     shipment.tracking_events.filter_map(&:recorded_at).max || shipment.updated_at
   end
 
+  # True when at least one escrowed Payment exists. Used by the listing row
+  # to control the Pagar CTA and the counterparty mask without relying on a
+  # dedicated FSM state (accepted stays accepted after payment — ADR-012).
+  attribute :payment_escrowed do |shipment|
+    shipment.payment_escrowed?
+  end
+
   # Display label for the other party — used by the listing row to mask /
-  # reveal the counterparty alongside the payment_state interlock
+  # reveal the counterparty once payment_escrowed is true
   # (REQ-BE-00033 / AC1 / AC9). Falls back to nil for viewers with no
   # role attached.
   attribute :counterparty_display_name do |shipment|

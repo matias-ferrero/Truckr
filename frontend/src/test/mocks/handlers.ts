@@ -304,7 +304,7 @@ export const handlers: RequestHandler[] = [
             shipment: {
                 id: 31,
                 cargo_offer_id: id,
-                status: "pending_payment",
+                status: "accepted",
                 accepted_at: "2026-06-11T10:00:00Z",
                 picked_up_at: null,
                 delivered_at: null,
@@ -371,6 +371,13 @@ export const handlers: RequestHandler[] = [
             { payment_id: 1, state: "escrowed", shipment_id: Number(params.id) },
             { status: 201 },
         )),
+
+    // REQ-BE-00038 — POST start_transit / deliver (Carrier FSM transitions).
+    http.post(`${API}/api/shipments/:id/start_transit`, () =>
+        HttpResponse.json({}, { status: 200 })),
+
+    http.post(`${API}/api/shipments/:id/deliver`, () =>
+        HttpResponse.json({}, { status: 200 })),
 ];
 
 function pagyHeaders(total: number): Record<string, string> {
@@ -401,8 +408,19 @@ export function fixtureShipmentDetail(overrides: Record<string, unknown> = {}) {
     return {
         id: 31,
         state: "delivered",
+        created_at: "2026-06-11T10:00:00Z",
         amount_cents: 105_000_000,
         currency: "ARS",
+        cargo: {
+            origin: "Av. Corrientes 1234, CABA",
+            destination: "Av. Colón 500, Córdoba",
+            description: "Pallets de electrodomésticos",
+            weight_kg: "1500.0",
+        },
+        vehicle: {
+            plate: "AAA111",
+            kind: "truck_small",
+        },
         counterparty: { kind: "carrier", id: 1, display_name: "Transportes Demo SRL" },
         counterparty_contact: {
             full_name: "Carrier Demo",
@@ -416,6 +434,8 @@ export function fixtureShipmentDetail(overrides: Record<string, unknown> = {}) {
             currency: "ARS",
             escrowed_at: "2026-06-11T10:05:00Z",
         },
+        tracking_events: [],
+        available_actions: [],
         ...overrides,
     };
 }

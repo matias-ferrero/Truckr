@@ -20,6 +20,11 @@ test.describe("Shipper — payment flow (REQ-BE-00033 / US8)", () => {
         await expect(payButton).toBeVisible();
         await payButton.click();
 
+        // Confirmation dialog opens before navigating to checkout.
+        const payDialog = page.getByRole("dialog");
+        await expect(payDialog).toBeVisible();
+        await payDialog.getByRole("button", { name: /confirmar/i }).click();
+
         await expect(page).toHaveURL(/\/shipper\/shipments\/\d+\/pay$/);
         await expect(page.getByRole("heading", { name: "Pagar envío" })).toBeVisible();
 

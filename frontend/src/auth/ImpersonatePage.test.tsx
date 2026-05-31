@@ -3,7 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import ImpersonatePage from "./ImpersonatePage";
 
-let replaceSpy: ReturnType<typeof vi.spyOn>;
+let replaceSpy: ReturnType<typeof vi.fn>;
 
 const renderAt = (entry: string) =>
     render(
@@ -15,11 +15,13 @@ const renderAt = (entry: string) =>
     );
 
 beforeEach(() => {
-    replaceSpy = vi.spyOn(window.location, "replace").mockImplementation(() => {});
+    localStorage.clear();
+    replaceSpy = vi.fn();
+    vi.stubGlobal("location", { ...window.location, replace: replaceSpy });
 });
 
 afterEach(() => {
-    replaceSpy.mockRestore();
+    vi.unstubAllGlobals();
 });
 
 describe("ImpersonatePage", () => {

@@ -31,7 +31,7 @@ RSpec.describe Vehicle, type: :model do
       tw = cargo_offer.transport_window
       tw.update!(vehicle: v, active: false)  # Set to inactive
       # Create a shipment in a terminal state; accepted offer should not block
-      create(:shipment, cargo_offer: cargo_offer, status: "delivered", delivered_at: 1.hour.ago)
+      create(:shipment, :delivered, cargo_offer: cargo_offer)
       expect(v.discard).to be true
     end
 
@@ -61,16 +61,7 @@ RSpec.describe Vehicle, type: :model do
       cargo_offer = create(:cargo_offer, status: "expired")  # Terminal offer
       tw = cargo_offer.transport_window
       tw.update!(vehicle: v, active: false)  # Set to inactive
-      create(:shipment, cargo_offer: cargo_offer, status: "delivered", delivered_at: 1.hour.ago)
-      expect(v.discard).to be true
-    end
-
-    it "allows discard when shipments are pending_payment" do
-      v = create(:vehicle)
-      cargo_offer = create(:cargo_offer, status: "expired")  # Terminal offer
-      tw = cargo_offer.transport_window
-      tw.update!(vehicle: v, active: false)  # Set to inactive
-      create(:shipment, cargo_offer: cargo_offer, status: "pending_payment", payment_received_at: Time.current)
+      create(:shipment, :delivered, cargo_offer: cargo_offer)
       expect(v.discard).to be true
     end
 
@@ -89,7 +80,7 @@ RSpec.describe Vehicle, type: :model do
       cargo_offer = create(:cargo_offer, status: "expired")  # Terminal offer
       tw = cargo_offer.transport_window
       tw.update!(vehicle: v, active: false)
-      create(:shipment, cargo_offer: cargo_offer, status: "in_transit", picked_up_at: Time.current)
+      create(:shipment, :in_transit, cargo_offer: cargo_offer)
       expect(v.discard).to be_falsey
       expect(v.errors.details[:base].first[:error]).to eq(:has_active_shipments)
     end

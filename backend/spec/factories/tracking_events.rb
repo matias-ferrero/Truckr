@@ -7,6 +7,24 @@ FactoryBot.define do
     recorded_at  { Time.current }
     metadata     { {} }
 
+    trait :shipment_accepted do
+      kind        { "shipment_accepted" }
+      from_status { nil }
+      to_status   { nil }
+    end
+
+    trait :payment_escrowed do
+      kind        { "payment_escrowed" }
+      from_status { nil }
+      to_status   { nil }
+    end
+
+    trait :payment_failed do
+      kind        { "payment_failed" }
+      from_status { nil }
+      to_status   { nil }
+    end
+
     trait :gps_update do
       kind        { "gps_update" }
       from_status { nil }

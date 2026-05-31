@@ -127,7 +127,7 @@ class Vehicle < ApplicationRecord
   # - It has no active TransportWindow (active=true)
   # - It has no pending/live CargoOffer (non-terminal offers)
   # - All its related Shipments (via active TransportWindow -> CargoOffer) are
-  #   in terminal or payment-pending states (delivered, cancelled, pending_payment)
+  #   in terminal states (delivered, cancelled)
   def can_be_discarded?
     return false unless defined?(TransportWindow) && defined?(CargoOffer) && defined?(Shipment)
 
@@ -150,7 +150,7 @@ class Vehicle < ApplicationRecord
     end
 
     # Guard 3: no shipments in in-transit or accepted (active) states
-    # Shipments in delivered, cancelled, or pending_payment are allowed.
+    # Shipments in delivered or cancelled are allowed.
     has_active_shipment = Shipment.joins(cargo_offer: :transport_window)
                                    .where(transport_windows: { vehicle_id: id })
                                    .where(status: %w[accepted in_transit])

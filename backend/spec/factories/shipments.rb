@@ -10,22 +10,23 @@ FactoryBot.define do
     end
 
     trait :in_transit do
-      status        { "in_transit" }
-      accepted_at   { 4.hours.ago }
-      picked_up_at  { 1.hour.ago }
+      status      { "accepted" }
+      accepted_at { 4.hours.ago }
+
+      after(:create) do |shipment|
+        create(:payment, :escrowed, shipment: shipment)
+        shipment.update!(status: "in_transit", picked_up_at: 1.hour.ago)
+      end
     end
 
     trait :delivered do
-      status        { "delivered" }
-      accepted_at   { 1.day.ago }
-      picked_up_at  { 4.hours.ago }
-      delivered_at  { 30.minutes.ago }
-    end
+      status      { "accepted" }
+      accepted_at { 1.day.ago }
 
-    trait :pending_payment do
-      status               { "pending_payment" }
-      accepted_at          { 4.hours.ago }
-      payment_received_at  { 1.hour.ago }
+      after(:create) do |shipment|
+        create(:payment, :escrowed, shipment: shipment)
+        shipment.update!(status: "delivered", picked_up_at: 4.hours.ago, delivered_at: 30.minutes.ago)
+      end
     end
 
     trait :cancelled do

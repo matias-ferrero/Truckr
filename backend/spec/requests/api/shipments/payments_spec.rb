@@ -44,11 +44,12 @@ RSpec.describe "Api::Shipments::Payments", type: :request do
         expect(JSON.parse(response.body).dig("error", "message")).to be_present
       end
 
-      it "returns 409 when the Shipment is not accepted" do
-        create(:payment, :escrowed, shipment: shipment)
-        shipment.transition_to!(:pending_payment)
+      it "returns 409 when the Shipment is not in accepted state" do
+        other_cargo = create(:cargo, shipper: shipper)
+        other_offer = create(:cargo_offer, :accepted, cargo: other_cargo, carrier: carrier)
+        in_transit_ship = create(:shipment, :in_transit, cargo_offer: other_offer)
 
-        post "/api/shipments/#{shipment.id}/payments"
+        post "/api/shipments/#{in_transit_ship.id}/payments"
 
         expect(response).to have_http_status(:conflict)
       end

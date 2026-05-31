@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_27_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_30_000001) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -170,7 +170,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_27_010000) do
     t.datetime "delivered_at"
     t.datetime "discarded_at"
     t.datetime "estimated_delivery_at"
-    t.datetime "payment_received_at"
     t.datetime "picked_up_at"
     t.datetime "settled_at"
     t.string "status", default: "accepted", null: false
@@ -179,7 +178,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_27_010000) do
     t.index ["cargo_offer_id"], name: "index_shipments_on_cargo_offer_id", unique: true
     t.index ["discarded_at"], name: "index_shipments_on_discarded_at"
     t.index ["status"], name: "index_shipments_on_status"
-    t.check_constraint "status IN ('accepted','pending_payment','in_transit','delivered','cancelled')", name: "shipments_status_check"
+    t.check_constraint "status IN ('accepted','in_transit','delivered','cancelled')", name: "shipments_status_check"
   end
 
   create_table "shippers", force: :cascade do |t|
@@ -207,7 +206,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_27_010000) do
     t.index ["kind"], name: "index_tracking_events_on_kind"
     t.index ["shipment_id", "recorded_at"], name: "index_tracking_events_on_shipment_id_and_recorded_at"
     t.index ["shipment_id"], name: "index_tracking_events_on_shipment_id"
-    t.check_constraint "kind IN ('status_change','gps_update','note')", name: "tracking_events_kind_check"
+    t.check_constraint "kind IN ('status_change','gps_update','note','shipment_accepted','shipment_in_transit','shipment_delivered','shipment_cancelled','payment_escrowed','payment_failed')", name: "tracking_events_kind_check"
   end
 
   create_table "transport_windows", force: :cascade do |t|

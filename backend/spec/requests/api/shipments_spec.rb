@@ -199,12 +199,14 @@ RSpec.describe "Api::Shipments", type: :request do
         end
 
         it "in_transit → [deliver]" do
+          create(:payment, :escrowed, shipment: shipment)
           shipment.update!(status: "in_transit", picked_up_at: 1.hour.ago)
 
           expect(detail_for(carrier_user)).to eq([ "deliver" ])
         end
 
         it "delivered → []" do
+          create(:payment, :escrowed, shipment: shipment)
           shipment.update!(status: "delivered", picked_up_at: 2.hours.ago, delivered_at: 1.hour.ago)
 
           expect(detail_for(carrier_user)).to eq([])

@@ -7,6 +7,7 @@
 
 .shipperPage {
     --page-bg: oklch(97% 0.025 82);
+    --surface-form: color-mix(in oklab, var(--brand-primary) 6%, var(--surface));
 
     background: var(--page-bg);
     color: var(--ink);

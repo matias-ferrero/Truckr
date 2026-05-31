@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Shipment } from "../../api/shipments";
 import { Button } from "../ui/button";
@@ -24,14 +25,17 @@ export function ShipmentListRow({ shipment, detailPath, payHref }: Props) {
     const navigate = useNavigate();
     const stateLabel = shipmentsSharedContent.state[shipment.state];
     const t = shipmentsSharedContent.row;
+    const c = shipmentsSharedContent.payConfirm;
     const formattedAmount = formatAmount(shipment.amount_cents, shipment.currency);
 
-    // Pre-payment state masks the counterparty until escrow lands (US8 / AC9).
-    // Backend FSM: shippers can only pay an `accepted` shipment (Payments::Create
-    // guards on `status_accepted?`); once paid, the shipment leaves `accepted`.
-    const masked = shipment.state === "accepted";
+    const [payDialogOpen, setPayDialogOpen] = useState(false);
+    const payDialogRef = useRef<HTMLDialogElement>(null);
 
-    const showPayCta = payHref !== undefined && shipment.state === "accepted";
+    // Pre-payment mask: counterparty is hidden until payment is escrowed (US8 / AC9).
+    // State stays `accepted` after payment; payment_escrowed is the authoritative signal.
+    const masked = shipment.state === "accepted" && !shipment.payment_escrowed;
+
+    const showPayCta = payHref !== undefined && shipment.state === "accepted" && !shipment.payment_escrowed;
 
     const counterpartyText = shipment.counterparty_display_name
         ? masked
@@ -39,8 +43,26 @@ export function ShipmentListRow({ shipment, detailPath, payHref }: Props) {
             : shipment.counterparty_display_name
         : null;
 
+    useEffect(() => {
+        const el = payDialogRef.current;
+        if (!el) return;
+        if (payDialogOpen) {
+            el.showModal();
+            const first = el.querySelector<HTMLElement>(
+                'button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+            );
+            first?.focus();
+        }
+    }, [payDialogOpen]);
+
+    function handlePayConfirm() {
+        if (!payHref) return;
+        setPayDialogOpen(false);
+        navigate(payHref(shipment));
+    }
+
     return (
-        <li className="shipmentRow shipmentRow--card">
+        <li className={`shipmentRow shipmentRow--card${showPayCta ? " shipmentRow--withPay" : ""}`}>
             <Link
                 to={detailPath}
                 className="shipmentRowLink"
@@ -85,20 +107,56 @@ export function ShipmentListRow({ shipment, detailPath, payHref }: Props) {
                 </div>
                 <span className="shipmentRowChevron" aria-hidden="true">›</span>
             </Link>
+
             {showPayCta && (
-                <div className="shipmentRowActions">
+                <div className="shipmentRowPayStrip">
                     <Button
                         variant="primary"
                         size="sm"
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            navigate(payHref!(shipment));
+                            setPayDialogOpen(true);
                         }}
                     >
                         {t.payCta(formattedAmount)}
                     </Button>
                 </div>
+            )}
+
+            {payDialogOpen && (
+                <dialog
+                    className="confirmDialog"
+                    ref={payDialogRef}
+                    data-action="pay"
+                    aria-labelledby={`payConfirmTitle-${shipment.id}`}
+                    onCancel={(e) => { e.preventDefault(); setPayDialogOpen(false); }}
+                >
+                    <div className="confirmDialogBody">
+                        <div className="confirmDialogPaymark" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                                <polyline points="9 12 11 14 15 10" />
+                            </svg>
+                        </div>
+                        <h2 className="confirmDialogTitle" id={`payConfirmTitle-${shipment.id}`}>
+                            {c.title}
+                        </h2>
+                        <p className="confirmDialogRoute">
+                            {shipment.origin} → {shipment.destination}
+                        </p>
+                        <p className="confirmDialogLead">{c.lead}</p>
+                        <p className="confirmDialogText">{c.text}</p>
+                        <div className="confirmDialogActions">
+                            <Button variant="ghost" onClick={() => setPayDialogOpen(false)}>
+                                {c.cancel}
+                            </Button>
+                            <Button variant="primary" className="confirmDialogConfirmBtn" onClick={handlePayConfirm}>
+                                {c.confirm}
+                            </Button>
+                        </div>
+                    </div>
+                </dialog>
             )}
         </li>
     );

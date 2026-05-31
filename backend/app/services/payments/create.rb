@@ -8,6 +8,10 @@ module Payments
   # race-safety lives at the application layer). The lock re-verifies the
   # guards inside the critical section before calling the gateway.
   #
+  # The Shipment FSM state stays `accepted` after payment — the escrowed
+  # Payment row is the source of truth for payment status. AvailableActions
+  # surfaces "start_transit" for the carrier once payment_escrowed? is true.
+  #
   # Returns the persisted Payment on success. Raises `Payments::ConflictError`
   # when the shipment cannot be paid (not in `accepted`, or already escrowed)
   # so the controller can map to HTTP 409.
@@ -44,12 +48,6 @@ module Payments
           state:              "escrowed",
           escrowed_at:        Time.current
         )
-
-        # Advance the Shipment FSM accepted → pending_payment so the listing
-        # row drops its Pagar CTA and the counterparty mask lifts. The
-        # transition_to! guard re-checks `payment_escrowed?` against the row
-        # we just inserted, keeping the lock invariant intact.
-        shipment.transition_to!(:pending_payment, at: Time.current)
 
         return payment
       end

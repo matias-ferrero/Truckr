@@ -163,6 +163,20 @@ export default function ShipperPaymentPage() {
     const [submitError, setSubmitError] = useState<string | null>(null);
 
     const formRef = useRef<HTMLFormElement>(null);
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+    const cancelDialogRef = useRef<HTMLDialogElement>(null);
+
+    useEffect(() => {
+        const el = cancelDialogRef.current;
+        if (!el) return;
+        if (cancelDialogOpen) {
+            el.showModal();
+            const first = el.querySelector<HTMLElement>(
+                'button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+            );
+            first?.focus();
+        }
+    }, [cancelDialogOpen]);
 
     useEffect(() => {
         const previousTitle = document.title;
@@ -452,7 +466,7 @@ export default function ShipperPaymentPage() {
                                 variant="ghost"
                                 size="default"
                                 type="button"
-                                onClick={() => navigate("/shipper/shipments")}
+                                onClick={() => setCancelDialogOpen(true)}
                                 disabled={submitting}
                             >
                                 {t.pay.cancelLabel}
@@ -467,6 +481,38 @@ export default function ShipperPaymentPage() {
                             </Button>
                         </div>
                     </form>
+                )}
+
+                {cancelDialogOpen && (
+                    <dialog
+                        className="confirmDialog"
+                        ref={cancelDialogRef}
+                        data-action="cancel_checkout"
+                        aria-labelledby="cancelCheckoutTitle"
+                        onCancel={(e) => { e.preventDefault(); setCancelDialogOpen(false); }}
+                    >
+                        <div className="confirmDialogBody">
+                            <div className="confirmDialogCancelmark" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9" />
+                                    <line x1="9" y1="9" x2="15" y2="15" />
+                                    <line x1="15" y1="9" x2="9" y2="15" />
+                                </svg>
+                            </div>
+                            <h2 className="confirmDialogTitle" id="cancelCheckoutTitle">
+                                {t.pay.cancelConfirm.title}
+                            </h2>
+                            <p className="confirmDialogText">{t.pay.cancelConfirm.text}</p>
+                            <div className="confirmDialogActions">
+                                <Button variant="ghost" onClick={() => navigate(-1)}>
+                                    {t.pay.cancelConfirm.leave}
+                                </Button>
+                                <Button variant="primary" className="confirmDialogConfirmBtn" onClick={() => setCancelDialogOpen(false)}>
+                                    {t.pay.cancelConfirm.stay}
+                                </Button>
+                            </div>
+                        </div>
+                    </dialog>
                 )}
             </div>
         </main>

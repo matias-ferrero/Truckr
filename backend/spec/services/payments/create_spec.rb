@@ -30,19 +30,18 @@ RSpec.describe Payments::Create do
       expect(payment.amount_cents).to eq(12_000_000)
     end
 
-    it "advances the Shipment FSM accepted → pending_payment after a successful escrow" do
+    it "leaves the Shipment in accepted state after a successful escrow" do
       described_class.call(shipment: shipment)
-      expect(shipment.reload).to be_status_pending_payment
-      expect(shipment.payment_received_at).to be_present
+      expect(shipment.reload).to be_status_accepted
     end
 
-    it "raises ConflictError(:shipment_not_accepted) when the Shipment is not accepted" do
-      escrowed_first = described_class.call(shipment: shipment)
-      # First call already moved the shipment to :pending_payment; a second
-      # attempt must be rejected on the status guard.
-      expect { described_class.call(shipment: shipment.reload) }
+    it "raises ConflictError(:shipment_not_accepted) when the Shipment is not in accepted state" do
+      in_transit_cargo = create(:cargo, shipper: shipper_user.shipper)
+      in_transit_offer = create(:cargo_offer, :accepted, cargo: in_transit_cargo, carrier: carrier_user.carrier)
+      in_transit_ship  = create(:shipment, :in_transit, cargo_offer: in_transit_offer)
+
+      expect { described_class.call(shipment: in_transit_ship) }
         .to raise_error(described_class::ConflictError) { |e| expect(e.reason).to eq(:shipment_not_accepted) }
-      expect(escrowed_first).to be_state_escrowed
     end
 
     it "raises ConflictError(:already_paid) when an escrowed Payment exists on a still-accepted Shipment" do

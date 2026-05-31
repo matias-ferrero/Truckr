@@ -5,7 +5,7 @@ RSpec.describe Shipper, type: :model do
     subject { build(:shipper) }
 
     it { is_expected.to validate_uniqueness_of(:user_id) }
-    it { is_expected.to validate_uniqueness_of(:tax_id).allow_blank }
+    it { is_expected.to validate_uniqueness_of(:tax_id).allow_blank.ignoring_case_sensitivity }
 
     it "accepts blank tax_id (multiple shippers can have null tax_id)" do
       create(:shipper, tax_id: nil)

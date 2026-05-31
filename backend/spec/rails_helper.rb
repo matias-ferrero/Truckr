@@ -48,6 +48,16 @@ RSpec.configure do |config|
   # instead of true.
   config.use_transactional_fixtures = true
 
+  config.before(:suite) do
+    conn = ActiveRecord::Base.connection
+    conn.execute("PRAGMA foreign_keys = OFF")
+    (conn.tables - %w[schema_migrations ar_internal_metadata]).each do |t|
+      conn.execute("DELETE FROM #{conn.quote_table_name(t)}")
+    end
+    conn.execute("DELETE FROM sqlite_sequence") rescue nil
+    conn.execute("PRAGMA foreign_keys = ON")
+  end
+
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false
 

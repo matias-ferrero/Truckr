@@ -21,7 +21,13 @@ export const paymentContent = {
         },
         cta:         "Realizar pago",
         ctaLoading:  "Procesando…",
-        cancelLabel: "Volver a Mis Envíos",
+        cancelLabel: "Cancelar",
+        cancelConfirm: {
+            title: "¿Abandonás el pago?",
+            text:  "El envío seguirá esperando tu pago, pero perderás los datos ingresados.",
+            stay:  "Seguir pagando",
+            leave: "Sí, abandonar",
+        },
         errors: {
             generic:          "No pudimos procesar el pago. Intentá de nuevo.",
             cardRequired:     "Ingresá el número de tarjeta.",

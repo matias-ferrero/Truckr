@@ -84,7 +84,7 @@ describe("CarrierCargoOfferInbox", () => {
             shipment: {
                 id: 31,
                 cargo_offer_id: 11,
-                status: "pending_payment",
+                status: "accepted",
                 accepted_at: "2026-06-11T10:00:00Z",
                 picked_up_at: null,
                 delivered_at: null,

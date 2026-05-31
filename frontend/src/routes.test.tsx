@@ -117,6 +117,48 @@ describe("AppRoutes", () => {
         );
     });
 
+    it("renders carrier shipment detail route", async () => {
+        server.use(
+            http.get(`${API}/api/auth/me`, () => HttpResponse.json(carrierMe)),
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json({
+                    id: 31, state: "delivered", created_at: "2026-06-11T10:00:00Z",
+                    amount_cents: 105_000_000, currency: "ARS",
+                    cargo: { origin: "CABA", destination: "Córdoba", description: "P", weight_kg: "1500" },
+                    vehicle: { plate: "AAA111", kind: "truck_small" },
+                    counterparty: null, counterparty_contact: null, payment: null,
+                    tracking_events: [], available_actions: [],
+                })),
+        );
+        window.history.pushState({}, "", "/carrier/shipments/31");
+        render(<AppRoutes />);
+        await waitFor(() =>
+            expect(screen.getByRole("heading", { name: /envío #31/i })).toBeInTheDocument()
+        );
+    });
+
+    it("renders shipper shipment detail route", async () => {
+        const shipperMe = { ...carrierMe, roles: ["shipper"], carrier: null,
+            shipper: { id: 1, company_name: null, tax_id: null, billing_address: null } };
+        server.use(
+            http.get(`${API}/api/auth/me`, () => HttpResponse.json(shipperMe)),
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json({
+                    id: 42, state: "accepted", created_at: "2026-06-11T10:00:00Z",
+                    amount_cents: 80_000_000, currency: "ARS",
+                    cargo: { origin: "Mendoza", destination: "CABA", description: "Vino", weight_kg: "800" },
+                    vehicle: { plate: "BBB222", kind: "truck_medium" },
+                    counterparty: null, counterparty_contact: null, payment: null,
+                    tracking_events: [], available_actions: ["pay"],
+                })),
+        );
+        window.history.pushState({}, "", "/shipper/shipments/42");
+        render(<AppRoutes />);
+        await waitFor(() =>
+            expect(screen.getByRole("heading", { name: /envío #42/i })).toBeInTheDocument()
+        );
+    });
+
     it("falls through unknown paths to the landing", async () => {
         window.history.pushState({}, "", "/no-such-route");
         render(<AppRoutes />);
