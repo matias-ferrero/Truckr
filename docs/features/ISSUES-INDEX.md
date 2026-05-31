@@ -53,6 +53,7 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REQ-BE-00043 | US26 — Visualizar Reseñas de Transportista (fullstack) | NEW | BE | 2026-05-29 | [#282](https://github.com/tcorzo/fiuba-gestion-tp/issues/282) |
 | REQ-BE-00044 | US30 — Crear Reseña de Expedidor (Carrier→Shipper, fullstack) | NEW | BE | 2026-05-29 | [#283](https://github.com/tcorzo/fiuba-gestion-tp/issues/283) |
 | REQ-BE-00045 | US54 — Visualizar Reseñas de Expedidor (fullstack) | NEW | BE | 2026-05-29 | [#284](https://github.com/tcorzo/fiuba-gestion-tp/issues/284) |
+| REQ-FE-00029 | Link "Volver a la búsqueda" del perfil del Carrier a la pantalla de matches (solo Shipper) | RDY | FE | 2026-05-31 | [plan](REQ/REQ-FE-00029/REQ-FE-00029-volver-perfil-carrier-a-matches.plan.md) · [#289](https://github.com/tcorzo/fiuba-gestion-tp/issues/289) |
 
 ## Legend
 
