@@ -58,6 +58,7 @@ class Vehicle < ApplicationRecord
   validates :length_cm, :width_cm, :height_cm,
             numericality: { only_integer: true, greater_than: 0 },
             allow_nil: true
+  validate :plate_is_immutable, on: :update
   validate :photos_within_limit
   validate :photos_have_allowed_content_type
 
@@ -105,6 +106,12 @@ class Vehicle < ApplicationRecord
 
       errors.add(:photos, "has invalid content type: #{p.blob.content_type}")
     end
+  end
+
+  def plate_is_immutable
+    return unless will_save_change_to_plate?
+
+    errors.add(:plate, :immutable)
   end
 
   # Refuses to hard-delete if any TransportWindow on this Vehicle has a live

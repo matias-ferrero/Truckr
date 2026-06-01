@@ -53,6 +53,8 @@ en:
               exceeds_vehicle_capacity: "exceeds the vehicle's volume capacity"
         vehicle:
           attributes:
+            plate:
+              immutable: "plate cannot be changed after creation"
             base:
               has_active_windows: "vehicle has active transport windows and cannot be discarded"
               has_pending_commitments: "vehicle has pending commitments (offers or in-progress shipments) and cannot be discarded"

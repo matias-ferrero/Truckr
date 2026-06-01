@@ -94,6 +94,16 @@ RSpec.describe "Api::Carriers::Me::Vehicles", type: :request do
       expect(JSON.parse(response.body)["description"]).to eq("renovado")
     end
 
+    it "rejects plate changes on update" do
+      patch "/api/carriers/me/vehicles/#{vehicle.id}",
+            params: { vehicle: { plate: "ZZ999XX" } }
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      body = JSON.parse(response.body)
+      expect(body.dig("error", "details", "plate")).to be_present
+      expect(vehicle.reload.plate).not_to eq("ZZ999XX")
+    end
+
     it "rejects updates to a vehicle owned by another carrier" do
       foreign = create(:vehicle, carrier: other_user.carrier)
       patch "/api/carriers/me/vehicles/#{foreign.id}",

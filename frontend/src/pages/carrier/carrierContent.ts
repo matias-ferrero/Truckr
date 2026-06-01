@@ -50,6 +50,7 @@ export const carrierContent = {
         lead: "Completá los datos básicos. Las fotos ayudan a que los expedidores te elijan más rápido.",
         hydrating: "Cargando datos del vehículo",
         saveError: "No pudimos guardar el vehículo.",
+        plateLockedHelp: "La patente no se puede modificar después de crear el vehículo.",
         plateHint:
             "Patente esperada: AA123BB o AAA123 (6-8 caracteres alfanuméricos).",
         volumeLabel: (cm3: string) => `Volumen estimado: ${cm3} cm³`,

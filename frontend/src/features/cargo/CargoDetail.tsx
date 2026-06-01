@@ -12,6 +12,7 @@ const t = cargosContent.detail;
 const arsFormatter = new Intl.NumberFormat("es-AR", {
     style: "currency",
     currency: "ARS",
+    currencyDisplay: "code",
     maximumFractionDigits: 0,
 });
 
@@ -229,9 +230,7 @@ export default function CargoDetail() {
                         <div>
                             <dt>{t.summary.declaredValue}</dt>
                             <dd>
-                                {arsFormatter.format(
-                                    cargo.declared_value_cents / 100,
-                                )}
+                                {arsFormatter.format(cargo.declared_value_cents / 100)}
                             </dd>
                         </div>
                     </dl>

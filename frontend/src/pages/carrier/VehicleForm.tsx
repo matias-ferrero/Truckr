@@ -142,6 +142,8 @@ export default function VehicleForm({ mode }: Props) {
         return null;
     }, [draft.plate]);
 
+    const plateHelp = mode === "edit" ? f.plateLockedHelp : plateWarning ?? undefined;
+
     function update<K extends keyof Draft>(key: K, value: Draft[K]) {
         setDraft((d) => ({ ...d, [key]: value }));
     }
@@ -264,13 +266,14 @@ export default function VehicleForm({ mode }: Props) {
                             label={f.fields.plate}
                             id="plate"
                             error={serverErrors.plate?.[0]}
-                            help={plateWarning ?? undefined}
+                            help={plateHelp}
                         >
                             <Input
                                 id="plate"
                                 value={draft.plate}
                                 onChange={(e) => update("plate", e.target.value.toUpperCase())}
                                 required
+                                disabled={mode === "edit"}
                             />
                         </FormField>
                         <FormField

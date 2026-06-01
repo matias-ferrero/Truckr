@@ -181,6 +181,7 @@ describe("CargoForm — new", () => {
         renderNew();
         await fillAddresses(user);
         await fillCommonFields(user);
+        expect(screen.getByText("Se verá como ARS 5.000.000.")).toBeInTheDocument();
         await user.click(screen.getByRole("button", { name: "Publicar carga" }));
 
         await waitFor(() => expect(screen.getByText("cargo-detail")).toBeInTheDocument());
@@ -231,6 +232,14 @@ describe("CargoForm — new", () => {
         await user.click(screen.getByRole("button", { name: "Publicar carga" }));
         expect(await screen.findByText("ya existe")).toBeInTheDocument();
         expect(screen.getByText(/No pudimos guardar la carga/)).toBeInTheDocument();
+    });
+
+    it("explains that the declared value is entered in ARS and stored as cents", async () => {
+        renderNew();
+        const user = userEvent.setup();
+        await user.type(screen.getByLabelText(/Valor declarado/), "5000000");
+        expect(screen.getByText(/Ingresá pesos argentinos enteros, sin centavos\./)).toBeInTheDocument();
+        expect(screen.getByText("Se verá como ARS 5.000.000.")).toBeInTheDocument();
     });
 });
 

@@ -26,6 +26,20 @@ describe("VehicleForm", () => {
         );
     }
 
+    function renderEditForm(vehicleId = 7) {
+        return render(
+            <MemoryRouter initialEntries={[`/carrier/vehicle/${vehicleId}`]}>
+                <Routes>
+                    <Route
+                        path="/carrier/vehicle/:id"
+                        element={<VehicleForm mode="edit" />}
+                    />
+                    <Route path="/carrier/vehicles" element={<div>Lista</div>} />
+                </Routes>
+            </MemoryRouter>,
+        );
+    }
+
     it("submits a new vehicle with the captured fields", async () => {
         vi.mocked(vehiclesApi.createVehicle).mockResolvedValueOnce({
             id: 1,
@@ -77,5 +91,50 @@ describe("VehicleForm", () => {
         const user = userEvent.setup();
         await user.type(screen.getByLabelText(/patente/i), "$$$");
         expect(await screen.findByText(/Patente esperada/i)).toBeInTheDocument();
+    });
+
+    it("locks the plate field in edit mode", async () => {
+        vi.mocked(vehiclesApi.getMyVehicle).mockResolvedValueOnce({
+            id: 7,
+            carrier_id: 1,
+            make: "Ford",
+            model: "F-100",
+            year: 2018,
+            plate: "AB123CD",
+            vehicle_type: "truck",
+            max_load_kg: "1500",
+            length_cm: 500,
+            width_cm: 200,
+            height_cm: 220,
+            volume_cm3: 22_000_000,
+            gps_enabled: true,
+            description: null,
+            photos: [],
+            created_at: "",
+            updated_at: "",
+        });
+        vi.mocked(vehiclesApi.updateVehicle).mockResolvedValueOnce({
+            id: 7,
+            carrier_id: 1,
+            make: "Ford",
+            model: "F-100",
+            year: 2018,
+            plate: "AB123CD",
+            vehicle_type: "truck",
+            max_load_kg: "1500",
+            length_cm: 500,
+            width_cm: 200,
+            height_cm: 220,
+            volume_cm3: 22_000_000,
+            gps_enabled: true,
+            description: null,
+            photos: [],
+            created_at: "",
+            updated_at: "",
+        });
+
+        renderEditForm();
+        expect(await screen.findByLabelText(/patente/i)).toBeDisabled();
+        expect(screen.getByText(/no se puede modificar/i)).toBeInTheDocument();
     });
 });

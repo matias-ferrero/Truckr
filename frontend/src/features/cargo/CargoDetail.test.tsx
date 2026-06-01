@@ -99,6 +99,7 @@ describe("CargoDetail — open cargo", () => {
         expect(
             screen.getByRole("button", { name: "Cancelar carga" }),
         ).toBeInTheDocument();
+        expect(screen.getByText("Valor declarado").closest("div")).toHaveTextContent("ARS 50.000");
     });
 
     it("the search-carriers shortcut targets the cargo-scoped matches route", async () => {

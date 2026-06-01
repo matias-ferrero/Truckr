@@ -77,8 +77,9 @@ export const cargosContent = {
             volumeCm3: "Volumen (cm³)",
             volumeOptional: "Opcional. Número entero.",
             declaredValue: "Valor declarado (ARS)",
-            declaredValueHelp: "Pesos argentinos enteros — sin centavos.",
+            declaredValueHelp: "Ingresá pesos argentinos enteros, sin centavos.",
         },
+        declaredValuePreview: (value: string) => `Se verá como ${value}.`,
         errors: {
             cargoDescriptionRequired: "Ingresá una descripción de la carga.",
             cargoDescriptionTooLong: "La descripción no puede superar los 200 caracteres.",

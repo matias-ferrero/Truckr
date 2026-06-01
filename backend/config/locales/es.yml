@@ -48,6 +48,8 @@ es:
               exceeds_vehicle_capacity: "excede la capacidad volumétrica del vehículo"
         vehicle:
           attributes:
+            plate:
+              immutable: "la patente no se puede modificar después de creada"
             base:
               has_active_windows: "el vehículo tiene ventanas de transporte activas y no puede darse de baja"
               has_pending_commitments: "el vehículo tiene compromisos pendientes (ofertas o envíos en curso) y no puede darse de baja"

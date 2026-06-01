@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createCargo, fieldErrorsFrom, getCargo, updateCargo } from "./api";
 import type { Cargo, CargoDraft } from "../../types/Cargo";
@@ -40,6 +40,13 @@ const EMPTY: Draft = {
     volume_cm3:           "",
     declared_value_cents: "",
 };
+
+const declaredValueFormatter = new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    currencyDisplay: "code",
+    maximumFractionDigits: 0,
+});
 
 function toLocalDatetime(iso: string): string {
     if (!iso) return "";
@@ -187,6 +194,14 @@ export default function CargoForm({ mode }: Props) {
             cancelled = true;
         };
     }, [editingId]);
+
+    const declaredValuePreview = useMemo(() => {
+        const raw = draft.declared_value_cents.trim();
+        if (!raw) return null;
+        const value = Number(raw);
+        if (!Number.isFinite(value)) return null;
+        return declaredValueFormatter.format(value);
+    }, [draft.declared_value_cents]);
 
     function set<K extends keyof Draft>(key: K, value: Draft[K]) {
         setDraft((prev) => ({ ...prev, [key]: value }));
@@ -347,7 +362,18 @@ export default function CargoForm({ mode }: Props) {
                             <FormField
                                 id="declared_value_cents"
                                 label={f.fields.declaredValue}
-                                help={f.fields.declaredValueHelp}
+                                help={
+                                    declaredValuePreview
+                                        ? (
+                                            <>
+                                                {f.fields.declaredValueHelp}
+                                                <span className="mt-1 block font-medium text-ink">
+                                                    {f.declaredValuePreview(declaredValuePreview)}
+                                                </span>
+                                            </>
+                                        )
+                                        : f.fields.declaredValueHelp
+                                }
                                 error={errors.declared_value_cents}
                                 required
                             >
