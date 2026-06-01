@@ -49,7 +49,7 @@ export const shipmentDetailContent = {
         } as Record<string, string>,
     },
     actions: {
-        start_transit:  "Iniciar transporte",
+        start_transit:  "Confirmar Retiro",
         deliver:        "Confirmar entrega",
         pay:            "Pagar",
         retry_payment:  "Reintentar pago",
@@ -65,6 +65,8 @@ export const shipmentDetailContent = {
         weight:      "Peso",
         vehicle:     "Vehículo",
         created_at:  "Fecha de creación",
+        picked_up_at: "Retirada de carga",
+        delivered_at: "Entrega de carga",
         amount:      "Monto acordado",
         contact_name:  "Nombre de contacto",
         contact_email: "Correo de contacto",

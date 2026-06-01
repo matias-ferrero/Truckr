@@ -39,7 +39,7 @@ test.describe("Carrier — shipment detail (REQ-FE-00024 / US39)", () => {
         await expect(page.locator("#shipment-tracking-map")).toBeAttached();
     });
 
-    test("carrier on in_transit shipment: detail shows state chip, no action buttons", async ({ page }) => {
+    test("carrier on in_transit shipment: detail shows state chip and deliver button", async ({ page }) => {
         await page.goto("/carrier/shipments");
         await expect(page.getByRole("heading", { name: "Mis Envíos" })).toBeVisible();
 
@@ -51,8 +51,8 @@ test.describe("Carrier — shipment detail (REQ-FE-00024 / US39)", () => {
         await expect(page).toHaveURL(/\/carrier\/shipments\/\d+$/);
         // Use the state chip locator to avoid matching the timeline event label too.
         await expect(page.locator(".shipmentStateChip").getByText("En tránsito")).toBeVisible();
-        // Action buttons were removed from the detail page (now list-driven).
-        await expect(page.getByRole("button", { name: /confirmar entrega/i })).not.toBeAttached();
+        // The detail page still exposes the carrier action for this state.
+        await expect(page.getByRole("button", { name: /confirmar entrega/i })).toBeVisible();
     });
 
     test("404: non-existent shipment shows not-found screen with back CTA", async ({ page }) => {

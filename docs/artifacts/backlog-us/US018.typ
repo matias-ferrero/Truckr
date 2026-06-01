@@ -1,4 +1,4 @@
-== US18: Actualización de Envío — Carga Retirada
+== US18: Actualización de Envío — Inicio de Envio
 
 *Release:* MVP \
 *Prioridad:* Alta \
@@ -6,8 +6,8 @@
 
 *Descripción:*
 Como transportista,
-quiero poder marcar una carga como retirada,
-para que el expedidor sepa que ya recogí su carga y el envío está en curso.
+quiero poder marcar un envio como iniciado,
+para que el expedidor sepa que ya retire su carga y el envío está en tránsito.
 
 *Criterios de Aceptación:*
 + Al retirar la carga, el transportista puede marcarla como "en tránsito" con un botón.

@@ -63,6 +63,8 @@ export type ShipmentDetail = {
     id: number;
     state: ShipmentState;
     created_at: string;
+    picked_up_at?: string | null;
+    delivered_at?: string | null;
     amount_cents: number;
     currency: string;
     cargo: ShipmentCargo;

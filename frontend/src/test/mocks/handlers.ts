@@ -409,6 +409,8 @@ export function fixtureShipmentDetail(overrides: Record<string, unknown> = {}) {
         id: 31,
         state: "delivered",
         created_at: "2026-06-11T10:00:00Z",
+        picked_up_at: "2026-06-12T09:00:00Z",
+        delivered_at: "2026-06-13T14:30:00Z",
         amount_cents: 105_000_000,
         currency: "ARS",
         cargo: {

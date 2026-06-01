@@ -56,6 +56,8 @@ describe("getShipmentDetail", () => {
     it("calls GET /api/shipments/:id", async () => {
         mockFetch({ id: 5, state: "accepted", amount_cents: 100, currency: "ARS",
             created_at: "2026-06-11T10:00:00Z",
+            picked_up_at: null,
+            delivered_at: null,
             cargo: { origin: "CABA", destination: "Córdoba", description: "Pallets", weight_kg: "1500.0" },
             vehicle: { plate: "AAA111", kind: "truck_small" },
             counterparty: null, counterparty_contact: null, payment: null,
@@ -69,6 +71,8 @@ describe("getShipmentDetail", () => {
         const fixture = {
             id: 5, state: "in_transit", amount_cents: 100, currency: "ARS",
             created_at: "2026-06-11T10:00:00Z",
+            picked_up_at: "2026-06-12T09:00:00Z",
+            delivered_at: null,
             cargo: { origin: "CABA", destination: "Córdoba", description: "Pallets", weight_kg: "1500.0" },
             vehicle: { plate: "AAA111", kind: "truck_small" },
             counterparty: { kind: "shipper", id: 1, display_name: "Empresa Demo" },
@@ -81,6 +85,7 @@ describe("getShipmentDetail", () => {
         const result = await getShipmentDetail(5);
         expect(result.available_actions).toEqual(["deliver"]);
         expect(result.tracking_events).toHaveLength(1);
+        expect(result.picked_up_at).toBe("2026-06-12T09:00:00Z");
         expect(result.cargo.origin).toBe("CABA");
         expect(result.vehicle.plate).toBe("AAA111");
     });

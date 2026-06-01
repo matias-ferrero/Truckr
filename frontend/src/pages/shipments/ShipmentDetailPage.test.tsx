@@ -1,11 +1,12 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { server } from "../../test/mocks/server";
 import { http, HttpResponse } from "msw";
 import { fixtureShipmentDetail } from "../../test/mocks/handlers";
 import ShipmentDetailPage from "./ShipmentDetailPage";
+import { formatDateTime } from "../../lib/format-date";
 
 const API = "http://localhost:3000";
 
@@ -21,6 +22,12 @@ function renderPage(role: "carrier" | "shipper" = "shipper", id = 31) {
             </Routes>
         </MemoryRouter>,
     );
+}
+
+function hasNormalizedText(expected: string) {
+    const normalizedExpected = expected.replace(/\u00a0/g, " ");
+    return (_content: string, node: Element | null) =>
+        (node?.textContent ?? "").replace(/\u00a0/g, " ") === normalizedExpected;
 }
 
 describe("ShipmentDetailPage", () => {
@@ -52,6 +59,53 @@ describe("ShipmentDetailPage", () => {
         renderPage();
         await waitFor(() => expect(screen.getByText("Av. Corrientes 1234, CABA")).toBeInTheDocument());
         expect(screen.getByText("Av. Colón 500, Córdoba")).toBeInTheDocument();
+    });
+
+    it("shows pickup and delivery timestamps when present in shipment detail", async () => {
+        const pickedUp = "2026-06-12T09:00:00Z";
+        const delivered = "2026-06-13T14:30:00Z";
+
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({
+                    state: "delivered",
+                    picked_up_at: pickedUp,
+                    delivered_at: delivered,
+                    tracking_events: [],
+                }))),
+        );
+
+        renderPage("carrier");
+
+        await waitFor(() => expect(screen.getByText("Retirada de carga")).toBeInTheDocument());
+        expect(screen.getAllByText(hasNormalizedText(formatDateTime(pickedUp))).length).toBeGreaterThan(0);
+        expect(screen.getByText("Entrega de carga")).toBeInTheDocument();
+        expect(screen.getAllByText(hasNormalizedText(formatDateTime(delivered))).length).toBeGreaterThan(0);
+    });
+
+    it("falls back to tracking_events timestamps when picked_up_at/delivered_at are missing", async () => {
+        const pickedUp = "2026-06-12T09:00:00Z";
+        const delivered = "2026-06-13T14:30:00Z";
+
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({
+                    state: "delivered",
+                    picked_up_at: null,
+                    delivered_at: null,
+                    tracking_events: [
+                        { id: 11, kind: "status_change", occurred_at: pickedUp, from_status: "accepted", to_status: "in_transit" },
+                        { id: 12, kind: "status_change", occurred_at: delivered, from_status: "in_transit", to_status: "delivered" },
+                    ],
+                }))),
+        );
+
+        renderPage("carrier");
+
+        await waitFor(() => expect(screen.getByText("Retirada de carga")).toBeInTheDocument());
+        expect(screen.getAllByText(hasNormalizedText(formatDateTime(pickedUp))).length).toBeGreaterThan(0);
+        expect(screen.getByText("Entrega de carga")).toBeInTheDocument();
+        expect(screen.getAllByText(hasNormalizedText(formatDateTime(delivered))).length).toBeGreaterThan(0);
     });
 
     // --- State matrix: Shipper ---
@@ -102,7 +156,7 @@ describe("ShipmentDetailPage", () => {
 
     // --- State matrix: Carrier ---
 
-    it("[Carrier, accepted, escrowed] shows A recoger label, no action buttons", async () => {
+    it("[Carrier, accepted, escrowed] shows A recoger label and start_transit button", async () => {
         server.use(
             http.get(`${API}/api/shipments/:id`, () =>
                 HttpResponse.json(fixtureShipmentDetail({
@@ -113,10 +167,10 @@ describe("ShipmentDetailPage", () => {
         );
         renderPage("carrier");
         await waitFor(() => expect(screen.getByText(/a recoger/i)).toBeInTheDocument());
-        expect(screen.queryByRole("button", { name: /iniciar transporte/i })).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /confirmar retiro/i })).toBeInTheDocument();
     });
 
-    it("[Carrier, in_transit] shows no action buttons", async () => {
+    it("[Carrier, in_transit] shows deliver button", async () => {
         server.use(
             http.get(`${API}/api/shipments/:id`, () =>
                 HttpResponse.json(fixtureShipmentDetail({
@@ -127,7 +181,7 @@ describe("ShipmentDetailPage", () => {
         );
         renderPage("carrier");
         await waitFor(() => expect(screen.getByRole("heading", { name: /envío/i })).toBeInTheDocument());
-        expect(screen.queryByRole("button", { name: /confirmar entrega/i })).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /confirmar entrega/i })).toBeInTheDocument();
     });
 
     it("[delivered] shows no action buttons but PaymentStateChip is visible", async () => {

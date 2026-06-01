@@ -20,6 +20,12 @@ en:
       already_paid: "This shipment has already been paid"
       shipment_not_accepted: "This shipment is not in an accepted state and cannot be paid"
       generic: "We could not process the payment. Please try again."
+    shipments:
+      shipment_not_accepted: "This shipment is not in accepted state"
+      shipment_not_paid: "This shipment has not been paid yet"
+      shipment_not_in_transit: "This shipment is not in transit"
+      transition_not_allowed: "This shipment transition is not allowed"
+      generic: "We could not update the shipment. Please try again."
     messages:
       password_complexity:
         upper: "must contain at least one uppercase letter"

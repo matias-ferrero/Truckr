@@ -19,6 +19,17 @@ class ShipmentPolicy < ApplicationPolicy
       (user.shipper && record.cargo_offer.cargo.shipper_id == user.shipper.id)
   end
 
+  # Carrier-only write actions for shipment lifecycle transitions.
+  def start_transit?
+    return false unless user&.carrier
+
+    record.cargo_offer.carrier_id == user.carrier.id
+  end
+
+  def deliver?
+    start_transit?
+  end
+
   class Scope < ApplicationPolicy::Scope
     def resolve
       if user&.carrier

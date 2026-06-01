@@ -15,6 +15,12 @@ es:
       already_paid: "Este envío ya fue pagado"
       shipment_not_accepted: "El envío no está en estado aceptado y no puede pagarse"
       generic: "No pudimos procesar el pago. Intentá de nuevo."
+    shipments:
+      shipment_not_accepted: "El envío no está en estado aceptado"
+      shipment_not_paid: "El envío todavía no fue pagado"
+      shipment_not_in_transit: "El envío no está en tránsito"
+      transition_not_allowed: "La transición del envío no está permitida"
+      generic: "No pudimos actualizar el envío. Intentá de nuevo."
     messages:
       password_complexity:
         upper: "debe contener al menos una mayúscula"

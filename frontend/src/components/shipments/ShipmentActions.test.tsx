@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ShipmentActions } from "./ShipmentActions";
@@ -89,7 +89,7 @@ describe("ShipmentActions", () => {
                 onAction={onAction}
             />,
         );
-        await user.click(screen.getByRole("button", { name: /iniciar transporte/i }));
+        await user.click(screen.getByRole("button", { name: /confirmar retiro/i }));
         expect(onAction).not.toHaveBeenCalled();
         expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
@@ -106,8 +106,8 @@ describe("ShipmentActions", () => {
                 onAction={onAction}
             />,
         );
-        await user.click(screen.getByRole("button", { name: /iniciar transporte/i }));
-        await user.click(screen.getByRole("button", { name: /confirmar/i }));
+        await user.click(screen.getByRole("button", { name: /confirmar retiro/i }));
+        await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: /^confirmar$/i }));
         expect(onAction).toHaveBeenCalledWith("start_transit");
     });
 

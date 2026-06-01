@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useShipmentDetail } from "../../hooks/useShipmentDetail";
 import { ShipmentStateChip } from "../../components/shipments/ShipmentStateChip";
 import { PaymentStateChip } from "../../components/shipments/PaymentStateChip";
+import { ShipmentActions } from "../../components/shipments/ShipmentActions";
 import { TrackingEventTimeline } from "../../components/shipments/TrackingEventTimeline";
 import { Button, buttonVariants } from "../../components/ui/button";
 import { shipmentDetailContent as t } from "./shipmentDetailContent";
@@ -41,6 +42,26 @@ function BannerIcon({ kind }: { kind: "to_pick_up" | "awaiting_payment" }) {
     );
 }
 
+function milestoneAt(
+    detail: { picked_up_at?: string | null; delivered_at?: string | null; tracking_events: Array<{ kind: string; occurred_at: string; to_status?: string | null }> },
+    milestone: "picked_up" | "delivered",
+): string | null {
+    if (milestone === "picked_up" && detail.picked_up_at) return detail.picked_up_at;
+    if (milestone === "delivered" && detail.delivered_at) return detail.delivered_at;
+
+    const fromEvents = detail.tracking_events
+        .slice()
+        .reverse()
+        .find((ev) => {
+            if (milestone === "picked_up") {
+                return ev.kind === "shipment_in_transit" || (ev.kind === "status_change" && ev.to_status === "in_transit");
+            }
+            return ev.kind === "shipment_delivered" || (ev.kind === "status_change" && ev.to_status === "delivered");
+        });
+
+    return fromEvents?.occurred_at ?? null;
+}
+
 function Skeleton() {
     return (
         <div className="shipmentDetailSkeleton" aria-busy="true" role="status" aria-label={t.skeleton.label}>
@@ -64,7 +85,7 @@ function Skeleton() {
 export default function ShipmentDetailPage({ role }: Props) {
     const { id } = useParams<{ id: string }>();
     const numericId = id !== undefined ? Number(id) : NaN;
-    const { state, reload } = useShipmentDetail(numericId);
+    const { state, reload, handleAction } = useShipmentDetail(numericId);
     const navigate = useNavigate();
 
     const [payDialogOpen, setPayDialogOpen] = useState(false);
@@ -118,6 +139,8 @@ export default function ShipmentDetailPage({ role }: Props) {
 
     const { detail, derived } = state;
     const shipmentSummary = `${detail.cargo.origin} → ${detail.cargo.destination}`;
+    const pickedUpAt = milestoneAt(detail, "picked_up");
+    const deliveredAt = milestoneAt(detail, "delivered");
 
     return (
         <main className={`page shipmentDetailPage shipmentDetailPage--${role}`} id="main">
@@ -242,6 +265,18 @@ export default function ShipmentDetailPage({ role }: Props) {
                             <dt>{t.fields.created_at}</dt>
                             <dd>{formatDateTime(detail.created_at)}</dd>
                         </div>
+                        {pickedUpAt && (
+                            <div>
+                                <dt>{t.fields.picked_up_at}</dt>
+                                <dd>{formatDateTime(pickedUpAt)}</dd>
+                            </div>
+                        )}
+                        {deliveredAt && (
+                            <div>
+                                <dt>{t.fields.delivered_at}</dt>
+                                <dd>{formatDateTime(deliveredAt)}</dd>
+                            </div>
+                        )}
                     </dl>
 
                     {detail.counterparty_contact && (
@@ -269,6 +304,7 @@ export default function ShipmentDetailPage({ role }: Props) {
                     )}
                 </section>
 
+
                 <section className="shipmentTimelineSection">
                     <h2 className="shipmentTimelineTitle">
                         {t.tracking.sectionTitle}
@@ -279,6 +315,16 @@ export default function ShipmentDetailPage({ role }: Props) {
                         )}
                     </h2>
                     <TrackingEventTimeline events={detail.tracking_events} shipmentState={detail.state} />
+                    {role === "carrier" && (
+                        <ShipmentActions
+                            available_actions={detail.available_actions}
+                            payLabel={derived.payLabel}
+                            isActing={derived.isActing}
+                            actionError={derived.actionError}
+                            onAction={handleAction}
+                            shipmentSummary={shipmentSummary}
+                        />
+                    )}
                 </section>
 
                 {/* Anchor for the map component (US51 / AC5). Hidden until the map feature lands. */}

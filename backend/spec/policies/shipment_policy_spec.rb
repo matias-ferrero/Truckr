@@ -40,6 +40,50 @@ RSpec.describe ShipmentPolicy, type: :policy do
     end
   end
 
+  describe "#start_transit?" do
+    context "when the user is the owning carrier" do
+      let(:user) { carrier_user }
+      it { is_expected.to be_start_transit }
+    end
+
+    context "when the user is the owning shipper" do
+      let(:user) { shipper_user }
+      it { is_expected.not_to be_start_transit }
+    end
+
+    context "when the user is a foreign carrier" do
+      let(:user) { create(:user, :with_carrier) }
+      it { is_expected.not_to be_start_transit }
+    end
+
+    context "when there is no user" do
+      let(:user) { nil }
+      it { is_expected.not_to be_start_transit }
+    end
+  end
+
+  describe "#deliver?" do
+    context "when the user is the owning carrier" do
+      let(:user) { carrier_user }
+      it { is_expected.to be_deliver }
+    end
+
+    context "when the user is the owning shipper" do
+      let(:user) { shipper_user }
+      it { is_expected.not_to be_deliver }
+    end
+
+    context "when the user is a foreign carrier" do
+      let(:user) { create(:user, :with_carrier) }
+      it { is_expected.not_to be_deliver }
+    end
+
+    context "when there is no user" do
+      let(:user) { nil }
+      it { is_expected.not_to be_deliver }
+    end
+  end
+
   describe "Scope" do
     let!(:carrier_shipment) { shipment } # carrier+shipper above own it
     let!(:other_shipment) do
