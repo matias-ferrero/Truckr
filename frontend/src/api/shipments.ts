@@ -1,4 +1,5 @@
 import { apiFetch } from "../api";
+import type { Review } from "./reviews";
 
 export type ShipmentState =
     | "accepted"
@@ -74,6 +75,12 @@ export type ShipmentDetail = {
     payment?: ShipmentPayment | null;
     tracking_events: TrackingEvent[];
     available_actions: AvailableAction[];
+    // US30 / REQ-BE-00044 — the Carrier→Shipper review for this shipment, when
+    // one already exists. Only surfaced to the Carrier viewer (the author) and
+    // only on a `delivered` shipment; null otherwise. Lets the detail page
+    // hydrate CarrierReviewForm straight into its read-only state (AC7) across
+    // reloads, without a separate listing endpoint (US26 / US54).
+    carrier_review?: Review | null;
 };
 
 // Canonical enum owned by REQ-BE-00035 §4.4. The FE never invents entries.

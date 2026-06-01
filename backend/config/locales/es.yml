@@ -21,6 +21,11 @@ es:
       shipment_not_in_transit: "El envío no está en tránsito"
       transition_not_allowed: "La transición del envío no está permitida"
       generic: "No pudimos actualizar el envío. Intentá de nuevo."
+    reviews:
+      create:
+        unauthorized: "Sólo el transportista asignado al envío puede reseñar al expedidor"
+        shipment_not_delivered: "Sólo se puede dejar una reseña una vez que el envío fue entregado"
+        already_reviewed: "Ya dejaste una reseña para este envío"
     messages:
       password_complexity:
         upper: "debe contener al menos una mayúscula"

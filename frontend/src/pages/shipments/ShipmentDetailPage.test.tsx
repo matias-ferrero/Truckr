@@ -318,4 +318,74 @@ describe("ShipmentDetailPage", () => {
         await waitFor(() => expect(screen.getByText("pay-page")).toBeInTheDocument());
     });
 
+    // --- US30 / REQ-BE-00044 — Carrier review integration (AC7) ---
+
+    it("[Carrier, delivered, no review] mounts the review form", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({ state: "delivered", carrier_review: null }))),
+        );
+        renderPage("carrier");
+        await waitFor(() =>
+            expect(screen.getByRole("heading", { name: /reseñar al expedidor/i })).toBeInTheDocument(),
+        );
+        expect(screen.getByRole("radiogroup", { name: /puntuación/i })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /enviar reseña/i })).toBeInTheDocument();
+    });
+
+    it("[Shipper, delivered] does NOT mount the review form", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({ state: "delivered" }))),
+        );
+        renderPage("shipper");
+        await waitFor(() => expect(screen.getByText(/entregado/i)).toBeInTheDocument());
+        expect(screen.queryByRole("heading", { name: /reseñar al expedidor/i })).not.toBeInTheDocument();
+    });
+
+    it("[Carrier, in_transit] does NOT mount the review form (state guard)", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({ state: "in_transit", available_actions: ["deliver"] }))),
+        );
+        renderPage("carrier");
+        await waitFor(() => expect(screen.getByRole("heading", { name: /envío/i })).toBeInTheDocument());
+        expect(screen.queryByRole("heading", { name: /reseñar al expedidor/i })).not.toBeInTheDocument();
+    });
+
+    it("[Carrier, delivered, existing review] hydrates the read-only card (AC7)", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({
+                    state: "delivered",
+                    carrier_review: {
+                        id: 7,
+                        rating: 4,
+                        body: "Carga lista a horario.",
+                        authored_by: "carrier",
+                        created_at: "2026-06-12T10:00:00Z",
+                    },
+                }))),
+        );
+        renderPage("carrier");
+        await waitFor(() => expect(screen.getByText(/¡gracias por tu reseña!/i)).toBeInTheDocument());
+        expect(screen.getByText("Carga lista a horario.")).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: /enviar reseña/i })).not.toBeInTheDocument();
+    });
+
+    it("[Carrier, delivered] submitting the form shows the read-only success state", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({ state: "delivered", carrier_review: null }))),
+        );
+        const user = userEvent.setup();
+        renderPage("carrier");
+        await waitFor(() =>
+            expect(screen.getByRole("button", { name: /enviar reseña/i })).toBeInTheDocument(),
+        );
+        await user.click(screen.getByRole("radio", { name: /5 estrellas/i }));
+        await user.click(screen.getByRole("button", { name: /enviar reseña/i }));
+        await waitFor(() => expect(screen.getByText(/¡gracias por tu reseña!/i)).toBeInTheDocument());
+    });
+
 });

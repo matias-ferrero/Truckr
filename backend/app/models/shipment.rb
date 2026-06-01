@@ -51,6 +51,7 @@ class Shipment < ApplicationRecord
   belongs_to :cargo_offer, inverse_of: :shipment
   has_many   :tracking_events, dependent: :destroy, inverse_of: :shipment
   has_many   :payments, dependent: :restrict_with_error, inverse_of: :shipment
+  has_many   :reviews, dependent: :nullify, inverse_of: :shipment
   has_one    :route, dependent: :destroy, inverse_of: :shipment
 
   # ── Validations ───────────────────────────────────────────────────────
@@ -121,7 +122,7 @@ class Shipment < ApplicationRecord
   end
 
   def self.ransackable_associations(_auth_object = nil)
-    %w[cargo_offer tracking_events route payments]
+    %w[cargo_offer tracking_events route payments reviews]
   end
 
   private

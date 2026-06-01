@@ -17,7 +17,7 @@ module Api
     def show
       shipment = Shipment
                  .eager_load(
-                   :payments, :tracking_events,
+                   :payments, :tracking_events, :reviews,
                    cargo_offer: [
                      { carrier: :user },
                      { cargo: { shipper: :user } },

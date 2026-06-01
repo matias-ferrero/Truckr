@@ -774,3 +774,167 @@
         align-items: stretch;
     }
 }
+
+/* ── US30 / REQ-BE-00044 — Carrier→Shipper review form ──────────────────── */
+.carrierReviewCard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+}
+
+.carrierReviewHeader {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.carrierReviewTitle {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0;
+}
+
+.carrierReviewLead {
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+    margin: 0;
+}
+
+.carrierReviewForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.carrierReviewFieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.carrierReviewLegend {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--ink-2);
+    padding: 0;
+}
+
+.carrierReviewStars {
+    display: inline-flex;
+    gap: var(--space-1);
+}
+
+.carrierReviewStar {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: var(--text-lg);
+    line-height: 1;
+    padding: var(--space-1);
+    color: var(--ink-3);
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.carrierReviewStar:hover {
+    transform: scale(1.1);
+}
+
+.carrierReviewStar:focus-visible {
+    outline: 3px solid color-mix(in oklab, var(--color-brand-warm) 70%, var(--ink));
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+.carrierReviewStar--on {
+    color: var(--color-brand-warm);
+}
+
+.carrierReviewStarsStatic {
+    display: inline-flex;
+    gap: var(--space-1);
+    color: var(--color-brand-warm);
+    font-size: var(--text-lg);
+    line-height: 1;
+}
+
+.carrierReviewStarGlyph {
+    display: inline-block;
+}
+
+.carrierReviewLabel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+    font-weight: 500;
+}
+
+.carrierReviewTextarea {
+    width: 100%;
+    resize: vertical;
+    padding: var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+    color: var(--ink);
+    font-size: var(--text-base);
+    font-family: inherit;
+}
+
+.carrierReviewCounter {
+    align-self: flex-end;
+    font-size: var(--text-xs);
+    color: var(--ink-3);
+}
+
+.carrierReviewFieldError {
+    color: var(--brand-error);
+    font-size: var(--text-sm);
+    margin: 0;
+}
+
+.carrierReviewError {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--brand-error);
+    color: var(--brand-error);
+    background: color-mix(in oklab, var(--brand-error) 8%, var(--surface));
+    font-size: var(--text-sm);
+}
+
+.carrierReviewActions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.carrierReviewCard--done {
+    gap: var(--space-3);
+}
+
+.carrierReviewDoneRating {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.carrierReviewDoneLabel {
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+    font-weight: 600;
+}
+
+.carrierReviewDoneBody {
+    font-size: var(--text-base);
+    color: var(--ink);
+    margin: 0;
+}

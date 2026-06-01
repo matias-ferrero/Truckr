@@ -134,6 +134,43 @@ RSpec.describe "Api::Shipments", type: :request do
       end
     end
 
+    # US30 / REQ-BE-00044 — carrier_review hydration for AC7.
+    describe "carrier_review (US30 / AC7)" do
+      it "is nil for the Carrier viewer when no review exists yet" do
+        sign_in carrier_user
+
+        get "/api/shipments/#{shipment.id}"
+
+        body = JSON.parse(response.body)
+        expect(body).to have_key("carrier_review")
+        expect(body["carrier_review"]).to be_nil
+      end
+
+      it "exposes the carrier-authored review to the owning Carrier" do
+        review = create(:review, :carrier_authored, shipment: shipment)
+        sign_in carrier_user
+
+        get "/api/shipments/#{shipment.id}"
+
+        body = JSON.parse(response.body)
+        expect(body["carrier_review"]).to include(
+          "id"          => review.id,
+          "rating"      => review.rating,
+          "authored_by" => "carrier"
+        )
+      end
+
+      it "is nil for the Shipper viewer even when a carrier review exists" do
+        create(:review, :carrier_authored, shipment: shipment)
+        sign_in shipper_user
+
+        get "/api/shipments/#{shipment.id}"
+
+        body = JSON.parse(response.body)
+        expect(body["carrier_review"]).to be_nil
+      end
+    end
+
     describe "counterparty_contact reveal (REQ-BE-00033 / AC9)" do
       it "is null before any Payment is escrowed (carrier viewer)" do
         sign_in carrier_user

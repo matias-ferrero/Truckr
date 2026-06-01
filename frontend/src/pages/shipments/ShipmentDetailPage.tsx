@@ -5,6 +5,7 @@ import { ShipmentStateChip } from "../../components/shipments/ShipmentStateChip"
 import { PaymentStateChip } from "../../components/shipments/PaymentStateChip";
 import { ShipmentActions } from "../../components/shipments/ShipmentActions";
 import { TrackingEventTimeline } from "../../components/shipments/TrackingEventTimeline";
+import { CarrierReviewForm } from "../../components/shipments/CarrierReviewForm";
 import { Button, buttonVariants } from "../../components/ui/button";
 import { shipmentDetailContent as t } from "./shipmentDetailContent";
 import { formatDateTime } from "../../lib/format-date";
@@ -326,6 +327,23 @@ export default function ShipmentDetailPage({ role }: Props) {
                         />
                     )}
                 </section>
+
+                {/* US30 / REQ-BE-00044 — Carrier reviews the Shipper. Visible only to
+                    the Carrier viewer on a delivered shipment (AC7). The form
+                    hydrates straight into its read-only state when the backend
+                    already returned a carrier_review, and flips there itself after
+                    a successful submit. */}
+                {role === "carrier" && detail.state === "delivered" && (
+                    <section className="shipmentReviewSection" aria-label={t.review.sectionLabel}>
+                        <CarrierReviewForm
+                            shipmentId={detail.id}
+                            existingReview={detail.carrier_review ?? null}
+                            onCreated={() => {
+                                window.dispatchEvent(new Event("truckr:shipment-updated"));
+                            }}
+                        />
+                    </section>
+                )}
 
                 {/* Anchor for the map component (US51 / AC5). Hidden until the map feature lands. */}
                 <div id="shipment-tracking-map" hidden aria-hidden="true" />

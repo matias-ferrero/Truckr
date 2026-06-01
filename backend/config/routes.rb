@@ -63,6 +63,8 @@ Rails.application.routes.draw do
     # (REQ-BE-00038 / US18 / US19).
     resources :shipments, only: %i[show] do
       resources :payments, only: %i[create], module: "shipments"
+      # Carrier → Shipper review on a delivered Shipment (US30 / REQ-BE-00044).
+      resources :carrier_reviews, only: %i[create], module: "shipments"
       member do
         post :start_transit, to: "shipments/transitions#start_transit"
         post :deliver, to: "shipments/transitions#deliver"

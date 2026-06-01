@@ -122,4 +122,19 @@ class ShipmentDetailResource
   attribute :available_actions do |shipment|
     Shipment::AvailableActions.for(shipment: shipment, user: params[:current_user])
   end
+
+  # US30 / REQ-BE-00044 — the Carrier→Shipper review tied to this Shipment,
+  # exposed only to the Carrier viewer (the author) so REQ-FE-00024 can hydrate
+  # the review form straight into its read-only state (AC7) on reload. Returns
+  # `nil` when the viewer is not the assigned Carrier or no carrier-authored
+  # review exists yet. This is the single review for *this* shipment — not the
+  # profile listing endpoints (US26 / US54), which stay out of scope. Resolved
+  # from the eager-loaded `reviews` association (no extra query).
+  attribute :carrier_review do |shipment|
+    role = Shipment::AvailableActions.active_role(shipment, params[:current_user])
+    next nil unless role == :carrier
+
+    review = shipment.reviews.find(&:carrier_authored?)
+    review && ReviewResource.new(review).to_h
+  end
 end

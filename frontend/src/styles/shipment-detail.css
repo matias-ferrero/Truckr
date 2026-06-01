@@ -323,6 +323,13 @@
     margin-block-end: var(--space-4);
 }
 
+/* US30 / REQ-BE-00044 — wrapper around CarrierReviewForm on the Carrier's
+   delivered-shipment detail view. Keeps the vertical rhythm with the timeline
+   above; the card itself owns its surface styling (see shipments.css). */
+.shipmentReviewSection {
+    margin-block-start: var(--space-5);
+}
+
 .shipmentTimelineTitle {
     font-family: var(--font-display);
     font-size: 1.0625rem;

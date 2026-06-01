@@ -149,6 +149,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_30_000001) do
     t.check_constraint "state IN ('escrowed','failed')", name: "payments_state_check"
   end
 
+  create_table "reviews", force: :cascade do |t|
+    t.string "authored_by", null: false
+    t.text "body"
+    t.integer "carrier_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "rating", null: false
+    t.integer "shipment_id"
+    t.integer "shipper_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["carrier_id", "authored_by"], name: "index_reviews_on_carrier_id_and_authored_by"
+    t.index ["shipment_id", "authored_by"], name: "index_reviews_on_shipment_and_authored_by", unique: true
+    t.index ["shipper_id", "authored_by"], name: "index_reviews_on_shipper_id_and_authored_by"
+    t.check_constraint "authored_by IN ('shipper','carrier')", name: "reviews_authored_by_check"
+    t.check_constraint "rating BETWEEN 1 AND 5", name: "reviews_rating_range_check"
+  end
+
   create_table "routes", force: :cascade do |t|
     t.datetime "calculated_at"
     t.datetime "created_at", null: false
@@ -282,6 +298,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_30_000001) do
   add_foreign_key "cargos", "shippers"
   add_foreign_key "carriers", "users"
   add_foreign_key "payments", "shipments", on_delete: :restrict
+  add_foreign_key "reviews", "carriers", on_delete: :restrict
+  add_foreign_key "reviews", "shipments", on_delete: :nullify
+  add_foreign_key "reviews", "shippers", on_delete: :restrict
   add_foreign_key "routes", "shipments", on_delete: :cascade
   add_foreign_key "shipments", "cargo_offers", on_delete: :restrict
   add_foreign_key "shippers", "users"

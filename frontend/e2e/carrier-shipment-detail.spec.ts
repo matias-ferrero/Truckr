@@ -64,6 +64,27 @@ test.describe("Carrier — shipment detail (REQ-FE-00024 / US39)", () => {
         await expect(cta).toHaveAttribute("href", "/carrier/shipments");
     });
 
+    // US30 / REQ-BE-00044 — the review form is wired into the Carrier detail
+    // view for delivered shipments (AC7). Non-mutating: asserts the form renders
+    // end-to-end (real API serves the delivered shipment with carrier_review:
+    // null, the page mounts CarrierReviewForm) but does NOT submit, so the
+    // seeded shipment stays reviewable across runs.
+    test("carrier on delivered shipment: shows the Shipper review form", async ({ page }) => {
+        await page.goto("/carrier/shipments");
+        await expect(page.getByRole("heading", { name: "Mis Envíos" })).toBeVisible();
+
+        const deliveredLink = page.getByRole("link", { name: /entregado/i }).first();
+        await expect(deliveredLink).toBeVisible();
+        await deliveredLink.click();
+
+        await expect(page).toHaveURL(/\/carrier\/shipments\/\d+$/);
+        await expect(page.locator(".shipmentStateChip").getByText("Entregado")).toBeVisible();
+
+        await expect(page.getByRole("heading", { name: /reseñar al expedidor/i })).toBeVisible();
+        await expect(page.getByRole("radiogroup", { name: /puntuación/i })).toBeVisible();
+        await expect(page.getByRole("button", { name: /enviar reseña/i })).toBeVisible();
+    });
+
     // Full golden path requires the seeded in_transit shipment to actually
     // transition — which consumes the seed. Skipped to avoid cross-test contamination.
     test.skip("golden path: Carrier start_transit → deliver → chip updates to Entregado", async ({ page }) => {

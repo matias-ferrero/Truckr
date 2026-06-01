@@ -26,6 +26,11 @@ en:
       shipment_not_in_transit: "This shipment is not in transit"
       transition_not_allowed: "This shipment transition is not allowed"
       generic: "We could not update the shipment. Please try again."
+    reviews:
+      create:
+        unauthorized: "Only the carrier assigned to this shipment can review the shipper"
+        shipment_not_delivered: "A review can only be left once the shipment has been delivered"
+        already_reviewed: "You have already reviewed this shipment"
     messages:
       password_complexity:
         upper: "must contain at least one uppercase letter"
