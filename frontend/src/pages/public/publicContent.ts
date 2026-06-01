@@ -41,4 +41,43 @@ export const publicContent = {
         offerCta: "Ofertar",
         offerCtaAriaLabel: (zone: string) => `Crear oferta para la ruta ${zone}`,
     },
+    shipperDetail: {
+        loadingLabel: "Cargando perfil del expedidor",
+        loadError: "No pudimos cargar el perfil",
+        retry: "Reintentar",
+        notFoundTitle: "Expedidor no encontrado",
+        notFoundLead: "El perfil que buscás no existe o ya no está disponible.",
+        back: "Volver",
+        editProfile: "Editar mi perfil",
+        title: (name: string) => name,
+        taxIdLabel: "CUIT",
+        // AC2 / AC5 — average + count shown alongside individual reviews.
+        reviewsTitle: "Reseñas",
+        averageRating: "Puntuación promedio",
+        // Hero rating line — mirrors carrierDetail.ratingLabel so the empty
+        // state reads "Sin reseñas todavía" next to empty stars (not a full
+        // sentence). avg may be null when there are no reviews.
+        ratingLabel: (avg: string | null, count: number) =>
+            count === 0
+                ? "Sin reseñas todavía"
+                : `${(avg ?? "").replace(".", ",")}/5 · ${count} reseña${count === 1 ? "" : "s"}`,
+        ratingSummary: (avg: string, count: number) =>
+            `${avg.replace(".", ",")}/5 · ${count} reseña${count === 1 ? "" : "s"}`,
+        // Split parts for the hero rating — value and count are styled independently.
+        ratingValue: (avg: string) => `${avg.replace(".", ",")}/5`,
+        ratingCount: (count: number) => `${count} reseña${count === 1 ? "" : "s"}`,
+        starsLabel: (avg: string) => `Promedio de ${avg} sobre 5 estrellas`,
+        // i18n key reviews.shipper.empty (AC5).
+        empty: "Este expedidor todavía no tiene reseñas.",
+        // Individual review card.
+        reviewStarsLabel: (rating: number) => `${rating} de 5 estrellas`,
+        reviewDate: (iso: string) =>
+            new Date(iso).toLocaleDateString("es-AR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            }),
+        loadMore: "Ver más reseñas",
+        loadingMore: "Cargando…",
+    },
 } as const;

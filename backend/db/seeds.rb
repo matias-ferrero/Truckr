@@ -1140,3 +1140,244 @@ if defined?(Carrier) && defined?(Shipper) && Carrier.any? && Shipper.any?
     end
   end
 end
+
+# US54 review fixtures (REQ-BE-00045) ─────────────────────────────────────────
+#
+# Ten additional carrier-authored reviews on shipper1@truckr.test, each tied to
+# its own dedicated delivered shipment.  Together with the Seed-C review from
+# the US30 block ("Carga lista a horario, embalaje impecable.", rating 4),
+# shipper1 reaches 11 carrier-authored reviews — enough to span two pages
+# (10/page, newest-first) and exercise the "Ver más reseñas" pagination button.
+# shipper2@truckr.test stays review-free for the empty-state test case.
+#
+# Avg calculation: 4 + 5+5+5+4+4+4+3+3+2+1 = 40 / 11 = 3.636… → "3.6"
+#
+# Page layout (newest-first):
+#   Page 1 (10): US30-C review (created at seed time, newest) + reseñas 1–9
+#   Page 2 (1):  reseña 10 (rating 1, 300 days ago, oldest)
+#
+# TC mapping:
+#   TC-03 — shipper2 profile: empty state, stars empty
+#   TC-04 — shipper1 profile: hero shows avg "3.6", count 11
+#   TC-05 — individual review cards: rating, date, body visible
+#   TC-06 — newest-first: US30-C ("Carga lista a horario…") appears first
+#   TC-11 — "Ver más reseñas" button visible (page 1 of 2)
+#   TC-12 — clicking "Ver más" loads the single page-2 card (rating 1)
+if defined?(Carrier) && defined?(Shipper) && Carrier.any? && Shipper.any?
+  carrier = Carrier.first
+  shipper = Shipper.first
+  vehicle = carrier.vehicles.first
+
+  if vehicle
+    US54_REVIEW_FIXTURES = [
+      { cargo_desc:      "Semillas de soja (US54 — reseña 1)",
+        tw_from: -310, tw_to: -302,
+        origin: "Mendoza",      origin_admin: "Mendoza",
+        dest:   "Tucumán",      dest_admin:   "Tucumán",
+        origin_lat:  -32.889458, origin_lng: -68.844734,
+        dest_lat:    -26.808285, dest_lng:   -65.217590,
+        rating: 5,
+        body:   "Carga perfectamente embalada y lista antes del horario acordado.",
+        review_age_days: 30 },
+
+      { cargo_desc:      "Aceitunas en conserva (US54 — reseña 2)",
+        tw_from: -318, tw_to: -310,
+        origin: "Salta",        origin_admin: "Salta",
+        dest:   "Jujuy",        dest_admin:   "Jujuy",
+        origin_lat:  -24.782693, origin_lng: -65.423169,
+        dest_lat:    -24.184832, dest_lng:   -65.302181,
+        rating: 5,
+        body:   "Excelente coordinación. El cliente estaba esperando en destino.",
+        review_age_days: 60 },
+
+      { cargo_desc:      "Productos lácteos (US54 — reseña 3)",
+        tw_from: -326, tw_to: -318,
+        origin: "Santa Rosa",   origin_admin: "La Pampa",
+        dest:   "Neuquén",      dest_admin:   "Neuquén",
+        origin_lat:  -36.617693, origin_lng: -64.283386,
+        dest_lat:    -38.951751, dest_lng:   -68.059138,
+        rating: 5,
+        body:   nil,
+        review_age_days: 90 },
+
+      { cargo_desc:      "Hierro en lingotes (US54 — reseña 4)",
+        tw_from: -334, tw_to: -326,
+        origin: "Bahía Blanca", origin_admin: "Buenos Aires",
+        dest:   "Paraná",       dest_admin:   "Entre Ríos",
+        origin_lat:  -38.716671, origin_lng: -62.270833,
+        dest_lat:    -31.731389, dest_lng:   -60.523056,
+        rating: 4,
+        body:   "Buena predisposición del expedidor para coordinar horarios.",
+        review_age_days: 120 },
+
+      { cargo_desc:      "Vidrio templado (US54 — reseña 5)",
+        tw_from: -342, tw_to: -334,
+        origin: "San Juan",     origin_admin: "San Juan",
+        dest:   "Córdoba",      dest_admin:   "Córdoba",
+        origin_lat:  -31.538870, origin_lng: -68.530554,
+        dest_lat:    -31.420083, dest_lng:   -64.188776,
+        rating: 4,
+        body:   "Todo en orden. Documentación completa al momento del retiro.",
+        review_age_days: 150 },
+
+      { cargo_desc:      "Muebles de madera (US54 — reseña 6)",
+        tw_from: -350, tw_to: -342,
+        origin: "Paraná",       origin_admin: "Entre Ríos",
+        dest:   "Bahía Blanca", dest_admin:   "Buenos Aires",
+        origin_lat:  -31.731389, origin_lng: -60.523056,
+        dest_lat:    -38.716671, dest_lng:   -62.270833,
+        rating: 4,
+        body:   nil,
+        review_age_days: 180 },
+
+      { cargo_desc:      "Fertilizantes a granel (US54 — reseña 7)",
+        tw_from: -358, tw_to: -350,
+        origin: "Formosa",      origin_admin: "Formosa",
+        dest:   "Chaco",        dest_admin:   "Chaco",
+        origin_lat:  -26.179613, origin_lng: -58.173744,
+        dest_lat:    -27.451100, dest_lng:   -58.986622,
+        rating: 3,
+        body:   "La carga llegó bien pero el despacho se demoró una hora.",
+        review_age_days: 210 },
+
+      { cargo_desc:      "Mineral de cobre (US54 — reseña 8)",
+        tw_from: -366, tw_to: -358,
+        origin: "La Rioja",     origin_admin: "La Rioja",
+        dest:   "Catamarca",    dest_admin:   "Catamarca",
+        origin_lat:  -29.411778, origin_lng: -66.855750,
+        dest_lat:    -28.468611, dest_lng:   -65.779167,
+        rating: 3,
+        body:   "Aceptable. Algunas cajas sin precinto. A mejorar.",
+        review_age_days: 240 },
+
+      { cargo_desc:      "Resinas plásticas (US54 — reseña 9)",
+        tw_from: -374, tw_to: -366,
+        origin: "Neuquén",      origin_admin: "Neuquén",
+        dest:   "Santa Cruz",   dest_admin:   "Santa Cruz",
+        origin_lat:  -38.951751, origin_lng: -68.059138,
+        dest_lat:    -51.622222, dest_lng:   -69.218056,
+        rating: 2,
+        body:   "Problemas con el etiquetado. Tuvimos demoras en destino.",
+        review_age_days: 270 },
+
+      { cargo_desc:      "Madera de pino (US54 — reseña 10)",
+        tw_from: -382, tw_to: -374,
+        origin: "Oberá",        origin_admin: "Misiones",
+        dest:   "Buenos Aires", dest_admin:   "Ciudad Autónoma de Buenos Aires",
+        origin_lat:  -27.484139, origin_lng: -55.122917,
+        dest_lat:    -34.603722, dest_lng:   -58.381592,
+        rating: 1,
+        body:   "Carga incompleta al momento del retiro. No se cumplió con lo acordado.",
+        review_age_days: 300 }
+    ].freeze
+
+    US54_REVIEW_FIXTURES.each do |fx|
+      tw = TransportWindow.find_or_create_by!(
+        vehicle:              vehicle,
+        origin_locality:      fx[:origin],
+        destination_locality: fx[:dest]
+      ) do |w|
+        w.origin_address         = "Av. Principal 100, #{fx[:origin]}"
+        w.origin_admin_area      = fx[:origin_admin]
+        w.destination_address    = "Av. Central 200, #{fx[:dest]}"
+        w.destination_admin_area = fx[:dest_admin]
+        w.price_per_km           = 1_500.0
+        w.max_km                 = 1_000
+        w.available_from         = fx[:tw_from].days.from_now
+        w.available_to           = fx[:tw_to].days.from_now
+        w.active                 = false
+        w.status                 = "reserved"
+        w.origin_lat             = fx[:origin_lat]
+        w.origin_lng             = fx[:origin_lng]
+        w.destination_lat        = fx[:dest_lat]
+        w.destination_lng        = fx[:dest_lng]
+        w.pickup_radius_km       = 50
+        w.dropoff_radius_km      = 50
+      end
+
+      cargo = Cargo.find_or_create_by!(
+        shipper: shipper, cargo_description: fx[:cargo_desc]
+      ) do |c|
+        c.pickup_address       = "Av. Principal 100, #{fx[:origin]}"
+        c.pickup_locality      = fx[:origin]
+        c.pickup_admin_area    = fx[:origin_admin]
+        c.delivery_address     = "Av. Central 200, #{fx[:dest]}"
+        c.delivery_locality    = fx[:dest]
+        c.delivery_admin_area  = fx[:dest_admin]
+        c.pickup_lat           = fx[:origin_lat]
+        c.pickup_lng           = fx[:origin_lng]
+        c.delivery_lat         = fx[:dest_lat]
+        c.delivery_lng         = fx[:dest_lng]
+        c.pickup_window_start  = (fx[:tw_from] - 2).days.from_now
+        c.pickup_window_end    = (fx[:tw_to]   + 2).days.from_now
+        c.weight_kg            = 2_000.0
+        c.volume_cm3           = 8_000_000
+        c.declared_value_cents = 30_000_000
+      end
+
+      offer = CargoOffer.find_or_create_by!(
+        cargo: cargo, carrier: carrier, transport_window: tw
+      ) do |co|
+        co.amount_cents = 10_000_000
+        co.currency     = "ARS"
+        co.status       = "accepted"
+        co.accepted_at  = (fx[:tw_from].abs + 5).days.ago
+        co.expires_at   = (fx[:tw_from].abs - 2).days.ago
+      end
+
+      offset   = fx[:tw_from].abs
+      shipment = if Shipment.with_discarded.exists?(cargo_offer_id: offer.id)
+        Shipment.with_discarded.find_by!(cargo_offer_id: offer.id)
+      else
+        s = Shipment.create!(
+          cargo_offer: offer,
+          status:      "accepted",
+          accepted_at: (offset + 10).days.ago
+        )
+        Payment.find_or_create_by!(shipment: s) do |p|
+          p.amount_cents = offer.amount_cents
+          p.currency     = offer.currency
+          p.provider     = "fake"
+          p.state        = "escrowed"
+          p.escrowed_at  = (offset + 8).days.ago
+        end
+        s.update!(picked_up_at: (offset + 6).days.ago, status: "in_transit")
+        s.update!(delivered_at: (offset + 4).days.ago, status: "delivered")
+        s
+      end
+
+      [
+        { kind: "shipment_accepted",                                    days_ago: offset + 10 },
+        { kind: "payment_escrowed",                                     days_ago: offset + 8  },
+        { kind: "status_change", from: "accepted",   to: "in_transit", days_ago: offset + 6  },
+        { kind: "status_change", from: "in_transit", to: "delivered",  days_ago: offset + 4  }
+      ].each do |ev|
+        exists = if ev[:kind] == "status_change"
+          shipment.tracking_events.where(
+            kind: "status_change",
+            from_status: ev[:from], to_status: ev[:to]
+          ).exists?
+        else
+          shipment.tracking_events.where(kind: ev[:kind]).exists?
+        end
+        next if exists
+        attrs = { kind: ev[:kind], recorded_at: ev[:days_ago].days.ago }
+        attrs[:from_status] = ev[:from] if ev.key?(:from)
+        attrs[:to_status]   = ev[:to]   if ev.key?(:to)
+        shipment.tracking_events.create!(attrs)
+      end
+
+      next if Review.carrier_authored.exists?(shipment: shipment)
+
+      Review.create!(
+        shipment:    shipment,
+        carrier:     carrier,
+        shipper:     shipper,
+        rating:      fx[:rating],
+        body:        fx[:body],
+        authored_by: :carrier_authored,
+        created_at:  fx[:review_age_days].days.ago
+      )
+    end
+  end
+end

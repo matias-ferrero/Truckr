@@ -68,7 +68,7 @@ describe("ShipperPaymentPage", () => {
     it("renders heading + form sections", async () => {
         renderPage();
         await screen.findByRole("heading", { name: "Pagar envío" });
-        expect(screen.getByText("Tarjeta de crédito")).toBeInTheDocument();
+        expect(await screen.findByText("Tarjeta de crédito")).toBeInTheDocument();
         expect(screen.getByText("Dirección de facturación")).toBeInTheDocument();
     });
 

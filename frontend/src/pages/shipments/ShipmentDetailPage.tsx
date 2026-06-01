@@ -259,7 +259,18 @@ export default function ShipmentDetailPage({ role }: Props) {
                         {detail.counterparty && (
                             <div>
                                 <dt>{t.counterparty[role]}</dt>
-                                <dd>{detail.counterparty.display_name}</dd>
+                                <dd>
+                                    {detail.counterparty.kind === "shipper"
+                                        ? (
+                                            <Link
+                                                to={`/shippers/${detail.counterparty.id}`}
+                                                className="shipmentCounterpartyLink"
+                                            >
+                                                {detail.counterparty.display_name}
+                                            </Link>
+                                        )
+                                        : detail.counterparty.display_name}
+                                </dd>
                             </div>
                         )}
                         <div>

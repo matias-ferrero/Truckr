@@ -566,7 +566,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-3);
-    justify-content: center;
 }
 
 .shipmentActionsError {
@@ -739,4 +738,14 @@
     .shipmentDetailNextStepCta      { transition: none; }
     /* Success outline: skip the fade animation, still show the green outline briefly */
     .shipmentActionsSection[data-success] { outline: 2px solid color-mix(in oklab, var(--brand-success) 55%, transparent); outline-offset: -1px; }
+}
+
+/* US54 — link from the shipment counterparty (shipper) to its public profile. */
+.shipmentCounterpartyLink {
+    color: var(--brand-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.shipmentCounterpartyLink:hover {
+    text-decoration: none;
 }

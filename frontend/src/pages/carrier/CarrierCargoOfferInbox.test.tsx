@@ -77,6 +77,24 @@ describe("CarrierCargoOfferInbox", () => {
         });
     });
 
+    it("links the shipper name to its public profile", async () => {
+        renderPage();
+
+        const link = await screen.findByRole("link", { name: "Test User" });
+        expect(link).toHaveAttribute("href", "/shippers/1");
+    });
+
+    it("links the shipper to its profile even when the name is null", async () => {
+        mockedApi.listCarrierCargoOffers.mockResolvedValue({
+            items: [makeOffer({ shipper: { id: 8, name: null } })],
+            meta: { total: 1, page: 1, perPage: 20, totalPages: 1 },
+        });
+        renderPage();
+
+        const link = await screen.findByRole("link", { name: /expedidor #8/i });
+        expect(link).toHaveAttribute("href", "/shippers/8");
+    });
+
     it("accepts an offer after confirmation", async () => {
         const user = userEvent.setup();
         mockedApi.acceptCarrierCargoOffer.mockResolvedValue({

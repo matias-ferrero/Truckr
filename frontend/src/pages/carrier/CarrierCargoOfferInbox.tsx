@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 import {
     acceptCarrierCargoOffer,
@@ -208,7 +209,15 @@ export default function CarrierCargoOfferInbox() {
                                         <div className="offerInboxMeta">
                                             <p><strong>{t.amount}:</strong> {formatARS(offer.price_amount_cents)}</p>
                                             <p><strong>{t.expiresAt}:</strong> {formatDateTime(offer.expires_at)}</p>
-                                            <p><strong>{t.shipper}:</strong> {offer.shipper.name ?? "—"}</p>
+                                            <p>
+                                                <strong>{t.shipper}:</strong>{" "}
+                                                <Link
+                                                    to={`/shippers/${offer.shipper.id}`}
+                                                    className="offerInboxShipperLink"
+                                                >
+                                                    {offer.shipper.name ?? t.shipperFallback(offer.shipper.id)}
+                                                </Link>
+                                            </p>
                                         </div>
 
                                         <details

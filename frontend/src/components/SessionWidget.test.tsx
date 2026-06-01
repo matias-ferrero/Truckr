@@ -61,7 +61,7 @@ describe("SessionWidget", () => {
         );
     });
 
-    it("points the shipper's name link straight at /profile (no public show page)", async () => {
+    it("points the shipper's name link at /shippers/me (public profile)", async () => {
         server.use(
             http.get(`${API}/api/auth/me`, () =>
                 HttpResponse.json({
@@ -79,10 +79,10 @@ describe("SessionWidget", () => {
 
         renderWidget();
 
-        const nameLink = await screen.findByRole("link", { name: /mi perfil — sam/i });
-        expect(nameLink).toHaveAttribute("href", "/profile");
+        const nameLink = await screen.findByRole("link", { name: /perfil público de sam/i });
+        expect(nameLink).toHaveAttribute("href", "/shippers/me");
         expect(nameLink).toHaveTextContent("Sam");
-        // Shippers have no public profile, so no carrier link should render.
-        expect(screen.queryByRole("link", { name: /perfil público de sam/i })).toBeNull();
+        // The name button is the single entry point — no redundant /profile link.
+        expect(screen.queryByRole("link", { name: /^mi perfil$/i })).toBeNull();
     });
 });

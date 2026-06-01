@@ -56,10 +56,9 @@ describe("Header", () => {
         renderHeader("/");
         await waitFor(() => expect(screen.getByText("Logged")).toBeInTheDocument());
         expect(screen.getByRole("button", { name: /salir/i })).toBeInTheDocument();
-        // Shippers' name button is the single profile entry point → /profile.
-        expect(screen.queryByRole("link", { name: /perfil público de logged/i })).toBeNull();
-        expect(screen.getByRole("link", { name: /mi perfil — logged/i }))
-            .toHaveAttribute("href", "/profile");
+        // Shippers' name button is the single profile entry point → /shippers/me.
+        expect(screen.getByRole("link", { name: /perfil público de logged/i }))
+            .toHaveAttribute("href", "/shippers/me");
         // No standalone "Mi perfil" link; the name button replaces it.
         expect(screen.queryByRole("link", { name: /^mi perfil$/i })).toBeNull();
     });

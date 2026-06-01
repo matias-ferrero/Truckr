@@ -21,6 +21,8 @@ const CarrierShipments = lazy(() => import("./pages/carrier/CarrierShipments"));
 const ShipmentDetailPage = lazy(() => import("./pages/shipments/ShipmentDetailPage"));
 const CarrierDetail = lazy(() => import("./pages/public/CarrierDetail"));
 const CarrierMeRedirect = lazy(() => import("./pages/public/CarrierMeRedirect"));
+const ShipperDetail = lazy(() => import("./pages/public/ShipperDetail"));
+const ShipperMeRedirect = lazy(() => import("./pages/public/ShipperMeRedirect"));
 const CreateOfferPage = lazy(() => import("./pages/shipper/CreateOfferPage"));
 const ShipperShipmentsPage = lazy(() => import("./pages/shipper/ShipperShipmentsPage"));
 const ShipperPaymentPage = lazy(() => import("./pages/shipper/ShipperPaymentPage"));
@@ -148,6 +150,9 @@ export function AppRoutes() {
                         {/* Declared before `:id` so the literal segment wins over the wildcard. */}
                         <Route path="/carriers/me" element={<CarrierMeRedirect />} />
                         <Route path="/carriers/:id" element={<CarrierDetail />} />
+                        {/* Declared before `:id` so the literal segment wins over the wildcard. */}
+                        <Route path="/shippers/me" element={<ShipperMeRedirect />} />
+                        <Route path="/shippers/:id" element={<ShipperDetail />} />
                     </Route>
                     {/* US27 + US17 — Shipper flows under a shared layout. */}
                     <Route path="/shipper" element={<ShipperLayout />}>

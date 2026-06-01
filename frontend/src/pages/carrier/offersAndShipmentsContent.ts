@@ -19,6 +19,7 @@ export const offersAndShipmentsContent = {
         amount: "Oferta",
         expiresAt: "Vence",
         shipper: "Expedidor",
+        shipperFallback: (id: number) => `Expedidor #${id}`,
         cargoRouteFallback: (id: number) => `Carga #${id}`,
         detailsOpen: "Ver detalle",
         detailTitle: "Detalle de la carga",

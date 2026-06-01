@@ -15,17 +15,21 @@ es:
       already_paid: "Este envío ya fue pagado"
       shipment_not_accepted: "El envío no está en estado aceptado y no puede pagarse"
       generic: "No pudimos procesar el pago. Intentá de nuevo."
+    reviews:
+      create:
+        unauthorized: "Sólo el transportista asignado al envío puede reseñar al expedidor"
+        shipment_not_delivered: "Sólo se puede dejar una reseña una vez que el envío fue entregado"
+        already_reviewed: "Ya dejaste una reseña para este envío"
+      shipper:
+        average_rating: "Puntuación promedio"
+        count: "%{count} reseñas"
+        empty: "Este expedidor todavía no tiene reseñas"
     shipments:
       shipment_not_accepted: "El envío no está en estado aceptado"
       shipment_not_paid: "El envío todavía no fue pagado"
       shipment_not_in_transit: "El envío no está en tránsito"
       transition_not_allowed: "La transición del envío no está permitida"
       generic: "No pudimos actualizar el envío. Intentá de nuevo."
-    reviews:
-      create:
-        unauthorized: "Sólo el transportista asignado al envío puede reseñar al expedidor"
-        shipment_not_delivered: "Sólo se puede dejar una reseña una vez que el envío fue entregado"
-        already_reviewed: "Ya dejaste una reseña para este envío"
     messages:
       password_complexity:
         upper: "debe contener al menos una mayúscula"

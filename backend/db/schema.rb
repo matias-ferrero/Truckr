@@ -155,7 +155,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_30_000001) do
     t.integer "carrier_id", null: false
     t.datetime "created_at", null: false
     t.integer "rating", null: false
-    t.integer "shipment_id"
+    t.integer "shipment_id", null: false
     t.integer "shipper_id", null: false
     t.datetime "updated_at", null: false
     t.index ["carrier_id", "authored_by"], name: "index_reviews_on_carrier_id_and_authored_by"
@@ -299,7 +299,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_30_000001) do
   add_foreign_key "carriers", "users"
   add_foreign_key "payments", "shipments", on_delete: :restrict
   add_foreign_key "reviews", "carriers", on_delete: :restrict
-  add_foreign_key "reviews", "shipments", on_delete: :nullify
+  add_foreign_key "reviews", "shipments", on_delete: :restrict
   add_foreign_key "reviews", "shippers", on_delete: :restrict
   add_foreign_key "routes", "shipments", on_delete: :cascade
   add_foreign_key "shipments", "cargo_offers", on_delete: :restrict

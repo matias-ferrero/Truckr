@@ -88,9 +88,7 @@ describe("AppRoutes", () => {
         window.history.pushState({}, "", "/carrier/cargo-offers");
         render(<AppRoutes />);
 
-        await waitFor(() =>
-            expect(screen.getByRole("heading", { name: /ofertas recibidas/i })).toBeInTheDocument()
-        );
+        await screen.findByRole("heading", { name: /ofertas recibidas/i }, { timeout: 5000 });
     });
 
     it("renders carrier shipments route", async () => {

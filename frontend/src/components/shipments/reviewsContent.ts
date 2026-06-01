@@ -18,6 +18,7 @@ export const reviewsContent = {
             ratingRequired: "Elegí una puntuación de 1 a 5 estrellas.",
             bodyTooLong: "El comentario no puede superar los 1000 caracteres.",
             alreadyReviewed: "Ya dejaste una reseña para este envío.",
+            notDelivered: "Sólo se puede reseñar un envío entregado.",
             forbidden: "No tenés permiso para reseñar este envío.",
             generic: "No pudimos guardar la reseña. Intentá de nuevo.",
         },

@@ -15,7 +15,7 @@
 class CreateReviews < ActiveRecord::Migration[8.1]
   def change
     create_table :reviews do |t|
-      t.references :shipment, null: true,  index: false, foreign_key: { on_delete: :nullify }
+      t.references :shipment, null: false, index: false, foreign_key: { on_delete: :restrict }
       t.references :shipper,  null: false, index: false, foreign_key: { on_delete: :restrict }
       t.references :carrier,  null: false, index: false, foreign_key: { on_delete: :restrict }
       t.integer    :rating,      null: false

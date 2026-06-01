@@ -6,7 +6,7 @@ require "rails_helper"
 # the Carrier review guard (Reviews::Create) relies on.
 RSpec.describe Review, type: :model do
   describe "associations" do
-    it { is_expected.to belong_to(:shipment).optional }
+    it { is_expected.to belong_to(:shipment) }
     it { is_expected.to belong_to(:shipper) }
     it { is_expected.to belong_to(:carrier) }
   end
@@ -62,7 +62,7 @@ RSpec.describe Review, type: :model do
       expect(described_class.authored_bies.keys).to contain_exactly("shipper_authored", "carrier_authored")
     end
 
-    it "returns the enum key name (not the DB value) from #authored_by" do
+    it "maps to the persisted string values" do
       expect(build(:review, :shipper_authored).authored_by).to eq("shipper_authored")
       expect(build(:review, :carrier_authored).authored_by).to eq("carrier_authored")
     end

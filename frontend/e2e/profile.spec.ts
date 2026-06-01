@@ -21,15 +21,17 @@ test("user edits their name on /profile and the change persists across reload", 
     await page.check("#role-shipper");
     await page.getByRole("button", { name: /^crear cuenta$/i }).click();
     // Wait until the dashboard recognises us — the header profile link
-    // (labelled "Mi perfil — <name>") shows up once /api/auth/me resolves
-    // with the just-issued JWT.
+    // (labelled "Perfil público de <name>") shows up once /api/auth/me
+    // resolves with the just-issued JWT. Both roles now use the public
+    // profile as the single entry point (US54).
     const headerProfileLink = page
         .getByRole("banner")
-        .getByRole("link", { name: /^mi perfil — original name$/i });
+        .getByRole("link", { name: /^perfil público de original name$/i });
     await expect(headerProfileLink).toBeVisible();
 
-    // 2. Navigate to /profile via the single header profile entry point.
-    await headerProfileLink.click();
+    // 2. Navigate to /profile directly — this test covers editing/persistence,
+    //    not the header → public profile → edit navigation chain.
+    await page.goto("/profile");
     await expect(page).toHaveURL(/\/profile/);
     await expect(page.getByRole("heading", { name: /^mi perfil$/i })).toBeVisible();
 

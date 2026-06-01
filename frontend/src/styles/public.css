@@ -40,7 +40,9 @@
 .sectionSubtitle {
     font-family: var(--font-display);
     font-size: 1.25rem;
-    margin: 0 0 12px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 var(--space-3);
 }
 
 .carrierHero {
@@ -70,15 +72,38 @@
 .carrierHeroMeta {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: var(--space-3);
     align-items: center;
     color: var(--ink-2);
-    font-size: 0.95rem;
+    font-size: var(--text-sm);
 }
 
 .carrierHeroRating {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-6);
+}
+
+.carrierHeroRatingValue {
+    font-family: var(--font-display);
+    font-size: var(--text-base);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--chip-ink-warning);
+}
+
+.carrierHeroRatingCount {
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
     font-weight: 600;
-    color: var(--ink);
+    letter-spacing: 0.04em;
+    color: var(--ink-2);
+}
+
+.carrierHeroRatingEmpty {
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    color: var(--ink-2);
 }
 
 .starRow {
@@ -88,7 +113,7 @@
 
 .star {
     color: color-mix(in oklab, var(--ink) 18%, transparent);
-    font-size: 18px;
+    font-size: 1.25rem;
     line-height: 1;
 }
 
@@ -562,4 +587,67 @@
     color: var(--ink-2);
     margin: 0;
     max-width: 44ch;
+}
+
+/* US54 / REQ-BE-00045 — Shipper profile reviews section. Reuses the carrier
+   profile tokens (.carrierSection, .starRow); adds the average summary row and
+   the individual review cards. */
+
+/* Voice override: shipper sections use saffron, not sky. */
+.shipperReviews {
+    border-color: var(--border-cream);
+    box-shadow: 0 4px 16px color-mix(in oklab, var(--brand-secondary) 12%, transparent);
+}
+
+.shipperReviewList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.shipperReviewCard {
+    border: 1px solid var(--border-cream);
+    border-radius: var(--radius-sm);
+    padding: var(--space-3) var(--space-4);
+    background: var(--surface);
+    transition: box-shadow 0.18s var(--ease-out);
+}
+
+.shipperReviewCard:hover {
+    box-shadow: 0 4px 16px color-mix(in oklab, var(--brand-secondary) 18%, transparent);
+}
+
+.shipperReviewCardHead {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.shipperReviewRating {
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--chip-ink-warning);
+}
+
+.shipperReviewDate {
+    margin-left: auto;
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-3);
+}
+
+.shipperReviewBody {
+    margin: var(--space-2) 0 0;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+}
+
+.shipperReviewsLoadMore {
+    margin-top: var(--space-5);
 }

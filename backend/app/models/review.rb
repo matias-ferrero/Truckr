@@ -17,7 +17,7 @@
 class Review < ApplicationRecord
   AUTHORS = { shipper_authored: "shipper", carrier_authored: "carrier" }.freeze
 
-  belongs_to :shipment, inverse_of: :reviews, optional: true
+  belongs_to :shipment, inverse_of: :reviews
   belongs_to :shipper
   belongs_to :carrier
 
@@ -25,7 +25,7 @@ class Review < ApplicationRecord
 
   validates :rating, presence: true, inclusion: { in: 1..5 }
   validates :body,   length: { maximum: 1_000 }, allow_nil: true
-  validates :shipment_id, uniqueness: { scope: :authored_by }, allow_nil: true
+  validates :shipment_id, uniqueness: { scope: :authored_by }
 
   def self.ransackable_attributes(_auth_object = nil)
     %w[id shipment_id shipper_id carrier_id rating body authored_by

@@ -75,6 +75,13 @@ Rails.application.routes.draw do
     resources :carriers, only: %i[show] do
       resources :vehicles, only: %i[index show], controller: "carriers/vehicles"
     end
+
+    # Shipper public profile + its reviews (US54 / REQ-BE-00045). Authenticated
+    # readers only (enforced in the controllers). Reviews are paginated, newest
+    # first, 10 per page. Symmetric to the carriers block above.
+    resources :shippers, only: %i[show] do
+      resources :reviews, only: %i[index], controller: "shippers/reviews"
+    end
   end
 
   # OpenAPI / Swagger UI (dev/test only — production gets it via separate deploy).

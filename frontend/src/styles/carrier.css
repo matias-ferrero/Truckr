@@ -1395,3 +1395,13 @@
     overflow: hidden;
     background: color-mix(in oklab, var(--paper) 92%, var(--ink));
 }
+
+/* US54 — link from a cargo offer's shipper name to its public profile. */
+.offerInboxShipperLink {
+    color: var(--brand-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.offerInboxShipperLink:hover {
+    text-decoration: none;
+}

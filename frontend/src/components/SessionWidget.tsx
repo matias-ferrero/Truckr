@@ -4,10 +4,10 @@ import { Button } from "./ui/button";
 
 /**
  * Auth-state chip used by both the dashboard `Header` and the landing
- * topbar. The user's name acts as the single profile entry point:
- * carriers go to their public profile (which links to /profile for
- * edit), shippers go directly to /profile (no public show page exists).
- * Anonymous users see login / register links instead.
+ * topbar. The user's name acts as the single profile entry point: each
+ * role goes to its public profile (carriers → /carriers/me, shippers →
+ * /shippers/me), which links to /profile for edit. Anonymous users see
+ * login / register links instead.
  */
 export function SessionWidget() {
     const { me, loading, logout } = useCurrentUser();
@@ -27,10 +27,12 @@ export function SessionWidget() {
     if (me) {
         const displayName = me.full_name || me.email;
         const isCarrier = me.roles.includes("carrier");
-        const profileHref = isCarrier ? "/carriers/me" : "/profile";
-        const profileLabel = isCarrier
-            ? `Perfil público de ${displayName}`
-            : `Mi perfil — ${displayName}`;
+        // Both roles now have a public profile show page: carriers at
+        // /carriers/me, shippers at /shippers/me (each redirects to the
+        // canonical /:role/:id). The public profile is the single entry
+        // point and links to /profile for editing.
+        const profileHref = isCarrier ? "/carriers/me" : "/shippers/me";
+        const profileLabel = `Perfil público de ${displayName}`;
         return (
             <div className="appHeaderActions">
                 <Link
