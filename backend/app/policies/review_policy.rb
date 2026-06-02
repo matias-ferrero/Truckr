@@ -1,20 +1,34 @@
 # frozen_string_literal: true
 
-# Pundit policy for Review creation (US30 / [[REQ-BE-00044]]).
+# Pundit policy for Review creation (US20 / US30).
 #
-# Authorisation is evaluated against the parent Shipment (the controller
-# authorises the Shipment before handing off to the Reviews::Create service,
-# mirroring PaymentPolicy / REQ-BE-00033).
-#
-# `create_carrier_review?`: only the Carrier assigned to the Shipment may
-# review its Shipper. The Shipper→Carrier direction (US20) adds its own query
-# method here when that issue lands — this policy is the natural home for it,
-# but US30 does not need it.
+# Authorisation is evaluated against the parent Shipment. The owning Shipper or
+# the assigned Carrier may create one review each (direction inferred from the
+# poster's role in ReviewsController).
 class ReviewPolicy < ApplicationPolicy
-  def create_carrier_review?
-    return false unless user&.carrier
+  def create?
+    return false unless user
     return false unless record.is_a?(Shipment)
 
-    record.cargo_offer.carrier_id == user.carrier.id
+    shipper_may_create? || carrier_may_create?
+  end
+
+  # Returns the authored_by direction for the current user on this shipment.
+  # Guaranteed non-nil when called after a passing create? check.
+  def review_direction
+    return :shipper_authored if shipper_may_create?
+    :carrier_authored if carrier_may_create?
+  end
+
+  private
+
+  def shipper_may_create?
+    user.shipper.present? &&
+      record.cargo_offer.cargo.shipper_id == user.shipper.id
+  end
+
+  def carrier_may_create?
+    user.carrier.present? &&
+      record.cargo_offer.carrier_id == user.carrier.id
   end
 end

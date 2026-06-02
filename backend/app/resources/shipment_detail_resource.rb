@@ -137,4 +137,15 @@ class ShipmentDetailResource
     review = shipment.reviews.find(&:carrier_authored?)
     review && ReviewResource.new(review).to_h
   end
+
+  # US20 / REQ-BE-00042 — the Shipper→Carrier review tied to this Shipment,
+  # exposed only to the Shipper viewer so REQ-FE-00024 can hydrate the review
+  # form into its read-only state (AC7) on reload.
+  attribute :shipper_review do |shipment|
+    role = Shipment::AvailableActions.active_role(shipment, params[:current_user])
+    next nil unless role == :shipper
+
+    review = shipment.reviews.find(&:shipper_authored?)
+    review && ReviewResource.new(review).to_h
+  end
 end

@@ -379,17 +379,15 @@ export const handlers: RequestHandler[] = [
     http.post(`${API}/api/shipments/:id/deliver`, () =>
         HttpResponse.json({}, { status: 200 })),
 
-    // US30 / REQ-BE-00044 — POST carrier_reviews. Echoes the submitted rating /
-    // body back as a carrier-authored ReviewResource (201). Tests that need a
-    // conflict / forbidden path override this per-case with server.use(...).
-    http.post(`${API}/api/shipments/:id/carrier_reviews`, async ({ request }) => {
+    // POST reviews — direction is inferred server-side; MSW defaults to shipper.
+    http.post(`${API}/api/shipments/:id/reviews`, async ({ request }) => {
         const payload = (await request.json()) as { rating: number; body: string | null };
         return HttpResponse.json(
             {
-                id: 999,
+                id: 998,
                 rating: payload.rating,
                 body: payload.body ?? null,
-                authored_by: "carrier",
+                authored_by: "shipper",
                 created_at: "2026-06-12T10:00:00Z",
             },
             { status: 201 },
@@ -456,6 +454,7 @@ export function fixtureShipmentDetail(overrides: Record<string, unknown> = {}) {
         tracking_events: [],
         available_actions: [],
         carrier_review: null,
+        shipper_review: null,
         ...overrides,
     };
 }

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { CarrierReviewForm } from "./CarrierReviewForm";
+import { ShipperReviewForm } from "./ShipperReviewForm";
 import * as reviewsApi from "../../api/reviews";
 import { ApiError } from "../../api";
 import type { Review } from "../../api/reviews";
@@ -11,10 +11,10 @@ vi.mock("../../api/reviews");
 const api = vi.mocked(reviewsApi);
 
 const createdReview: Review = {
-    id: 7,
+    id: 8,
     rating: 5,
-    body: "Carga lista a horario.",
-    authored_by: "carrier",
+    body: "Entrega puntual.",
+    authored_by: "shipper",
     created_at: "2026-05-29T10:00:00Z",
 };
 
@@ -22,11 +22,11 @@ beforeEach(() => {
     vi.resetAllMocks();
 });
 
-describe("CarrierReviewForm", () => {
+describe("ShipperReviewForm", () => {
     it("renders the title, a 5-star radiogroup, a comment field and submit", () => {
-        render(<CarrierReviewForm shipmentId={31} />);
+        render(<ShipperReviewForm shipmentId={31} />);
 
-        expect(screen.getByRole("heading", { name: "Reseñar al expedidor" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "Dejar reseña" })).toBeInTheDocument();
         const group = screen.getByRole("radiogroup", { name: /puntuación/i });
         expect(group).toBeInTheDocument();
         expect(screen.getAllByRole("radio")).toHaveLength(5);
@@ -36,7 +36,7 @@ describe("CarrierReviewForm", () => {
 
     it("blocks submit and shows an error when no rating is selected", async () => {
         const user = userEvent.setup();
-        render(<CarrierReviewForm shipmentId={31} />);
+        render(<ShipperReviewForm shipmentId={31} />);
 
         await user.click(screen.getByRole("button", { name: "Enviar reseña" }));
 
@@ -49,16 +49,16 @@ describe("CarrierReviewForm", () => {
         const onCreated = vi.fn();
         api.createShipmentReview.mockResolvedValue(createdReview);
 
-        render(<CarrierReviewForm shipmentId={31} onCreated={onCreated} />);
+        render(<ShipperReviewForm shipmentId={31} onCreated={onCreated} />);
 
         await user.click(screen.getByRole("radio", { name: "5 estrellas" }));
-        await user.type(screen.getByLabelText(/comentario/i), "Carga lista a horario.");
+        await user.type(screen.getByLabelText(/comentario/i), "Entrega puntual.");
         await user.click(screen.getByRole("button", { name: "Enviar reseña" }));
 
         await waitFor(() => {
             expect(api.createShipmentReview).toHaveBeenCalledWith(31, {
                 rating: 5,
-                body: "Carga lista a horario.",
+                body: "Entrega puntual.",
             });
         });
 
@@ -71,7 +71,7 @@ describe("CarrierReviewForm", () => {
         const user = userEvent.setup();
         api.createShipmentReview.mockResolvedValue({ ...createdReview, body: null });
 
-        render(<CarrierReviewForm shipmentId={31} />);
+        render(<ShipperReviewForm shipmentId={31} />);
         await user.click(screen.getByRole("radio", { name: "4 estrellas" }));
         await user.click(screen.getByRole("button", { name: "Enviar reseña" }));
 
@@ -84,7 +84,7 @@ describe("CarrierReviewForm", () => {
         const user = userEvent.setup();
         api.createShipmentReview.mockRejectedValue(new ApiError(409, "conflict", "conflict"));
 
-        render(<CarrierReviewForm shipmentId={31} />);
+        render(<ShipperReviewForm shipmentId={31} />);
         await user.click(screen.getByRole("radio", { name: "5 estrellas" }));
         await user.click(screen.getByRole("button", { name: "Enviar reseña" }));
 
@@ -92,10 +92,10 @@ describe("CarrierReviewForm", () => {
     });
 
     it("renders the read-only submitted state when an existing review is provided", () => {
-        render(<CarrierReviewForm shipmentId={31} existingReview={createdReview} />);
+        render(<ShipperReviewForm shipmentId={31} existingReview={createdReview} />);
 
         expect(screen.getByText("¡Gracias por tu reseña!")).toBeInTheDocument();
-        expect(screen.getByText("Carga lista a horario.")).toBeInTheDocument();
+        expect(screen.getByText("Entrega puntual.")).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "Enviar reseña" })).not.toBeInTheDocument();
     });
 });

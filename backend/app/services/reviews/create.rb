@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
 module Reviews
-  # Reviews::Create — race-safe write side for the Carrier→Shipper review
-  # (US30 / [[REQ-BE-00044]]). Mirrors Payments::Create (REQ-BE-00033): the
-  # state guard and the per-direction uniqueness guard run inside
-  # `shipment.with_lock` so two concurrent POSTs can't both land a
-  # `carrier_authored` row for the same Shipment (SQLite — race-safety lives
-  # at the application layer, no advisory locks).
+  # Reviews::Create — race-safe write side for both review directions on a
+  # delivered Shipment (US20 Shipper→Carrier, US30 Carrier→Shipper).
+  # Mirrors Payments::Create (REQ-BE-00033): state + per-direction uniqueness
+  # guards run inside `shipment.with_lock`.
   #
-  # Returns the persisted Review on success. Raises `ConflictError` (mapped to
-  # HTTP 409 by the controller) when the Shipment isn't `delivered` yet or a
-  # Carrier review already exists. Validation failures (rating range, body
-  # length) surface as ActiveRecord::RecordInvalid → 422 via BaseController.
+  # Pass `authored_by: :shipper_authored` with `shipper:` (the author), or
+  # `authored_by: :carrier_authored` with `carrier:` (the author). The
+  # counterparty is always derived from the Shipment.
+  #
+  # Raises ConflictError (→ HTTP 409) when not delivered or already reviewed.
+  # Validation failures surface as ActiveRecord::RecordInvalid → 422.
   class Create
     class ConflictError < StandardError
       attr_reader :reason
@@ -22,38 +22,75 @@ module Reviews
       end
     end
 
-    def self.call(shipment:, carrier:, rating:, body:)
-      new(shipment: shipment, carrier: carrier, rating: rating, body: body).call
+    def self.call(shipment:, authored_by:, rating:, body:, carrier: nil, shipper: nil)
+      new(
+        shipment: shipment, authored_by: authored_by, rating: rating, body: body,
+        carrier: carrier, shipper: shipper
+      ).call
     end
 
-    def initialize(shipment:, carrier:, rating:, body:)
-      @shipment = shipment
-      @carrier  = carrier
-      @rating   = rating
-      @body     = body
+    def initialize(shipment:, authored_by:, rating:, body:, carrier: nil, shipper: nil)
+      @shipment    = shipment
+      @authored_by = authored_by.to_sym
+      @rating      = rating
+      @body        = body
+      @carrier     = carrier
+      @shipper     = shipper
+
+      validate_author!
     end
 
     def call
       shipment.with_lock do
         raise ConflictError, :shipment_not_delivered unless shipment.status_delivered?
+        raise ConflictError, :already_reviewed if review_scope.exists?(shipment_id: shipment.id)
 
-        if Review.carrier_authored.exists?(shipment_id: shipment.id)
-          raise ConflictError, :already_reviewed
-        end
-
-        Review.create!(
-          shipment:    shipment,
-          carrier:     carrier,
-          shipper:     shipment.cargo_offer.cargo.shipper,
-          rating:      rating,
-          body:        body,
-          authored_by: :carrier_authored
-        )
+        Review.create!(review_attributes)
       end
     end
 
     private
 
-    attr_reader :shipment, :carrier, :rating, :body
+    attr_reader :shipment, :authored_by, :rating, :body, :carrier, :shipper
+
+    def review_scope
+      case authored_by
+      when :shipper_authored then Review.shipper_authored
+      when :carrier_authored then Review.carrier_authored
+      else raise ArgumentError, "unsupported authored_by: #{authored_by}"
+      end
+    end
+
+    def validate_author!
+      case authored_by
+      when :shipper_authored
+        raise ArgumentError, "shipper is required for shipper_authored" if shipper.nil?
+      when :carrier_authored
+        raise ArgumentError, "carrier is required for carrier_authored" if carrier.nil?
+      end
+    end
+
+    def review_attributes
+      case authored_by
+      when :shipper_authored
+        {
+          shipment: shipment,
+          shipper:  shipper,
+          carrier:  shipment.cargo_offer.carrier,
+          rating:   rating,
+          body:     body,
+          authored_by: :shipper_authored
+        }
+      when :carrier_authored
+        {
+          shipment: shipment,
+          carrier:  carrier,
+          shipper:  shipment.cargo_offer.cargo.shipper,
+          rating:   rating,
+          body:     body,
+          authored_by: :carrier_authored
+        }
+      end
+    end
   end
 end

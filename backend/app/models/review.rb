@@ -1,14 +1,12 @@
 # frozen_string_literal: true
 
 # Review — a rating + optional comment written about one side of a completed
-# Shipment. Introduced by US30 ([[REQ-BE-00044]]); US30 writes the
-# Carrier→Shipper direction.
+# Shipment. Table + model introduced by US20 ([[REQ-BE-00042]]); shared with
+# US26 / US30 / US54.
 #
-# `authored_by` distinguishes the two possible review directions so a single
-# table serves both without a schema change later:
+# `authored_by` distinguishes the two possible review directions:
+#   - shipper_authored (US20): Shipper → Carrier.
 #   - carrier_authored (US30): Carrier → Shipper.
-#   - shipper_authored (US20): Shipper → Carrier  (direction is supported by the
-#     data model now; the endpoint that writes it lands with US20).
 #
 # A review only exists once a Shipment reaches `delivered`. The state guard and
 # the per-direction uniqueness guard live in Reviews::Create (race-safe under

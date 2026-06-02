@@ -81,6 +81,7 @@ export type ShipmentDetail = {
     // hydrate CarrierReviewForm straight into its read-only state (AC7) across
     // reloads, without a separate listing endpoint (US26 / US54).
     carrier_review?: Review | null;
+    shipper_review?: Review | null;
 };
 
 // Canonical enum owned by REQ-BE-00035 §4.4. The FE never invents entries.

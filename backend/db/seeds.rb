@@ -1381,3 +1381,167 @@ if defined?(Carrier) && defined?(Shipper) && Carrier.any? && Shipper.any?
     end
   end
 end
+
+# US20 review fixtures (REQ-BE-00042) ─────────────────────────────────────────
+#
+# Three dedicated delivered shipments for full-stack manual testing of the
+# Shipper → Carrier review flow.  All use carrier1 / shipper1 / AA001XX.
+# Windows are past + active: false so they stay off marketplace search.
+#
+#   Seed D — "Trigo sarraceno (US20 — sin reseña)"
+#             Clean: no review yet.
+#             TC-01 (form visible), TC-05 (client validation), TC-06 (happy
+#             path with comment — destructive), TC-08 (page reload after
+#             submit). Re-seed with `just backend-reset` to restore TC-06/TC-08.
+#
+#   Seed E — "Cebada cervecera (US20 — sin reseña 2)"
+#             Second clean shipment.
+#             TC-07 (rating only, no comment — destructive).
+#
+#   Seed F — "Lino oleaginoso (US20 — con reseña)"
+#             Has a shipper-authored review pre-seeded (rating 4, with body).
+#             TC-09 (AC7 hydration: form renders read-only on first load).
+#
+if defined?(Carrier) && defined?(Shipper) && Carrier.any? && Shipper.any?
+  carrier = Carrier.first
+  shipper = Shipper.first
+  vehicle = carrier.vehicles.first
+
+  if vehicle
+    US20_FIXTURES = [
+      { seed: :d,
+        cargo_desc:   "Trigo sarraceno (US20 — sin reseña)",
+        tw_from: -14, tw_to: -6,
+        origin: "Tandil",         origin_admin: "Buenos Aires",
+        dest:   "Azul",           dest_admin:   "Buenos Aires",
+        origin_lat:  -37.321700,  origin_lng: -59.133200,
+        dest_lat:    -36.775900,  dest_lng:   -59.858000,
+        review: nil },
+      { seed: :e,
+        cargo_desc:   "Cebada cervecera (US20 — sin reseña 2)",
+        tw_from: -21, tw_to: -13,
+        origin: "Zárate",         origin_admin: "Buenos Aires",
+        dest:   "Campana",        dest_admin:   "Buenos Aires",
+        origin_lat:  -34.098800,  origin_lng: -59.030600,
+        dest_lat:    -34.166700,  dest_lng:   -58.950000,
+        review: nil },
+      { seed: :f,
+        cargo_desc:   "Lino oleaginoso (US20 — con reseña)",
+        tw_from: -28, tw_to: -20,
+        origin: "Necochea",       origin_admin: "Buenos Aires",
+        dest:   "Tres Arroyos",   dest_admin:   "Buenos Aires",
+        origin_lat:  -38.553900,  origin_lng: -58.737500,
+        dest_lat:    -38.376500,  dest_lng:   -60.276300,
+        review: { rating: 4, body: "Embalaje perfecto y carga lista antes del horario." } }
+    ].freeze
+
+    US20_FIXTURES.each do |fx|
+      tw = TransportWindow.find_or_create_by!(
+        vehicle:              vehicle,
+        origin_locality:      fx[:origin],
+        destination_locality: fx[:dest]
+      ) do |w|
+        w.origin_address         = "Av. Principal 100, #{fx[:origin]}"
+        w.origin_admin_area      = fx[:origin_admin]
+        w.destination_address    = "Av. Central 200, #{fx[:dest]}"
+        w.destination_admin_area = fx[:dest_admin]
+        w.price_per_km           = 1_500.0
+        w.max_km                 = 1_000
+        w.available_from         = fx[:tw_from].days.from_now
+        w.available_to           = fx[:tw_to].days.from_now
+        w.active                 = false
+        w.status                 = "reserved"
+        w.origin_lat             = fx[:origin_lat]
+        w.origin_lng             = fx[:origin_lng]
+        w.destination_lat        = fx[:dest_lat]
+        w.destination_lng        = fx[:dest_lng]
+        w.pickup_radius_km       = 50
+        w.dropoff_radius_km      = 50
+      end
+
+      cargo = Cargo.find_or_create_by!(
+        shipper:           shipper,
+        cargo_description: fx[:cargo_desc]
+      ) do |c|
+        c.pickup_address       = "Av. Principal 100, #{fx[:origin]}"
+        c.pickup_locality      = fx[:origin]
+        c.pickup_admin_area    = fx[:origin_admin]
+        c.delivery_address     = "Av. Central 200, #{fx[:dest]}"
+        c.delivery_locality    = fx[:dest]
+        c.delivery_admin_area  = fx[:dest_admin]
+        c.pickup_lat           = fx[:origin_lat]
+        c.pickup_lng           = fx[:origin_lng]
+        c.delivery_lat         = fx[:dest_lat]
+        c.delivery_lng         = fx[:dest_lng]
+        c.pickup_window_start  = (fx[:tw_from] - 2).days.from_now
+        c.pickup_window_end    = (fx[:tw_to]   + 2).days.from_now
+        c.weight_kg            = 2_500.0
+        c.volume_cm3           = 10_000_000
+        c.declared_value_cents = 40_000_000
+      end
+
+      offer = CargoOffer.find_or_create_by!(
+        cargo: cargo, carrier: carrier, transport_window: tw
+      ) do |co|
+        co.amount_cents = 11_000_000
+        co.currency     = "ARS"
+        co.status       = "accepted"
+        co.accepted_at  = (fx[:tw_from].abs + 5).days.ago
+        co.expires_at   = (fx[:tw_from].abs - 2).days.ago
+      end
+
+      next if Shipment.with_discarded.exists?(cargo_offer_id: offer.id)
+
+      offset   = fx[:tw_from].abs
+      shipment = Shipment.create!(
+        cargo_offer: offer,
+        status:      "accepted",
+        accepted_at: (offset + 10).days.ago
+      )
+
+      Payment.find_or_create_by!(shipment: shipment) do |p|
+        p.amount_cents = offer.amount_cents
+        p.currency     = offer.currency
+        p.provider     = "fake"
+        p.state        = "escrowed"
+        p.escrowed_at  = (offset + 8).days.ago
+      end
+
+      shipment.update!(picked_up_at: (offset + 6).days.ago, status: "in_transit")
+      shipment.update!(delivered_at: (offset + 4).days.ago, status: "delivered")
+
+      [
+        { kind: "shipment_accepted",                                    days_ago: offset + 10 },
+        { kind: "payment_escrowed",                                     days_ago: offset + 8  },
+        { kind: "status_change", from: "accepted",   to: "in_transit", days_ago: offset + 6  },
+        { kind: "status_change", from: "in_transit", to: "delivered",  days_ago: offset + 4  }
+      ].each do |ev|
+        exists = if ev[:kind] == "status_change"
+          shipment.tracking_events.where(
+            kind: "status_change",
+            from_status: ev[:from], to_status: ev[:to]
+          ).exists?
+        else
+          shipment.tracking_events.where(kind: ev[:kind]).exists?
+        end
+        next if exists
+        attrs = { kind: ev[:kind], recorded_at: ev[:days_ago].days.ago }
+        attrs[:from_status] = ev[:from] if ev.key?(:from)
+        attrs[:to_status]   = ev[:to]   if ev.key?(:to)
+        shipment.tracking_events.create!(attrs)
+      end
+
+      next unless fx[:review]
+      next if Review.shipper_authored.exists?(shipment: shipment)
+
+      Review.create!(
+        shipment:    shipment,
+        carrier:     carrier,
+        shipper:     shipper,
+        rating:      fx[:review][:rating],
+        body:        fx[:review][:body],
+        authored_by: :shipper_authored
+      )
+    end
+  end
+end

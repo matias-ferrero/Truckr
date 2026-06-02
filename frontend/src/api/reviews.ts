@@ -1,6 +1,5 @@
 import { apiFetch } from "../api";
 
-// US30 / REQ-BE-00044 — Carrier → Shipper review on a delivered Shipment.
 export type ReviewAuthor = "carrier" | "shipper";
 
 export type Review = {
@@ -11,18 +10,17 @@ export type Review = {
     created_at: string;
 };
 
-export type CreateCarrierReviewInput = {
+export type CreateReviewInput = {
     rating: number;
     body?: string | null;
 };
 
-// POST /api/shipments/:id/carrier_reviews — 201 with the created ReviewResource.
-// Surfaces ApiError on 403 / 404 / 409 / 422 so callers can branch on status.
-export async function createCarrierReview(
+// POST /api/shipments/:id/reviews — direction inferred from the authenticated poster.
+export async function createShipmentReview(
     shipmentId: number,
-    input: CreateCarrierReviewInput,
+    input: CreateReviewInput,
 ): Promise<Review> {
-    return apiFetch<Review>(`/api/shipments/${shipmentId}/carrier_reviews`, {
+    return apiFetch<Review>(`/api/shipments/${shipmentId}/reviews`, {
         method: "POST",
         body: { rating: input.rating, body: input.body ?? null },
     });

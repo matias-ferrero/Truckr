@@ -23,9 +23,8 @@ export const shipmentDetailContent = {
         sectionTitle: "Datos de contacto",
     },
     review: {
-        // Accessible label for the section that wraps CarrierReviewForm on the
-        // Carrier's delivered-shipment detail view (US30 / AC7).
-        sectionLabel: "Reseña del expedidor",
+        carrierSectionLabel: "Reseña del expedidor",
+        shipperSectionLabel: "Reseña del transportista",
     },
     tracking: {
         sectionTitle: "Historial de eventos",

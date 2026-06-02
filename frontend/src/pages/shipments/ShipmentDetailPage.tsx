@@ -6,6 +6,7 @@ import { PaymentStateChip } from "../../components/shipments/PaymentStateChip";
 import { ShipmentActions } from "../../components/shipments/ShipmentActions";
 import { TrackingEventTimeline } from "../../components/shipments/TrackingEventTimeline";
 import { CarrierReviewForm } from "../../components/shipments/CarrierReviewForm";
+import { ShipperReviewForm } from "../../components/shipments/ShipperReviewForm";
 import { Button, buttonVariants } from "../../components/ui/button";
 import { shipmentDetailContent as t } from "./shipmentDetailContent";
 import { formatDateTime } from "../../lib/format-date";
@@ -339,13 +340,25 @@ export default function ShipmentDetailPage({ role }: Props) {
                     )}
                 </section>
 
-                {/* US30 / REQ-BE-00044 — Carrier reviews the Shipper. Visible only to
-                    the Carrier viewer on a delivered shipment (AC7). The form
-                    hydrates straight into its read-only state when the backend
-                    already returned a carrier_review, and flips there itself after
+                {/* US20 / US30 — delivered-shipment review forms. Shippers can review
+                    carriers and carriers can review shippers. Each form hydrates
+                    straight into its read-only state when the backend already
+                    returned the corresponding review, and flips there itself after
                     a successful submit. */}
+                {role === "shipper" && detail.state === "delivered" && (
+                    <section className="shipmentReviewSection" aria-label={t.review.shipperSectionLabel}>
+                        <ShipperReviewForm
+                            shipmentId={detail.id}
+                            existingReview={detail.shipper_review ?? null}
+                            onCreated={() => {
+                                window.dispatchEvent(new Event("truckr:shipment-updated"));
+                            }}
+                        />
+                    </section>
+                )}
+
                 {role === "carrier" && detail.state === "delivered" && (
-                    <section className="shipmentReviewSection" aria-label={t.review.sectionLabel}>
+                    <section className="shipmentReviewSection" aria-label={t.review.carrierSectionLabel}>
                         <CarrierReviewForm
                             shipmentId={detail.id}
                             existingReview={detail.carrier_review ?? null}

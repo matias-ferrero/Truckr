@@ -17,7 +17,6 @@ FactoryBot.define do
       authored_by { :carrier_authored }
     end
 
-    # Supported by the data model; the endpoint that writes it lands with US20.
     trait :shipper_authored do
       authored_by { :shipper_authored }
     end

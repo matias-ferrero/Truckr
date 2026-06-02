@@ -279,14 +279,74 @@ describe("ShipmentDetailPage", () => {
         expect(screen.getByRole("button", { name: /enviar reseña/i })).toBeInTheDocument();
     });
 
-    it("[Shipper, delivered] does NOT mount the review form", async () => {
+    // --- US20 / REQ-BE-00042 — Shipper review integration (AC7) ---
+
+    it("[Shipper, delivered, no review] mounts the review form", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({ state: "delivered", shipper_review: null }))),
+        );
+        renderPage("shipper");
+        await waitFor(() =>
+            expect(screen.getByRole("heading", { name: /dejar reseña/i })).toBeInTheDocument(),
+        );
+        expect(screen.getByRole("radiogroup", { name: /puntuación/i })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /enviar reseña/i })).toBeInTheDocument();
+    });
+
+    it("[Carrier, delivered] does NOT mount the shipper review form", async () => {
         server.use(
             http.get(`${API}/api/shipments/:id`, () =>
                 HttpResponse.json(fixtureShipmentDetail({ state: "delivered" }))),
         );
-        renderPage("shipper");
+        renderPage("carrier");
         await waitFor(() => expect(screen.getByText(/entregado/i)).toBeInTheDocument());
-        expect(screen.queryByRole("heading", { name: /reseñar al expedidor/i })).not.toBeInTheDocument();
+        expect(screen.queryByRole("heading", { name: /dejar reseña/i })).not.toBeInTheDocument();
+    });
+
+    it("[Shipper, in_transit] does NOT mount the review form (state guard)", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({ state: "in_transit" }))),
+        );
+        renderPage("shipper");
+        await waitFor(() => expect(screen.getByRole("heading", { name: /envío/i })).toBeInTheDocument());
+        expect(screen.queryByRole("heading", { name: /dejar reseña/i })).not.toBeInTheDocument();
+    });
+
+    it("[Shipper, delivered, existing review] hydrates the read-only card (AC7)", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({
+                    state: "delivered",
+                    shipper_review: {
+                        id: 8,
+                        rating: 5,
+                        body: "Entrega puntual.",
+                        authored_by: "shipper",
+                        created_at: "2026-06-12T10:00:00Z",
+                    },
+                }))),
+        );
+        renderPage("shipper");
+        await waitFor(() => expect(screen.getByText(/¡gracias por tu reseña!/i)).toBeInTheDocument());
+        expect(screen.getByText("Entrega puntual.")).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: /enviar reseña/i })).not.toBeInTheDocument();
+    });
+
+    it("[Shipper, delivered] submitting the form shows the read-only success state", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({ state: "delivered", shipper_review: null }))),
+        );
+        const user = userEvent.setup();
+        renderPage("shipper");
+        await waitFor(() =>
+            expect(screen.getByRole("button", { name: /enviar reseña/i })).toBeInTheDocument(),
+        );
+        await user.click(screen.getByRole("radio", { name: /5 estrellas/i }));
+        await user.click(screen.getByRole("button", { name: /enviar reseña/i }));
+        await waitFor(() => expect(screen.getByText(/¡gracias por tu reseña!/i)).toBeInTheDocument());
     });
 
     it("[Carrier, in_transit] does NOT mount the review form (state guard)", async () => {

@@ -173,8 +173,8 @@ async function fillCommonFields() {
     await userEvent.selectOptions(screen.getByRole("combobox", { name: /vehículo/i }), "10");
     await userEvent.type(screen.getByLabelText(/precio por km/i), "1500");
     await userEvent.type(screen.getByLabelText(/kilómetros máximos/i), "1200");
-    await userEvent.type(screen.getByLabelText(/disponible desde/i), "2026-06-01");
-    await userEvent.type(screen.getByLabelText(/disponible hasta/i), "2026-06-30");
+    await userEvent.type(screen.getByLabelText(/disponible desde/i), "2099-01-01");
+    await userEvent.type(screen.getByLabelText(/disponible hasta/i), "2099-01-31");
 }
 
 beforeEach(() => {

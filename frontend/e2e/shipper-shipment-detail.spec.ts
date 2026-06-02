@@ -81,5 +81,9 @@ test.describe("Shipper — shipment detail (REQ-FE-00024 / US39)", () => {
         // PaymentStateChip is visible for non-cancelled states (AC3)
         // Text is "Pagado" or "Pendiente de pago" depending on seed payment data.
         await expect(page.locator(".paymentStateChip")).toBeVisible();
+
+        // US20 / REQ-BE-00042 — Shipper can leave a Carrier review on delivered shipments (AC7)
+        await expect(page.getByRole("heading", { name: /dejar reseña/i })).toBeVisible();
+        await expect(page.getByRole("radiogroup", { name: /puntuación/i })).toBeVisible();
     });
 });

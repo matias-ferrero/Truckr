@@ -8,16 +8,16 @@ interface Props {
     onCreated?: (review: Review) => void;
 }
 
-export function CarrierReviewForm({ shipmentId, existingReview, onCreated }: Props) {
+export function ShipperReviewForm({ shipmentId, existingReview, onCreated }: Props) {
     return (
         <ReviewForm
             shipmentId={shipmentId}
             existingReview={existingReview}
             onCreated={onCreated}
-            content={reviewsContent.carrierReview}
-            id="carrierReview"
+            content={reviewsContent.shipperReview}
+            id="shipperReview"
         />
     );
 }
 
-export default CarrierReviewForm;
+export default ShipperReviewForm;
