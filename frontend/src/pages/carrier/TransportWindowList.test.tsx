@@ -86,7 +86,7 @@ describe("TransportWindowList", () => {
         mockApi.listMyTransportWindows.mockResolvedValue(makeResult([makeWindow()]));
         renderList();
         await waitFor(() => {
-            expect(screen.getByText(/CABA, Buenos Aires → Córdoba, Córdoba/i)).toBeInTheDocument();
+            expect(screen.getByText(/CABA, Buenos Aires → Córdoba/i)).toBeInTheDocument();
         });
         expect(screen.getByText(/Visible/i)).toBeInTheDocument();
     });
@@ -237,7 +237,7 @@ describe("TransportWindowList", () => {
 
         // Item removed from list immediately (optimistic)
         await waitFor(() => {
-            expect(screen.queryByText(/CABA, Buenos Aires → Córdoba, Córdoba/i)).not.toBeInTheDocument();
+            expect(screen.queryByText(/CABA, Buenos Aires → Córdoba/i)).not.toBeInTheDocument();
         });
         // Undo toast appears
         expect(screen.getByRole("status")).toHaveTextContent(/ventana eliminada/i);
@@ -315,7 +315,7 @@ describe("TransportWindowList", () => {
         await userEvent.click(screen.getByRole("button", { name: /entendido/i }));
         expect(mockApi.deleteTransportWindow).not.toHaveBeenCalled();
         // Item still visible in the list
-        expect(screen.getByText(/CABA, Buenos Aires → Córdoba, Córdoba/i)).toBeInTheDocument();
+        expect(screen.getByText(/CABA, Buenos Aires → Córdoba/i)).toBeInTheDocument();
     });
 
     it("navigates to new window form when n is pressed", async () => {

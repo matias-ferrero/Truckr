@@ -35,7 +35,7 @@ vi.mock("../../components/AddressPicker", () => ({
         disabled?: boolean;
     }) => {
         const confirmedSamples: Record<string, AddressPickerValue> = {
-            pickup_address:   { text: "Av. Corrientes 1234, CABA", lat: -34.603722, lng: -58.381592, locality: "CABA", admin_area: "Ciudad Autónoma de Buenos Aires" },
+            pickup_address:   { text: "Av. Corrientes 1234, CABA", lat: -34.603722, lng: -58.381592, locality: "CABA", admin_area: "CABA" },
             delivery_address: { text: "Av. Colón 500, Córdoba",    lat: -31.420083, lng: -64.188776, locality: "Córdoba", admin_area: "Córdoba" },
         };
         const safeId = id ?? "default";

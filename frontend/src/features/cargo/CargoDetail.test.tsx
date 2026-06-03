@@ -87,7 +87,7 @@ describe("CargoDetail — open cargo", () => {
         renderDetail();
         expect(
             await screen.findByRole("heading", {
-                name: "CABA, Buenos Aires → Córdoba, Córdoba",
+                name: "CABA, Buenos Aires → Córdoba",
             }),
         ).toBeInTheDocument();
         expect(
@@ -132,7 +132,7 @@ describe("CargoDetail — open cargo", () => {
         expect(within(offersSection).getByText("Pendiente"))
             .toBeInTheDocument();
         expect(
-            within(offersSection).getByText("CABA, Buenos Aires → Córdoba, Córdoba"),
+            within(offersSection).getByText("CABA, Buenos Aires → Córdoba"),
         ).toBeInTheDocument();
     });
 });
@@ -257,7 +257,7 @@ describe("CargoDetail — error state", () => {
         await user.click(screen.getByRole("button", { name: "Reintentar" }));
         expect(
             await screen.findByRole("heading", {
-                name: "CABA, Buenos Aires → Córdoba, Córdoba",
+                name: "CABA, Buenos Aires → Córdoba",
             }),
         ).toBeInTheDocument();
     });

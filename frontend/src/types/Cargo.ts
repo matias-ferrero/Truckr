@@ -82,6 +82,7 @@ export type CargoOffer = {
         origin_admin_area: string;
         destination_locality: string | null;
         destination_admin_area: string | null;
+        destination_lat: string | null;
         available_from: string;
         available_to: string;
     };

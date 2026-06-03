@@ -48,6 +48,7 @@ class CargoResource
           origin_admin_area:      window.origin_admin_area,
           destination_locality:   window.destination_locality,
           destination_admin_area: window.destination_admin_area,
+          destination_lat:        window.destination_lat,
           available_from:         window.available_from,
           available_to:           window.available_to
         }

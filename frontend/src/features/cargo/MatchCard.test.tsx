@@ -75,7 +75,7 @@ function renderCard(
 describe("MatchCard", () => {
     it("renders the window route, carrier and capacity", () => {
         renderCard(makeMatch());
-        expect(screen.getByText("CABA, Buenos Aires → Córdoba, Córdoba")).toBeInTheDocument();
+        expect(screen.getByText("CABA, Buenos Aires → Córdoba")).toBeInTheDocument();
         expect(
             screen.getByText("Transportista: Transportes del Sur"),
         ).toBeInTheDocument();

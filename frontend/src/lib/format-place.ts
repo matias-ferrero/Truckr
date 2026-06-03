@@ -11,6 +11,8 @@
 // in the relevant `*Content.ts` bundle, e.g.
 // `cargosContent.list.openDestinationLabel`) — the helper never owns user copy.
 
+import { normalizeAdminArea } from "./places";
+
 export interface Place {
     locality: string | null | undefined;
     admin_area: string | null | undefined;
@@ -18,9 +20,13 @@ export interface Place {
 
 export function formatPlace(place: Place | null | undefined): string {
     if (!place) return "";
-    const loc = (place.locality ?? "").trim();
-    const adm = (place.admin_area ?? "").trim();
-    if (loc && adm) return `${loc}, ${adm}`;
+    // Guard against data anomalies (string "null") and apply alias normalisation
+    // so existing DB records with the full province name display the short form.
+    const loc = (place.locality ?? "").replace(/^null$/i, "").trim();
+    const adm = normalizeAdminArea((place.admin_area ?? "").replace(/^null$/i, "").trim());
+    // Avoid "CABA, CABA" when locality and admin_area collapse to the same value
+    // after normalisation (e.g. locality="CABA" + admin_area="Ciudad Autónoma…").
+    if (loc && adm && loc !== adm) return `${loc}, ${adm}`;
     return loc || adm;
 }
 

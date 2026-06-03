@@ -229,7 +229,7 @@ describe("DashboardPage", () => {
                     origin_locality:      "San Isidro",
                     origin_admin_area:    "Buenos Aires",
                     destination_locality: "CABA",
-                    destination_admin_area: "Ciudad Autónoma de Buenos Aires",
+                    destination_admin_area: "CABA",
                 }),
             ],
             meta: { total: 2, page: 1, perPage: 20, totalPages: 1 },
@@ -244,7 +244,7 @@ describe("DashboardPage", () => {
 
         await waitFor(() => {
             expect(screen.getByRole("heading", { level: 3, name: /Centro, Buenos Aires → Pilar, Buenos Aires/ })).toBeInTheDocument();
-            expect(screen.getByRole("heading", { level: 3, name: /San Isidro, Buenos Aires → CABA, Ciudad Autónoma de Buenos Aires/ })).toBeInTheDocument();
+            expect(screen.getByRole("heading", { level: 3, name: /San Isidro, Buenos Aires → CABA/ })).toBeInTheDocument();
             expect(screen.getByText("AAA111")).toBeInTheDocument();
         });
         expect(screen.getByText(/mb sprinter/i)).toBeInTheDocument();

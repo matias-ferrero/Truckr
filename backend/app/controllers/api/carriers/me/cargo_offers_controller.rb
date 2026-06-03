@@ -39,22 +39,11 @@ module Api
           offer = scoped_offer
           authorize offer, :reject?
 
-          ActiveRecord::Base.transaction do
-            offer.with_lock do
-              unless offer.status == "pending" && !offer.expired?
-                raise Marketplace::CargoOfferAcceptanceService::ConflictError, "cargo_offer_not_pending_or_expired"
-              end
+          Marketplace::CargoOfferRejectionService.new(cargo_offer: offer).call
 
-              offer.transition_to!("rejected")
-              offer.update!(rejected_at: Time.current)
-              offer.transport_window.update!(status: "open")
-            end
-
-            CargoOfferMailer.notify_shipper_offer_rejected(offer).deliver_later
-          end
-
+          CargoOfferMailer.notify_shipper_offer_rejected(offer).deliver_later
           render json: CarrierCargoOfferInboxResource.new(offer.reload).serialize, status: :ok
-        rescue Marketplace::CargoOfferAcceptanceService::ConflictError
+        rescue Marketplace::CargoOfferRejectionService::ConflictError
           render_error(code: "conflict", status: :conflict)
         end
 

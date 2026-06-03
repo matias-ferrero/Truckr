@@ -335,7 +335,7 @@ function OfferRow({ offer }: { offer: CargoOffer }) {
                 {window
                     ? formatRoute(
                         { locality: window.origin_locality, admin_area: window.origin_admin_area },
-                        window.destination_locality || window.destination_admin_area
+                        window.destination_lat !== null
                             ? { locality: window.destination_locality, admin_area: window.destination_admin_area }
                             : null,
                         t.summary.openDestinationLabel,

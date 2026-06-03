@@ -20,20 +20,35 @@ describe("formatPlace", () => {
         expect(formatPlace(null)).toBe("");
     });
 
-    it("trims leading/trailing whitespace", () => {
+    it("trims leading/trailing whitespace and deduplicates equal locality/admin_area", () => {
+        // When locality and admin_area collapse to the same value (e.g. Córdoba city
+        // in Córdoba province, or "CABA"/"CABA") only one token is shown.
         expect(formatPlace({ locality: "  Córdoba  ", admin_area: " Córdoba " }))
-            .toBe("Córdoba, Córdoba");
+            .toBe("Córdoba");
+    });
+
+    it("deduplicates when locality equals admin_area after normalisation", () => {
+        expect(formatPlace({ locality: "CABA", admin_area: "CABA" })).toBe("CABA");
     });
 });
 
 describe("formatRoute", () => {
     it("renders origin → destination when both have place data", () => {
         const route = formatRoute(
+            { locality: "Palermo", admin_area: "CABA" },
+            { locality: "Nueva Córdoba", admin_area: "Córdoba" },
+            OPEN,
+        );
+        expect(route).toBe("Palermo, CABA → Nueva Córdoba, Córdoba");
+    });
+
+    it("deduplicates equal locality/admin_area in origin and destination", () => {
+        const route = formatRoute(
             { locality: "CABA", admin_area: "CABA" },
             { locality: "Córdoba", admin_area: "Córdoba" },
             OPEN,
         );
-        expect(route).toBe("CABA, CABA → Córdoba, Córdoba");
+        expect(route).toBe("CABA → Córdoba");
     });
 
     it("renders the open-destination label when the destination is null", () => {
@@ -42,7 +57,7 @@ describe("formatRoute", () => {
             null,
             OPEN,
         );
-        expect(route).toBe(`CABA, CABA → ${OPEN}`);
+        expect(route).toBe(`CABA → ${OPEN}`);
     });
 
     it("treats an all-empty destination as open", () => {
@@ -51,6 +66,6 @@ describe("formatRoute", () => {
             { locality: "", admin_area: null },
             OPEN,
         );
-        expect(route).toBe(`CABA, CABA → ${OPEN}`);
+        expect(route).toBe(`CABA → ${OPEN}`);
     });
 });

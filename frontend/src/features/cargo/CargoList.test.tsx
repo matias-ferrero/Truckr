@@ -88,7 +88,7 @@ describe("CargoList", () => {
             result([makeCargo({ pending_offers_count: 2 })]),
         );
         renderList();
-        const route = await screen.findByText("CABA, Buenos Aires → Córdoba, Córdoba");
+        const route = await screen.findByText("CABA, Buenos Aires → Córdoba");
         expect(route).toBeInTheDocument();
         // "Abierta" also appears as a filter option — scope to the card badge.
         const card = route.closest("li") as HTMLElement;
@@ -108,7 +108,7 @@ describe("CargoList", () => {
         api.listCargos.mockResolvedValue(result([makeCargo()]));
         const user = userEvent.setup();
         renderList();
-        await screen.findByText("CABA, Buenos Aires → Córdoba, Córdoba");
+        await screen.findByText("CABA, Buenos Aires → Córdoba");
 
         await user.selectOptions(
             screen.getByLabelText("Filtrar por estado"),
@@ -130,7 +130,7 @@ describe("CargoList", () => {
         api.listCargos.mockResolvedValueOnce(result([makeCargo()]));
         await user.click(screen.getByRole("button", { name: "Reintentar" }));
         expect(
-            await screen.findByText("CABA, Buenos Aires → Córdoba, Córdoba"),
+            await screen.findByText("CABA, Buenos Aires → Córdoba"),
         ).toBeInTheDocument();
     });
 
@@ -138,7 +138,7 @@ describe("CargoList", () => {
         api.listCargos.mockResolvedValue(result([makeCargo()], 3));
         const user = userEvent.setup();
         renderList();
-        await screen.findByText("CABA, Buenos Aires → Córdoba, Córdoba");
+        await screen.findByText("CABA, Buenos Aires → Córdoba");
 
         await user.click(screen.getByRole("button", { name: /Siguiente/ }));
         await waitFor(() =>

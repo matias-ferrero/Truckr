@@ -5,6 +5,20 @@
 // finally the first comma-separated chunk of the formatted address as a
 // last resort. `admin_area` is always sourced from `administrative_area_level_1`
 // (provincia in es-AR), with the same final-chunk fallback.
+//
+// Admin-area aliases: some provinces / autonomous cities have canonical short
+// forms that are used everywhere in the UI. Map the verbose Google name to the
+// short form here so it is normalised at parse time (new addresses) and at
+// display time via `format-place.ts`.
+const ADMIN_AREA_ALIASES: Readonly<Record<string, string>> = {
+    "ciudad autónoma de buenos aires": "CABA",
+    "ciudad autonoma de buenos aires": "CABA",
+};
+
+export function normalizeAdminArea(s: string): string {
+    const key = s.toLowerCase().trim();
+    return ADMIN_AREA_ALIASES[key] ?? s;
+}
 
 export interface PlaceAddressComponent {
     types: ReadonlyArray<string>;
@@ -74,7 +88,7 @@ export function parsePlace(place: PlaceLike): ParsedPlace {
     const adminFromComponent = componentText(
         findComponent(place.addressComponents, "administrative_area_level_1"),
     );
-    const admin_area = adminFromComponent || firstCommaChunk(address);
+    const admin_area = normalizeAdminArea(adminFromComponent || firstCommaChunk(address));
 
     return { address, lat, lng, locality, admin_area };
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePlace, type PlaceLike } from "./places";
+import { parsePlace, normalizeAdminArea, type PlaceLike } from "./places";
 
 function makePlace(args: {
     formattedAddress?: string;
@@ -31,7 +31,7 @@ describe("parsePlace", () => {
             }),
         );
         expect(result.locality).toBe("Buenos Aires");
-        expect(result.admin_area).toBe("Ciudad Autónoma de Buenos Aires");
+        expect(result.admin_area).toBe("CABA");
         expect(result.address).toBe("Av. Corrientes 1234, CABA, Argentina");
         expect(result.lat).toBe(-34.603722);
         expect(result.lng).toBe(-58.381592);
@@ -135,5 +135,43 @@ describe("parsePlace", () => {
             }),
         );
         expect(result.locality).toBe("San Carlos de Bariloche");
+    });
+
+    it("normalises Ciudad Autónoma de Buenos Aires → CABA at parse time", () => {
+        const result = parsePlace(
+            makePlace({
+                formattedAddress: "Av. Corrientes 1234, Buenos Aires, Argentina",
+                lat:              -34.603722,
+                lng:              -58.381592,
+                components:       [
+                    { types: ["locality"], longText: "Buenos Aires" },
+                    { types: ["administrative_area_level_1"], longText: "Ciudad Autónoma de Buenos Aires" },
+                ],
+            }),
+        );
+        expect(result.admin_area).toBe("CABA");
+    });
+});
+
+describe("normalizeAdminArea", () => {
+    it("maps the accented form to CABA", () => {
+        expect(normalizeAdminArea("Ciudad Autónoma de Buenos Aires")).toBe("CABA");
+    });
+
+    it("maps the unaccented form to CABA", () => {
+        expect(normalizeAdminArea("Ciudad Autonoma de Buenos Aires")).toBe("CABA");
+    });
+
+    it("is case-insensitive", () => {
+        expect(normalizeAdminArea("CIUDAD AUTÓNOMA DE BUENOS AIRES")).toBe("CABA");
+    });
+
+    it("leaves other provinces unchanged", () => {
+        expect(normalizeAdminArea("Buenos Aires")).toBe("Buenos Aires");
+        expect(normalizeAdminArea("Córdoba")).toBe("Córdoba");
+    });
+
+    it("returns the input unchanged for empty string", () => {
+        expect(normalizeAdminArea("")).toBe("");
     });
 });
