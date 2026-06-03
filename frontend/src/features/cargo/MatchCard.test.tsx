@@ -39,7 +39,12 @@ function makeMatch(over: Partial<CargoMatch> = {}): CargoMatch {
 
 function LocationProbe() {
     const loc = useLocation();
-    return <div data-testid="loc">{loc.pathname + loc.search}</div>;
+    return (
+        <div>
+            <div data-testid="loc">{loc.pathname + loc.search}</div>
+            <div data-testid="loc-state">{JSON.stringify(loc.state)}</div>
+        </div>
+    );
 }
 
 function renderCard(
@@ -146,5 +151,15 @@ describe("MatchCard", () => {
         renderCard(makeMatch(), 7);
         await user.click(screen.getByRole("link", { name: /Ver perfil/i }));
         expect(screen.getByTestId("loc")).toHaveTextContent("/carriers/1");
+    });
+
+    it("carries the matches URL as router state on the Ver perfil link", async () => {
+        const user = userEvent.setup();
+        renderCard(makeMatch(), 7);
+        await user.click(screen.getByRole("link", { name: /Ver perfil/i }));
+        expect(screen.getByTestId("loc")).toHaveTextContent("/carriers/1");
+        expect(screen.getByTestId("loc-state")).toHaveTextContent(
+            '"backToMatches":"/shipper/cargos/7/matches"',
+        );
     });
 });

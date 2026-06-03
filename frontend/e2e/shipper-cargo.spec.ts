@@ -73,4 +73,43 @@ test.describe("Shipper — cargo-first offer funnel (REQ-BE-00032 / US27)", () =
         ).toBeVisible();
         await expect(page.getByText("Pendiente")).toBeVisible();
     });
+
+    // REQ-FE-00029 — from the matches screen, "Ver perfil" opens the carrier
+    // profile; a Shipper who arrived this way gets a "Volver a la búsqueda"
+    // link back to the same cargo's matches screen.
+    //
+    // Uses the seeded Shipper (shipper1@truckr.test) and the cargo db/seeds.rb
+    // designates as the matches demo: "Materiales de construcción" (La Plata →
+    // Mar del Plata, cargo2), which matches the still-free tw3 so the matches
+    // screen shows at least one result with a "Ver perfil" link.
+    test("matches → Ver perfil → Volver a la búsqueda returns to matches", async ({ page }) => {
+        // 1. Login as the seeded Shipper.
+        await page.goto("/login");
+        await page.fill('[name="email"]', "shipper1@truckr.test");
+        await page.fill('[name="password"]', "Password123");
+        await page.click('button[type="submit"]');
+        await page.waitForURL("/");
+
+        // 2. Open cargo2's detail from the list, then its matches screen. The
+        //    "Buscar transportistas" CTA lives on the detail, not the list row.
+        await page.goto("/shipper/cargos");
+        await page
+            .locator("li", { hasText: "Materiales de construcción" })
+            .getByRole("link", { name: /ver detalle/i })
+            .click();
+        await expect(page).toHaveURL(/\/shipper\/cargos\/\d+$/);
+        await page.getByRole("link", { name: /buscar transportistas/i }).click();
+        await expect(page).toHaveURL(/\/shipper\/cargos\/\d+\/matches$/);
+        const matchesUrl = page.url();
+
+        // 3. Open the carrier profile from a match.
+        await page.getByRole("link", { name: /ver perfil/i }).first().click();
+        await expect(page).toHaveURL(/\/carriers\/\d+$/);
+
+        // 4. The Shipper-only back link returns to the same matches screen.
+        const back = page.getByRole("link", { name: /volver a la búsqueda/i });
+        await expect(back).toBeVisible();
+        await back.click();
+        await expect(page).toHaveURL(matchesUrl);
+    });
 });

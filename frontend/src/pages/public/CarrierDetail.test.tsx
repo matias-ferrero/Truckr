@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import CarrierDetail from "./CarrierDetail";
 import { ApiError } from "../../api";
@@ -7,7 +8,7 @@ import * as carriersApi from "../../api/carriers";
 import type { CarrierDetail as CarrierDetailDto } from "../../api/carriers";
 import * as reviewsApi from "../../api/reviews";
 import type { Review } from "../../api/reviews";
-import { AuthContext, type AuthState } from "../../auth/AuthContext";
+import { AuthContext, type AuthState, type Me } from "../../auth/AuthContext";
 
 vi.mock("../../api/carriers", async (orig) => {
     const actual = await orig<typeof carriersApi>();
@@ -49,6 +50,49 @@ function renderAt(url: string, auth: AuthState = guestAuth) {
             <AuthContext.Provider value={auth}>
                 <Routes>
                     <Route path="/carriers/:id" element={<CarrierDetail />} />
+                </Routes>
+            </AuthContext.Provider>
+        </MemoryRouter>,
+    );
+}
+
+function authValue(me: Me | null): AuthState {
+    return {
+        me,
+        loading: false,
+        register: async () => {},
+        login: async () => {},
+        logout: async () => {},
+        updateMe: async () => me as Me,
+    };
+}
+
+function shipperMe(): Me {
+    return { id: 1, email: "shipper@x.com", roles: ["shipper"], carrier: null, shipper: { id: 1 } };
+}
+
+function carrierMe(): Me {
+    return { id: 2, email: "carrier@x.com", roles: ["carrier"], carrier: { id: 99 }, shipper: null };
+}
+
+/**
+ * Render the profile with an explicit auth value and optional router state,
+ * so we can exercise the Shipper-only "back to matches" link that only shows
+ * when the visitor arrived via the cargo-matches "Ver perfil" link.
+ */
+function renderWithAuth(
+    entry: string | { pathname: string; state?: unknown },
+    me: Me | null,
+) {
+    return render(
+        <MemoryRouter initialEntries={[entry]}>
+            <AuthContext.Provider value={authValue(me)}>
+                <Routes>
+                    <Route path="/carriers/:id" element={<CarrierDetail />} />
+                    <Route
+                        path="/shipper/cargos/:id/matches"
+                        element={<div>PANTALLA DE MATCHES</div>}
+                    />
                 </Routes>
             </AuthContext.Provider>
         </MemoryRouter>,
@@ -310,5 +354,67 @@ describe("CarrierDetail", () => {
         expect(
             await screen.findByText(/todavía no escribió una descripción/i),
         ).toBeInTheDocument();
+    });
+
+    describe("back-to-matches link (Shipper only)", () => {
+        const backState = { backToMatches: "/shipper/cargos/7/matches" };
+
+        it("shows the link when a Shipper arrived from the matches screen", async () => {
+            vi.mocked(carriersApi.getCarrier).mockResolvedValueOnce(fakeCarrier());
+            renderWithAuth(
+                { pathname: "/carriers/42", state: backState },
+                shipperMe(),
+            );
+
+            await screen.findByRole("heading", { name: /transportes andinos srl/i });
+            const link = screen.getByRole("link", { name: /volver a la búsqueda/i });
+            expect(link).toHaveAttribute("href", "/shipper/cargos/7/matches");
+        });
+
+        it("returns to the matches screen when the link is clicked", async () => {
+            const user = userEvent.setup();
+            vi.mocked(carriersApi.getCarrier).mockResolvedValueOnce(fakeCarrier());
+            renderWithAuth(
+                { pathname: "/carriers/42", state: backState },
+                shipperMe(),
+            );
+
+            await screen.findByRole("heading", { name: /transportes andinos srl/i });
+            await user.click(screen.getByRole("link", { name: /volver a la búsqueda/i }));
+            expect(screen.getByText(/pantalla de matches/i)).toBeInTheDocument();
+        });
+
+        it("does NOT show the link for an anonymous visitor (no origin context)", async () => {
+            vi.mocked(carriersApi.getCarrier).mockResolvedValueOnce(fakeCarrier());
+            renderWithAuth("/carriers/42", null);
+
+            await screen.findByRole("heading", { name: /transportes andinos srl/i });
+            expect(
+                screen.queryByRole("link", { name: /volver a la búsqueda/i }),
+            ).toBeNull();
+        });
+
+        it("does NOT show the link for a Shipper without origin context", async () => {
+            vi.mocked(carriersApi.getCarrier).mockResolvedValueOnce(fakeCarrier());
+            renderWithAuth("/carriers/42", shipperMe());
+
+            await screen.findByRole("heading", { name: /transportes andinos srl/i });
+            expect(
+                screen.queryByRole("link", { name: /volver a la búsqueda/i }),
+            ).toBeNull();
+        });
+
+        it("does NOT show the link for a Carrier even with origin context", async () => {
+            vi.mocked(carriersApi.getCarrier).mockResolvedValueOnce(fakeCarrier());
+            renderWithAuth(
+                { pathname: "/carriers/42", state: backState },
+                carrierMe(),
+            );
+
+            await screen.findByRole("heading", { name: /transportes andinos srl/i });
+            expect(
+                screen.queryByRole("link", { name: /volver a la búsqueda/i }),
+            ).toBeNull();
+        });
     });
 });

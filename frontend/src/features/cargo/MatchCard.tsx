@@ -92,6 +92,7 @@ export default function MatchCard({ cargoId, match, pickup }: Props) {
                     <Link
                         className="button buttonGhost"
                         to={`/carriers/${match.carrier.id}`}
+                        state={{ backToMatches: `/shipper/cargos/${cargoId}/matches` }}
                     >
                         {t.viewCarrierDetail}
                     </Link>

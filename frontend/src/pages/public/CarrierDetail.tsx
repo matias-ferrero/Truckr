@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { CarrierDetail as CarrierDetailDto, getCarrier } from "../../api/carriers";
 import { listCarrierReviews, type Review, type ReviewListMeta } from "../../api/reviews";
 import { ApiError } from "../../api";
@@ -36,6 +36,12 @@ export default function CarrierDetail() {
     // and public visitors who haven't logged in yet.
     const auth = useContext(AuthContext);
     const myCarrierId = (auth?.me?.carrier as { id?: number } | null | undefined)?.id;
+    // A Shipper who arrived via the cargo-matches "Ver perfil" link carries the
+    // matches URL in router state, so we can offer an explicit way back to it.
+    // Only that flow gets the link: public/anonymous visitors and Carriers don't.
+    const location = useLocation();
+    const backToMatches = (location.state as { backToMatches?: string } | null)?.backToMatches;
+    const showBackToMatches = !!backToMatches && (auth?.me?.roles?.includes("shipper") ?? false);
 
     const [state, setState] = useState<CarrierState>({ status: "loading" });
     const [reloadKey, setReloadKey] = useState(0);
@@ -123,6 +129,11 @@ export default function CarrierDetail() {
     return (
         <main className="page publicMain carrierDetailMain" id="main">
             <div className="container">
+                {showBackToMatches && (
+                    <Link to={backToMatches} className="backLink">
+                        {t.backToSearch}
+                    </Link>
+                )}
                 <header className="carrierHero" aria-labelledby="carrier-name">
                     <div className="carrierHeroBody">
                         <h1 id="carrier-name" className="sectionTitle">

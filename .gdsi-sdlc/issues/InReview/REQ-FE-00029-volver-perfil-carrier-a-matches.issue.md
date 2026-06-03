@@ -2,7 +2,7 @@
 tag: REQ-FE-00029
 title: Link "Volver a la búsqueda" del perfil del Carrier a la pantalla de matches (solo Shipper)
 priority: P3
-status: ready
+status: in_review
 created: '2026-05-31'
 plan: docs/features/REQ/REQ-FE-00029/REQ-FE-00029-volver-perfil-carrier-a-matches.plan.md
 source: manual
