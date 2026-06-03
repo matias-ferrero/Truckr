@@ -40,13 +40,37 @@ module Api
         estimated_km: cargo_offer_params[:estimated_km]
       ).call
 
-      CargoOfferMailer.notify_carrier(cargo_offer).deliver_later
+      notify_carrier_of_new_offer(cargo_offer)
       render json: CargoOfferResource.new(cargo_offer).serialize, status: :created
     rescue Marketplace::CargoOfferCreationService::ConflictError
       render_error(code: "window_taken", status: :conflict)
     end
 
     private
+
+    # Best-effort, post-commit dispatch (REQ-FE-00031). Emitted outside the
+    # creation transaction/`window.lock!` so broadcast I/O never extends the lock
+    # (AC4); a mailer or broadcast failure must not undo the 201 the Shipper
+    # already earned by creating the offer (AC5).
+    def notify_carrier_of_new_offer(cargo_offer)
+      CargoOfferMailer.notify_carrier(cargo_offer).deliver_later
+      Notifications::Publisher.publish(
+        user_id: cargo_offer.carrier.user_id,
+        type: Notifications::Type::CARGO_OFFER_RECEIVED,
+        payload: {
+          cargo_offer_id: cargo_offer.id,
+          cargo_id: cargo_offer.cargo_id,
+          transport_window_id: cargo_offer.transport_window_id,
+          amount_cents: cargo_offer.amount_cents,
+          currency: cargo_offer.currency
+        }
+      )
+    rescue StandardError => e
+      Rails.logger.error(
+        "[CargoOffersController#create] notification dispatch failed for " \
+        "CargoOffer##{cargo_offer.id}: #{e.class}: #{e.message}"
+      )
+    end
 
     def cargo_offer_params
       params.require(:cargo_offer).permit(:cargo_id, :transport_window_id, :estimated_km)

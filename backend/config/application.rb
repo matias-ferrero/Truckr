@@ -11,7 +11,7 @@ require "action_mailer/railtie"
 # require "action_mailbox/engine"
 require "action_text/engine"
 require "action_view/railtie"
-# require "action_cable/engine"
+require "action_cable/engine"
 # require "rails/test_unit/railtie"
 
 # Require the gems listed in Gemfile, including any gems
@@ -38,6 +38,12 @@ module Trukr
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # The Action Cable WebSocket carries its JWT in the query string
+    # (`wss://…/cable?token=<jwt>`) — browsers can't set custom headers on
+    # `new WebSocket(url)`, and ADR-011 auth is header/token-based, not
+    # cookie-based. Keep that token out of the logs (INF-FE-00005 / ADR-013).
+    config.filter_parameters << :token
 
     # User-facing copy is es-AR; English remains available as a fallback.
     config.i18n.available_locales = %i[es en]

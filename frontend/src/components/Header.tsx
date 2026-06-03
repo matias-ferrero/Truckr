@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { SessionWidget } from "./SessionWidget";
 import { useCurrentUser } from "../auth/useCurrentUser";
 const CarrierBadge = lazy(() => import("./CarrierBadge"));
+const NotificationsBadge = lazy(() => import("./notifications/NotificationsBadge"));
 // `offersAndShipmentsContent` used by secondary links; lazy badge imports its own copy.
 import { offersAndShipmentsContent } from "../pages/carrier/offersAndShipmentsContent";
 
@@ -10,6 +11,7 @@ export function Header() {
     const { me } = useCurrentUser();
 
     const isCarrier = me?.roles.includes("carrier") ?? false;
+    const isAuthenticated = me != null;
     const headerText = offersAndShipmentsContent.header;
 
     return (
@@ -30,6 +32,11 @@ export function Header() {
                                     </Suspense>
                                 </Link>
                             </>
+                        )}
+                        {isAuthenticated && (
+                            <Suspense fallback={null}>
+                                <NotificationsBadge />
+                            </Suspense>
                         )}
                         <SessionWidget />
                     </div>

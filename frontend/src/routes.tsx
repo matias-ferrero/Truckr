@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import LandingPage from "./App";
 import { AuthProvider } from "./auth/AuthContext";
+import { NotificationsProvider } from "./components/notifications/NotificationsProvider";
 import { Header } from "./components/Header";
 import RequireCarrier from "./auth/RequireCarrier";
 import RequireShipper from "./auth/RequireShipper";
@@ -108,6 +109,7 @@ export function AppRoutes() {
     return (
         <BrowserRouter>
             <AuthProvider>
+                <NotificationsProvider>
                 <Routes>
                     <Route path="/" element={<IndexRoute />} />
                     <Route
@@ -181,6 +183,7 @@ export function AppRoutes() {
                     />
                     <Route path="*" element={<IndexRoute />} />
                 </Routes>
+                </NotificationsProvider>
             </AuthProvider>
         </BrowserRouter>
     );

@@ -1,0 +1,229 @@
+/* Realtime notification primitives (INF-FE-00005).
+   All colours come from the design tokens in global.css — no raw hex,
+   no side-stripe borders, no gradient text. */
+
+/* ---- Toast stack (corner overlay) -------------------------------------- */
+
+.notifToastRegion {
+    position: fixed;
+    right: var(--space-5);
+    bottom: var(--space-5);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: min(360px, calc(100vw - 2 * var(--space-5)));
+    pointer-events: none;
+}
+
+.notifToast {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+}
+
+.notifToastBody {
+    flex: 1;
+    min-width: 0;
+}
+
+.notifToastTitle {
+    margin: 0;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    color: var(--ink);
+}
+
+.notifToastText {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+    line-height: 1.4;
+}
+
+.notifToastClose,
+.notifPanelItemClose {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    font-size: 1.1rem;
+    line-height: 1;
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.notifToastClose:hover,
+.notifPanelItemClose:hover {
+    background: color-mix(in oklab, var(--brand-primary) 18%, transparent);
+    color: var(--ink);
+}
+
+.notifToastClose:focus-visible,
+.notifPanelItemClose:focus-visible,
+.notifBadgeButton:focus-visible,
+.notifPanelClear:focus-visible {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 2px;
+}
+
+/* ---- Header bell + count ------------------------------------------------ */
+
+.notifBadge {
+    position: relative;
+    display: inline-flex;
+}
+
+.notifBadgeButton {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.notifBadgeButton:hover {
+    background: color-mix(in oklab, var(--brand-primary) 18%, transparent);
+}
+
+.notifBadgeIcon {
+    width: 20px;
+    height: 20px;
+}
+
+.notifBadgeCount {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--paper);
+    /* Darkened toward ink so the light count text clears WCAG AA contrast. */
+    background: color-mix(in oklab, var(--brand-error) 72%, var(--ink));
+    border-radius: 999px;
+}
+
+/* ---- History panel ----------------------------------------------------- */
+
+.notifPanel {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    right: 0;
+    z-index: 70;
+    width: min(340px, calc(100vw - 2 * var(--space-4)));
+    max-height: min(440px, 70vh);
+    overflow-y: auto;
+    padding: var(--space-3);
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+}
+
+.notifPanelHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-1) var(--space-2) var(--space-3);
+}
+
+.notifPanelTitle {
+    margin: 0;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    color: var(--ink);
+}
+
+.notifPanelClear {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--brand-primary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+}
+
+.notifPanelClear:hover {
+    background: color-mix(in oklab, var(--brand-primary) 14%, transparent);
+}
+
+.notifPanelEmpty {
+    margin: 0;
+    padding: var(--space-4) var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+    text-align: center;
+}
+
+.notifPanelList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.notifPanelItem {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+}
+
+.notifPanelItemBody {
+    flex: 1;
+    min-width: 0;
+}
+
+.notifPanelItemTitle {
+    margin: 0;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    color: var(--ink);
+}
+
+.notifPanelItemText {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-xs);
+    color: var(--ink-2);
+    line-height: 1.4;
+}
+
+@media (max-width: 480px) {
+    .notifToastRegion {
+        right: var(--space-3);
+        left: var(--space-3);
+        bottom: var(--space-3);
+        width: auto;
+    }
+}

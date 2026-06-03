@@ -26,11 +26,42 @@ module Marketplace
         end
       end
 
+      # Post-commit: a Solid Cable broadcast writes to the primary SQLite DB on
+      # its own connection, and SQLite permits a single writer — emitting while
+      # the transaction above still holds the write lock self-locks
+      # (SQLite3::BusyException). Run it after COMMIT so the lock is released.
+      enqueue_notifications
+
       cargo_offer
     end
 
     private
 
     attr_reader :cargo_offer, :at
+
+    def enqueue_notifications
+      CargoOfferMailer.notify_shipper_offer_rejected(cargo_offer).deliver_later
+      publish_notification(
+        user_id: cargo_offer.cargo.shipper.user_id,
+        type: Notifications::Type::CARGO_OFFER_REJECTED,
+        payload: {
+          cargo_offer_id: cargo_offer.id,
+          cargo_id: cargo_offer.cargo_id,
+          amount_cents: cargo_offer.amount_cents,
+          currency: cargo_offer.currency
+        }
+      )
+    end
+
+    # Best-effort live delivery (ADR-013): a broadcast failure must never bubble
+    # a 500 — the reject has already committed and the durable email is queued.
+    def publish_notification(user_id:, type:, payload:)
+      Notifications::Publisher.publish(user_id: user_id, type: type, payload: payload)
+    rescue StandardError => e
+      Rails.logger.error(
+        "[CargoOfferRejectionService] notification dispatch failed " \
+        "(type=#{type}, user_id=#{user_id}): #{e.class}: #{e.message}"
+      )
+    end
   end
 end

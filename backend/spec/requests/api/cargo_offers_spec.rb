@@ -154,6 +154,43 @@ RSpec.describe "Api::CargoOffers", type: :request do
         end
       end
 
+      # ── realtime notification (REQ-FE-00031) ──────────────────────────────────
+
+      response(201, "publishes a realtime cargo_offer_received to the window-owner carrier") do
+        let(:payload) { valid_payload }
+
+        before { allow(Notifications::Publisher).to receive(:publish) }
+
+        run_test! do |response|
+          offer = CargoOffer.find(JSON.parse(response.body)["id"])
+
+          expect(Notifications::Publisher).to have_received(:publish).with(
+            user_id: carrier_user.carrier.user_id,
+            type: :cargo_offer_received,
+            payload: hash_including(
+              cargo_offer_id:      offer.id,
+              cargo_id:            cargo.id,
+              transport_window_id: window.id,
+              amount_cents:        offer.amount_cents,
+              currency:            offer.currency
+            )
+          )
+        end
+      end
+
+      response(201, "creates the offer even when the notification broadcast fails (best-effort)") do
+        let(:payload) { valid_payload }
+
+        before { allow(Notifications::Publisher).to receive(:publish).and_raise(StandardError, "broadcast down") }
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+
+          expect(body["status"]).to eq("pending")
+          expect(CargoOffer.exists?(body["id"])).to be(true)
+        end
+      end
+
       # ── 401 unauthenticated ───────────────────────────────────────────────────
 
       response(401, "unauthenticated") do

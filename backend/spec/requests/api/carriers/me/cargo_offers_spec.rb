@@ -181,5 +181,49 @@ RSpec.describe "Api::Carriers::Me::CargoOffers", type: :request do
 
       expect(response).to have_http_status(:conflict)
     end
+
+    it "publishes a realtime cargo_offer_rejected to the offer's shipper (REQ-FE-00030)" do
+      allow(Notifications::Publisher).to receive(:publish)
+      window = create(:transport_window, vehicle: create(:vehicle, carrier: carrier), status: "pending_offer",
+           available_from: 2.days.from_now, available_to: 10.days.from_now)
+      offer = create(:cargo_offer, cargo: cargo, carrier: carrier, transport_window: window,
+                     status: "pending", expires_at: 2.days.from_now)
+
+      post "/api/carriers/me/cargo-offers/#{offer.id}/reject"
+
+      expect(response).to have_http_status(:ok)
+      expect(Notifications::Publisher).to have_received(:publish).with(
+        user_id: shipper_user.shipper.user_id,
+        type: :cargo_offer_rejected,
+        payload: hash_including(
+          cargo_offer_id: offer.id,
+          cargo_id: cargo.id,
+          amount_cents: offer.amount_cents,
+          currency: offer.currency
+        )
+      )
+    end
+
+    it "emits the broadcast after the transaction commits, not inside it (SQLite single-writer)" do
+      # Regression for the Solid Cable self-lock: with transactional fixtures the
+      # example holds exactly one transaction; emitting the broadcast inside the
+      # reject's own transaction would show a second (savepoint) level. The :test
+      # ActionCable adapter hides the real SQLite3::BusyException, so we assert
+      # transaction depth at publish time instead.
+      observed = []
+      allow(Notifications::Publisher).to receive(:publish) do
+        observed << ActiveRecord::Base.connection.open_transactions
+      end
+      window = create(:transport_window, vehicle: create(:vehicle, carrier: carrier), status: "pending_offer",
+           available_from: 2.days.from_now, available_to: 10.days.from_now)
+      offer = create(:cargo_offer, cargo: cargo, carrier: carrier, transport_window: window,
+                     status: "pending", expires_at: 2.days.from_now)
+
+      post "/api/carriers/me/cargo-offers/#{offer.id}/reject"
+
+      expect(response).to have_http_status(:ok)
+      expect(observed).not_to be_empty
+      expect(observed).to all(eq(1))
+    end
   end
 end

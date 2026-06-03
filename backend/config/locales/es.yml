@@ -3,6 +3,10 @@ es:
   cargo_offer_mailer:
     notify_carrier:
       subject: "Nueva oferta de carga recibida — Truckr®"
+    notify_shipper_offer_accepted:
+      subject: "Tu oferta de carga fue aceptada — Truckr®"
+    notify_shipper_offer_rejected:
+      subject: "Actualización de tu oferta de carga — Truckr®"
   errors:
     unauthorized: "Autenticación requerida"
     invalid_credentials: "Email o contraseña inválidos"

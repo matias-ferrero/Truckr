@@ -44,7 +44,10 @@ export default defineConfig({
             url: "http://localhost:3000/up",
             reuseExistingServer: !isCI,
             timeout: 180_000,
-            env: { RAILS_ENV: "test" },
+            // `async` so Action Cable actually delivers broadcasts over the live
+            // socket (the default `test` adapter only captures them in-memory
+            // for RSpec). See backend/config/cable.yml (INF-FE-00005).
+            env: { RAILS_ENV: "test", ACTION_CABLE_ADAPTER: "async" },
         },
     ],
 });

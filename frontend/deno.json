@@ -15,6 +15,7 @@
         "react": "npm:react@18.2.0",
         "react-dom": "npm:react-dom@18.2.0",
         "react-router-dom": "npm:react-router-dom@6.26.2",
+        "@rails/actioncable": "npm:@rails/actioncable@8.0.0",
         "react-dropzone": "npm:react-dropzone@14.2.10",
         "@googlemaps/js-api-loader": "npm:@googlemaps/js-api-loader@1.16.10",
         "clsx": "npm:clsx@2.1.1",

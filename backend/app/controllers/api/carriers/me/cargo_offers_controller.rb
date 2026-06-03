@@ -41,7 +41,6 @@ module Api
 
           Marketplace::CargoOfferRejectionService.new(cargo_offer: offer).call
 
-          CargoOfferMailer.notify_shipper_offer_rejected(offer).deliver_later
           render json: CarrierCargoOfferInboxResource.new(offer.reload).serialize, status: :ok
         rescue Marketplace::CargoOfferRejectionService::ConflictError
           render_error(code: "conflict", status: :conflict)

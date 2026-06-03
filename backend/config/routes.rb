@@ -23,6 +23,18 @@ Rails.application.routes.draw do
       delete "auth/logout", to: "sessions#destroy"
     end
 
+    # Dev-only debug endpoints (INF-FE-00005 / ADR-013). Gated by a route
+    # constraint, not a before_action: the routes literally do not exist in
+    # production (`rails routes` won't list them; 404 at the routing layer),
+    # so there's no inheritance/bypass risk. `/api/dev/*` is the canonical home
+    # for future debug endpoints — a single grep target.
+    constraints(->(_req) { Rails.env.development? || Rails.env.test? }) do
+      namespace :dev do
+        post "notifications/ping", to: "notifications#ping"
+        post "notifications/broadcast", to: "notifications#broadcast"
+      end
+    end
+
     # Shipper publishes a Cargo and manages its lifecycle (US27 / REQ-BE-00032).
     # `matches` returns Haversine-compatible TransportWindows for a Cargo
     # (US52 / REQ-BE-00039 — public marketplace endpoint retired in ADR-014).

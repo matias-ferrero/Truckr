@@ -2,7 +2,7 @@
 tag: INF-FE-00005
 title: Framework de notificaciones web en tiempo real (scaffold)
 priority: P2
-status: ready
+status: in_review
 created: '2026-05-22'
 source: manual
 author: Claude Code

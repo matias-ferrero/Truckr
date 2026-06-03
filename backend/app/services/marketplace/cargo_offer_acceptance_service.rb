@@ -37,9 +37,13 @@ module Marketplace
             accepted_at: at
           )
         end
-
-        enqueue_notifications(rejected_siblings)
       end
+
+      # Post-commit: a Solid Cable broadcast writes to the primary SQLite DB on
+      # its own connection, and SQLite permits a single writer — emitting while
+      # the transaction above still holds the write lock self-locks
+      # (SQLite3::BusyException). Run it after COMMIT so the lock is released.
+      enqueue_notifications(rejected_siblings, shipment)
 
       shipment
     end
@@ -60,7 +64,7 @@ module Marketplace
       cargo_offer.cargo.cargo_offers
                 .where(status: "pending")
                 .where.not(id: cargo_offer.id)
-                .includes(:transport_window)
+                .includes(:transport_window, cargo: { shipper: :user })
     end
 
     def reject_sibling!(sibling)
@@ -69,14 +73,47 @@ module Marketplace
       sibling.transport_window.update!(status: "open")
     end
 
-    def enqueue_notifications(rejected_siblings)
+    def enqueue_notifications(rejected_siblings, shipment)
       CargoOfferMailer.notify_shipper_offer_accepted(cargo_offer).deliver_later
+      publish_notification(
+        user_id: cargo_offer.cargo.shipper.user_id,
+        type: Notifications::Type::CARGO_OFFER_ACCEPTED,
+        payload: offer_payload(cargo_offer, shipment_id: shipment&.id)
+      )
 
       rejected_siblings.each do |sibling|
         next unless sibling.status == "rejected"
 
         CargoOfferMailer.notify_shipper_offer_rejected(sibling).deliver_later
+        publish_notification(
+          user_id: sibling.cargo.shipper.user_id,
+          type: Notifications::Type::CARGO_OFFER_REJECTED,
+          payload: offer_payload(sibling)
+        )
       end
+    end
+
+    # Best-effort live delivery (ADR-013): a single broadcast failure must never
+    # abort the post-commit fan-out (the siblings still need their durable email)
+    # nor bubble a 500 — the accept has already committed.
+    def publish_notification(user_id:, type:, payload:)
+      Notifications::Publisher.publish(user_id: user_id, type: type, payload: payload)
+    rescue StandardError => e
+      Rails.logger.error(
+        "[CargoOfferAcceptanceService] notification dispatch failed " \
+        "(type=#{type}, user_id=#{user_id}): #{e.class}: #{e.message}"
+      )
+    end
+
+    def offer_payload(offer, shipment_id: nil)
+      payload = {
+        cargo_offer_id: offer.id,
+        cargo_id: offer.cargo_id,
+        amount_cents: offer.amount_cents,
+        currency: offer.currency
+      }
+      payload[:shipment_id] = shipment_id if shipment_id
+      payload
     end
   end
 end

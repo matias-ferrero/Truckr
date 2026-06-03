@@ -8,6 +8,7 @@ import "./styles/auth.css";
 import "./styles/carrier.css";
 import "./styles/shipper.css";
 import "./styles/public.css";
+import "./styles/notifications.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>

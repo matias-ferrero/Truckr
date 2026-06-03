@@ -1,0 +1,31 @@
+# Action Cable adapter per environment (INF-FE-00005 / ADR-013).
+#
+# dev + prod use Solid Cable on the **primary** SQLite database — no separate
+# cable DB, no Redis, consistent with the SQLite-forever policy and the Kamal
+# single-container deploy. The `solid_cable_messages` table is created by the
+# CreateSolidCableMessages migration on the primary schema.
+#
+# test uses Rails' built-in in-memory `test` adapter, which `ActionCable::TestHelper`
+# (`have_broadcasted_to`) relies on to capture broadcasts for inspection.
+development:
+  adapter: solid_cable
+  connects_to:
+    database:
+      writing: primary
+  polling_interval: 0.1.seconds
+  message_retention: 1.day
+
+# RSpec relies on the in-memory `test` adapter for `have_broadcasted_to`, but
+# that adapter never delivers over a live socket. The Playwright backend (also
+# RAILS_ENV=test) sets ACTION_CABLE_ADAPTER=async so a booted server actually
+# pushes broadcasts to connected browsers for the notifications e2e.
+test:
+  adapter: <%= ENV.fetch("ACTION_CABLE_ADAPTER", "test") %>
+
+production:
+  adapter: solid_cable
+  connects_to:
+    database:
+      writing: primary
+  polling_interval: 0.1.seconds
+  message_retention: 1.day

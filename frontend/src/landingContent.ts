@@ -59,6 +59,17 @@ export interface LandingData {
         error: string;
         neutral: string;
     };
+    // Realtime in-app notification copy (INF-FE-00005). Until a real i18n
+    // library lands, this bundle is the prototype-stage i18n source (CLAUDE.md
+    // carve-out). Each notification type the backend can emit gets a typed
+    // entry here; the frontend registry reads from it. New types are added by
+    // the feature PR that introduces them.
+    notifications: {
+        ping: { title: string; body: string };
+        cargo_offer_received: { title: string; body: string };
+        cargo_offer_accepted: { title: string; body: string };
+        cargo_offer_rejected: { title: string; body: string };
+    };
 }
 
 export const landingContent: LandingData = {
@@ -175,5 +186,23 @@ export const landingContent: LandingData = {
         tertiary: "#9ca0a8",
         error: "#e26464",
         neutral: "#ffffff",
+    },
+    notifications: {
+        ping: {
+            title: "Notificaciones activas",
+            body: "Recibís avisos en tiempo real mientras tu sesión está abierta.",
+        },
+        cargo_offer_received: {
+            title: "Nueva oferta recibida",
+            body: "Un expedidor te envió una oferta de carga. Revisala en tu bandeja para aceptarla o rechazarla.",
+        },
+        cargo_offer_accepted: {
+            title: "Tu oferta fue aceptada",
+            body: "El transportista aceptó tu oferta de carga. Ya podés continuar con el pago.",
+        },
+        cargo_offer_rejected: {
+            title: "Tu oferta fue rechazada",
+            body: "El transportista no aceptó tu oferta de carga. Podés enviar una nueva oferta.",
+        },
     },
 };
