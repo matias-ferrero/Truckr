@@ -112,6 +112,10 @@ backend-migrate:
 backend-reset:
     cd backend && bin/rails db:reset
 
+# Seed dev fixtures (idempotent — includes 12+ shipper reviews on carrier #1 / US26)
+backend-seed:
+    cd backend && bin/rails db:seed
+
 # Run the backend test suite (RSpec)
 backend-test:
     cd backend && bundle exec rspec

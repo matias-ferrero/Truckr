@@ -1,6 +1,7 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CarrierDetail as CarrierDetailDto, getCarrier } from "../../api/carriers";
+import { listCarrierReviews, type Review, type ReviewListMeta } from "../../api/reviews";
 import { ApiError } from "../../api";
 import { publicContent } from "./publicContent";
 import { formatRoute } from "../../lib/format-place";
@@ -64,7 +65,7 @@ export default function CarrierDetail() {
 
     if (state.status === "loading") {
         return (
-            <main className="page publicMain" id="main" aria-busy="true">
+            <main className="page publicMain carrierDetailMain" id="main" aria-busy="true">
                 <div className="container">
                     <div className="carrierDetailSkeleton" aria-label={t.loadingLabel}>
                         <div className="skeletonBlock skeletonHero" />
@@ -78,7 +79,7 @@ export default function CarrierDetail() {
 
     if (state.status === "notFound") {
         return (
-            <main className="page publicMain" id="main">
+            <main className="page publicMain carrierDetailMain" id="main">
                 <div className="container">
                     <div className="emptyState" role="status">
                         <h1 className="sectionTitle">{t.notFoundTitle}</h1>
@@ -97,7 +98,7 @@ export default function CarrierDetail() {
 
     if (state.status === "error") {
         return (
-            <main className="page publicMain" id="main">
+            <main className="page publicMain carrierDetailMain" id="main">
                 <div className="container">
                     <div className="errorPanel" role="alert">
                         <p>{t.loadError}: {state.message}</p>
@@ -115,11 +116,12 @@ export default function CarrierDetail() {
     }
 
     const { carrier } = state;
-    const ratingNum = Number(carrier.rating_avg);
+    const ratingNum = carrier.rating_avg !== null ? Number(carrier.rating_avg) : 0;
     const isOwner = myCarrierId === carrier.id;
+    const isAuthenticated = Boolean(auth?.me);
 
     return (
-        <main className="page publicMain" id="main">
+        <main className="page publicMain carrierDetailMain" id="main">
             <div className="container">
                 <header className="carrierHero" aria-labelledby="carrier-name">
                     <div className="carrierHeroBody">
@@ -136,9 +138,16 @@ export default function CarrierDetail() {
                         )}
                         <div className="carrierHeroMeta">
                             <Stars rating={ratingNum} />
-                            <span className="carrierHeroRating">
-                                {t.ratingLabel(carrier.rating_avg, carrier.reviews_count)}
-                            </span>
+                            {carrier.reviews_count > 0 && carrier.rating_avg != null ? (
+                                <span className="carrierHeroRating">
+                                    <span className="carrierHeroRatingValue">{t.ratingValue(carrier.rating_avg)}</span>
+                                    <span className="carrierHeroRatingCount">{t.ratingCount(carrier.reviews_count)}</span>
+                                </span>
+                            ) : (
+                                <span className="carrierHeroRating carrierHeroRatingEmpty">
+                                    {t.ratingLabel(carrier.rating_avg, carrier.reviews_count)}
+                                </span>
+                            )}
                             <span aria-hidden="true">·</span>
                             <span>{t.completedShipments(carrier.completed_shipments)}</span>
                             {carrier.base_city && (
@@ -170,12 +179,10 @@ export default function CarrierDetail() {
 
                 <VehiclesSection vehicles={carrier.vehicles} />
 
-                <section className="carrierSection" aria-labelledby="carrier-reviews-title">
-                    <h2 id="carrier-reviews-title" className="sectionSubtitle">
-                        {t.reviewsTitle}
-                    </h2>
-                    <p className="carrierMutedBlock">{t.reviewsPlaceholder}</p>
-                </section>
+                <CarrierReviewsSection
+                    carrierId={carrierId}
+                    isAuthenticated={isAuthenticated}
+                />
             </div>
         </main>
     );
@@ -186,7 +193,7 @@ export default function CarrierDetail() {
 function Stars({ rating }: { rating: number }) {
     // Floor to whole stars; we don't render half stars to keep the SVG simple.
     const rounded = Math.max(0, Math.min(5, Math.round(rating)));
-    const ariaLabel = t.starsLabel(rating.toFixed(2));
+    const ariaLabel = t.starsLabel(rating.toFixed(1));
     return (
         <span className="starRow" role="img" aria-label={ariaLabel}>
             {[0, 1, 2, 3, 4].map((i) => (
@@ -241,6 +248,112 @@ function ZonesSection({
                         ))}
                     </ul>
                 )}
+        </section>
+    );
+}
+
+type ReviewsState =
+    | { status: "loading" }
+    | { status: "ready"; reviews: Review[]; meta: ReviewListMeta }
+    | { status: "error"; message: string };
+
+function CarrierReviewsSection({
+    carrierId,
+    isAuthenticated,
+}: {
+    carrierId: number;
+    isAuthenticated: boolean;
+}) {
+    const [state, setState] = useState<ReviewsState>({ status: "loading" });
+    const [loadingMore, setLoadingMore] = useState(false);
+
+    useEffect(() => {
+        if (!isAuthenticated) return;
+        const ctrl = new AbortController();
+        setState({ status: "loading" });
+        listCarrierReviews(carrierId, 1, { signal: ctrl.signal })
+            .then(({ items, meta }) => setState({ status: "ready", reviews: items, meta }))
+            .catch((err: unknown) => {
+                if ((err as { name?: string }).name === "AbortError") return;
+                setState({
+                    status: "error",
+                    message: err instanceof Error ? err.message : String(err),
+                });
+            });
+        return () => ctrl.abort();
+    }, [carrierId, isAuthenticated]);
+
+    const loadMore = useCallback(async () => {
+        if (state.status !== "ready" || loadingMore) return;
+        setLoadingMore(true);
+        try {
+            const next = state.meta.page + 1;
+            const { items, meta } = await listCarrierReviews(carrierId, next);
+            setState({ status: "ready", reviews: [...state.reviews, ...items], meta });
+        } catch (err) {
+            setState({
+                status: "error",
+                message: err instanceof Error ? err.message : String(err),
+            });
+        } finally {
+            setLoadingMore(false);
+        }
+    }, [carrierId, state, loadingMore]);
+
+    return (
+        <section className="carrierSection" aria-labelledby="carrier-reviews-title">
+            <h2 id="carrier-reviews-title" className="sectionSubtitle">
+                {t.reviewsTitle}
+            </h2>
+
+            {!isAuthenticated && (
+                <p className="carrierMutedBlock">{t.signInHint}</p>
+            )}
+
+            {isAuthenticated && state.status === "loading" && (
+                <p className="carrierMutedBlock" aria-busy="true">{t.loadingMore}</p>
+            )}
+
+            {isAuthenticated && state.status === "error" && (
+                <p className="errorPanel" role="alert">{t.loadError}: {state.message}</p>
+            )}
+
+            {isAuthenticated && state.status === "ready" && state.reviews.length === 0 && (
+                <p className="carrierMutedBlock" role="status">{t.empty}</p>
+            )}
+
+            {isAuthenticated && state.status === "ready" && state.reviews.length > 0 && (
+                <>
+                    <ul className="shipperReviewList">
+                        {state.reviews.map((r) => (
+                            <li key={r.id} className="shipperReviewCard">
+                                <div className="shipperReviewCardHead">
+                                    <Stars rating={r.rating} />
+                                    <span className="shipperReviewRating" aria-hidden="true">
+                                        {r.rating}/5
+                                    </span>
+                                    <time className="shipperReviewDate" dateTime={r.created_at}>
+                                        {t.reviewDate(r.created_at)}
+                                    </time>
+                                </div>
+                                {r.body && <p className="shipperReviewBody">{r.body}</p>}
+                            </li>
+                        ))}
+                    </ul>
+                    {state.meta.page < state.meta.totalPages && (
+                        <div className="shipperReviewsLoadMore">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={loadMore}
+                                disabled={loadingMore}
+                            >
+                                {loadingMore ? t.loadingMore : t.loadMore}
+                            </Button>
+                        </div>
+                    )}
+                </>
+            )}
         </section>
     );
 }

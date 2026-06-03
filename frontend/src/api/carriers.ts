@@ -31,7 +31,7 @@ export type CarrierDetail = {
     base_city: string | null;
     province: string | null;
     description: string | null;
-    rating_avg: string;
+    rating_avg: string | null;
     reviews_count: number;
     completed_shipments: number;
     vehicles: Vehicle[];

@@ -7,6 +7,9 @@ class CarrierPolicy < ApplicationPolicy
   def index? = true
   def show? = true
 
+  # US26 — any signed-in user may read shipper-authored reviews on a profile.
+  def reviews_index? = user.present?
+
   class Scope < ApplicationPolicy::Scope
     def resolve = scope.all
   end

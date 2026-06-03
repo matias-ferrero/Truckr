@@ -7,5 +7,15 @@
 class CarrierResource
   include Alba::Resource
   attributes :id, :legal_name, :tax_id, :base_city, :province,
-             :rating_avg, :reviews_count, :completed_shipments
+             :completed_shipments
+
+  # Computed from shipper-authored reviews (US26), not the denormalised columns.
+  attribute :rating_avg do |carrier|
+    avg = carrier.shipper_rating_avg
+    avg.nil? ? nil : avg.to_s
+  end
+
+  attribute :reviews_count do |carrier|
+    carrier.shipper_reviews_count
+  end
 end

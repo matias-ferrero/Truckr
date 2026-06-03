@@ -1141,6 +1141,151 @@ if defined?(Carrier) && defined?(Shipper) && Carrier.any? && Shipper.any?
   end
 end
 
+# US26 — shipper-authored reviews on carrier #1 (REQ-BE-00043).
+# Thirteen delivered shipments so GET /api/carriers/1/reviews paginates (10 + 3).
+# Review 13 (idx 12, oldest) has body: nil — covers the body-less card TC.
+# Idempotent: keyed by cargo_description; skips when count is already ≥ 13.
+if defined?(Review) && defined?(Carrier) && Carrier.exists?(id: 1) &&
+   defined?(Shipper) && Shipper.any?
+  us26_carrier = Carrier.find(1)
+  us26_shipper = Shipper.first
+  us26_vehicle = us26_carrier.vehicles.first
+
+  if us26_vehicle && us26_shipper
+    US26_TARGET_REVIEWS = 13 unless defined?(US26_TARGET_REVIEWS)
+    US26_REVIEW_BODIES = [
+      "Entrega puntual y comunicación clara durante todo el viaje.",
+      "Cuidó la carga en rutas difíciles; volvería a contratar.",
+      "Buen trato y documentación en orden al retirar.",
+      "Llegó dentro de la ventana acordada, sin sorpresas.",
+      "Vehículo en buen estado y chofer muy profesional.",
+      "Resolvió un desvío por clima sin demoras innecesarias.",
+      "Excelente seguimiento; siempre supimos dónde estaba el camión.",
+      "Embalaje respetado y descarga sin inconvenientes.",
+      "Precio acorde al servicio; experiencia recomendable.",
+      "Primera vez con este transportista y quedamos conformes.",
+      "Cumplió con el peso y volumen pactados sin reclamos.",
+      "Muy atento a los horarios de carga en planta.",
+      nil  # TC-06: body-less review — verifies card renders without body paragraph
+    ].freeze unless defined?(US26_REVIEW_BODIES)
+
+    us26_existing = Review.shipper_authored.where(carrier_id: us26_carrier.id).count
+    us26_needed   = US26_TARGET_REVIEWS - us26_existing
+    if us26_needed.positive?
+      us26_needed.times do |idx|
+        idx += us26_existing
+        n = idx + 1
+        rating = [ 3, 4, 4, 5, 5, 4, 5, 5, 4, 5, 4, 5, 5 ][idx]
+        days_ago = idx + 1
+        fx = {
+          cargo_desc: "US26 — reseña expedidor #{n} (carrier ##{us26_carrier.id})",
+          tw_from:  -(40 + idx),
+          tw_to:    -(32 + idx),
+          origin:   "La Plata",
+          origin_admin: "Buenos Aires",
+          dest:     "Mar del Plata",
+          dest_admin: "Buenos Aires",
+          origin_lat:  -34.921450,
+          origin_lng:  -57.954530,
+          dest_lat:    -38.005477,
+          dest_lng:    -57.542610,
+          rating: rating,
+          body: US26_REVIEW_BODIES[idx],
+          days_ago: days_ago
+        }
+
+        tw = TransportWindow.find_or_create_by!(
+          vehicle:              us26_vehicle,
+          origin_locality:      "#{fx[:origin]} #{n}",
+          destination_locality: "#{fx[:dest]} #{n}"
+        ) do |w|
+          w.origin_address         = "Calle #{n} 100, #{fx[:origin]}"
+          w.origin_admin_area      = fx[:origin_admin]
+          w.destination_address    = "Calle #{n} 200, #{fx[:dest]}"
+          w.destination_admin_area = fx[:dest_admin]
+          w.price_per_km           = 1_400.0
+          w.max_km                 = 800
+          w.available_from         = fx[:tw_from].days.from_now
+          w.available_to           = fx[:tw_to].days.from_now
+          w.active                 = false
+          w.status                 = "reserved"
+          w.origin_lat             = fx[:origin_lat]
+          w.origin_lng             = fx[:origin_lng]
+          w.destination_lat        = fx[:dest_lat]
+          w.destination_lng        = fx[:dest_lng]
+          w.pickup_radius_km       = 40
+          w.dropoff_radius_km      = 40
+        end
+
+        cargo = Cargo.find_or_create_by!(
+          shipper:           us26_shipper,
+          cargo_description: fx[:cargo_desc]
+        ) do |c|
+          c.pickup_address       = "Calle #{n} 100, #{fx[:origin]}"
+          c.pickup_locality      = fx[:origin]
+          c.pickup_admin_area    = fx[:origin_admin]
+          c.delivery_address     = "Calle #{n} 200, #{fx[:dest]}"
+          c.delivery_locality    = fx[:dest]
+          c.delivery_admin_area  = fx[:dest_admin]
+          c.pickup_lat           = fx[:origin_lat]
+          c.pickup_lng           = fx[:origin_lng]
+          c.delivery_lat         = fx[:dest_lat]
+          c.delivery_lng         = fx[:dest_lng]
+          c.pickup_window_start  = (fx[:tw_from] - 2).days.from_now
+          c.pickup_window_end    = (fx[:tw_to]   + 2).days.from_now
+          c.weight_kg            = 1_800.0
+          c.volume_cm3           = 8_000_000
+          c.declared_value_cents = 25_000_000
+        end
+
+        offer = CargoOffer.find_or_create_by!(
+          cargo: cargo, carrier: us26_carrier, transport_window: tw
+        ) do |co|
+          co.amount_cents = 9_500_000
+          co.currency     = "ARS"
+          co.status       = "accepted"
+          co.accepted_at  = (fx[:tw_from].abs + 5).days.ago
+          co.expires_at   = (fx[:tw_from].abs - 2).days.ago
+        end
+
+        shipment = Shipment.with_discarded.find_by(cargo_offer_id: offer.id)
+        unless shipment
+          offset = fx[:tw_from].abs
+          shipment = Shipment.create!(
+            cargo_offer: offer,
+            status:      "accepted",
+            accepted_at: (offset + 10).days.ago
+          )
+
+          Payment.find_or_create_by!(shipment: shipment) do |p|
+            p.amount_cents = offer.amount_cents
+            p.currency     = offer.currency
+            p.provider     = "fake"
+            p.state        = "escrowed"
+            p.escrowed_at  = (offset + 8).days.ago
+          end
+
+          shipment.update!(picked_up_at: (offset + 6).days.ago, status: "in_transit")
+          shipment.update!(delivered_at: (offset + 4).days.ago, status: "delivered")
+        end
+
+        next if Review.shipper_authored.exists?(shipment: shipment)
+
+        Review.create!(
+          shipment:    shipment,
+          carrier:     us26_carrier,
+          shipper:     us26_shipper,
+          rating:      fx[:rating],
+          body:        fx[:body],
+          authored_by: :shipper_authored,
+          created_at:  fx[:days_ago].days.ago,
+          updated_at:  fx[:days_ago].days.ago
+        )
+      end
+    end
+  end
+end
+
 # US54 review fixtures (REQ-BE-00045) ─────────────────────────────────────────
 #
 # Ten additional carrier-authored reviews on shipper1@truckr.test, each tied to

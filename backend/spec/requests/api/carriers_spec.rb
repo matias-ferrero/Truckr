@@ -19,13 +19,12 @@ RSpec.describe "Api::Carriers (public)", type: :request do
 
         before do
           carrier.update!(
-            legal_name:   "Transportes Andinos SRL",
-            base_city:    "Mendoza",
-            province:     "Mendoza",
-            description:  "Flota especializada en cargas frágiles.",
-            rating_avg:   4.5,
-            reviews_count: 12
+            legal_name:  "Transportes Andinos SRL",
+            base_city:   "Mendoza",
+            province:    "Mendoza",
+            description: "Flota especializada en cargas frágiles."
           )
+          12.times { create(:review, :shipper_authored, carrier: carrier, rating: 5) }
           vehicle = create(:vehicle, carrier: carrier)
           create(:transport_window, vehicle: vehicle, active: true,
                                     available_from: 1.day.from_now,
@@ -40,7 +39,7 @@ RSpec.describe "Api::Carriers (public)", type: :request do
           expect(body["id"]).to eq(carrier.id)
           expect(body["legal_name"]).to eq("Transportes Andinos SRL")
           expect(body["description"]).to eq("Flota especializada en cargas frágiles.")
-          expect(body["rating_avg"]).to eq("4.5")
+          expect(body["rating_avg"]).to eq("5.0")
           expect(body["reviews_count"]).to eq(12)
           expect(body["vehicles"].size).to eq(1)
           expect(body["vehicles"].first.keys).to include("plate", "photos", "description")

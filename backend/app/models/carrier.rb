@@ -7,6 +7,7 @@ class Carrier < ApplicationRecord
   has_many   :vehicles, dependent: :destroy
   has_many   :transport_windows, through: :vehicles
   has_many   :cargo_offers, dependent: :restrict_with_error, inverse_of: :carrier
+  has_many   :reviews, dependent: :restrict_with_error
 
   validates :user_id, uniqueness: true
   validates :tax_id,  uniqueness: { allow_blank: true }
@@ -22,6 +23,19 @@ class Carrier < ApplicationRecord
   # Avoids hitting `vehicles` twice by going through the join association.
   def active_transport_windows
     TransportWindow.active.joins(:vehicle).where(vehicles: { carrier_id: id })
+  end
+
+  # Shipper → Carrier reviews (US26). Aggregates ignore carrier-authored rows.
+  def shipper_authored_reviews
+    reviews.shipper_authored
+  end
+
+  def shipper_rating_avg
+    shipper_authored_reviews.average(:rating)&.round(1)
+  end
+
+  def shipper_reviews_count
+    shipper_authored_reviews.count
   end
 
   def self.ransackable_attributes(_auth_object = nil)

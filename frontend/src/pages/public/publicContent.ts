@@ -11,10 +11,12 @@ export const publicContent = {
         notFoundLead: "El perfil que buscás no existe o ya no está disponible.",
         backToSearch: "Volver a la búsqueda",
         editProfile: "Editar mi perfil",
-        ratingLabel: (avg: string, count: number) =>
+        ratingLabel: (avg: string | null, count: number) =>
             count === 0
                 ? "Sin reseñas todavía"
-                : `${avg} sobre 5 · ${count} reseña${count === 1 ? "" : "s"}`,
+                : `${avg ?? ""} · ${count} reseña${count === 1 ? "" : "s"}`,
+        ratingValue: (avg: string) => `${avg.replace(".", ",")}/5`,
+        ratingCount: (count: number) => `${count} reseña${count === 1 ? "" : "s"}`,
         starsLabel: (avg: string) => `Promedio de ${avg} sobre 5 estrellas`,
         completedShipments: (n: number) =>
             `${n} viaje${n === 1 ? "" : "s"} completado${n === 1 ? "" : "s"}`,
@@ -35,11 +37,19 @@ export const publicContent = {
         vehicleGps: "Trackeo GPS",
         vehicleGpsYes: "Sí",
         vehicleGpsNo: "No",
-        reviewsTitle: "Reseñas",
-        reviewsPlaceholder:
-            "Próximamente vas a poder leer las reseñas de otros expedidores.",
         offerCta: "Ofertar",
         offerCtaAriaLabel: (zone: string) => `Crear oferta para la ruta ${zone}`,
+        reviewsTitle: "Reseñas",
+        signInHint: "Iniciá sesión para leer las reseñas.",
+        empty: "Todavía no hay reseñas de expedidores para este transportista.",
+        reviewDate: (iso: string) =>
+            new Date(iso).toLocaleDateString("es-AR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            }),
+        loadMore: "Ver más reseñas",
+        loadingMore: "Cargando…",
     },
     shipperDetail: {
         loadingLabel: "Cargando perfil del expedidor",

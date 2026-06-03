@@ -651,3 +651,61 @@
 .shipperReviewsLoadMore {
     margin-top: var(--space-5);
 }
+
+/* ── Carrier detail colorization (US26) ──────────────────────────────────────
+   Scoped to .carrierDetailMain so the shipper profile keeps its cream voice.
+   Strategy: committed sky-blue as dominant surface (~70%), gold reserved for
+   the hero border, stars, and rating-value text (~15%). */
+
+/* Hero card: blue surface, gold border as the carrier's identity stamp.
+   Radial gold bleed in the bottom-right corner adds warmth without taking over. */
+.carrierDetailMain .carrierHero {
+    background:
+        radial-gradient(
+            ellipse 55% 75% at 108% 118%,
+            color-mix(in oklab, var(--brand-secondary) 24%, transparent) 0%,
+            transparent 65%
+        ),
+        var(--surface-cool);
+    border-color: color-mix(in oklab, var(--brand-secondary) 60%, var(--border-sky));
+    box-shadow: 0 12px 36px color-mix(in oklab, var(--brand-primary) 24%, transparent);
+}
+
+/* Section headings: deep cerulean so each panel reads as a distinct sky stamp. */
+.carrierDetailMain .sectionSubtitle {
+    color: var(--chip-ink-primary);
+}
+
+/* Section panels: lightly sky-tinted instead of flat white. */
+.carrierDetailMain .carrierSection {
+    background: color-mix(in oklab, var(--brand-neutral) 93%, var(--brand-primary));
+}
+
+/* Zone rows: deepen the sky tint one step. */
+.carrierDetailMain .zoneItem {
+    background: var(--surface-cool);
+}
+
+/* Review section: blue border/shadow overrides the shared cream defaults. */
+.carrierDetailMain .shipperReviews {
+    border-color: var(--border-sky);
+    box-shadow: 0 4px 16px color-mix(in oklab, var(--brand-primary) 12%, transparent);
+}
+
+/* Review cards: sky-tinted background + blue border. */
+.carrierDetailMain .shipperReviewCard {
+    background: color-mix(in oklab, var(--brand-neutral) 91%, var(--brand-primary));
+    border-color: var(--border-sky);
+}
+
+.carrierDetailMain .shipperReviewCard:hover {
+    box-shadow: 0 4px 16px color-mix(in oklab, var(--brand-primary) 20%, transparent);
+}
+
+/* Gold accents: chip-ink-warning (oklch 36% 0.14 80) was tuned for cream backgrounds
+   and reads brownish on sky blue. Bump lightness + chroma so it reads as clearly
+   golden against the new blue surfaces — hero rating value AND review card rating/5. */
+.carrierDetailMain .carrierHeroRatingValue,
+.carrierDetailMain .shipperReviewRating {
+    color: oklch(46% 0.21 82);
+}

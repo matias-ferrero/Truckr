@@ -67,8 +67,12 @@ test.describe("Shipper — shipment detail (REQ-FE-00024 / US39)", () => {
         await page.goto("/shipper/shipments");
         await expect(page.getByRole("heading", { name: "Mis Envíos" })).toBeVisible();
 
-        // Find a delivered-state link (aria-label contains "Entregado")
-        const deliveredLink = page.getByRole("link", { name: /entregado/i }).first();
+        // US30 seed A ("Aceite de girasol") — delivered, no shipper_review yet.
+        // Do not use the first "Entregado" row: US26 seeds attach reviews to many
+        // other delivered shipments and the form is hidden once reviewed.
+        const deliveredLink = page.getByRole("link", {
+            name: /villa maría.*san rafael.*entregado/i,
+        }).first();
         await expect(deliveredLink).toBeVisible();
         await deliveredLink.click();
 
