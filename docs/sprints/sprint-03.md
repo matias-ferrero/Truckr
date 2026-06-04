@@ -3,7 +3,7 @@ sprint: 3
 phase: development
 status: closed
 window: 2026-05-21 → 2026-05-27
-in_progress_user_stories: [US32, US39, US35]
+in_progress_user_stories: [US32, US39]
 completed_user_stories: [US4, US7, US8, US10, US12, US17, US27, US46, US47, US52]
 ---
 

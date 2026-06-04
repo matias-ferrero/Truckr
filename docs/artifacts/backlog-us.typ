@@ -43,8 +43,6 @@
 
 #include "backlog-us/US012.typ"
 
-#include "backlog-us/US013.typ"
-
 #include "backlog-us/US014.typ"
 
 #include "backlog-us/US015.typ"
@@ -115,6 +113,10 @@
 
 #include "backlog-us/US058.typ"
 
+#include "backlog-us/US059.typ"
+
+#include "backlog-us/US060.typ"
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Post MVP — Release 2
 // ═══════════════════════════════════════════════════════════════════════════
@@ -128,6 +130,8 @@
 #line(length: 100%, stroke: 1.5pt + rgb("#6AA84F"))
 
 #include "backlog-us/US011.typ"
+
+#include "backlog-us/US013.typ"
 
 #include "backlog-us/US028.typ"
 

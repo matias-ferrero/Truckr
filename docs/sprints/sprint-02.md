@@ -4,7 +4,7 @@ phase: development
 status: closed
 window: 2026-05-14 → 2026-05-20
 in_progress_user_stories: [US7, US27, US46, US47]
-completed_user_stories: [US3, US6, US9, US31, US33, US34, US35, US36, US37, US38, US40, US41, US42, US43, US44, US45, US48]
+completed_user_stories: [US3, US6, US9, US31, US33, US34, US35, US36, US37, US38, US40, US41, US42, US43, US44, US45]
 ---
 
 ## Retro
@@ -37,7 +37,6 @@ completed_user_stories: [US3, US6, US9, US31, US33, US34, US35, US36, US37, US38
 
 - US44 — Administrar cargas — completada.
 - US45 — Filtrar mis cargas — completada.
-- US48 — Búsqueda de ventana de transporte — completada.
 - US7 — Ofertar retiro de una carga — sin completar (queda en progreso).
 - US27 — Publicar carga — sin completar (queda en progreso).
 - US46 — Ver detalles de una carga — sin completar (queda en progreso).
