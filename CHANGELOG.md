@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.2.3](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.2.2...v0.2.3) (2026-06-04)
+
+
+### Features
+
+* **cargo:** back link from carrier profile to cargo matches (Shipper) ([#296](https://github.com/tcorzo/fiuba-gestion-tp/issues/296)) ([fa3d1a2](https://github.com/tcorzo/fiuba-gestion-tp/commit/fa3d1a29d83bda6285b4c5992036c37ae3f9ab7a))
+* **fulfilment:** geocoded addresses, pickup radius, and Haversine matching (US48 + US49 + US50) ([#264](https://github.com/tcorzo/fiuba-gestion-tp/issues/264)) ([1eb6387](https://github.com/tcorzo/fiuba-gestion-tp/commit/1eb6387040cae759b0eb715aa3b951a0939b768d))
+* **fulfilment:** shipment detail page with role-aware actions (US39) ([#287](https://github.com/tcorzo/fiuba-gestion-tp/issues/287)) ([e7e58a3](https://github.com/tcorzo/fiuba-gestion-tp/commit/e7e58a3859918398a56136b46497bf062e8e719c))
+* **marketplace:** us7 — cargo offer lifecycle + address-driven place utilities (fullstack) ([#308](https://github.com/tcorzo/fiuba-gestion-tp/issues/308)) ([56e5a30](https://github.com/tcorzo/fiuba-gestion-tp/commit/56e5a305e07a1b8a56a11f98888dae4fc1198bca))
+* **notifications:** web realtime framework scaffold (Action Cable + Solid Cable) ([#303](https://github.com/tcorzo/fiuba-gestion-tp/issues/303)) ([9d8adf2](https://github.com/tcorzo/fiuba-gestion-tp/commit/9d8adf283b1d30466438ef15dac6fa9b3fcba876))
+* **reviews:** shipper review display + avg rating in profile (fullstack) ([#299](https://github.com/tcorzo/fiuba-gestion-tp/issues/299)) ([1c9e419](https://github.com/tcorzo/fiuba-gestion-tp/commit/1c9e419c48023d172d6b62fa28555af93dde6b2a))
+* **reviews:** us20 — Shipper creates Carrier review (fullstack) ([#300](https://github.com/tcorzo/fiuba-gestion-tp/issues/300)) ([19f72c0](https://github.com/tcorzo/fiuba-gestion-tp/commit/19f72c01a5fedc6e699ec64e5d0d8d4437905916))
+* **reviews:** us26 — Carrier review display + avg rating in profile (fullstack) ([#302](https://github.com/tcorzo/fiuba-gestion-tp/issues/302)) ([cb430fc](https://github.com/tcorzo/fiuba-gestion-tp/commit/cb430fcf855b9a905361ce31773db4c912f0b2a6))
+* **reviews:** us30 carrier→shipper review on delivered shipment ([#286](https://github.com/tcorzo/fiuba-gestion-tp/issues/286)) ([25fb10a](https://github.com/tcorzo/fiuba-gestion-tp/commit/25fb10a54a1c8404bdf01388d41038dc67ab7cc6))
+* **shipments:** carrier shipment transitions (start_transit, deliver) — US18+US19 ([#297](https://github.com/tcorzo/fiuba-gestion-tp/issues/297)) ([bd8f351](https://github.com/tcorzo/fiuba-gestion-tp/commit/bd8f3517e19244ea60cc7668569346fa92691b83))
+* **vehicles:** implemented soft deletion of vehicles ([#275](https://github.com/tcorzo/fiuba-gestion-tp/issues/275)) ([5e864d9](https://github.com/tcorzo/fiuba-gestion-tp/commit/5e864d9f12f1b28137d45bf894af836cf5128888))
+
+
+### Bug Fixes
+
+* **docs:** simplify geo ACs (US048-051) and restructure review stories ([#277](https://github.com/tcorzo/fiuba-gestion-tp/issues/277)) ([5afef58](https://github.com/tcorzo/fiuba-gestion-tp/commit/5afef580b854aa3a1b2899975adc6f14d84aec53))
+* **technical debts:** vehicle plate edition and cargo price currency ([#298](https://github.com/tcorzo/fiuba-gestion-tp/issues/298)) ([a8d4f2c](https://github.com/tcorzo/fiuba-gestion-tp/commit/a8d4f2cf478ba5e1fa72cc393503e73d5ec236ee))
+
 ## [0.2.2](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.2.1...v0.2.2) (2026-05-28)
 
 
