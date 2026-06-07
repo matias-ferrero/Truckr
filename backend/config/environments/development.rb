@@ -80,9 +80,9 @@ Rails.application.configure do
 
   # Allow the Action Cable WebSocket upgrade from the local frontend dev server
   # (Vite :5173) and the Playwright preview (:4173), which are a different
-  # origin than the API (:3000). In production the SPA and cable are
-  # same-origin (Kamal single container), so the default same-origin check
-  # stays in force there (INF-FE-00005 / ADR-013).
+  # origin than the API (:3000). In production the SPA is served from CloudFront
+  # while cable runs on the Kamal/EC2 host (cross-origin), so production.rb
+  # allowlists FRONTEND_ORIGIN explicitly (INF-FE-00005 / ADR-013).
   config.action_cable.allowed_request_origins = [
     %r{\Ahttp://localhost:\d+\z},
     %r{\Ahttp://127\.0\.0\.1:\d+\z}

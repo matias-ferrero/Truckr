@@ -70,6 +70,16 @@ Rails.application.configure do
   #   authentication: :plain
   # }
 
+  # The SPA is served from CloudFront (S3 origin) while Action Cable runs on the
+  # Kamal/EC2 host, so the WebSocket upgrade is cross-origin and the default
+  # same-origin check would reject it. Allow the public SPA origin — the same
+  # value used for the ActiveAdmin impersonation redirect, resolved from SSM
+  # (/truckr/${TRUCKR_ENV}/frontend_origin) and injected as FRONTEND_ORIGIN by
+  # CI. Absent on laptop deploys, in which case the default check stays in force.
+  if (frontend_origin = ENV["FRONTEND_ORIGIN"]).present?
+    config.action_cable.allowed_request_origins = [ frontend_origin ]
+  end
+
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
   config.i18n.fallbacks = true
