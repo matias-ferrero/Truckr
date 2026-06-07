@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+#
+# Open a Rails console (or shell) against a deployed environment via Kamal.
+#
+# Mirrors the break-glass operator setup in
+# docs/05-appendices/deployment-runbook.md: resolve the infra IDs from SSM,
+# tunnel SSH through SSM Session Manager, push a 60s-TTL ephemeral key via
+# EC2 Instance Connect (the box keeps no static laptop keys), then hand off to
+# a Kamal alias (see deploy.yml `aliases:`) that exec's into the already-running
+# app container with --reuse, so it sees the live SQLite DB at
+# /rails/storage/<env>.sqlite3.
+#
+# Requires session-manager-plugin and an AWS identity with ssm:StartSession,
+# ec2:DescribeInstances, and ec2-instance-connect:SendSSHPublicKey.
+#
+# Usage:
+#   bin/console-remote                 # production Rails console (default)
+#   TRUCKR_ENV=staging bin/console-remote
+#   bin/console-remote shell           # shell on the box (kamal `shell` alias)
+#   bin/console-remote dbc             # sqlite dbconsole (kamal `dbc` alias)
+#
+# Arguments are passed through to kamal as-is; default is the `console` alias.
+set -euo pipefail
+
+# Env-picking var defaults to production — this script's whole reason to exist.
+# (deploy.yml's ERB fallback points at *staging*, so production must be explicit.)
+export TRUCKR_ENV="${TRUCKR_ENV:-production}"
+export AWS_REGION="${AWS_REGION:-sa-east-1}"
+export AWS_PROFILE="${AWS_PROFILE:-fiuba}"
+
+ssm() {
+  aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/$1" \
+    --query Parameter.Value --output text
+}
+
+echo "Resolving ${TRUCKR_ENV} infra from SSM (profile=${AWS_PROFILE}, region=${AWS_REGION})..." >&2
+EC2_INSTANCE_ID="$(ssm ec2_instance_id)"
+APP_HOST="$(ssm app_host)"
+ECR_REGISTRY_URL="$(ssm ecr_repository_url | sed 's|/[^/]*$||')"
+# deploy.yml's env/clear renders FRONTEND_ORIGIN from this var; unset → Kamal
+# rejects the config ("should be a string"). CI resolves it the same way.
+FRONTEND_ORIGIN="${FRONTEND_ORIGIN:-$(ssm frontend_origin)}"
+export EC2_INSTANCE_ID APP_HOST ECR_REGISTRY_URL FRONTEND_ORIGIN
+
+# Tunnel SSH through SSM Session Manager (mirrors CI; needs session-manager-plugin).
+export KAMAL_SSH_PROXY_COMMAND='aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters portNumber=%p'
+
+# --- Ephemeral SSH auth via EC2 Instance Connect (mirrors backend-deploy.yml) ---
+# The box keeps no static authorized_keys for laptops; CI pushes a 60s-TTL key
+# via ec2-instance-connect and connects within the window. We do the same — but
+# into a throwaway dir + scoped ssh-agent, so we never clobber ~/.ssh/id_ed25519
+# the way the CI runner does. Kamal/net-ssh picks the key up from the agent.
+SSH_TMP="$(mktemp -d)"
+cleanup() { ssh-agent -k >/dev/null 2>&1 || true; rm -rf "$SSH_TMP"; }
+trap cleanup EXIT
+
+ssh-keygen -t ed25519 -f "$SSH_TMP/key" -N "" -q
+AZ="$(aws ec2 describe-instances --instance-ids "$EC2_INSTANCE_ID" \
+  --query 'Reservations[0].Instances[0].Placement.AvailabilityZone' --output text)"
+echo "Pushing ephemeral SSH key to ${EC2_INSTANCE_ID} (${AZ}, 60s TTL)..." >&2
+aws ec2-instance-connect send-ssh-public-key \
+  --instance-id "$EC2_INSTANCE_ID" \
+  --availability-zone "$AZ" \
+  --instance-os-user ubuntu \
+  --ssh-public-key "file://$SSH_TMP/key.pub" >/dev/null
+eval "$(ssh-agent -s)" >/dev/null
+ssh-add "$SSH_TMP/key" >/dev/null 2>&1
+
+# Default to the `console` alias; pass through any override (e.g. shell, dbc).
+KAMAL_CMD=("${@:-console}")
+
+# NOTE: no `exec` — we must return to this shell so the EXIT trap can kill the
+# agent and remove the temp key. Capture kamal's status and propagate it.
+echo "Connecting to ${TRUCKR_ENV} (${APP_HOST}, ${EC2_INSTANCE_ID}): kamal ${KAMAL_CMD[*]}" >&2
+status=0
+bundle exec kamal "${KAMAL_CMD[@]}" || status=$?
+exit "$status"

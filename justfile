@@ -104,6 +104,10 @@ backend-assets-watch:
 backend-console:
     cd backend && bin/rails console
 
+# Open a Rails console on a deployed env via Kamal+SSM (default production; e.g. `just backend-console-remote staging`)
+backend-console-remote env="production" *args="":
+    cd backend && TRUCKR_ENV={{ env }} bin/console-remote {{ args }}
+
 # Run database migrations
 backend-migrate:
     cd backend && bin/rails db:migrate
