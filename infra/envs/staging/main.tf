@@ -89,6 +89,17 @@ resource "aws_ssm_parameter" "api_base_url" {
   value = "https://${module.ec2.app_host}"
 }
 
+# Google Maps JS API key baked into the SPA bundle at build time as
+# VITE_GOOGLE_MAPS_API_KEY (AddressPicker / RadiusControl / CargoMapPreview).
+# Plain String, not SecureString: Vite inlines VITE_* into client JS, so this
+# key is public-by-design in the browser. Access is constrained by HTTP-referrer
+# + API restrictions in the Google Cloud Console, not by keeping it secret.
+resource "aws_ssm_parameter" "google_maps_api_key" {
+  name  = "/${local.project}/${local.env}/google_maps_api_key"
+  type  = "String"
+  value = "AIzaSyDeiqlsSlKze0BR6SsdGlPGpLh_fqDb2NY"
+}
+
 resource "aws_ssm_parameter" "frontend_bucket" {
   name  = "/${local.project}/${local.env}/frontend_bucket"
   type  = "String"

@@ -113,10 +113,12 @@ jobs:
         run: |
           set -euo pipefail
           VITE_API_BASE_URL=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/api_base_url" --query Parameter.Value --output text)
+          VITE_GOOGLE_MAPS_API_KEY=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/google_maps_api_key" --query Parameter.Value --output text)
           FRONTEND_BUCKET=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/frontend_bucket" --query Parameter.Value --output text)
           CFD_ID=$(aws ssm get-parameter --name "/truckr/${TRUCKR_ENV}/cloudfront_distribution_id" --query Parameter.Value --output text)
           {
             echo "VITE_API_BASE_URL=$VITE_API_BASE_URL"
+            echo "VITE_GOOGLE_MAPS_API_KEY=$VITE_GOOGLE_MAPS_API_KEY"
             echo "FRONTEND_BUCKET=$FRONTEND_BUCKET"
             echo "CFD_ID=$CFD_ID"
           } >> "$GITHUB_ENV"
