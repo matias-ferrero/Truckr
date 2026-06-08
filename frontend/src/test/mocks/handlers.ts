@@ -451,6 +451,7 @@ export function fixtureShipmentDetail(overrides: Record<string, unknown> = {}) {
             currency: "ARS",
             escrowed_at: "2026-06-11T10:05:00Z",
         },
+        payout: null,
         tracking_events: [],
         available_actions: [],
         carrier_review: null,

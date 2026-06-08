@@ -11,6 +11,7 @@ class Payment < ApplicationRecord
   IMMUTABLE_FIELDS = %w[shipment_id amount_cents currency provider state escrowed_at failed_at].freeze
 
   belongs_to :shipment, inverse_of: :payments
+  has_one    :payout,   inverse_of: :payment
 
   enum :state,    STATES.index_with(&:itself),    prefix: true
   enum :provider, PROVIDERS.index_with(&:itself), prefix: true

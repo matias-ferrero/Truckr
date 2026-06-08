@@ -10,8 +10,10 @@ module Notifications
     CARGO_OFFER_RECEIVED = :cargo_offer_received
     CARGO_OFFER_ACCEPTED = :cargo_offer_accepted
     CARGO_OFFER_REJECTED = :cargo_offer_rejected
+    PAYOUT_APPROVED = :payout_approved
+    PAYOUT_FAILED   = :payout_failed
 
-    ALL = [ PING, CARGO_OFFER_RECEIVED, CARGO_OFFER_ACCEPTED, CARGO_OFFER_REJECTED ].freeze
+    ALL = [ PING, CARGO_OFFER_RECEIVED, CARGO_OFFER_ACCEPTED, CARGO_OFFER_REJECTED, PAYOUT_APPROVED, PAYOUT_FAILED ].freeze
 
     def self.registered?(type)
       ALL.include?(type)

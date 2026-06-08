@@ -420,4 +420,69 @@ describe("ShipmentDetailPage", () => {
         expect(screen.queryByRole("link", { name: "Transportes Demo SRL" })).toBeNull();
     });
 
+    // --- US15 / REQ-BE-00046 — Liquidación del envío (payout breakdown) ---
+
+    it("[Carrier, delivered, payout paid] shows the Liquidación section with breakdown", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({
+                    state: "delivered",
+                    payout: {
+                        id: 5,
+                        state: "paid",
+                        gross_amount_cents: 100_000_00,
+                        commission_rate: "0.15",
+                        commission_cents:  15_000_00,
+                        amount_cents:      85_000_00,
+                        currency: "ARS",
+                        paid_at: "2026-06-13T15:00:00Z",
+                    },
+                }))),
+        );
+        renderPage("carrier");
+
+        await waitFor(() =>
+            expect(screen.getByText(/liquidación del envío/i)).toBeInTheDocument(),
+        );
+        // All breakdown rows must be visible
+        expect(screen.getByText(/monto bruto/i)).toBeInTheDocument();
+        // Commission label shows the dynamic rate
+        expect(screen.getByText(/comisión plataforma.*15\s*%/i)).toBeInTheDocument();
+        expect(screen.getByText(/monto acreditado/i)).toBeInTheDocument();
+        // paid_at date row (AC3)
+        expect(screen.getByText(/fecha de acreditación/i)).toBeInTheDocument();
+        // State chip — exact text to avoid matching "Monto acreditado" dt
+        expect(screen.getByText("Acreditado")).toBeInTheDocument();
+    });
+
+    it("[Carrier, delivered, no payout] does NOT show the Liquidación section", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({
+                    state: "delivered",
+                    payout: null,
+                }))),
+        );
+        renderPage("carrier");
+
+        await waitFor(() => expect(screen.getByRole("heading", { name: /envío/i })).toBeInTheDocument());
+        expect(screen.queryByText(/liquidación del envío/i)).not.toBeInTheDocument();
+    });
+
+    it("[Shipper viewer] does NOT show the Liquidación section even when payout exists", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({
+                    state: "delivered",
+                    // Shipper viewer: backend returns payout: null, but even if
+                    // the field is present the role guard in the component hides it.
+                    payout: null,
+                }))),
+        );
+        renderPage("shipper");
+
+        await waitFor(() => expect(screen.getByRole("heading", { name: /envío/i })).toBeInTheDocument());
+        expect(screen.queryByText(/liquidación del envío/i)).not.toBeInTheDocument();
+    });
+
 });

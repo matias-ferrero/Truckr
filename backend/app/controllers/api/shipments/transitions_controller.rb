@@ -16,7 +16,9 @@ module Api
 
       def deliver
         authorize @shipment, :deliver?
-        transition!(:delivered, reason: "carrier_delivered")
+        transition!(:delivered, reason: "carrier_delivered") do |shipment|
+          Payouts::Create.call(shipment:)
+        end
       end
 
       private
@@ -32,6 +34,8 @@ module Api
           reason:
         )
 
+        yield shipment if block_given?
+
         render json: ShipmentResource.new(shipment).serialize, status: :ok
       rescue ::Shipments::Transition::ConflictError => e
         render json: {
@@ -41,6 +45,26 @@ module Api
                  }
                },
                status: :conflict
+      rescue Payouts::Create::ConflictError => e
+        # Payout errors are programmer errors (missing escrow, duplicate payout)
+        # — surface as 500 per AC2. Notify carrier per AC4 (US15).
+        Rails.logger.error("[deliver] Payouts::Create failed: #{e.reason}")
+        begin
+          Notifications::Publisher.publish(
+            user_id: @shipment.cargo_offer.carrier.user_id,
+            type:    Notifications::Type::PAYOUT_FAILED,
+            payload: { shipment_id: @shipment.id, reason: e.reason.to_s }
+          )
+        rescue StandardError => notify_err
+          Rails.logger.error("[deliver] PAYOUT_FAILED notification failed: #{notify_err.message}")
+        end
+        render json: {
+                 error: {
+                   code: "payout_conflict",
+                   message: I18n.t("errors.payouts.#{e.reason}", default: I18n.t("errors.payouts.generic"))
+                 }
+               },
+               status: :internal_server_error
       end
     end
   end

@@ -55,6 +55,7 @@ Rails.application.routes.draw do
       resources :transport_windows, only: %i[index show create update destroy],
                                     module: "carriers/me"
       resources :shipments, only: %i[index], module: "carriers/me"
+      resources :payouts,   only: %i[index], module: "carriers/me"
     end
 
     scope path: "carriers/me/cargo-offers", as: :me_cargo_offers, module: "carriers/me" do

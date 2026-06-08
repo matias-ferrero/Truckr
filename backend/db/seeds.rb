@@ -217,7 +217,8 @@ routes = [
   [ "Mendoza",       mendoza, "Córdoba",       cordoba ],
   [ "La Plata",      laplata, "Mar del Plata", mdq     ],
   [ "Córdoba",       cordoba, "La Plata",      laplata ],
-  [ "Mar del Plata", mdq,     "Rosario",       rosario ]
+  [ "Mar del Plata", mdq,     "Rosario",       rosario ],
+  [ "Buenos Aires",  caba,    "La Plata",      laplata ]
 ]
 
 build_shipment = lambda do |label:, shipper:, idx:, mode:, goods:|
@@ -278,14 +279,16 @@ build_shipment = lambda do |label:, shipper:, idx:, mode:, goods:|
   shipment = Shipment.with_discarded.find_by(cargo_offer_id: offer.id) ||
              Shipment.create!(cargo_offer: offer, status: "accepted", accepted_at: (base + 15).days.ago)
 
-  # Every demo slot is funded (escrow). accepted_escrowed stays put; in_transit
-  # and delivered advance through the FSM via transition_to!.
-  Payment.find_or_create_by!(shipment: shipment) do |p|
-    p.amount_cents = offer.amount_cents
-    p.currency     = offer.currency
-    p.provider     = "fake"
-    p.state        = "escrowed"
-    p.escrowed_at  = (base + 8).days.ago
+  # accepted_unpaid slots intentionally have no Payment row — they are the
+  # precondition for the shipper-payment E2E test (Pagar CTA visible).
+  unless mode == :accepted_unpaid
+    Payment.find_or_create_by!(shipment: shipment) do |p|
+      p.amount_cents = offer.amount_cents
+      p.currency     = offer.currency
+      p.provider     = "fake"
+      p.state        = "escrowed"
+      p.escrowed_at  = (base + 8).days.ago
+    end
   end
 
   if %i[in_transit delivered].include?(mode) && shipment.status == "accepted"
@@ -336,6 +339,10 @@ build_shipment.call(label: "START-ME", shipper: shipper1, idx: 5, mode: :accepte
 
 # In transit → carrier can confirm delivery live (US19).
 build_shipment.call(label: "DELIVER-ME", shipper: shipper2, idx: 6, mode: :in_transit, goods: "Productos refrigerados")
+
+# Accepted, no payment → Pagar CTA visible in ShipperShipmentsPage for E2E (US8).
+# Seeded on shipper1 so shipper-payment.spec.ts can click it without extra login.
+build_shipment.call(label: "PAY-ME", shipper: shipper1, idx: 7, mode: :accepted_unpaid, goods: "Insumos médicos")
 
 # ── Summary ──────────────────────────────────────────────────────────────────
 puts <<~SUMMARY

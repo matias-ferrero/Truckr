@@ -69,6 +69,8 @@ export interface LandingData {
         cargo_offer_received: { title: string; body: string };
         cargo_offer_accepted: { title: string; body: string };
         cargo_offer_rejected: { title: string; body: string };
+        payout_approved: { title: string; body: string };
+        payout_failed: { title: string; body: string };
     };
 }
 
@@ -203,6 +205,14 @@ export const landingContent: LandingData = {
         cargo_offer_rejected: {
             title: "Tu oferta fue rechazada",
             body: "El transportista no aceptó tu oferta de carga. Podés enviar una nueva oferta.",
+        },
+        payout_approved: {
+            title: "Pago acreditado",
+            body: "Se transfirió el pago por tu envío.",
+        },
+        payout_failed: {
+            title: "Error en pago",
+            body: "Hubo un problema al procesar el pago del envío.",
         },
     },
 };

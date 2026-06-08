@@ -69,6 +69,7 @@ export const offersAndShipmentsContent = {
     },
     header: {
         inboxLink: "Bandeja",
+        payoutsLink: "Mis Pagos",
         pendingBadge: (count: number) => `${count} pendiente${count === 1 ? "" : "s"}`,
         pendingBadgeAria: (count: number) => `Tenés ${count} oferta${count === 1 ? "" : "s"} pendiente${count === 1 ? "" : "s"}`,
     },

@@ -35,6 +35,11 @@ en:
       shipment_not_in_transit: "This shipment is not in transit"
       transition_not_allowed: "This shipment transition is not allowed"
       generic: "We could not update the shipment. Please try again."
+    payouts:
+      no_escrowed_payment: "Cannot create payout: no escrowed payment found for this shipment"
+      already_paid: "A payout already exists for this shipment"
+      shipment_not_delivered: "A payout can only be created for a delivered shipment"
+      generic: "We could not process the payout. Please try again."
     messages:
       password_complexity:
         upper: "must contain at least one uppercase letter"

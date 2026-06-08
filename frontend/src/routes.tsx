@@ -19,6 +19,7 @@ const TransportWindowList   = lazy(() => import("./pages/carrier/TransportWindow
 const TransportWindowForm   = lazy(() => import("./pages/carrier/TransportWindowForm"));
 const CarrierCargoOfferInbox = lazy(() => import("./pages/carrier/CarrierCargoOfferInbox"));
 const CarrierShipments = lazy(() => import("./pages/carrier/CarrierShipments"));
+const CarrierPayoutsPage = lazy(() => import("./pages/carrier/CarrierPayoutsPage").then((m) => ({ default: m.CarrierPayoutsPage })));
 const ShipmentDetailPage = lazy(() => import("./pages/shipments/ShipmentDetailPage"));
 const CarrierDetail = lazy(() => import("./pages/public/CarrierDetail"));
 const CarrierMeRedirect = lazy(() => import("./pages/public/CarrierMeRedirect"));
@@ -147,6 +148,7 @@ export function AppRoutes() {
                         <Route path="cargo-offers" element={<CarrierCargoOfferInbox />} />
                         <Route path="shipments" element={<CarrierShipments />} />
                         <Route path="shipments/:id" element={<ShipmentDetailPage role="carrier" />} />
+                        <Route path="payouts" element={<CarrierPayoutsPage />} />
                     </Route>
                     <Route element={<PublicLayout />}>
                         {/* Declared before `:id` so the literal segment wins over the wildcard. */}

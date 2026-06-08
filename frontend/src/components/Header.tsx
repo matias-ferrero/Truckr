@@ -31,6 +31,9 @@ export function Header() {
                                         <CarrierBadge />
                                     </Suspense>
                                 </Link>
+                                <Link to="/carrier/payouts" className="appHeaderLink">
+                                    {headerText.payoutsLink}
+                                </Link>
                             </>
                         )}
                         {isAuthenticated && (

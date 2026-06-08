@@ -749,3 +749,26 @@
 .shipmentCounterpartyLink:hover {
     text-decoration: none;
 }
+
+/* ── US15 — Liquidación del envío (payout breakdown) ─────────────────────── */
+
+/* Heading row: title + state chip side by side */
+.shipmentDetailSectionHeading {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+/* Commission row — negative signal (deduction from gross) */
+.shipmentDetailPayoutCommission {
+    color: var(--chip-ink-error);
+}
+
+/* Net amount row — positive signal (what lands in carrier's account) */
+.shipmentDetailPayoutNet {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--chip-ink-success);
+}

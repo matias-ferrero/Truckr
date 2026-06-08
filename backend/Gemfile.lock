@@ -557,7 +557,7 @@ DEPENDENCIES
   oj
   pagy (~> 43.4)
   propshaft
-  puma (>= 5.0)
+  puma (>= 8.0.2)
   pundit
   rack-attack
   rack-cors

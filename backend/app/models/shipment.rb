@@ -53,6 +53,7 @@ class Shipment < ApplicationRecord
   has_many   :payments, dependent: :restrict_with_error, inverse_of: :shipment
   has_many   :reviews, dependent: :destroy, inverse_of: :shipment
   has_one    :route, dependent: :destroy, inverse_of: :shipment
+  has_one    :payout, dependent: :destroy, inverse_of: :shipment
 
   # ── Validations ───────────────────────────────────────────────────────
   validates :cargo_offer_id, presence: true, uniqueness: true

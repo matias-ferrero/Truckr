@@ -42,7 +42,7 @@ test.describe("Carrier — vehicle CRUD (REQ-BE-00009 + REQ-BE-00010)", () => {
         await loginAsCarrier(page);
         await page.goto("/carrier/vehicles");
 
-        const blockedCard = page.locator("li.vehicleCard", { hasText: "AA001XX" });
+        const blockedCard = page.locator("li.vehicleCard", { hasText: "GEO001" });
         await expect(blockedCard).toBeVisible();
 
         await blockedCard.getByRole("button", { name: /dar de baja/i }).click();

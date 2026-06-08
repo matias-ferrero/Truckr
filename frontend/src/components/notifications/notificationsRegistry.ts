@@ -7,7 +7,9 @@ export type NotificationType =
     | "ping"
     | "cargo_offer_received"
     | "cargo_offer_accepted"
-    | "cargo_offer_rejected";
+    | "cargo_offer_rejected"
+    | "payout_approved"
+    | "payout_failed";
 
 export interface NotificationView {
     title: string;
@@ -35,6 +37,14 @@ export const notificationsRegistry: Record<NotificationType, Renderer> = {
     cargo_offer_rejected: () => ({
         title: landingContent.notifications.cargo_offer_rejected.title,
         body: landingContent.notifications.cargo_offer_rejected.body,
+    }),
+    payout_approved: () => ({
+        title: landingContent.notifications.payout_approved.title,
+        body: landingContent.notifications.payout_approved.body,
+    }),
+    payout_failed: () => ({
+        title: landingContent.notifications.payout_failed.title,
+        body: landingContent.notifications.payout_failed.body,
     }),
 };
 

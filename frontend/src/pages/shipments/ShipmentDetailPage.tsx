@@ -10,20 +10,11 @@ import { ShipperReviewForm } from "../../components/shipments/ShipperReviewForm"
 import { Button, buttonVariants } from "../../components/ui/button";
 import { shipmentDetailContent as t } from "./shipmentDetailContent";
 import { formatDateTime } from "../../lib/format-date";
+import { formatCurrency } from "../../lib/format-currency";
 import "../../styles/shipment-detail.css";
 
 type Role = "carrier" | "shipper";
-
 type Props = { role: Role };
-
-function formatCurrency(cents: number, currency: string): string {
-    return new Intl.NumberFormat("es-AR", {
-        style: "currency",
-        currency,
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(cents / 100);
-}
 
 function BannerIcon({ kind }: { kind: "to_pick_up" | "awaiting_payment" }) {
     if (kind === "to_pick_up") {
@@ -212,7 +203,7 @@ export default function ShipmentDetailPage({ role }: Props) {
                             </p>
                             <div className="confirmDialogActions">
                                 <Button variant="ghost" onClick={() => setPayDialogOpen(false)}>
-                                    Cancelar
+                                    {t.actions.cancel_dialog}
                                 </Button>
                                 <Button
                                     variant="primary"
@@ -310,6 +301,43 @@ export default function ShipmentDetailPage({ role }: Props) {
                                     <div>
                                         <dt>{t.fields.contact_phone}</dt>
                                         <dd>{detail.counterparty_contact.phone}</dd>
+                                    </div>
+                                )}
+                            </dl>
+                        </div>
+                    )}
+
+                    {role === "carrier" && detail.payout && (
+                        <div className="shipmentDetailContactSection" aria-label={t.payout.sectionTitle}>
+                            <div className="shipmentDetailSectionHeading">
+                                <h2 className="shipmentDetailContactTitle">
+                                    {t.payout.sectionTitle}
+                                </h2>
+                                <span className={`carrierPayoutsState carrierPayoutsState--${detail.payout.state}`}>
+                                    {t.payout.states[detail.payout.state]}
+                                </span>
+                            </div>
+                            <dl className="shipmentDetailGrid">
+                                <div>
+                                    <dt>{t.payout.gross}</dt>
+                                    <dd>{formatCurrency(detail.payout.gross_amount_cents, detail.payout.currency)}</dd>
+                                </div>
+                                <div>
+                                    <dt>{t.payout.commission} ({(parseFloat(detail.payout.commission_rate) * 100).toFixed(0)}%)</dt>
+                                    <dd className="shipmentDetailPayoutCommission">
+                                        - {formatCurrency(detail.payout.commission_cents, detail.payout.currency)}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt>{t.payout.net}</dt>
+                                    <dd className="shipmentDetailPayoutNet">
+                                        {formatCurrency(detail.payout.amount_cents, detail.payout.currency)}
+                                    </dd>
+                                </div>
+                                {detail.payout.paid_at && (
+                                    <div>
+                                        <dt>{t.payout.paid_at}</dt>
+                                        <dd>{formatDateTime(detail.payout.paid_at)}</dd>
                                     </div>
                                 )}
                             </dl>

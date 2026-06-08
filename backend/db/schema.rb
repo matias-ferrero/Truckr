@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_31_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_05_220000) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -147,6 +147,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_31_000000) do
     t.index ["shipment_id"], name: "index_payments_on_shipment_id"
     t.check_constraint "provider IN ('fake','mercadopago','stripe','other')", name: "payments_provider_check"
     t.check_constraint "state IN ('escrowed','failed')", name: "payments_state_check"
+  end
+
+  create_table "payouts", force: :cascade do |t|
+    t.integer "amount_cents", null: false
+    t.integer "commission_cents", null: false
+    t.decimal "commission_rate", precision: 5, scale: 4, null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "ARS", null: false
+    t.datetime "discarded_at"
+    t.datetime "failed_at"
+    t.string "failure_reason"
+    t.integer "gross_amount_cents", null: false
+    t.datetime "paid_at"
+    t.integer "payment_id", null: false
+    t.integer "shipment_id", null: false
+    t.string "state", null: false
+    t.datetime "updated_at", null: false
+    t.index ["payment_id"], name: "index_payouts_on_payment_id"
+    t.index ["shipment_id", "state"], name: "index_payouts_on_shipment_id_and_state"
+    t.index ["shipment_id"], name: "index_payouts_on_shipment_id"
   end
 
   create_table "reviews", force: :cascade do |t|
@@ -308,6 +328,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_31_000000) do
   add_foreign_key "cargos", "shippers"
   add_foreign_key "carriers", "users"
   add_foreign_key "payments", "shipments", on_delete: :restrict
+  add_foreign_key "payouts", "payments"
+  add_foreign_key "payouts", "shipments"
   add_foreign_key "reviews", "carriers", on_delete: :restrict
   add_foreign_key "reviews", "shipments", on_delete: :restrict
   add_foreign_key "reviews", "shippers", on_delete: :restrict

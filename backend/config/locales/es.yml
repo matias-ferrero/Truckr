@@ -36,6 +36,11 @@ es:
       shipment_not_in_transit: "El envío no está en tránsito"
       transition_not_allowed: "La transición del envío no está permitida"
       generic: "No pudimos actualizar el envío. Intentá de nuevo."
+    payouts:
+      no_escrowed_payment: "No se puede crear el pago: no hay un pago en escrow para este envío"
+      already_paid: "Ya existe un pago para este envío"
+      shipment_not_delivered: "El pago solo se puede crear para un envío entregado"
+      generic: "No pudimos procesar el pago al transportista. Intentá de nuevo."
 
     messages:
       password_complexity:

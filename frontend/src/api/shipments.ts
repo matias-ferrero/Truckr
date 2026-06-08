@@ -1,5 +1,6 @@
 import { apiFetch } from "../api";
 import type { Review } from "./reviews";
+import type { Payout } from "./payouts";
 
 export type ShipmentState =
     | "accepted"
@@ -73,6 +74,7 @@ export type ShipmentDetail = {
     counterparty?: { kind: "carrier" | "shipper"; id: number; display_name: string } | null;
     counterparty_contact: CounterpartyContact;
     payment?: ShipmentPayment | null;
+    payout?: Pick<Payout, "id" | "state" | "gross_amount_cents" | "commission_rate" | "commission_cents" | "amount_cents" | "currency" | "paid_at"> | null;
     tracking_events: TrackingEvent[];
     available_actions: AvailableAction[];
     // US30 / REQ-BE-00044 — the Carrier→Shipper review for this shipment, when

@@ -148,4 +148,26 @@ class ShipmentDetailResource
     review = shipment.reviews.find(&:shipper_authored?)
     review && ReviewResource.new(review).to_h
   end
+
+  # US15 / REQ-BE-00046 — Carrier payout breakdown for this Shipment.
+  # Exposed only to the Carrier viewer; `nil` for Shippers and when no payout
+  # exists yet (before delivery) or when the shipment is cancelled.
+  attribute :payout do |shipment|
+    role = Shipment::AvailableActions.active_role(shipment, params[:current_user])
+    next nil unless role == :carrier
+
+    p = shipment.payout
+    next nil unless p
+
+    {
+      id:                 p.id,
+      state:              p.state,
+      gross_amount_cents: p.gross_amount_cents,
+      commission_rate:    p.commission_rate.to_s,
+      commission_cents:   p.commission_cents,
+      amount_cents:       p.amount_cents,
+      currency:           p.currency,
+      paid_at:            p.paid_at&.iso8601
+    }
+  end
 end

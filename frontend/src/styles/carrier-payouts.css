@@ -1,0 +1,254 @@
+/* ── CarrierPayoutsPage ──────────────────────────────────────────────────────
+   Carrier voice (saffron). Uses absolute oklch() for brand-secondary where
+   necessary — carrier.css overrides --brand-secondary to near-white inside
+   .carrierPage, so the same workaround pattern as shipment-detail.css applies.
+   saffron ≈ #e1be5a → oklch(78% 0.12 80)
+   ────────────────────────────────────────────────────────────────────────── */
+
+.carrierPayoutsPage {
+    padding-block: var(--space-7);
+}
+
+.carrierPayoutsTitle {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    margin-block-end: var(--space-6);
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+
+.carrierPayoutsEmpty {
+    text-align: center;
+    padding: var(--space-8) var(--space-5);
+    background: oklch(98% 0.012 80);
+    border-radius: var(--radius-lg);
+    border: 1px solid color-mix(in oklab, oklch(78% 0.12 80) 28%, transparent);
+    color: var(--ink-2);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.55;
+}
+
+/* ── Table wrapper ───────────────────────────────────────────────────────── */
+
+.carrierPayoutsTableWrapper {
+    overflow-x: auto;
+    background: oklch(99% 0.006 80);
+    border-radius: var(--radius-lg);
+    border: 1px solid color-mix(in oklab, oklch(78% 0.12 80) 28%, transparent);
+}
+
+.carrierPayoutsTable {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.carrierPayoutsTable thead th {
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--chip-ink-warning);
+    background: color-mix(in oklab, oklch(78% 0.12 80) 10%, oklch(99% 0.005 80));
+    padding: var(--space-4) var(--space-5);
+    border-bottom: 1px solid color-mix(in oklab, oklch(78% 0.12 80) 22%, transparent);
+}
+
+.carrierPayoutsTable td {
+    padding: var(--space-4) var(--space-5);
+    border-bottom: 1px solid var(--border-2);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    color: var(--ink);
+    vertical-align: middle;
+}
+
+.carrierPayoutsTable tr:last-child td {
+    border-bottom: none;
+}
+
+/* Subtle row hover for scannability */
+.carrierPayoutsTable tbody tr {
+    transition: background 150ms var(--ease-out);
+}
+
+.carrierPayoutsTable tbody tr:hover {
+    background: color-mix(in oklab, oklch(78% 0.12 80) 6%, transparent);
+}
+
+/* ── Amount cells ────────────────────────────────────────────────────────── */
+
+.carrierPayoutsGross {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+
+.carrierPayoutsCommission {
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    color: var(--chip-ink-error);
+}
+
+.carrierPayoutsNet {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--chip-ink-success);
+}
+
+/* ── State chip ──────────────────────────────────────────────────────────── */
+
+.carrierPayoutsState {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px var(--space-3);
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.carrierPayoutsState--paid {
+    background: color-mix(in oklab, var(--brand-success) 16%, var(--surface));
+    color: var(--chip-ink-success);
+    border: 1px solid color-mix(in oklab, var(--brand-success) 30%, transparent);
+}
+
+.carrierPayoutsState--failed {
+    background: color-mix(in oklab, var(--brand-error) 14%, var(--surface));
+    color: var(--chip-ink-error);
+    border: 1px solid color-mix(in oklab, var(--brand-error) 28%, transparent);
+}
+
+/* ── Detail link ─────────────────────────────────────────────────────────── */
+
+.carrierPayoutsLink {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--chip-ink-warning);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 150ms var(--ease-out);
+}
+
+.carrierPayoutsLink:hover {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.carrierPayoutsLink:focus-visible {
+    outline: 3px solid color-mix(in oklab, var(--ink) 15%, transparent);
+    outline-offset: 3px;
+    border-radius: var(--radius-sm);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+    .carrierPayoutsPage {
+        padding-block: var(--space-6);
+    }
+
+    .carrierPayoutsTitle {
+        font-size: 1.25rem;
+    }
+
+    /* Stack each payout as a card instead of scrolling a wide table */
+    .carrierPayoutsTableWrapper {
+        overflow-x: visible;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+    }
+
+    .carrierPayoutsTable,
+    .carrierPayoutsTable thead,
+    .carrierPayoutsTable tbody,
+    .carrierPayoutsTable th,
+    .carrierPayoutsTable td,
+    .carrierPayoutsTable tr {
+        display: block;
+    }
+
+    .carrierPayoutsTable thead {
+        /* Hide the header row visually — data-labels substitute via ::before */
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+    }
+
+    .carrierPayoutsTable tbody tr {
+        background: oklch(99% 0.006 80);
+        border: 1px solid color-mix(in oklab, oklch(78% 0.12 80) 28%, transparent);
+        border-radius: var(--radius-md);
+        padding: var(--space-4);
+        margin-block-end: var(--space-3);
+    }
+
+    .carrierPayoutsTable tbody tr:hover {
+        background: color-mix(in oklab, oklch(78% 0.12 80) 8%, oklch(99% 0.005 80));
+    }
+
+    .carrierPayoutsTable td {
+        padding: var(--space-2) 0;
+        border-bottom: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--space-3);
+        white-space: normal;
+    }
+
+    /* Data label injected from the td's data-label attribute */
+    .carrierPayoutsTable td::before {
+        content: attr(data-label);
+        font-family: var(--font-display);
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--chip-ink-warning);
+        flex-shrink: 0;
+    }
+
+    /* Last td (link) has no label — align to the right */
+    .carrierPayoutsTable td:last-child {
+        padding-block-start: var(--space-3);
+        border-top: 1px solid var(--border-2);
+        margin-block-start: var(--space-2);
+        justify-content: flex-end;
+    }
+
+    .carrierPayoutsTable td:last-child::before {
+        content: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .carrierPayoutsTable tbody tr {
+        transition: none;
+    }
+
+    .carrierPayoutsLink {
+        transition: none;
+    }
+}

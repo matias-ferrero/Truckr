@@ -22,6 +22,17 @@ export const shipmentDetailContent = {
     contact: {
         sectionTitle: "Datos de contacto",
     },
+    payout: {
+        sectionTitle: "Liquidación del envío",
+        gross: "Monto bruto",
+        commission: "Comisión plataforma",
+        net: "Monto acreditado",
+        paid_at: "Fecha de acreditación",
+        states: {
+            paid: "Acreditado",
+            failed: "Fallido",
+        },
+    },
     review: {
         carrierSectionLabel: "Reseña del expedidor",
         shipperSectionLabel: "Reseña del transportista",
@@ -58,6 +69,7 @@ export const shipmentDetailContent = {
         pay:            "Pagar",
         retry_payment:  "Reintentar pago",
         cancel:         "Cancelar envío",
+        cancel_dialog:  "Cancelar",
         error: {
             generic: "No pudimos completar la acción. Intentá de nuevo.",
         },

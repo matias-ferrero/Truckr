@@ -67,11 +67,11 @@ test.describe("Shipper — shipment detail (REQ-FE-00024 / US39)", () => {
         await page.goto("/shipper/shipments");
         await expect(page.getByRole("heading", { name: "Mis Envíos" })).toBeVisible();
 
-        // US30 seed A ("Aceite de girasol") — delivered, no shipper_review yet.
-        // Do not use the first "Entregado" row: US26 seeds attach reviews to many
-        // other delivered shipments and the form is hidden once reviewed.
+        // Navigate to the REVIEW-ME seed: "Maquinaria liviana", La Plata → Mar del Plata,
+        // delivered with no shipper review yet — the review form must be visible.
+        // The aria-label pattern matches the seeded route; "Entregado" ensures correct state.
         const deliveredLink = page.getByRole("link", {
-            name: /villa maría.*san rafael.*entregado/i,
+            name: /la plata.*mar del plata.*entregado/i,
         }).first();
         await expect(deliveredLink).toBeVisible();
         await deliveredLink.click();
