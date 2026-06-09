@@ -433,6 +433,10 @@ export function fixtureShipmentDetail(overrides: Record<string, unknown> = {}) {
             destination: "Av. Colón 500, Córdoba",
             description: "Pallets de electrodomésticos",
             weight_kg: "1500.0",
+            pickup_lat: "-34.603722",
+            pickup_lng: "-58.381592",
+            delivery_lat: "-31.420083",
+            delivery_lng: "-64.188776",
         },
         vehicle: {
             plate: "AAA111",

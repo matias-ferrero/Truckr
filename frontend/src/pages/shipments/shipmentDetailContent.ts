@@ -37,6 +37,15 @@ export const shipmentDetailContent = {
         carrierSectionLabel: "Reseña del expedidor",
         shipperSectionLabel: "Reseña del transportista",
     },
+    // US51 / REQ-FE-00028 — map section + Google Maps deep-link button.
+    map: {
+        sectionTitle: "Mapa del recorrido",
+        openRoute: "Ver ruta en Google Maps",
+        openRouteAria: (origin: string, destination: string) =>
+            origin && destination
+                ? `Ver ruta de ${origin} a ${destination} en Google Maps, se abre en una pestaña nueva`
+                : "Ver ruta en Google Maps, se abre en una pestaña nueva",
+    },
     tracking: {
         sectionTitle: "Historial de eventos",
         placeholder:  "Se mostrará el recorrido cuando esté disponible",

@@ -7,6 +7,8 @@ import { ShipmentActions } from "../../components/shipments/ShipmentActions";
 import { TrackingEventTimeline } from "../../components/shipments/TrackingEventTimeline";
 import { CarrierReviewForm } from "../../components/shipments/CarrierReviewForm";
 import { ShipperReviewForm } from "../../components/shipments/ShipperReviewForm";
+import { ShipmentMap, toLatLng } from "../../components/ShipmentMap";
+import { OpenInGmapsButton } from "../../components/OpenInGmapsButton";
 import { Button, buttonVariants } from "../../components/ui/button";
 import { shipmentDetailContent as t } from "./shipmentDetailContent";
 import { formatDateTime } from "../../lib/format-date";
@@ -134,6 +136,12 @@ export default function ShipmentDetailPage({ role }: Props) {
     const shipmentSummary = `${detail.cargo.origin} → ${detail.cargo.destination}`;
     const pickedUpAt = milestoneAt(detail, "picked_up");
     const deliveredAt = milestoneAt(detail, "delivered");
+
+    // US51 — pins come from the Cargo (pickup = origin, delivery = destination),
+    // not the TransportWindow: once the trip starts the carrier goes to where the
+    // load is. Coordinates are state-independent, so the map shows in every state.
+    const originPin = toLatLng(detail.cargo.pickup_lat, detail.cargo.pickup_lng, detail.cargo.origin);
+    const destinationPin = toLatLng(detail.cargo.delivery_lat, detail.cargo.delivery_lng, detail.cargo.destination);
 
     return (
         <main className={`page shipmentDetailPage shipmentDetailPage--${role}`} id="main">
@@ -397,8 +405,29 @@ export default function ShipmentDetailPage({ role }: Props) {
                     </section>
                 )}
 
-                {/* Anchor for the map component (US51 / AC5). Hidden until the map feature lands. */}
-                <div id="shipment-tracking-map" hidden aria-hidden="true" />
+                {/* US51 / REQ-FE-00028 — route map + Google Maps deep-link. Keeps
+                    the `shipment-tracking-map` anchor from US39 (AC7); the
+                    button stays usable even if the map fails to load (AC9). */}
+                <section
+                    id="shipment-tracking-map"
+                    className="shipmentMapSection"
+                    aria-labelledby="shipment-map-heading"
+                >
+                    <h2 id="shipment-map-heading" className="shipmentMapTitle">
+                        {t.map.sectionTitle}
+                    </h2>
+                    <ShipmentMap origin={originPin} destination={destinationPin} />
+                    {originPin && destinationPin && (
+                        <div className="shipmentMapActions">
+                            <OpenInGmapsButton
+                                origin={originPin}
+                                destination={destinationPin}
+                                label={t.map.openRoute}
+                                ariaLabel={t.map.openRouteAria(detail.cargo.origin, detail.cargo.destination)}
+                            />
+                        </div>
+                    )}
+                </section>
 
             </div>
         </main>

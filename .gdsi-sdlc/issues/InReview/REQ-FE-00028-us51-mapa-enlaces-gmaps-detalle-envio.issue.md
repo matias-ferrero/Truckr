@@ -2,7 +2,7 @@
 tag: REQ-FE-00028
 title: Mapa y Enlaces a Google Maps en Detalle de Envío (US51 — FE-only)
 priority: P2
-status: ready
+status: in_review
 created: '2026-05-24'
 source: manual
 source_url: https://github.com/tcorzo/fiuba-gestion-tp/issues/242

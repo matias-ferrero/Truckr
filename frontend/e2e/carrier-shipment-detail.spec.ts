@@ -31,9 +31,10 @@ test.describe("Carrier — shipment detail (REQ-FE-00024 / US39)", () => {
         await expect(backLink).toBeVisible();
         await expect(backLink).toHaveAttribute("href", "/carrier/shipments");
 
-        // Data grid fields
-        await expect(page.getByText("Origen")).toBeVisible();
-        await expect(page.getByText("Destino")).toBeVisible();
+        // Data grid fields. Exact match targets the <dt> labels, not the US51
+        // "Abrir origen/destino en Google Maps" deep-link buttons.
+        await expect(page.getByText("Origen", { exact: true })).toBeVisible();
+        await expect(page.getByText("Destino", { exact: true })).toBeVisible();
 
         // Map placeholder anchor is always present (AC5 — anchor for US51)
         await expect(page.locator("#shipment-tracking-map")).toBeAttached();

@@ -54,6 +54,14 @@ export type ShipmentCargo = {
     destination: string;
     description: string;
     weight_kg: string;
+    // Cargo pickup/delivery coordinates, emitted by ShipmentDetailResource as
+    // DECIMAL(9,6) strings (US48/US49 — REQ-BE-00036). Feed the US51 map and the
+    // Google Maps deep-links (REQ-FE-00028). May be absent on legacy rows; the
+    // map degrades to a neutral "unavailable" state in that case.
+    pickup_lat?: string | null;
+    pickup_lng?: string | null;
+    delivery_lat?: string | null;
+    delivery_lng?: string | null;
 };
 
 export type ShipmentVehicle = {

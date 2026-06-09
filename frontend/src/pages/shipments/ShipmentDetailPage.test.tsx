@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { server } from "../../test/mocks/server";
 import { http, HttpResponse } from "msw";
@@ -24,6 +24,13 @@ function renderPage(role: "carrier" | "shipper" = "shipper", id = 31) {
 }
 
 describe("ShipmentDetailPage", () => {
+    // Force the US51 map into its service-unavailable path so these page tests
+    // stay deterministic regardless of a local `.env` Google Maps key — the
+    // map canvas itself is covered in ShipmentMap.test.tsx with a mocked loader.
+    // The deep-link buttons render independently of the JS API (AC9).
+    beforeEach(() => vi.stubEnv("VITE_GOOGLE_MAPS_API_KEY", ""));
+    afterEach(() => vi.unstubAllEnvs());
+
     it("shows skeleton with aria-busy while loading", () => {
         server.use(
             http.get(`${API}/api/shipments/:id`, async () => {
@@ -483,6 +490,73 @@ describe("ShipmentDetailPage", () => {
 
         await waitFor(() => expect(screen.getByRole("heading", { name: /envío/i })).toBeInTheDocument());
         expect(screen.queryByText(/liquidación del envío/i)).not.toBeInTheDocument();
+    });
+
+    // --- US51 / REQ-FE-00028 — map section + Google Maps deep-link ---
+    // No VITE_GOOGLE_MAPS_API_KEY is stubbed here, so <ShipmentMap /> degrades to
+    // its service-unavailable state; the deep-link button must still render with
+    // the correct href (AC9) — it doesn't depend on the JS API.
+
+    it("renders the map section keeping the shipment-tracking-map anchor (AC7)", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail())),
+        );
+        renderPage();
+        await waitFor(() =>
+            expect(screen.getByRole("heading", { name: /mapa del recorrido/i })).toBeInTheDocument(),
+        );
+        expect(document.querySelector("section#shipment-tracking-map")).toBeInTheDocument();
+    });
+
+    it("renders a single Google Maps deep-link with origin+destination coords (AC2/AC8)", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail())),
+        );
+        renderPage();
+
+        const routeLink = await screen.findByRole("link", { name: /ver ruta.*google maps/i });
+        expect(routeLink).toHaveAttribute(
+            "href",
+            "https://www.google.com/maps/dir/?api=1&origin=-34.603722,-58.381592&destination=-31.420083,-64.188776",
+        );
+    });
+
+    it.each(["accepted", "in_transit", "delivered", "cancelled"] as const)(
+        "shows the map section and the route deep-link in %s state (AC4)",
+        async (state) => {
+            server.use(
+                http.get(`${API}/api/shipments/:id`, () =>
+                    HttpResponse.json(fixtureShipmentDetail({ state, available_actions: [] }))),
+            );
+            renderPage();
+            await waitFor(() =>
+                expect(screen.getByRole("heading", { name: /mapa del recorrido/i })).toBeInTheDocument(),
+            );
+            expect(screen.getByRole("link", { name: /ver ruta.*google maps/i })).toBeInTheDocument();
+        },
+    );
+
+    it("shows the unavailable message and no deep-link when coordinates are missing (AC3)", async () => {
+        server.use(
+            http.get(`${API}/api/shipments/:id`, () =>
+                HttpResponse.json(fixtureShipmentDetail({
+                    cargo: {
+                        origin: "Av. Corrientes 1234, CABA",
+                        destination: "Av. Colón 500, Córdoba",
+                        description: "Pallets",
+                        weight_kg: "1500.0",
+                        pickup_lat: null,
+                        pickup_lng: null,
+                        delivery_lat: null,
+                        delivery_lng: null,
+                    },
+                }))),
+        );
+        renderPage();
+        await waitFor(() => expect(screen.getByText(/mapa no disponible/i)).toBeInTheDocument());
+        expect(screen.queryByRole("link", { name: /ver ruta/i })).toBeNull();
     });
 
 });
