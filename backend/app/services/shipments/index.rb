@@ -41,7 +41,7 @@ module Shipments
 
       records = Shipment
                 .where(id: ordered_ids)
-                .eager_load(:payments, :tracking_events, **EAGER_LOADS)
+                .eager_load(:payments, :tracking_events, :reviews, **EAGER_LOADS)
                 .to_a
 
       by_id = records.index_by(&:id)

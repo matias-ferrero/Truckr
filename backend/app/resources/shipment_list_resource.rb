@@ -53,4 +53,14 @@ class ShipmentListResource
       shipment.cargo_offer.cargo.shipper.company_name
     end
   end
+
+  # True when the Shipper viewer has already authored their Shipper→Carrier
+  # review for this Shipment (US20 / REQ-BE-00042). Derived from the existing
+  # `reviews` association (eager-loaded by Shipments::Index — no extra query,
+  # no new column), so the dashboard can count "transportistas por calificar"
+  # without an N+1 over the detail endpoint. Always false for non-Shipper
+  # viewers, who never author a shipper-directed review.
+  attribute :shipper_reviewed do |shipment|
+    shipment.reviews.any?(&:shipper_authored?)
+  end
 end

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import LandingPage from "./App";
 import { AuthProvider } from "./auth/AuthContext";
 import { NotificationsProvider } from "./components/notifications/NotificationsProvider";
@@ -26,6 +26,7 @@ const CarrierMeRedirect = lazy(() => import("./pages/public/CarrierMeRedirect"))
 const ShipperDetail = lazy(() => import("./pages/public/ShipperDetail"));
 const ShipperMeRedirect = lazy(() => import("./pages/public/ShipperMeRedirect"));
 const CreateOfferPage = lazy(() => import("./pages/shipper/CreateOfferPage"));
+const ShipperDashboardPage = lazy(() => import("./pages/shipper/dashboard/ShipperDashboardPage"));
 const ShipperShipmentsPage = lazy(() => import("./pages/shipper/ShipperShipmentsPage"));
 const ShipperPaymentPage = lazy(() => import("./pages/shipper/ShipperPaymentPage"));
 const ShipperPaymentSuccessPage = lazy(() => import("./pages/shipper/ShipperPaymentSuccessPage"));
@@ -92,6 +93,11 @@ function IndexRoute() {
     if (loading) return null;
 
     if (me) {
+        // Shippers land on the Cargo-centric v2 dashboard as their home.
+        // Carriers (including dual-role) keep the multi-section dashboard.
+        if (me.roles.includes("shipper") && !me.roles.includes("carrier")) {
+            return <Navigate to="/shipper/dashboard" replace />;
+        }
         return (
             <div className="dashboardPage">
                 <a className="skipLink" href="#main">Saltar al contenido</a>
@@ -160,6 +166,7 @@ export function AppRoutes() {
                     </Route>
                     {/* US27 + US17 — Shipper flows under a shared layout. */}
                     <Route path="/shipper" element={<ShipperLayout />}>
+                        <Route path="dashboard" element={<ShipperDashboardPage />} />
                         <Route path="cargos">
                             <Route index element={<CargoList />} />
                             <Route path="new" element={<CargoForm mode="new" />} />

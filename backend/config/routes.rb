@@ -67,6 +67,9 @@ Rails.application.routes.draw do
     # Authenticated Shipper-side reads (REQ-BE-00035 §3.2).
     scope path: "shippers/me", as: :shipper_me do
       resources :shipments, only: %i[index], module: "shippers/me"
+      # Recent TrackingEvents across the Shipper's own shipments — the Shipper
+      # Dashboard activity feed (read-only, capped to the most recent rows).
+      resources :activity, only: %i[index], module: "shippers/me"
     end
 
     # Multi-role shipment detail (REQ-BE-00035 §3.3). Authorisation is

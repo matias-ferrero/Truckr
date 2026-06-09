@@ -82,6 +82,48 @@ RSpec.describe "Api::Shippers::Me::Shipments", type: :request do
         row = JSON.parse(response.body).first
         expect(row).not_to have_key("payment_state")
       end
+
+      describe "shipper_reviewed" do
+        # A delivered shipment owned by `shipper`, carried by `carrier`.
+        def delivered_shipment(carrier: create(:user, :with_carrier).carrier)
+          cargo = create(:cargo, shipper: shipper)
+          offer = create(:cargo_offer, :accepted, cargo: cargo, carrier: carrier)
+          create(:shipment, :delivered, cargo_offer: offer)
+        end
+
+        it "is true when the shipper has already authored a review" do
+          shipment = delivered_shipment
+          create(:review, :shipper_authored, shipment: shipment,
+                                             shipper: shipper,
+                                             carrier: shipment.cargo_offer.carrier)
+
+          get "/api/shippers/me/shipments"
+
+          row = JSON.parse(response.body).find { |s| s["id"] == shipment.id }
+          expect(row["shipper_reviewed"]).to be(true)
+        end
+
+        it "is false when no shipper review exists yet" do
+          shipment = delivered_shipment
+
+          get "/api/shippers/me/shipments"
+
+          row = JSON.parse(response.body).find { |s| s["id"] == shipment.id }
+          expect(row["shipper_reviewed"]).to be(false)
+        end
+
+        it "is false when only a carrier-authored review exists" do
+          shipment = delivered_shipment
+          create(:review, :carrier_authored, shipment: shipment,
+                                             shipper: shipper,
+                                             carrier: shipment.cargo_offer.carrier)
+
+          get "/api/shippers/me/shipments"
+
+          row = JSON.parse(response.body).find { |s| s["id"] == shipment.id }
+          expect(row["shipper_reviewed"]).to be(false)
+        end
+      end
     end
   end
 end

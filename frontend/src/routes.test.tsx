@@ -157,6 +157,23 @@ describe("AppRoutes", () => {
         );
     });
 
+    it("redirects a logged-in shipper from / to the v2 dashboard", async () => {
+        const shipperMe = { ...carrierMe, roles: ["shipper"], carrier: null,
+            shipper: { id: 1, company_name: null, tax_id: null, billing_address: null } };
+        server.use(
+            http.get(`${API}/api/auth/me`, () => HttpResponse.json(shipperMe)),
+            http.get(`${API}/api/shippers/me/activity`, () => HttpResponse.json([])),
+        );
+        window.history.pushState({}, "", "/");
+        render(<AppRoutes />);
+        // The v2 greeting heading proves we landed on the Cargo-centric
+        // dashboard, not the legacy multi-section one.
+        await waitFor(() =>
+            expect(screen.getByRole("heading", { name: /Hola, Ana/ })).toBeInTheDocument()
+        );
+        expect(window.location.pathname).toBe("/shipper/dashboard");
+    });
+
     it("falls through unknown paths to the landing", async () => {
         window.history.pushState({}, "", "/no-such-route");
         render(<AppRoutes />);

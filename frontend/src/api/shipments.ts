@@ -25,6 +25,9 @@ export type Shipment = {
     latest_activity_at: string;
     payment_escrowed: boolean;
     counterparty_display_name?: string | null;
+    // US-Shipper-Dashboard — true once the Shipper has left their review for a
+    // delivered shipment. Drives the "pendiente de reseña" attention surface.
+    shipper_reviewed: boolean;
 };
 
 export type CounterpartyContact = {
@@ -44,6 +47,33 @@ export type ShipmentPayment = {
 export type TrackingEvent = {
     id: number;
     kind: string;
+    occurred_at: string;
+    from_status?: string | null;
+    to_status?: string | null;
+};
+
+// US-Shipper-Dashboard — the activity-feed event kinds emitted by
+// GET /api/shippers/me/shipments-scoped activity. `status_change`, `gps_update`
+// and `note` mirror the TrackingEvent vocabulary; the `shipment_*` / `payment_*`
+// kinds are coarse lifecycle markers the feed surfaces directly.
+export type ShipperActivityKind =
+    | "status_change"
+    | "gps_update"
+    | "note"
+    | "shipment_accepted"
+    | "shipment_in_transit"
+    | "shipment_delivered"
+    | "shipment_cancelled"
+    | "payment_escrowed"
+    | "payment_failed";
+
+// A single row from GET /api/shippers/me/activity. Newest-first, capped at 20
+// by the backend. `from_status` / `to_status` are only meaningful for
+// `status_change`; null otherwise.
+export type ShipperActivityEvent = {
+    id: number;
+    shipment_id: number;
+    kind: ShipperActivityKind;
     occurred_at: string;
     from_status?: string | null;
     to_status?: string | null;
@@ -112,6 +142,10 @@ export async function listShipperShipments(): Promise<Shipment[]> {
 
 export async function getShipmentDetail(id: number): Promise<ShipmentDetail> {
     return apiFetch<ShipmentDetail>(`/api/shipments/${id}`);
+}
+
+export async function listShipperActivity(): Promise<ShipperActivityEvent[]> {
+    return apiFetch<ShipperActivityEvent[]>("/api/shippers/me/activity");
 }
 
 export async function createShipmentPayment(id: number): Promise<PaymentResult> {
