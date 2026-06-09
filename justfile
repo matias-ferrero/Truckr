@@ -142,8 +142,8 @@ team-performance-lint:
 
 # ── Worktree review ────────────────────────────────────────────────────────
 
-# Boot an agent's worktree into a 3-pane kitty layout for manual UI review.
-# Usage: `just review REQ-FE-00026`  or  `just review` (fzf picker)
+# Boot an agent's worktree (or the root clone via `main`) into a 3-pane kitty layout for manual UI review.
+# Usage: `just review REQ-FE-00026`  or  `just review main`  or  `just review` (fzf picker)
 review name="":
     @script/review-worktree.sh {{ name }}
 

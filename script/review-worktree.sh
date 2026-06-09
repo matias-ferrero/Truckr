@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Boot a worktree under .claude/worktrees/<name> into a 3-pane kitty layout
-# for manual UI/behavior review. See docs/features/REF/review-worktree.plan.md.
+# Boot a worktree under .claude/worktrees/<name> — or the root clone via the
+# special name `main` — into a 3-pane kitty layout for manual UI/behavior
+# review. See docs/features/REF/review-worktree.plan.md.
 
 set -euo pipefail
 
@@ -20,25 +21,34 @@ require_cmd deno
 require_cmd bundle
 require_cmd mktemp
 
-[[ -d "$WORKTREES_DIR" ]] || die "no .claude/worktrees/ in $REPO_ROOT"
+# Worktrees dir is optional: `just review main` targets the root clone and
+# doesn't need it. Empty it out rather than dying so `main` always works.
+[[ -d "$WORKTREES_DIR" ]] || WORKTREES_DIR=""
 
-# ── Resolve target worktree ────────────────────────────────────────────────
+# ── Resolve target: `main` = root clone, otherwise a worktree ──────────────
 NAME="${1:-}"
 if [[ -z "$NAME" ]]; then
     if command -v fzf >/dev/null 2>&1; then
-        NAME="$(ls -1 "$WORKTREES_DIR" | fzf --prompt='worktree> ' --height=40% --reverse)"
-        [[ -n "$NAME" ]] || die "no worktree selected"
+        NAME="$( { echo main; [[ -n "$WORKTREES_DIR" ]] && ls -1 "$WORKTREES_DIR"; } \
+            | fzf --prompt='target> ' --height=40% --reverse)"
+        [[ -n "$NAME" ]] || die "no target selected"
     else
-        echo "Available worktrees (install fzf for picker):" >&2
-        ls -1 "$WORKTREES_DIR" >&2
-        die "pass a worktree name as argument"
+        echo "Available targets (install fzf for picker):" >&2
+        echo "main" >&2
+        [[ -n "$WORKTREES_DIR" ]] && ls -1 "$WORKTREES_DIR" >&2
+        die "pass a target name as argument"
     fi
 fi
 
-WT="$WORKTREES_DIR/$NAME"
-[[ -d "$WT" ]] || die "worktree not found: $WT"
-[[ -d "$WT/backend" ]] || die "no backend/ in worktree $NAME"
-[[ -d "$WT/frontend" ]] || die "no frontend/ in worktree $NAME"
+if [[ "$NAME" == "main" ]]; then
+    WT="$REPO_ROOT"
+else
+    [[ -n "$WORKTREES_DIR" ]] || die "no .claude/worktrees/ in $REPO_ROOT"
+    WT="$WORKTREES_DIR/$NAME"
+    [[ -d "$WT" ]] || die "worktree not found: $WT"
+fi
+[[ -d "$WT/backend" ]] || die "no backend/ in $NAME"
+[[ -d "$WT/frontend" ]] || die "no frontend/ in $NAME"
 
 # ── Anchor banner ──────────────────────────────────────────────────────────
 BRANCH="$(git -C "$WT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')"
@@ -51,18 +61,23 @@ echo "▸ mise trust"
 mise trust "$WT" >/dev/null
 
 # ── Copy .env* from main repo into the worktree (gitignored, won't follow) ─
-echo "▸ copy .env* from main repo"
-shopt -s nullglob
-for dir in "" backend frontend; do
-    src_dir="$REPO_ROOT${dir:+/$dir}"
-    dst_dir="$WT${dir:+/$dir}"
-    [[ -d "$dst_dir" ]] || continue
-    for env_file in "$src_dir"/.env*; do
-        [[ -f "$env_file" ]] || continue
-        cp -n "$env_file" "$dst_dir/"
+# Skipped when reviewing the root clone — source and destination are the same.
+if [[ "$WT" != "$REPO_ROOT" ]]; then
+    echo "▸ copy .env* from main repo"
+    shopt -s nullglob
+    for dir in "" backend frontend; do
+        src_dir="$REPO_ROOT${dir:+/$dir}"
+        dst_dir="$WT${dir:+/$dir}"
+        [[ -d "$dst_dir" ]] || continue
+        for env_file in "$src_dir"/.env*; do
+            [[ -f "$env_file" ]] || continue
+            cp -n "$env_file" "$dst_dir/"
+        done
     done
-done
-shopt -u nullglob
+    shopt -u nullglob
+else
+    echo "▸ root clone — .env* already in place"
+fi
 
 # ── Deps (always, idempotent) ──────────────────────────────────────────────
 echo "▸ bundle install (backend)"
