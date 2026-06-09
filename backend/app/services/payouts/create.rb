@@ -34,7 +34,7 @@ module Payouts
     end
 
     def call
-      shipment.with_lock do
+      payout = shipment.with_lock do
         guard_preconditions!
 
         escrowed_payment = shipment.payments.find_by(state: "escrowed")
@@ -43,7 +43,7 @@ module Payouts
         commission = (gross * rate).ceil
         net    = gross - commission
 
-        payout = Payout.create!(
+        Payout.create!(
           shipment:             shipment,
           payment:              escrowed_payment,
           gross_amount_cents:   gross,
@@ -54,10 +54,14 @@ module Payouts
           state:                "paid",
           paid_at:              Time.current
         )
-
-        emit_notification!(payout)
-        payout
       end
+
+      # Broadcast AFTER the write transaction commits. Solid Cable's adapter
+      # writes the message on its own connection pool; under SQLite's single
+      # writer, broadcasting while this `with_lock` transaction is still open
+      # deadlocks on the writer lock until busy_timeout, dropping the message.
+      emit_notification!(payout)
+      payout
     end
 
     private
