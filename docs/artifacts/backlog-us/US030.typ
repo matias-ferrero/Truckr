@@ -1,17 +1,15 @@
 == US30: Crear Reseña de Expedidor
 
-*Release:* Release 2 \
+*Release:* MVP \
 *Prioridad:* Media \
-*Épica:* Después del Envío
+*Épica:* Reseñas
 
 *Descripción:*
-Como transportista,
+Como Transportista,
 quiero poder escribir reseñas sobre los Expedidores,
-para compartir mi experiencia.
+para compartir mi experiencia con otros Transportistas.
 
 *Criterios de Aceptación:*
-+ Un transportista puede escribir una reseña sobre un Expedidor una vez que el envío se completó.
-+ La reseña incluye una puntuación (por ejemplo, 1 a 5 estrellas) y un comentario de texto.
-+ Un transportista solo puede dejar una reseña por envío completado.
-
-// ═══════════════════════════════════════════════════════════════════════════
++ Un Transportista puede escribir una reseña sobre un Expedidor una vez que el envío se completó.
++ Solo se puede escribir una reseña por cada envío completado.
++ La reseña incluye una puntuación y opcionalmente un comentario.

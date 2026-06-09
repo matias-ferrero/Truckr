@@ -1,8 +1,8 @@
 == US54: Visualizar Reseñas de Expedidor
 
-*Release:* Release 2 \
+*Release:* MVP \
 *Prioridad:* Media \
-*Épica:* Después del Envío
+*Épica:* Reseñas
 
 *Descripción:*
 Como transportista,
@@ -11,5 +11,3 @@ para consultar las experiencias de otros antes de contratar un servicio.
 
 *Criterios de Aceptación:*
 + Las reseñas de un expedidor son visibles en su perfil para todos los usuarios.
-
-// ═══════════════════════════════════════════════════════════════════════════

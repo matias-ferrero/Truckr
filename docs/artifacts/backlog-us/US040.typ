@@ -1,14 +1,15 @@
-== US40: Bandeja de Usuarios
+== US40: Mis Pagos como Transportista
 
 *Release:* MVP \
 *Prioridad:* Media \
-*Épica:* Cuenta
+*Épica:* Servicio de Pagos
 
 *Descripción:*
-Como usuario administrador,
-quiero poder observar una lista de usuarios existentes en la aplicacion,
-para permitirme administrarlos
+Como transportista,
+quiero observar los pagos que la aplicacion me concretó,
+para tener un registro de mi servicio y lo que fui ganando.
 
 *Criterios de Aceptación:*
-+ Dentro del backoffice, hay un boton que me lleva a la solapa de Users
-+ Una vez dentro de la pagina, tengo que poder observar la lista de usuarios existentes.
++ Se podrá acceder a una seccion que aparezcan todos los pagos recibidos.
++ Una vez se efectuada la transferencia, aparecera en la sección "Mis Pagos".
++ El transportista puede ver los detalles de los pagos recibidos.

@@ -14,4 +14,3 @@ para participar en ella con mi perfil y acceder a las funcionalidades.
 + Si las credenciales son incorrectas, se muestra un mensaje de error genérico que no revela si el email existe o no.
 + Al loguearse exitosamente, el usuario es redirigido a la pantalla principal correspondiente a su rol (expedidor o transportista).
 + La sesión se mantiene activa mientras el usuario navega por la plataforma.
-+ El usuario puede cerrar sesión desde cualquier pantalla mediante un botón visible.

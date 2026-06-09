@@ -10,7 +10,7 @@ quiero poder registrarme en la plataforma,
 para acceder a los servicios de Truckr y satisfacer mis necesidades de transporte.
 
 *Criterios de Aceptación:*
-+ Se pueden ingresar todos los datos necesarios: email, nombre completo y contraseña.
++ Se pueden ingresar todos los datos necesarios: email, nombre completo, contraseña y rol (expedidor o transportista).
 + Si el email ya existe en el sistema, el registro falla y se muestra un mensaje de error claro.
 + La contraseña debe cumplir todos los siguientes requisitos; de lo contrario el registro falla con un mensaje indicando qué requisito no se cumple:
   - Tiene al menos 8 caracteres.

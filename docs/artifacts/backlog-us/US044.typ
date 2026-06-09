@@ -2,7 +2,7 @@
 
 *Release:* MVP \
 *Prioridad:* Alta \
-*Épica:* Gestionar Cargas
+*Épica:* Cargas
 
 *Descripción:*
 Como expedidor,

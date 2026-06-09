@@ -2,7 +2,7 @@
 
 *Release:* MVP \
 *Prioridad:* Alta \
-*Épica:* Buscar Transporte para mi Carga
+*Épica:* Reservar Transportista
 
 *Descripción:*
 Como expedidor,
@@ -10,12 +10,13 @@ quiero ver el listado de ventanas de transporte compatibles con una carga que pu
 para identificar qué transportistas están en condiciones de realizar mi envío y poder enviarles una oferta de carga.
 
 *Criterios de Aceptación:*
-+ Se accede a esta pantalla desde la pantalla de detalle de una carga publicada (US27).
-+ El listado muestra únicamente las ventanas en estado abierta cuya franja temporal intersecta el rango de fecha de retiro indicado.
-+ El listado muestra únicamente las ventanas cuyo origen está a una distancia menor o igual al radio de retiro declarado por el transportista respecto del origen de la carga, y, si tuviese destino, también está dentro del mismo radio respecto del destino de la carga.
-+ El listado muestra únicamente las ventanas cuyo vehículo asociado tiene capacidad disponible mayor o igual al peso de la carga.
-+ Cada resultado muestra origen, destino, franja de fechas, resumen del transportista responsable y del vehículo asociado, precio por kilómetro de referencia y costo estimado total para la carga (precio por kilómetro × distancia estimada).
++ Se realiza una búsqueda de ventana solo con la carga publicada sin enviar
++ Se realizan búsquedas de ventanas compatibles con la carga publicada por el expedidor, considerando:
+  - La ventana debe estar en estado abierta.
+  - La franja temporal de la ventana debe intersectar el rango de fecha de retiro indicado por el expedidor.
+  - El origen de la ventana debe estar a una distancia menor o igual al radio de retiro declarado por el transportista respecto del origen de la carga, y, si tuviese destino, también debe estar dentro del mismo radio respecto del destino de la carga.
+  - El vehículo asociado a la ventana debe tener capacidad disponible mayor o igual al peso de la carga.
++ Cada resultado muestra los datos de la carga, de la ventana de transporte, y el precio del envío.
 + En caso de existir muchas ventanas compatibles, los resultados se muestran paginados.
-+ Se puede navegar al detalle del transportista responsable (US6) preservando el contexto de la carga y de la ventana seleccionada.
-+ Desde cada fila se puede navegar directamente a la pantalla de oferta con la carga y la ventana ya en contexto.
-+ Si no hay ventanas compatibles, se muestra un mensaje claro indicándolo y se sugiere revisar el filtro de fecha o el origen/destino de la carga.
++ El expedidor puede seleccionar una ventana compatible para enviarle una oferta de carga.
++ Se informa al expedidor en caso de no existir ventanas compatibles con la carga publicada.

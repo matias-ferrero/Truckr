@@ -1,16 +1,15 @@
-== US60: Perfil de Transportista
+== US60: Notificación en Tiempo Real de Pago Recibido
 
 *Release:* MVP \
 *Prioridad:* Media \
-*Épica:* Cuenta
+*Épica:* Notificaciones
 
 *Descripción:*
-Como expedidor,
-quiero poder entrar al perfil de un transportista,
-para observar tanto sus datos personales como sus reseñas.
+Como transportista,
+quiero recibir un aviso inmediato dentro de la aplicación cuando recibo un pago por un envío realizado,
+para enterarme al instante y poder revisar la transacción sin tener que refrescar mi bandeja.
 
 *Criterios de Aceptación:*
-+ Cualquier usuario puede acceder al perfil de un transportista.
-+ Se muestran datos de dicho transportista.
-+ Se muestra un listado de las reseñas hechas hacia el transportista (US26).
-+ Si el transportista no tiene actividad, cada sección muestra un estado vacío.
++ Si tengo la sesión abierta y el sistema me efectivizó un pago, aparece de inmediato un aviso emergente y se incrementa el contador de notificaciones.
++ El aviso me invita a revisar la transferencia en mi bandeja de pagos recibidos (US15).
++ El aviso en pantalla es adicional al pago realizado: si por algún motivo el aviso no llega, la transferencia queda realizada y disponible en mi bandeja.

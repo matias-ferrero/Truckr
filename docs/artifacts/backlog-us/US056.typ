@@ -1,8 +1,8 @@
 == US56: Eliminar Reseña de Expedidor
 
-*Release:* Release 3 \
+*Release:* Release 2 \
 *Prioridad:* Baja \
-*Épica:* Después del Envío
+*Épica:* Reseñas
 
 *Descripción:*
 Como transportista,

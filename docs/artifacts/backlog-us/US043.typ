@@ -2,7 +2,7 @@
 
 *Release:* MVP \
 *Prioridad:* Alta \
-*Épica:* Gestión de Envíos
+*Épica:* Ventanas de Transporte
 
 *Descripción:*
 Como transportista,

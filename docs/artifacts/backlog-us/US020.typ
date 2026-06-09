@@ -1,17 +1,15 @@
 == US20: Crear Reseña de Transportista
 
-*Release:* Release 2 \
+*Release:* MVP \
 *Prioridad:* Media \
-*Épica:* Después del Envío
+*Épica:* Reseñas
 
 *Descripción:*
-Como expedidor,
-quiero poder escribir reseñas sobre los transportistas,
-para compartir mi experiencia.
+Como Expedidor,
+quiero poder escribir reseñas sobre los Transportistas,
+para compartir mi experiencia con otros Expedidores.
 
 *Criterios de Aceptación:*
 + Un expedidor puede escribir una reseña sobre un transportista una vez que el envío se completó.
-+ La reseña incluye una puntuación (por ejemplo, 1 a 5 estrellas) y un comentario de texto.
-+ Un expedidor solo puede dejar una reseña por envío completado.
-
-// ═══════════════════════════════════════════════════════════════════════════
++ Solo se puede escribir una reseña por cada envío completado.
++ La reseña incluye una puntuación y opcionalmente un comentario.

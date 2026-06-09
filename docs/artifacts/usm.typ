@@ -1,41 +1,51 @@
-#import "../template.typ": (
-  c-activ, c-epic, c-mvp, c-mvp-lane, c-post, c-post-lane, c-task, conf,
-)
+#import "../template.typ": c-activ, c-epic, c-mvp, c-mvp-lane, c-post, c-post-lane, c-task, conf
 #show: conf
 
 #set page(flipped: true, paper: "a3", margin: (x: 0.5cm, y: 0.8cm))
 
 // ── Color definitions extracted from spreadsheet ──────────────────────────
 #let col1-task = rgb("#FCE5CD")
-#let col1-activ = rgb("#F9CB9C")
+#let col1-activ = rgb("#F6B26B")
 #let col2-task = rgb("#FCE5CD")
-#let col2-activ = rgb("#F9CB9C")
+#let col2-activ = rgb("#F6B26B")
 #let col3-task = rgb("#FCE5CD")
-#let col3-activ = rgb("#F9CB9C")
-#let col4-task = rgb("#F4CCCC")
-#let col4-activ = rgb("#EA9999")
-#let col5-task = rgb("#F4CCCC")
-#let col5-activ = rgb("#EA9999")
-#let col6-task = rgb("#F4CCCC")
-#let col6-activ = rgb("#EA9999")
+#let col3-activ = rgb("#F6B26B")
+#let col4-task = rgb("#FCE5CD")
+#let col4-activ = rgb("#F6B26B")
+#let col5-task = rgb("#FCE5CD")
+#let col5-activ = rgb("#F6B26B")
+#let col6-task = rgb("#D9EAD3")
+#let col6-activ = rgb("#93C47D")
 #let col7-task = rgb("#D9EAD3")
-#let col7-activ = rgb("#B6D7A8")
-#let col8-task = rgb("#D9EAD3")
-#let col8-activ = rgb("#B6D7A8")
-#let col9-task = rgb("#D9EAD3")
-#let col9-activ = rgb("#B6D7A8")
+#let col7-activ = rgb("#93C47D")
+#let col8-task = rgb("#CFE2F3")
+#let col8-activ = rgb("#6FA8DC")
+#let col9-task = rgb("#CFE2F3")
+#let col9-activ = rgb("#6FA8DC")
 #let col10-task = rgb("#EAD1DC")
 #let col10-activ = rgb("#C27BA0")
 #let col11-task = rgb("#EAD1DC")
 #let col11-activ = rgb("#C27BA0")
-#let col12-task = rgb("#EAD1DC")
-#let col12-activ = rgb("#C27BA0")
-#let col13-task = rgb("#D9D2E9")
-#let col13-activ = rgb("#8E7CC3")
-#let col14-task = rgb("#D9D2E9")
-#let col14-activ = rgb("#8E7CC3")
+#let col12-task = rgb("#E6B8AF")
+#let col12-activ = rgb("#CC4125")
+#let col13-task = rgb("#E6B8AF")
+#let col13-activ = rgb("#CC4125")
+#let col14-task = rgb("#E6B8AF")
+#let col14-activ = rgb("#CC4125")
 #let col15-task = rgb("#FFF2CC")
-#let col15-activ = rgb("#FFE599")
+#let col15-activ = rgb("#FFD966")
+#let col16-task = rgb("#FFF2CC")
+#let col16-activ = rgb("#FFD966")
+#let col17-task = rgb("#D9D2E9")
+#let col17-activ = rgb("#8E7CC3")
+#let col18-task = rgb("#D9D2E9")
+#let col18-activ = rgb("#8E7CC3")
+#let col19-task = rgb("#F4CCCC")
+#let col19-activ = rgb("#E06666")
+#let col20-task = rgb("#F4CCCC")
+#let col20-activ = rgb("#E06666")
+#let col21-task = rgb("#D9EAD3")
+#let col21-activ = rgb("#93C47D")
 #let epic-color = rgb("#9FC5E8")
 #let release-color = rgb("#6AA84F")
 
@@ -44,30 +54,39 @@
 #set text(size: 9pt)
 
 #table(
-  columns: (2fr,) * 15,
+  columns: (2fr,) * 21,
   inset: (x: 4pt, y: 3pt),
 
   // ── Row 1: Backbone — Epics ─────────────────────────────────────────────
-  table.cell(colspan: 3, fill: epic-color, align: center)[
+  table.cell(colspan: 5, fill: epic-color, align: center)[
     #text(fill: black, weight: "bold")[Cuenta]
   ],
-  table.cell(colspan: 3, fill: epic-color, align: center)[
-    #text(fill: black, weight: "bold")[Ver Ventanas de Transporte Disponibles]
-  ],
-  table.cell(colspan: 3, fill: epic-color, align: center)[
-    #text(fill: black, weight: "bold")[Gestión de Envíos]
-  ],
-  table.cell(colspan: 3, fill: epic-color, align: center)[
-    #text(fill: black, weight: "bold")[Reservar Transportista]
+  table.cell(colspan: 2, fill: epic-color, align: center)[
+    #text(fill: black, weight: "bold")[Ventanas de Transporte]
   ],
   table.cell(colspan: 2, fill: epic-color, align: center)[
-    #text(fill: black, weight: "bold")[Aceptar Envío]
+    #text(fill: black, weight: "bold")[Cargas]
+  ],
+  table.cell(colspan: 2, fill: epic-color, align: center)[
+    #text(fill: black, weight: "bold")[Reservar Transportista]
+  ],
+  table.cell(colspan: 3, fill: epic-color, align: center)[
+    #text(fill: black, weight: "bold")[Envíos]
+  ],
+  table.cell(colspan: 2, fill: epic-color, align: center)[
+    #text(fill: black, weight: "bold")[Reseñas]
+  ],
+  table.cell(colspan: 2, fill: epic-color, align: center)[
+    #text(fill: black, weight: "bold")[Servicio de Pagos]
+  ],
+  table.cell(colspan: 2, fill: epic-color, align: center)[
+    #text(fill: black, weight: "bold")[Notificaciones]
   ],
   table.cell(colspan: 1, fill: epic-color, align: center)[
-    #text(fill: black, weight: "bold")[Despues del envío]
+    #text(fill: black, weight: "bold")[Seguros]
   ],
   table.cell(fill: col1-activ, align: center)[
-    #text(fill: black, weight: "bold")[Crear]
+    #text(fill: black, weight: "bold")[Registro]
   ],
   table.cell(fill: col2-activ, align: center)[
     #text(fill: black, weight: "bold")[Login]
@@ -76,201 +95,229 @@
     #text(fill: black, weight: "bold")[Perfil]
   ],
   table.cell(fill: col4-activ, align: center)[
-    #text(fill: black, weight: "bold")[Búsqueda]
+    #text(fill: black, weight: "bold")[Dashboard]
   ],
   table.cell(fill: col5-activ, align: center)[
-    #text(fill: black, weight: "bold")[Filtros]
+    #text(fill: black, weight: "bold")[Flota de Transportista]
   ],
   table.cell(fill: col6-activ, align: center)[
-    #text(fill: black, weight: "bold")[Detalles del Transportista]
+    #text(fill: black, weight: "bold")[Publicar]
   ],
   table.cell(fill: col7-activ, align: center)[
-    #text(
-      fill: black,
-      weight: "bold",
-    )[Publicación de Disponibilidad de Transporte]
+    #text(fill: black, weight: "bold")[Administrar]
   ],
   table.cell(fill: col8-activ, align: center)[
-    #text(fill: black, weight: "bold")[Ofertas de Envío]
+    #text(fill: black, weight: "bold")[Publicar]
   ],
   table.cell(fill: col9-activ, align: center)[
-    #text(fill: black, weight: "bold")[Filtros]
+    #text(fill: black, weight: "bold")[Administrar]
   ],
   table.cell(fill: col10-activ, align: center)[
-    #text(fill: black, weight: "bold")[Ofertar]
+    #text(fill: black, weight: "bold")[Busqueda y Filtrado]
   ],
   table.cell(fill: col11-activ, align: center)[
-    #text(fill: black, weight: "bold")[Pagos]
+    #text(fill: black, weight: "bold")[Ofertas]
   ],
   table.cell(fill: col12-activ, align: center)[
-    #text(fill: black, weight: "bold")[Seguros]
+    #text(fill: black, weight: "bold")[Administrar]
   ],
   table.cell(fill: col13-activ, align: center)[
-    #text(fill: black, weight: "bold")[Aceptación de Envío]
+    #text(fill: black, weight: "bold")[Aceptar]
   ],
   table.cell(fill: col14-activ, align: center)[
-    #text(fill: black, weight: "bold")[Realizar Envío]
+    #text(fill: black, weight: "bold")[Realizar]
   ],
   table.cell(fill: col15-activ, align: center)[
-    #text(fill: black, weight: "bold")[Reseñas]
+    #text(fill: black, weight: "bold")[Altas y Consultas]
+  ],
+  table.cell(fill: col16-activ, align: center)[
+    #text(fill: black, weight: "bold")[Bajas y Modificaciones]
+  ],
+  table.cell(fill: col17-activ, align: center)[
+    #text(fill: black, weight: "bold")[Realizar Pago]
+  ],
+  table.cell(fill: col18-activ, align: center)[
+    #text(fill: black, weight: "bold")[Bandeja]
+  ],
+  table.cell(fill: col19-activ, align: center)[
+    #text(fill: black, weight: "bold")[Ofertas]
+  ],
+  table.cell(fill: col20-activ, align: center)[
+    #text(fill: black, weight: "bold")[Pagos]
+  ],
+  table.cell(fill: col21-activ, align: center)[
+    #text(fill: black, weight: "bold")[Gestión de Seguros]
   ],
 
-  // ── MVP — Release 1 Stories ──────────────────────────────────────────────────────────
+  // ── MVP — Stories ─────────────────────────────────────────────────────
   table.cell(fill: col1-task)[
-    - Ingresar Email y Usuario
-    - Ingresar Contraseña
+    - US001: Registrarse
+    - US038: Landing Page
   ],
   table.cell(fill: col2-task)[
-    - Ingresar Email o Usuario
-    - Ingresar Contraseña
-    - Clickear Boton de Login
+    - US002: Login
   ],
   table.cell(fill: col3-task)[
-    - Completar datos personales de mi perfil
-    - Guardar los cambios
+    - US006: Perfil de Transportista
+    - US059: Perfil de Expedidor
+    - US003: Modificar perfil
   ],
   table.cell(fill: col4-task)[
-    - Ingresar Ubicación Origen
-    - Ingresar Ubicación Destino
-    - Ingresar rango de Fecha de Retiro
-    - Scrollear entre Ventanas Disponibles
+    - US036: Dashboard del Transportista
+    - US037: Dashboard del Expedidor
   ],
   table.cell(fill: col5-task)[
-    - Filtrar por Precio/Km
-    - Filtrar por Dimensiones
-    - Filtrar por capacidad del camión
+    - US014: Registro de Vehiculo
+    - US042: Administrar mi flota
+    - US031: Editar Vehiculo de mi flota
+    - US032: Baja de Vehiculo
   ],
   table.cell(fill: col6-task)[
-    - Ver Fotos y Descripción
-    - Ver Precio del Servicio
+    - US009: Publicar Ventana de Transporte
+    - US050: Definir radio de recogida
+    - US048: Selector de direcciones - Ventana de Transporte
   ],
   table.cell(fill: col7-task)[
-    - Ingresar zona origen y destino
-    - Ingresar franja temporal (desde / hasta)
-    - Asociar vehículo registrado
-    - Ingresar Precio/Km
+    - US043: Administrar mis Ventanas de Transporte
+    - US033: Editar Ventana de Transporte
+    - US035: Ocultar Ventana de Transporte
+    - US034: Eliminar Ventana de Transporte
   ],
   table.cell(fill: col8-task)[
-    - Observar Listado de Ofertas
-    - Entrar a Detalles del Envío
-    - Entrar a Detalles del Expedidor
+    - US027: Publicar carga
+    - US049: Selector de direcciones - Carga
+    - US053: Autocalculado de distancia
   ],
   table.cell(fill: col9-task)[
-    - Filtrar por Ubicación Origen
-    - Filtrar por rangos de Fecha de retiro
-    - Filtrar por Peso
-    - Filtrar por Volumen
+    - US044: Administrar cargas
+    - US045: Filtrar mis cargas
+    - US046: Ver detalles de una carga
+    - US047: Editar carga
   ],
   table.cell(fill: col10-task)[
-    - Seleccionar Fecha de Retiro del producto
-    - Ingresar Dirección completa de Retiro del producto
-    - Ingresar Dirección completa de Entrega del producto
+    - US004: Busqueda de Ventanas Compatibles con mi Carga
+    - US025: Paginado de Ventanas Compatibles con mi Carga
   ],
   table.cell(fill: col11-task)[
-    - Realizar el pago
-    - Reserva instantánea
-    - Brindar Datos de contacto del Transportista
+    - US007: Ofertar retiro de una carga
+    - US010: Observar ofertas de envio
   ],
   table.cell(fill: col12-task)[
-    - Ofrecer venta de seguros
-    - Aceptar compra de un seguro
-    - Enviar documentación del seguro
+    - US017: Listado de envios de Transportista
+    - US052: Listado de envios de Expedidor
+    - US039: Detalles de envio
+    - US051: Mapa en detalles de envio
   ],
   table.cell(fill: col13-task)[
-    - Aceptar envío
+    - US012: Aceptacion de oferta de envio
   ],
   table.cell(fill: col14-task)[
-    - Confirmar retiro de determinado producto
-    - Confirmar entrega de determinado producto
+    - US018: Actualizacion de Envio - Inicio de Envio
+    - US019: Actualizacion de Envio - Carga entregada
   ],
   table.cell(fill: col15-task)[
-    - Hacer reseña al transportista
-    - Leer Reseñas
-    - Editar o eliminar una reseña hecha previamente
+    - US020: Crear reseña del transportista
+    - US026: Visualizar Reseñas del transportista
+    - US030: Crear reseña del expedidor
+    - US054: Visualizar Reseñas del expedidor
   ],
+  table.cell(fill: col16-task)[],
+  table.cell(fill: col17-task)[
+    - US008: Realizar pago (Expedidor)
+    - US015: Pago al Transportista
+  ],
+  table.cell(fill: col18-task)[
+    - US040: Mis pagos como transportista
+  ],
+  table.cell(fill: col19-task)[
+    - US058: Notificacion en tiempo real de Oferta Recibida
+    - US057: Notificacion en tiempo real de Respuesta a mi Oferta
+  ],
+  table.cell(fill: col20-task)[
+    - US060: Notificacion en tiempo real de Pago Recibido
+  ],
+  table.cell(fill: col21-task)[],
 
-  // ── MVP — Release 1 Marker ────────────────────────────────────────────────────────
-  table.cell(colspan: 15, fill: release-color, align: center)[
-    #text(fill: black, weight: "bold")[MVP — Release 1]
+  // ── MVP — Marker ───────────────────────────────────────────────────────
+  table.cell(colspan: 21, fill: release-color, align: center)[
+    #text(fill: black, weight: "bold")[MVP]
   ],
-  // ── Post MVP — Release 2 Stories ──────────────────────────────────────────────────────────
-  table.cell(fill: col1-task)[],
+  // ── Release 2 — Stories ─────────────────────────────────────────────────────
+  table.cell(fill: col1-task)[
+    - US022: Verificacion de cuenta por Email
+  ],
   table.cell(fill: col2-task)[
-    - Cambiar Contraseña
+    - US016: Cambiar Contraseña
+    - US041: Recupero de Contraseña
   ],
-  table.cell(fill: col3-task)[
-    - Ver mi historial de envíos
-  ],
-  table.cell(fill: col4-task)[
-    - Paginado
-    - Sort By
-  ],
+  table.cell(fill: col3-task)[],
+  table.cell(fill: col4-task)[],
   table.cell(fill: col5-task)[],
-  table.cell(fill: col6-task)[
-    - Ver historial de envíos del transportista
-  ],
+  table.cell(fill: col6-task)[],
   table.cell(fill: col7-task)[],
-  table.cell(fill: col8-task)[
-    - Paginado
-    - Sort By
-    - Ver historial de envíos del consumidor
+  table.cell(fill: col8-task)[],
+  table.cell(fill: col9-task)[],
+  table.cell(fill: col10-task)[
+    - US005: Filtrar ventanas compatibles
   ],
-  table.cell(fill: col9-task)[
-    - Filtrar por Ubicación Destino
+  table.cell(fill: col11-task)[
+    - US011: Filtrado de ofertas de envio
   ],
-  table.cell(fill: col10-task)[],
-  table.cell(fill: col11-task)[],
-  table.cell(fill: col12-task)[
-    - Filtrar entre seguros
-  ],
+  table.cell(fill: col12-task)[],
   table.cell(fill: col13-task)[],
   table.cell(fill: col14-task)[],
   table.cell(fill: col15-task)[],
+  table.cell(fill: col16-task)[
+    - US028: Editar reseña del transportista
+    - US029: Eliminar reseña del transportista
+    - US055: Editar reseña del expedidor
+    - US056: Eliminar una reseña del expedidor
+  ],
+  table.cell(fill: col17-task)[],
+  table.cell(fill: col18-task)[],
+  table.cell(fill: col19-task)[],
+  table.cell(fill: col20-task)[],
+  table.cell(fill: col21-task)[],
 
-  // ── Post MVP — Release 2 Marker ────────────────────────────────────────────────────────
-  table.cell(colspan: 15, fill: release-color, align: center)[
-    #text(fill: black, weight: "bold")[Post MVP — Release 2]
+  // ── Release 2 — Marker ───────────────────────────────────────────────────────
+  table.cell(colspan: 21, fill: release-color, align: center)[
+    #text(fill: black, weight: "bold")[Release 2]
   ],
-  // ── Post MVP — Release 3 Stories ──────────────────────────────────────────────────────────
-  table.cell(fill: col1-task)[
-    - Verificar cuenta mediante mail
-  ],
+  // ── Release 3 — Stories ─────────────────────────────────────────────────────
+  table.cell(fill: col1-task)[],
   table.cell(fill: col2-task)[],
   table.cell(fill: col3-task)[],
-  table.cell(fill: col4-task)[
-    - Guardado de búsquedas
-  ],
-  table.cell(fill: col5-task)[
-    - Filtrar por Distancia
-  ],
+  table.cell(fill: col4-task)[],
+  table.cell(fill: col5-task)[],
   table.cell(fill: col6-task)[],
-  table.cell(fill: col7-task)[
-    - Poner un límite de kilometros
-  ],
+  table.cell(fill: col7-task)[],
   table.cell(fill: col8-task)[],
-  table.cell(fill: col9-task)[
-    - Estimar una fecha de entrega según los envíos aceptados
-  ],
+  table.cell(fill: col9-task)[],
   table.cell(fill: col10-task)[],
-  table.cell(fill: col11-task)[
-    - Integración con Mercado Pago
-    - Recibir pago de la app por los envíos concretados
-    - Efectuar pago al transportista
-  ],
+  table.cell(fill: col11-task)[],
   table.cell(fill: col12-task)[
-    - Recibir pago por el servicio del seguro
-    - Hacer pago al seguro
+    - US023: Envios compuestos
+    - US024: Encadenado de pedidos
   ],
   table.cell(fill: col13-task)[],
   table.cell(fill: col14-task)[
-    - Integración con Google Maps
-    - Ver siguiente Destino (Ubicacion completa)
-    - Ver recorrido por GPS
+    - US021: Tracking de Envio
+    - US013: Navegacion GPS del Envio
   ],
   table.cell(fill: col15-task)[],
+  table.cell(fill: col16-task)[],
+  table.cell(fill: col17-task)[],
+  table.cell(fill: col18-task)[],
+  table.cell(fill: col19-task)[],
+  table.cell(fill: col20-task)[],
+  table.cell(fill: col21-task)[
+    - US061: Contratar seguro al reservar transporte
+    - US062: Iniciar reclamo de siniestro
+    - US063: Detalles del seguro
+  ],
 
-  // ── Post MVP — Release 3 Marker ────────────────────────────────────────────────────────
-  table.cell(colspan: 15, fill: release-color, align: center)[
-    #text(fill: black, weight: "bold")[Post MVP — Release 3]
+  // ── Release 3 — Marker ───────────────────────────────────────────────────────
+  table.cell(colspan: 21, fill: release-color, align: center)[
+    #text(fill: black, weight: "bold")[Release 3]
   ],
 )

@@ -1,17 +1,16 @@
-== US25: Gestión de Seguros
+== US25: Paginado de Ventanas Compatibles con mi Carga
 
-*Release:* Release 3 \
-*Prioridad:* Baja \
+*Release:* MVP \
+*Prioridad:* Media \
 *Épica:* Reservar Transportista
 
 *Descripción:*
 Como expedidor,
-quiero poder contratar un seguro para mi envío al momento de reservar el transporte,
-para proteger mi carga en caso de daño o pérdida durante el envío.
+quiero ver en distintas paginas el listado de ventanas de transporte compatibles con una carga,
+para poder visualizarlas de manera más cómoda sin tener que bajar infinitamente si tengo muchas.
 
 *Criterios de Aceptación:*
-+ Al confirmar una oferta de retiro, se ofrece la opción de contratar un seguro para el envío.
-+ Se muestran las opciones de seguro disponibles con su cobertura y precio.
-+ El costo del seguro se suma al total del pago.
-+ En caso de siniestro, el expedidor puede iniciar un reclamo desde la plataforma.
-+ El detalle del seguro contratado es visible en el historial del envío.
++ En caso de existir muchas ventanas compatibles, los resultados se muestran paginados.
++ Se puede transitar entre las distintas páginas de resultados.
++ El expedidor puede seleccionar una ventana compatible para enviarle una oferta de carga.
++ Se informa al expedidor en caso de no existir ventanas compatibles con la carga publicada.

@@ -29,8 +29,6 @@
 
 #include "backlog-us/US004.typ"
 
-#include "backlog-us/US005.typ"
-
 #include "backlog-us/US006.typ"
 
 #include "backlog-us/US007.typ"
@@ -53,9 +51,23 @@
 
 #include "backlog-us/US019.typ"
 
-#include "backlog-us/US039.typ"
+#include "backlog-us/US020.typ"
+
+#include "backlog-us/US026.typ"
 
 #include "backlog-us/US027.typ"
+
+#include "backlog-us/US030.typ"
+
+#include "backlog-us/US031.typ"
+
+#include "backlog-us/US032.typ"
+
+#include "backlog-us/US033.typ"
+
+#include "backlog-us/US034.typ"
+
+#include "backlog-us/US035.typ"
 
 #include "backlog-us/US036.typ"
 
@@ -63,23 +75,13 @@
 
 #include "backlog-us/US038.typ"
 
-#include "backlog-us/US040.typ"
+#include "backlog-us/US039.typ"
 
-#include "backlog-us/US041.typ"
+#include "backlog-us/US040.typ"
 
 #include "backlog-us/US042.typ"
 
-#include "backlog-us/US031.typ"
-
-#include "backlog-us/US032.typ"
-
 #include "backlog-us/US043.typ"
-
-#include "backlog-us/US033.typ"
-
-#include "backlog-us/US034.typ"
-
-#include "backlog-us/US035.typ"
 
 #include "backlog-us/US044.typ"
 
@@ -101,12 +103,6 @@
 
 #include "backlog-us/US053.typ"
 
-#include "backlog-us/US020.typ"
-
-#include "backlog-us/US026.typ"
-
-#include "backlog-us/US030.typ"
-
 #include "backlog-us/US054.typ"
 
 #include "backlog-us/US057.typ"
@@ -114,8 +110,6 @@
 #include "backlog-us/US058.typ"
 
 #include "backlog-us/US059.typ"
-
-#include "backlog-us/US060.typ"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Post MVP — Release 2
@@ -129,13 +123,19 @@
 )[Post MVP — Release 2]]
 #line(length: 100%, stroke: 1.5pt + rgb("#6AA84F"))
 
+#include "backlog-us/US005.typ"
+
 #include "backlog-us/US011.typ"
 
-#include "backlog-us/US013.typ"
+#include "backlog-us/US016.typ"
+
+#include "backlog-us/US022.typ"
 
 #include "backlog-us/US028.typ"
 
 #include "backlog-us/US029.typ"
+
+#include "backlog-us/US041.typ"
 
 #include "backlog-us/US055.typ"
 
@@ -153,14 +153,16 @@
 )[Post MVP — Release 3]]
 #line(length: 100%, stroke: 1.5pt + rgb("#6AA84F"))
 
-#include "backlog-us/US016.typ"
+#include "backlog-us/US013.typ"
 
 #include "backlog-us/US021.typ"
-
-#include "backlog-us/US022.typ"
 
 #include "backlog-us/US023.typ"
 
 #include "backlog-us/US024.typ"
 
-#include "backlog-us/US025.typ"
+#include "backlog-us/US061.typ"
+
+#include "backlog-us/US062.typ"
+
+#include "backlog-us/US063.typ"

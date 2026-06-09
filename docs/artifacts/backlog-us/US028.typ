@@ -1,8 +1,8 @@
 == US28: Editar Reseña de Transportista
 
-*Release:* Release 3 \
+*Release:* Release 2 \
 *Prioridad:* Baja \
-*Épica:* Después del Envío
+*Épica:* Reseñas
 
 *Descripción:*
 Como expedidor,
@@ -11,4 +11,4 @@ para corregir mi opinión si cambié de parecer o cometí un error.
 
 *Criterios de Aceptación:*
 + El expedidor puede editar el texto y la puntuación de una reseña que realizó.
-+ Al editar una reseña, se indica visualmente que fue modificada (por ejemplo, "editada").
++ Al editar una reseña, se indica visualmente que fue modificada.

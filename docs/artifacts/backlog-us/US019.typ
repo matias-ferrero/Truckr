@@ -2,7 +2,7 @@
 
 *Release:* MVP \
 *Prioridad:* Alta \
-*Épica:* Aceptar Envío
+*Épica:* Envíos
 
 *Descripción:*
 Como transportista,
@@ -10,8 +10,7 @@ quiero poder marcar una carga como entregada,
 para que el expedidor lo sepa y se concrete el pago del servicio.
 
 *Criterios de Aceptación:*
-+ Al entregar la carga, el transportista puede marcarla como "entregada" con un botón.
-+ Al expedidor se le muestra el estado del envío como completado.
-+ La confirmación de entrega dispara el proceso de transferencia de pago al transportista.
++ El transportista puede marcar una carga como entregada solo después de haberla retirado.
++ Al expedidor se le muestra que el transportista ya entregó su carga en el estado del envío.
++ Ambos usuarios pueden ver que el envío está entregado.
 + La fecha y hora de entrega quedan registradas en el sistema.
-+ No se puede marcar como entregado un envío que no fue previamente marcado como "en tránsito".
