@@ -50,7 +50,7 @@ def build_parser() -> argparse.ArgumentParser:
     src.add_argument(
         "--sprints-dir",
         dest="sprints_dir",
-        help="Directory of sprint ledger files (default: docs/sprints)",
+        help="Directory of sprint ledger files (default: docs/progress-reports)",
     )
     src.add_argument(
         "--phase",

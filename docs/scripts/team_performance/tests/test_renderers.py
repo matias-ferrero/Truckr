@@ -55,7 +55,7 @@ def _sample_report(*, with_projection: bool = True) -> Report:
         schema_version="3",
         generated_at=datetime(2026, 5, 28, 12, 0, tzinfo=UTC),
         config_snapshot={
-            "sprints_dir": "docs/sprints",
+            "sprints_dir": "docs/progress-reports",
             "phase": "development",
             "target_user_stories": 10,
         },

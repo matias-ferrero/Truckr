@@ -1,6 +1,6 @@
 ---
 name: sprint-planning
-description: Produce the next sprint plan (docs/features/SPRINT-N-PLAN.md) for the FIUBA GDSI Truckr repo, plus its closure stub (docs/sprints/sprint-NN.md), mirroring the structure of the prior sprint plans. Use when the user (PM) asks to "plan the next sprint", "do sprint planning", "write the sprint N plan", or runs /sprint-planning.
+description: Produce the next sprint plan (docs/features/SPRINT-N-PLAN.md) for the FIUBA GDSI Truckr repo, plus its closure stub (docs/progress-reports/sprint-NN.md), mirroring the structure of the prior sprint plans. Use when the user (PM) asks to "plan the next sprint", "do sprint planning", "write the sprint N plan", or runs /sprint-planning.
 ---
 
 # Sprint planning
@@ -21,7 +21,7 @@ Companion skill: `/sprint-status` reads this file mid-sprint. Keep the *Compromi
 Use `mcp__plugin_context-mode_context-mode__ctx_batch_execute`:
 
 - Read the prior plan: `cat docs/features/SPRINT-$((N-1))-PLAN.md` (structure to mirror).
-- Read the prior closure: `cat docs/sprints/sprint-0$((N-1)).md` (what's still in progress = carryover candidates).
+- Read the prior closure: `cat docs/progress-reports/sprint-0$((N-1)).md` (what's still in progress = carryover candidates).
 - `gh project item-list 7 --owner tcorzo --limit 200 --format json` — board state.
 - `gh pr list --state open --limit 40 --json number,title,author,headRefName,isDraft,reviewDecision` — open PRs = carryover / in-flight.
 - `ls .gdsi-sdlc/issues/{Backlog,Ready,InProgress,InReview}/` — live issue files.
@@ -35,7 +35,7 @@ Then derive the carryover and candidate lists with `ctx_execute`; don't paste ra
 2. Draft the goal (`## Objetivo del sprint`) as a bold blockquote + one narrative paragraph. Run it past the PM.
 3. Fill *Compromisos por integrante*: one row per `(dev, TAG (gh #), trabajo, tipo, carryover)`. Aim ~1 stream/dev; a dev may hold 2 if one is small or a carryover. Use TAGs from `.gdsi-sdlc/config.json` prefixes (`REQ`, `FIX`, `INF`, …) + scope (`BE`/`FE`/`INFRA`/…). Local-only issues (no GH #) → mark `(local)`.
 4. Fill the remaining sections from [TEMPLATE.md](TEMPLATE.md): Carryovers, Dependencias, Fuera de alcance, Definition of Done (stable 6-item boilerplate — copy verbatim), Riesgos, Referencias, Mapping at a glance.
-5. Write the plan to `docs/features/SPRINT-N-PLAN.md` and the closure stub to `docs/sprints/sprint-NN.md` (zero-padded, e.g. `sprint-05.md`) with `status: planned`, the window, empty `completed_user_stories: []`, and "_A completar por el equipo._" placeholders.
+5. Write the plan to `docs/features/SPRINT-N-PLAN.md` and the closure stub to `docs/progress-reports/sprint-NN.md` (zero-padded, e.g. `sprint-05.md`) with `status: planned`, the window, empty `completed_user_stories: []`, and "_A completar por el equipo._" placeholders.
 6. Review the draft with the PM before opening a PR.
 
 ## Hard rules (this repo)

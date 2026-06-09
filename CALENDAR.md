@@ -38,13 +38,13 @@ Dev phase begins the day after the artifact defense. Sprint *N* defense is the c
 
 ## Canonical inputs for `team-performance`
 
-The `team-performance` CLI no longer derives sprint windows from dates — it reads the per-sprint ledger under `docs/sprints/` (one `sprint-NN.md` file per sprint, with its window and completed User Stories declared inline). The sprint numbers and windows in the tables above are the source of truth for what each ledger file should contain.
+The `team-performance` CLI no longer derives sprint windows from dates — it reads the per-sprint ledger under `docs/progress-reports/` (one `sprint-NN.md` file per sprint, with its window and completed User Stories declared inline). Each ledger file is the machine-readable form of that sprint's progress report (`Informe de Avance`); the report is the source of truth for the file's window and completed/in-progress User Stories. The tables above are the nominal course schedule — the reports may use slightly different (overlapping) day boundaries.
 
 When the question is about the **dev phase** (the default for this skill):
 
 | Flag             | Value           |
 |------------------|-----------------|
-| `--sprints-dir`  | `docs/sprints`  |
+| `--sprints-dir`  | `docs/progress-reports`  |
 | `--phase`        | `development`   |
 
 For the **documentation phase** (rare — typically only for retrospective analysis) pass `--phase documentation`.

@@ -31,7 +31,7 @@ def _ns(**kw: object) -> Namespace:
 
 def test_defaults_applied():
     cfg = load_config(_ns(), env={})
-    assert cfg.sprints_dir == Path("docs/sprints")
+    assert cfg.sprints_dir == Path("docs/progress-reports")
     assert cfg.phase == "development"
     assert cfg.backlog_us == Path("docs/artifacts/backlog-us.typ")
     assert cfg.validate_us_ids is True

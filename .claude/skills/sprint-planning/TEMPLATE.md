@@ -92,7 +92,7 @@ Diferido a Sprint ‹N+1›
 
 ---
 
-# Closure stub — docs/sprints/sprint-NN.md (zero-padded)
+# Closure stub — docs/progress-reports/sprint-NN.md (zero-padded)
 
 Write this alongside the plan, to be completed at sprint close. `status: planned` and empty completed list at planning time.
 

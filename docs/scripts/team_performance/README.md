@@ -2,7 +2,7 @@
 
 User-Story throughput metrics and bootstrap projection for the
 `fiuba-gestion-tp` repo. Reads a hand-maintained **per-sprint ledger**
-(`docs/sprints/sprint-NN.md`), computes throughput in User Stories per sprint,
+(`docs/progress-reports/sprint-NN.md`), computes throughput in User Stories per sprint,
 lead time in sprints, and (optionally) bootstraps a probability of meeting a
 target.
 
@@ -19,7 +19,7 @@ This puts the `team-performance` entrypoint in the `.venv`.
 
 ## The sprint ledger
 
-One Markdown file per sprint under `docs/sprints/`, named `sprint-NN.md`. The
+One Markdown file per sprint under `docs/progress-reports/`, named `sprint-NN.md`. The
 tool reads only the frontmatter; the body is free-form retro notes.
 
 ```yaml
@@ -125,7 +125,7 @@ Resolved per setting in this order (first match wins):
 
 1. CLI flag (`--sprints-dir`)
 2. Env var (`TEAM_PERF_SPRINTS_DIR`)
-3. Built-in default (`docs/sprints`)
+3. Built-in default (`docs/progress-reports`)
 
 `NO_COLOR` is honoured for the rich output (also `--no-color`).
 

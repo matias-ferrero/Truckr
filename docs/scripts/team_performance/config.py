@@ -12,7 +12,7 @@ from pathlib import Path
 
 from team_performance.errors import ConfigError
 
-DEFAULT_SPRINTS_DIR = "docs/sprints"
+DEFAULT_SPRINTS_DIR = "docs/progress-reports"
 DEFAULT_PHASE = "development"
 DEFAULT_BACKLOG_US = "docs/artifacts/backlog-us.typ"
 DEFAULT_BOOTSTRAP_SAMPLES = 10_000

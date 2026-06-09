@@ -1,4 +1,4 @@
-"""Read the per-sprint User Story ledger (``docs/sprints/sprint-NN.md``).
+"""Read the per-sprint User Story ledger (``docs/progress-reports/sprint-NN.md``).
 
 Each sprint is one Markdown file with a YAML-ish frontmatter block followed by
 a free-form retro body (the body is ignored). The frontmatter is intentionally

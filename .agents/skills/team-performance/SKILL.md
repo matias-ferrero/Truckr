@@ -14,9 +14,12 @@ needed at p50/p85/p95/p99) and **forward** (P[≥ target] in N sprints)
 projections. Every number prints with a one-line caption — no orphaned metrics.
 
 **Data source.** The CLI reads a hand-maintained **per-sprint ledger**:
-`docs/sprints/sprint-NN.md`, one Markdown file per sprint. There is no GitHub
-access. A sprint's `completed_user_stories` is whatever the team recorded —
-the tool trusts the ledger.
+`docs/progress-reports/sprint-NN.md`, one Markdown file per sprint. These files
+are the canonical, machine-readable form of the per-sprint progress reports
+(originally authored as `Informe de Avance` PDFs — the PDFs are the source of
+truth from which each file's frontmatter is derived). There is no GitHub access.
+A sprint's `completed_user_stories` is whatever the team recorded — the tool
+trusts the ledger.
 
 **Language convention.** The CLI text/JSON output and the generated Typst report are **product content** (an academic deliverable shown to the team and reviewers) and therefore in **es-AR** — see `CLAUDE.md` "Language Rules". Only Python identifiers, JSON keys, Typst variable names, and this SKILL.md prose stay in English.
 
@@ -37,7 +40,7 @@ the tool trusts the ledger.
 
 | Input | Required | How to obtain |
 |-------|----------|---------------|
-| `sprints_dir`          | No (default `docs/sprints`) | Directory of `sprint-NN.md` ledger files. |
+| `sprints_dir`          | No (default `docs/progress-reports`) | Directory of `sprint-NN.md` ledger files. |
 | `phase`                | No (default `development`)  | `development` or `documentation`. The CLI counts only ledger files whose `phase` matches. Default to **development** unless the user asks otherwise. |
 | `backlog_us`           | No (default `docs/artifacts/backlog-us.typ`) | The US backlog artifact, used to validate that ledger US ids are real. |
 | `no_us_validation`     | No (default off) | Pass `--no-us-validation` to skip checking ledger US ids against `backlog-us.typ`. Use while the ledger references stories the backlog artifact hasn't caught up with yet — otherwise an unknown id is a fatal data error (exit 3). |
@@ -61,8 +64,11 @@ completed_user_stories: [US1, US2, US14]
 ## Retro / ## Notas por US  (free-form body; the tool ignores it)
 ```
 
-`CALENDAR.md` is the source of truth for sprint numbers and windows; each
-ledger file must agree with it.
+Each file's frontmatter is derived from that sprint's progress report (the
+`Informe de Avance` PDF) — the report is the source of truth for the window and
+for which User Stories were completed vs. left in progress. `CALENDAR.md` lists
+the course-schedule sprint numbers and nominal windows; note the reports may use
+slightly different (overlapping) day boundaries — the ledger follows the report.
 
 ---
 
@@ -92,7 +98,7 @@ ledger file must agree with it.
 
 ```sh
 uv run team-performance \
-    --sprints-dir docs/sprints \
+    --sprints-dir docs/progress-reports \
     --phase development \
     --target-user-stories <COUNT> \
     --remaining-sprints <N>         # optional; adds the forward block \
@@ -493,7 +499,7 @@ Substitute every `<…>` with values from the JSON. The data block at the top is
 2. Run:
    ```sh
    uv run team-performance \
-       --sprints-dir docs/sprints --phase development \
+       --sprints-dir docs/progress-reports --phase development \
        --target-user-stories 18 --remaining-sprints 5 \
        --format json > /tmp/tp.json
    ```
@@ -527,7 +533,7 @@ Run without `--target-user-stories`. `projection` is `null`; set `has-projection
 ## See also
 
 - Tool source + JSON schema: `docs/scripts/team_performance/README.md`
-- The sprint ledger: `docs/sprints/sprint-NN.md`
+- The sprint ledger: `docs/progress-reports/sprint-NN.md`
 - Calendar / sprint windows: `CALENDAR.md`
 - Issue: `INF-GEN-00003` (refactor to the User-Story ledger); predecessor `INF-GEN-00001`
 - Shared Typst styling: `docs/template.typ` (palette: `c-brand`, `c-brand-mid`)
