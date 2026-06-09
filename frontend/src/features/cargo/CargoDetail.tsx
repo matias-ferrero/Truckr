@@ -4,8 +4,10 @@ import { cancelCargo, getCargo } from "./api";
 import type { Cargo, CargoOffer } from "../../types/Cargo";
 import { cargosContent } from "./cargosContent";
 import { formatRoute } from "../../lib/format-place";
+import { formatDistance } from "../../lib/format-distance";
 import { Alert } from "../../components/ui/alert";
 import { Button } from "../../components/ui/button";
+import CargoMapPreview from "./CargoMapPreview";
 
 const t = cargosContent.detail;
 
@@ -233,7 +235,39 @@ export default function CargoDetail() {
                                 {arsFormatter.format(cargo.declared_value_cents / 100)}
                             </dd>
                         </div>
+                        {cargo.distance_km != null && (
+                            <div>
+                                <dt>{t.summary.distance}</dt>
+                                <dd>{formatDistance(parseFloat(cargo.distance_km))}</dd>
+                            </div>
+                        )}
                     </dl>
+                    <CargoMapPreview
+                        pickup={
+                            cargo.pickup_lat && cargo.pickup_lng
+                                ? {
+                                    text: cargo.pickup_address,
+                                    lat: parseFloat(cargo.pickup_lat),
+                                    lng: parseFloat(cargo.pickup_lng),
+                                }
+                                : null
+                        }
+                        delivery={
+                            cargo.delivery_lat && cargo.delivery_lng
+                                ? {
+                                    text: cargo.delivery_address,
+                                    lat: parseFloat(cargo.delivery_lat),
+                                    lng: parseFloat(cargo.delivery_lng),
+                                }
+                                : null
+                        }
+                        distanceKm={
+                            cargo.distance_km != null
+                                ? parseFloat(cargo.distance_km)
+                                : undefined
+                        }
+                        showTitle={false}
+                    />
                 </section>
 
                 <section
@@ -248,19 +282,48 @@ export default function CargoDetail() {
                             <h3 className="sectionSubtitle">
                                 {t.offers.acceptedTitle}
                             </h3>
-                            <p>{t.offers.acceptedLead}</p>
+                            <p className="acceptedOfferCarrierName">
+                                {acceptedOffer.carrier?.display_name ?? t.offers.carrierFallback}
+                            </p>
+                            <dl className="acceptedOfferMeta">
+                                <div>
+                                    <dt>{t.offers.acceptedAmountLabel}</dt>
+                                    <dd>{arsFormatter.format(acceptedOffer.amount_cents / 100)}</dd>
+                                </div>
+                                {acceptedOffer.transport_window && (
+                                    <div>
+                                        <dt>{t.offers.acceptedWindowLabel}</dt>
+                                        <dd>
+                                            {t.offers.acceptedWindow(
+                                                formatDate(acceptedOffer.transport_window.available_from),
+                                                formatDate(acceptedOffer.transport_window.available_to),
+                                            )}
+                                        </dd>
+                                    </div>
+                                )}
+                            </dl>
                         </div>
                     )}
-                    {cargo.cargo_offers.length === 0 ? (
+                    {cargo.cargo_offers.filter((o) => o.status !== "accepted").length === 0 && !acceptedOffer ? (
                         <div className="emptyState">
                             <p className="sectionLead">{t.offers.empty}</p>
                             <p className="detailMuted">{t.offers.emptyHint}</p>
+                            {cargo.editable && (
+                                <Link
+                                    to={`/shipper/cargos/${cargo.id}/matches`}
+                                    className="button buttonPrimary"
+                                >
+                                    {t.searchCarriersCta}
+                                </Link>
+                            )}
                         </div>
                     ) : (
                         <ul className="offerList">
-                            {cargo.cargo_offers.map((o) => (
-                                <OfferRow key={o.id} offer={o} />
-                            ))}
+                            {cargo.cargo_offers
+                                .filter((o) => o.status !== "accepted")
+                                .map((o) => (
+                                    <OfferRow key={o.id} offer={o} />
+                                ))}
                         </ul>
                     )}
                 </section>
@@ -322,26 +385,33 @@ export default function CargoDetail() {
 
 function OfferRow({ offer }: { offer: CargoOffer }) {
     const window = offer.transport_window;
+    const carrierName = offer.carrier?.display_name ?? cargosContent.match.carrierFallback;
     return (
         <li className="offerRow">
-            <span
-                className={`statusBadge ${
-                    cargosContent.offerStatusBadgeClass[offer.status] ?? "pasado"
-                }`}
-            >
-                {cargosContent.offerStatusLabel[offer.status] ?? offer.status}
-            </span>
-            <span className="offerRoute">
-                {window
-                    ? formatRoute(
-                        { locality: window.origin_locality, admin_area: window.origin_admin_area },
-                        window.destination_lat !== null
-                            ? { locality: window.destination_locality, admin_area: window.destination_admin_area }
-                            : null,
-                        t.summary.openDestinationLabel,
-                    )
-                    : `#${offer.transport_window_id}`}
-            </span>
+            <div className="offerContent">
+                <div className="offerTopLine">
+                    <span
+                        className={`statusBadge ${
+                            cargosContent.offerStatusBadgeClass[offer.status] ?? "pasado"
+                        }`}
+                    >
+                        {cargosContent.offerStatusLabel[offer.status] ?? offer.status}
+                    </span>
+                    <span className="offerCarrier">{carrierName}</span>
+                </div>
+                {window && (
+                    <span className="offerRoute">
+                        {formatRoute(
+                            { locality: window.origin_locality, admin_area: window.origin_admin_area },
+                            window.destination_lat !== null
+                                ? { locality: window.destination_locality, admin_area: window.destination_admin_area }
+                                : null,
+                            t.summary.openDestinationLabel,
+                        )}
+                    </span>
+                )}
+                <span className="offerMeta">{t.offers.expiresAt(formatDate(offer.expires_at))}</span>
+            </div>
             <span className="offerAmount">
                 {arsFormatter.format(offer.amount_cents / 100)}
             </span>

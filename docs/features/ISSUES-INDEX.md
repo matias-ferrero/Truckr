@@ -56,6 +56,7 @@ This file tracks all issues managed by gdsi-sdlc. For execution order and parall
 | REQ-FE-00029 | Link "Volver a la búsqueda" del perfil del Carrier a la pantalla de matches (solo Shipper) | IR | FE | 2026-05-31 | [plan](REQ/REQ-FE-00029/REQ-FE-00029-volver-perfil-carrier-a-matches.plan.md) · [#289](https://github.com/tcorzo/fiuba-gestion-tp/issues/289) |
 | REQ-FE-00030 | Notificación en tiempo real al Expedidor cuando el Transportista acepta o rechaza su oferta de carga | IR | FE | 2026-06-02 | [plan](REQ/REQ-FE-00030/REQ-FE-00030-shipper-offer-resolution-notifications.plan.md) · [#304](https://github.com/tcorzo/fiuba-gestion-tp/issues/304) |
 | REQ-FE-00031 | Notificación en tiempo real al Transportista cuando un Expedidor le envía una oferta de carga | IR | FE | 2026-06-02 | [plan](REQ/REQ-FE-00031/REQ-FE-00031-carrier-offer-received-notification.plan.md) · [#306](https://github.com/tcorzo/fiuba-gestion-tp/issues/306) |
+| REQ-BE-00046 | US53 — Autocalculado de Distancia en Carga (fullstack) | IR | BE | 2026-06-06 | [plan](REQ/REQ-BE-00046/REQ-BE-00046-us53-distance-autocalc-cargo.plan.md) · [#321](https://github.com/tcorzo/fiuba-gestion-tp/issues/321) · [PR #322](https://github.com/tcorzo/fiuba-gestion-tp/pull/322) |
 
 ## Legend
 

@@ -3,6 +3,8 @@
  * the i18n bundle until a real i18n library replaces it. Components must read
  * every string from here — never inline literals. */
 
+import { formatDistance } from "../../lib/format-distance";
+
 export const cargosContent = {
     statusLabel: {
         open: "Abierta",
@@ -103,6 +105,10 @@ export const cargosContent = {
             saving: "Guardando…",
             cancel: "Cancelar",
         },
+        saveErrorDialog: {
+            title: "No se pudo guardar la carga",
+            close: "Entendido",
+        },
         mapPreview: {
             title: "Vista previa del recorrido",
             help:
@@ -112,6 +118,10 @@ export const cargosContent = {
             unavailable:
                 "No pudimos cargar el mapa. Las coordenadas se guardan igual.",
             regionLabel: "Mapa con los pines de retiro y entrega",
+            distanceLabel: "Distancia por ruta",
+            distanceLoading: "Calculando distancia por ruta…",
+            distanceUnavailable: "No se pudo calcular la distancia de la ruta.",
+            distance: (km: number) => `Distancia por ruta: ${formatDistance(km)}`,
         },
     },
 
@@ -141,18 +151,24 @@ export const cargosContent = {
             volumeUnit: "cm³",
             volumeNone: "Sin especificar",
             declaredValue: "Valor declarado",
+            distance: "Distancia del viaje",
+            distanceUnavailable: "No disponible",
         },
         offers: {
             empty: "Todavía no enviaste ofertas para esta carga.",
             emptyHint: "Buscá transportistas para enviar tu primera oferta.",
             window: (from: string, to: string) => `${from} → ${to}`,
             acceptedTitle: "Oferta aceptada",
-            acceptedLead: "Coordinaste el viaje con este transportista.",
+            carrierFallback: "Transportista",
+            acceptedAmountLabel: "Monto acordado",
+            acceptedWindowLabel: "Ventana de disponibilidad",
+            acceptedWindow: (from: string, to: string) => `${from} – ${to}`,
+            expiresAt: (date: string) => `Vence el ${date}`,
         },
         cancelDialog: {
             title: "Cancelar esta carga",
             text:
-                "Si cancelás la carga, las ofertas pendientes que recibiste van a vencer. Esta acción no se puede deshacer.",
+                "Si cancelás la carga, las ofertas que enviaste a los transportistas van a vencer. Esta acción no se puede deshacer.",
             reasonLabel: "Motivo (opcional)",
             confirm: "Sí, cancelar carga",
             cancel: "No, volver",
@@ -167,7 +183,7 @@ export const cargosContent = {
         retry: "Reintentar",
         backToCargo: "← Volver a la carga",
         title: "Transportistas disponibles",
-        lead: "Tocá un transportista para enviarle una oferta por esta carga.",
+        lead: "Explorá los tramos compatibles y elegí el transportista para tu carga.",
         selectedCargoLabel: "Carga seleccionada",
         viewCargoDetail: "Ver detalle de la carga",
         notOpenTitle: "Esta carga ya no está abierta",
@@ -201,17 +217,19 @@ export const cargosContent = {
     },
 
     match: {
-        carrier: (name: string) => `Transportista: ${name}`,
+        carrier: (name: string) => name,
         carrierFallback: "Transportista",
         viewCarrierDetail: "Ver perfil",
-        rating: (avg: string) => `${avg} ★`,
+        rating: (avg: string, count: number) => `${avg} ★ (${count})`,
+        noRating: "Sin calificaciones",
+        offerCta: "Enviar oferta →",
         vehicle: (make: string, model: string, plate: string) =>
             `${make} ${model} · ${plate}`,
         capacity: (kg: string) => `Capacidad: ${kg} kg`,
         availability: (from: string, to: string) => `Disponible ${from} – ${to}`,
         pricePerKm: (price: string) => `$${price} / km`,
         distanceKm: (km: number) =>
-            km < 1 ? "Menos de 1 km del retiro" : `A ${Math.round(km)} km del retiro`,
+            km < 1 ? "Menos de 1 km del retiro" : `A ${formatDistance(km)} del retiro`,
         offerCtaAria: (route: string) => `Ofertar para el tramo ${route}`,
     },
 

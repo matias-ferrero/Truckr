@@ -31,6 +31,7 @@ function makeCargo(over: Partial<Cargo> = {}): Cargo {
         weight_kg:            "1500.0",
         volume_cm3:           3_000_000,
         declared_value_cents: 5_000_000,
+        distance_km:          null,
         cancelled_at:         null,
         created_at:           "",
         updated_at:           "",
@@ -68,7 +69,7 @@ function makeMatch(over: Partial<CargoMatch> = {}): CargoMatch {
             plate:       "AB123CD",
             max_load_kg: "8000.0",
         },
-        carrier: { id: 1, display_name: "Transportes del Sur", rating_avg: "4.7" },
+        carrier: { id: 1, display_name: "Transportes del Sur", rating_avg: "4.7", reviews_count: 5 },
         ...over,
     };
 }
@@ -117,7 +118,7 @@ describe("CargoMatches — open cargo", () => {
             screen.getByText("Pallets de electrodomésticos"),
         ).toBeInTheDocument();
         expect(
-            await screen.findByText("Transportista: Transportes del Sur"),
+            await screen.findByText("Transportes del Sur"),
         ).toBeInTheDocument();
     });
 

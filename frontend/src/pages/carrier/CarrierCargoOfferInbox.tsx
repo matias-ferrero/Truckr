@@ -9,6 +9,7 @@ import {
     rejectCarrierCargoOffer,
 } from "../../api/carrierCargoOffers";
 import { offersAndShipmentsContent } from "./offersAndShipmentsContent";
+import { formatDistance } from "../../lib/format-distance";
 
 const t = offersAndShipmentsContent.inbox;
 
@@ -250,6 +251,12 @@ export default function CarrierCargoOfferInbox() {
                                                 <p><strong>{t.weight}:</strong> {offer.cargo.weight_kg} kg</p>
                                                 <p><strong>{t.volume}:</strong> {offer.cargo.volume_cm3 ?? "—"}</p>
                                                 <p><strong>{t.declaredValue}:</strong> {formatARS(offer.cargo.declared_value_cents)}</p>
+                                                {offer.cargo.distance_km != null && (
+                                                    <p data-testid="offer-cargo-distance">
+                                                        <strong>{t.distance}:</strong>{" "}
+                                                        {formatDistance(parseFloat(offer.cargo.distance_km))}
+                                                    </p>
+                                                )}
                                                 <p><strong>{t.description}:</strong> {offer.cargo.cargo_description}</p>
 
                                                 <h3>{t.windowTitle}</h3>
@@ -257,7 +264,10 @@ export default function CarrierCargoOfferInbox() {
                                                     <strong>{t.windowDate}:</strong>{" "}
                                                     {formatDate(offer.transport_window.available_from)} - {formatDate(offer.transport_window.available_to)}
                                                 </p>
-                                                <p><strong>{t.windowRate}:</strong> {offer.transport_window.price_per_km}</p>
+                                                <p>
+                                                    <strong>{t.windowRate}:</strong>{" "}
+                                                    {arsFormatter.format(parseFloat(offer.transport_window.price_per_km))} / km
+                                                </p>
                                                 <p><strong>{t.windowMaxKm}:</strong> {offer.transport_window.max_km}</p>
                                             </div>
                                         </details>

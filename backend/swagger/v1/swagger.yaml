@@ -198,7 +198,7 @@ paths:
         '201':
           description: created — status open, body includes matches
         '422':
-          description: lat outside [-90, 90] → 422
+          description: Distance Matrix API unavailable → 422 with base error
       requestBody:
         content:
           application/json:

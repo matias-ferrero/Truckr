@@ -49,6 +49,9 @@ class Cargo < ApplicationRecord
                             less_than_or_equal_to:    LNG_RANGE.end }
   validate  :pickup_window_is_coherent
 
+  before_create :set_distance_km
+  before_save   :refresh_distance_on_route_change
+
   scope :for_shipper, ->(shipper) { where(shipper_id: shipper.id) }
   scope :with_status, ->(status) { status.present? ? where(status: status) : all }
 
@@ -120,5 +123,34 @@ class Cargo < ApplicationRecord
     return if pickup_window_start.blank? || pickup_window_end.blank?
 
     errors.add(:pickup_window_end, :must_be_after_start) if pickup_window_end <= pickup_window_start
+  end
+
+  def set_distance_km
+    return if distance_km.present?
+    km = GoogleMaps::DistanceService.fetch_km(
+      pickup_lat, pickup_lng, delivery_lat, delivery_lng
+    )
+    if km.nil?
+      errors.add(:base, :distance_unavailable)
+      throw(:abort)
+    else
+      self.distance_km = km
+    end
+  end
+
+  # Refreshes distance_km whenever the route coordinates change on an existing
+  # record. Silently preserves the previous value if the Distance API is
+  # unavailable — callers tolerate a slightly stale distance (the route is
+  # still correct; only the displayed label lags). Creating records is handled
+  # by the stricter before_create callback above.
+  def refresh_distance_on_route_change
+    return if new_record?
+    return unless pickup_lat_changed? || pickup_lng_changed? ||
+                  delivery_lat_changed? || delivery_lng_changed?
+
+    km = GoogleMaps::DistanceService.fetch_km(
+      pickup_lat, pickup_lng, delivery_lat, delivery_lng
+    )
+    self.distance_km = km unless km.nil?
   end
 end

@@ -23,7 +23,8 @@ module Api
 
     rescue_from Pundit::NotAuthorizedError, with: :forbidden
     rescue_from ActiveRecord::RecordNotFound, with: :not_found
-    rescue_from ActiveRecord::RecordInvalid, ActiveRecord::RecordNotDestroyed, with: :unprocessable
+    rescue_from ActiveRecord::RecordInvalid, ActiveRecord::RecordNotDestroyed,
+                ActiveRecord::RecordNotSaved, with: :unprocessable
     rescue_from ActionController::ParameterMissing, with: :unprocessable_param
     rescue_from Date::Error, with: :unprocessable_param
 

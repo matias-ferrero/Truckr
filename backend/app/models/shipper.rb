@@ -4,7 +4,13 @@
 # (see docs/05-appendices/glossary.md). Presence of the row IS the role state (ADR-008).
 class Shipper < ApplicationRecord
   belongs_to :user
-  has_many   :cargos, dependent: :restrict_with_error, inverse_of: :shipper
+  has_many   :cargos,   dependent: :restrict_with_error, inverse_of: :shipper
+  has_many   :reviews,  dependent: :restrict_with_error
+
+  # Carrier → Shipper reviews (US30). Mirrors Carrier#shipper_authored_reviews.
+  def carrier_authored_reviews
+    reviews.carrier_authored
+  end
 
   validates :user_id, uniqueness: true
   validates :tax_id,  uniqueness: { allow_blank: true }

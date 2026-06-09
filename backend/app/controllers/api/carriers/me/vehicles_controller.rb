@@ -40,11 +40,8 @@ module Api
           # then resolve the IDs against this vehicle's attachments only —
           # never trust the IDs to belong to the caller.
           remove_ids = remove_photo_ids
-          attrs = vehicle_params
-          vehicle.update!(attrs)
-          if remove_ids.any?
-            vehicle.photos.attachments.where(id: remove_ids).each(&:purge_later)
-          end
+          vehicle.update!(vehicle_params)
+          vehicle.remove_photos(remove_ids) if remove_ids.any?
           render json: VehicleResource.new(vehicle).serialize
         end
 

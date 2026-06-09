@@ -69,7 +69,6 @@ test.describe("Shipper — shipment detail (REQ-FE-00024 / US39)", () => {
 
         // Navigate to the REVIEW-ME seed: "Maquinaria liviana", La Plata → Mar del Plata,
         // delivered with no shipper review yet — the review form must be visible.
-        // The aria-label pattern matches the seeded route; "Entregado" ensures correct state.
         const deliveredLink = page.getByRole("link", {
             name: /la plata.*mar del plata.*entregado/i,
         }).first();

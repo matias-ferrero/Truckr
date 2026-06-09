@@ -107,6 +107,7 @@ RSpec.describe "Api::Cargos", type: :request do
           expect(body["editable"]).to be(true)
           expect(body["matches"]).to be_an(Array)
           expect(body["matches"].size).to eq(1)
+          expect(body["distance_km"]).to match(/\A\d+\.\d+\z/)
         end
       end
 
@@ -158,6 +159,20 @@ RSpec.describe "Api::Cargos", type: :request do
           expect(body.dig("error", "details", "pickup_lat")).to be_present
         end
       end
+
+      response(422, "Distance Matrix API unavailable → 422 with base error") do
+        let(:payload) { { cargo: valid_attrs } }
+
+        before do
+          allow(GoogleMaps::DistanceService).to receive(:fetch_km).and_return(nil)
+        end
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body.dig("error", "code")).to eq("unprocessable")
+          expect(body.dig("error", "details", "base")).to be_present
+        end
+      end
     end
   end
 
@@ -172,7 +187,7 @@ RSpec.describe "Api::Cargos", type: :request do
       let(:cargo) { create(:cargo, shipper: shipper_user.shipper) }
       let(:id)    { cargo.id }
 
-      response(200, "returns the cargo with nested offers") do
+      response(200, "returns the cargo with nested offers including carrier summary") do
         before { create(:cargo_offer, :pending, cargo: cargo) }
 
         run_test! do |response|
@@ -180,6 +195,9 @@ RSpec.describe "Api::Cargos", type: :request do
           expect(body["id"]).to eq(cargo.id)
           expect(body["cargo_offers"].size).to eq(1)
           expect(body["pending_offers_count"]).to eq(1)
+          offer = body["cargo_offers"].first
+          expect(offer["carrier"]).to include("id", "display_name")
+          expect(offer["carrier"]["display_name"]).to be_present
         end
       end
 

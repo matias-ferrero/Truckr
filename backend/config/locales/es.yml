@@ -50,6 +50,10 @@ es:
   activerecord:
     errors:
       models:
+        cargo:
+          attributes:
+            base:
+              distance_unavailable: "No se pudo calcular la distancia del recorrido. Verificá que las direcciones sean accesibles por ruta e intentá de nuevo."
         transport_window:
           attributes:
             base:

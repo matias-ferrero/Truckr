@@ -7,6 +7,9 @@ import * as cargoApi from "./api";
 import type { Cargo, CargoOffer } from "../../types/Cargo";
 
 vi.mock("./api");
+vi.mock("./CargoMapPreview", () => ({
+    default: () => <div data-testid="cargo-map-preview-stub" />,
+}));
 
 const api = vi.mocked(cargoApi);
 
@@ -31,6 +34,7 @@ function makeCargo(over: Partial<Cargo> = {}): Cargo {
         weight_kg:            "1500.0",
         volume_cm3:           3_000_000,
         declared_value_cents: 5_000_000,
+        distance_km:          "712.0",
         cancelled_at:         null,
         created_at:           "",
         updated_at:           "",
@@ -53,12 +57,17 @@ function makeOffer(over: Partial<CargoOffer> = {}): CargoOffer {
         expires_at:          "2026-05-27T10:00:00Z",
         created_at:          "",
         updated_at:          "",
+        carrier: {
+            id:           1,
+            display_name: "Transportes García SRL",
+        },
         transport_window: {
             id:                     5,
             origin_locality:        "CABA",
             origin_admin_area:      "Buenos Aires",
             destination_locality:   "Córdoba",
             destination_admin_area: "Córdoba",
+            destination_lat:        "-31.420083",
             available_from:         "2026-05-25T00:00:00Z",
             available_to:           "2026-06-10T00:00:00Z",
         },
@@ -90,9 +99,9 @@ describe("CargoDetail — open cargo", () => {
                 name: "CABA, Buenos Aires → Córdoba",
             }),
         ).toBeInTheDocument();
-        expect(
-            screen.getByRole("link", { name: "Buscar transportistas" }),
-        ).toBeInTheDocument();
+        // Both header CTA and empty-state CTA render "Buscar transportistas"
+        const searchLinks = screen.getAllByRole("link", { name: "Buscar transportistas" });
+        expect(searchLinks.length).toBeGreaterThanOrEqual(1);
         expect(
             screen.getByRole("link", { name: "Editar" }),
         ).toBeInTheDocument();
@@ -105,10 +114,13 @@ describe("CargoDetail — open cargo", () => {
     it("the search-carriers shortcut targets the cargo-scoped matches route", async () => {
         api.getCargo.mockResolvedValue(makeCargo());
         renderDetail();
-        const link = await screen.findByRole("link", {
+        // Both header and empty-state CTAs point to the same route
+        const links = await screen.findAllByRole("link", {
             name: "Buscar transportistas",
         });
-        expect(link).toHaveAttribute("href", "/shipper/cargos/7/matches");
+        links.forEach((link) =>
+            expect(link).toHaveAttribute("href", "/shipper/cargos/7/matches"),
+        );
     });
 
     it("shows the offers empty state when there are no offers", async () => {
@@ -121,7 +133,7 @@ describe("CargoDetail — open cargo", () => {
         ).toBeInTheDocument();
     });
 
-    it("lists nested offers with status and route", async () => {
+    it("lists nested offers with status, carrier and route", async () => {
         api.getCargo.mockResolvedValue(
             makeCargo({ cargo_offers: [makeOffer()] }),
         );
@@ -132,13 +144,16 @@ describe("CargoDetail — open cargo", () => {
         expect(within(offersSection).getByText("Pendiente"))
             .toBeInTheDocument();
         expect(
+            within(offersSection).getByText("Transportes García SRL"),
+        ).toBeInTheDocument();
+        expect(
             within(offersSection).getByText("CABA, Buenos Aires → Córdoba"),
         ).toBeInTheDocument();
     });
 });
 
 describe("CargoDetail — accepted cargo", () => {
-    it("shows the winning-carrier block and no edit actions", async () => {
+    it("shows the winning-carrier block with carrier name and no edit actions", async () => {
         api.getCargo.mockResolvedValue(
             makeCargo({
                 status: "accepted",
@@ -149,6 +164,9 @@ describe("CargoDetail — accepted cargo", () => {
         renderDetail();
         expect(
             await screen.findByText("Oferta aceptada"),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText("Transportes García SRL"),
         ).toBeInTheDocument();
         expect(
             screen.queryByRole("button", { name: "Cancelar carga" }),

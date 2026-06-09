@@ -149,6 +149,7 @@ Cargo.find_or_create_by!(
   c.weight_kg            = 4_000.0
   c.volume_cm3           = 22_000_000
   c.declared_value_cents = 150_000_000
+  c.distance_km          = 690.0
 end
 
 # ── Offers received + US32 guard 2 ───────────────────────────────────────────
@@ -193,6 +194,7 @@ offer_cargo = Cargo.find_or_create_by!(
   c.weight_kg            = 3_000.0
   c.volume_cm3           = 14_000_000
   c.declared_value_cents = 90_000_000
+  c.distance_km          = 840.0
 end
 
 CargoOffer.find_or_create_by!(cargo: offer_cargo, carrier: carrier1, transport_window: offer_win) do |co|
@@ -211,18 +213,18 @@ end
 #
 # routes: distinct city pairs keep each window's find_or_create key unique.
 routes = [
-  [ "Buenos Aires",  caba,    "Rosario",       rosario ],
-  [ "Córdoba",       cordoba, "Mendoza",       mendoza ],
-  [ "Rosario",       rosario, "Buenos Aires",  caba    ],
-  [ "Mendoza",       mendoza, "Córdoba",       cordoba ],
-  [ "La Plata",      laplata, "Mar del Plata", mdq     ],
-  [ "Córdoba",       cordoba, "La Plata",      laplata ],
-  [ "Mar del Plata", mdq,     "Rosario",       rosario ],
-  [ "Buenos Aires",  caba,    "La Plata",      laplata ]
+  [ "Buenos Aires",  caba,    "Rosario",       rosario, 301.0 ],
+  [ "Córdoba",       cordoba, "Mendoza",       mendoza, 802.0 ],
+  [ "Rosario",       rosario, "Buenos Aires",  caba,    301.0 ],
+  [ "Mendoza",       mendoza, "Córdoba",       cordoba, 802.0 ],
+  [ "La Plata",      laplata, "Mar del Plata", mdq,     390.0 ],
+  [ "Córdoba",       cordoba, "La Plata",      laplata, 695.0 ],
+  [ "Mar del Plata", mdq,     "Rosario",       rosario, 623.0 ],
+  [ "Buenos Aires",  caba,    "La Plata",      laplata,  56.0 ]
 ]
 
 build_shipment = lambda do |label:, shipper:, idx:, mode:, goods:|
-  o_loc, o_pin, d_loc, d_pin = routes[idx]
+  o_loc, o_pin, d_loc, d_pin, dist_km = routes[idx]
   base = 45 - idx # distinct positive day anchor; higher idx = more recent
 
   win_from = (base + 20).days.ago
@@ -266,6 +268,7 @@ build_shipment = lambda do |label:, shipper:, idx:, mode:, goods:|
     c.weight_kg            = 4_000.0
     c.volume_cm3           = 20_000_000
     c.declared_value_cents = 80_000_000
+    c.distance_km          = dist_km
   end
 
   offer = CargoOffer.find_or_create_by!(cargo: cargo, carrier: carrier1, transport_window: tw) do |co|
@@ -279,8 +282,8 @@ build_shipment = lambda do |label:, shipper:, idx:, mode:, goods:|
   shipment = Shipment.with_discarded.find_by(cargo_offer_id: offer.id) ||
              Shipment.create!(cargo_offer: offer, status: "accepted", accepted_at: (base + 15).days.ago)
 
-  # accepted_unpaid slots intentionally have no Payment row — they are the
-  # precondition for the shipper-payment E2E test (Pagar CTA visible).
+  # accepted_unpaid stays in accepted with no payment — precondition for the
+  # "Pagar" CTA in the shipper flow (US8 e2e golden path).
   unless mode == :accepted_unpaid
     Payment.find_or_create_by!(shipment: shipment) do |p|
       p.amount_cents = offer.amount_cents
@@ -336,6 +339,9 @@ build_shipment.call(label: "REVIEW-ME", shipper: shipper1, idx: 4, mode: :delive
 
 # Accepted + escrowed → carrier can start_transit live (US18).
 build_shipment.call(label: "START-ME", shipper: shipper1, idx: 5, mode: :accepted_escrowed, goods: "Repuestos automotrices")
+
+# Accepted, not yet paid → shipper sees the "Pagar" CTA (US8 e2e golden path).
+build_shipment.call(label: "PAY-ME", shipper: shipper1, idx: 7, mode: :accepted_unpaid, goods: "Insumos médicos")
 
 # In transit → carrier can confirm delivery live (US19).
 build_shipment.call(label: "DELIVER-ME", shipper: shipper2, idx: 6, mode: :in_transit, goods: "Productos refrigerados")

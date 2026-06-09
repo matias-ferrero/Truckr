@@ -24,10 +24,11 @@ type Props = {
 /**
  * One result in the cargo-scoped transport-window search
  * (`/shipper/cargos/:id/matches`) — a `TransportWindow` that can carry the
- * cargo. The whole card is a single `<Link>` straight into the cargo-scoped
- * offer flow (plan §9 D6): one action per result, no separate button. When the
- * caller supplies the cargo's `pickup` coords, the card shows the Haversine
- * distance from pickup to the window's origin.
+ * cargo. The card shows the carrier identity and price prominently; the shipper
+ * browses and commits via an explicit "Enviar oferta" button (plan §9 D6).
+ * "Ver perfil" links to the carrier's public profile without entering the offer
+ * flow. When the caller supplies the cargo's `pickup` coords, the card shows
+ * the Haversine distance from pickup to the window's origin.
  */
 export default function MatchCard({ cargoId, match, pickup }: Props) {
     const hasDestination = match.destination_lat !== null;
@@ -46,24 +47,31 @@ export default function MatchCard({ cargoId, match, pickup }: Props) {
         })
         : null;
 
+    const hasRating = match.carrier.reviews_count > 0;
+
     return (
         <li>
             <article className="matchCard">
-                <Link
-                    className="matchCardBody"
-                    to={`/shipper/cargos/${cargoId}/offers/new?window=${match.id}`}
-                    state={{ window: match }}
-                    aria-label={t.offerCtaAria(route)}
-                >
-                    <div className="matchCardHeader">
-                        <span className="matchRoute" title={route}>
-                            {route}
-                        </span>
+                <div className="matchCardHeader">
+                    <span className="matchCarrier">{carrierName}</span>
+                    <span className="matchPriceTag">
+                        {t.pricePerKm(match.price_per_km)}
+                    </span>
+                </div>
+                <div className="matchCardBody">
+                    <span className="matchRoute" title={route}>
+                        {route}
+                    </span>
+                    {hasRating ? (
                         <span className="matchRating">
-                            {t.rating(match.carrier.rating_avg)}
+                            {t.rating(
+                                match.carrier.rating_avg,
+                                match.carrier.reviews_count,
+                            )}
                         </span>
-                    </div>
-                    <p className="matchCarrier">{t.carrier(carrierName)}</p>
+                    ) : (
+                        <span className="matchMeta">{t.noRating}</span>
+                    )}
                     <p className="matchMeta">
                         {t.vehicle(
                             match.vehicle.make,
@@ -79,15 +87,13 @@ export default function MatchCard({ cargoId, match, pickup }: Props) {
                             formatDate(match.available_from),
                             formatDate(match.available_to),
                         )}
-                        {" · "}
-                        {t.pricePerKm(match.price_per_km)}
                     </p>
                     {distanceKm !== null && (
                         <p className="matchMeta matchDistance">
                             {t.distanceKm(distanceKm)}
                         </p>
                     )}
-                </Link>
+                </div>
                 <div className="cardActions matchCardActions">
                     <Link
                         className="button buttonGhost"
@@ -95,6 +101,14 @@ export default function MatchCard({ cargoId, match, pickup }: Props) {
                         state={{ backToMatches: `/shipper/cargos/${cargoId}/matches` }}
                     >
                         {t.viewCarrierDetail}
+                    </Link>
+                    <Link
+                        className="button buttonPrimary"
+                        to={`/shipper/cargos/${cargoId}/offers/new?window=${match.id}`}
+                        state={{ window: match }}
+                        aria-label={t.offerCtaAria(route)}
+                    >
+                        {t.offerCta}
                     </Link>
                 </div>
             </article>

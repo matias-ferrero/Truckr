@@ -34,6 +34,7 @@ function fakeCargo(over: Partial<Cargo> = {}): Cargo {
         weight_kg:            "1500.0",
         volume_cm3:           3_000_000,
         declared_value_cents: 5_000_000,
+        distance_km:          null,
         cancelled_at:         null,
         created_at:           "",
         updated_at:           "",
@@ -71,7 +72,7 @@ function fakeWindow(over: Partial<CargoMatch> = {}): CargoMatch {
             plate:       "AB123CD",
             max_load_kg: "8000.0",
         },
-        carrier: { id: 1, display_name: "Transportes del Sur", rating_avg: "4.7" },
+        carrier: { id: 1, display_name: "Transportes del Sur", rating_avg: "4.7", reviews_count: 5 },
         ...over,
     };
 }
@@ -148,43 +149,39 @@ describe("CreateOfferPage — cargo-scoped confirm step", () => {
         ).toBeInTheDocument();
     });
 
-    it("validates a positive estimated_km", async () => {
-        cargo.getCargo.mockResolvedValue(fakeCargo());
-        const user = userEvent.setup();
+    it("shows formatted distance and total cost from cargo.distance_km", async () => {
+        cargo.getCargo.mockResolvedValue(fakeCargo({ distance_km: "712.45" }));
         mount();
         await screen.findByText("Confirmar oferta");
-        await user.click(
-            screen.getByRole("button", { name: "Enviar oferta" }),
-        );
-        expect(
-            screen.getByText(/Ingresá una cantidad de kilómetros/),
-        ).toBeInTheDocument();
-        expect(offers.createCargoOffer).not.toHaveBeenCalled();
+        // 712.45 km ≥ 100 → whole number → "712 km"
+        expect(screen.getByTestId("offer-distance")).toHaveTextContent("712 km");
+        // 712.45 km × $1500/km = $1.068.675
+        expect(screen.getByTestId("cost-estimate")).toHaveTextContent("1.068.675");
     });
 
-    it("shows the cost estimate once km are entered", async () => {
-        cargo.getCargo.mockResolvedValue(fakeCargo());
-        const user = userEvent.setup();
+    it("shows sub-100-km distance with one decimal", async () => {
+        cargo.getCargo.mockResolvedValue(fakeCargo({ distance_km: "45.6" }));
         mount();
         await screen.findByText("Confirmar oferta");
-        await user.type(
-            screen.getByLabelText("Kilómetros estimados del viaje"),
-            "700",
-        );
-        // 700 km × $1500/km = $1.050.000
-        expect(screen.getByTestId("cost-estimate")).toHaveTextContent(
-            "1.050.000",
-        );
+        expect(screen.getByTestId("offer-distance")).toHaveTextContent("45.6 km");
     });
 
-    it("posts cargo_id + offer fields and redirects to the cargo detail", async () => {
-        cargo.getCargo.mockResolvedValue(fakeCargo());
+    it("disables the submit button and shows unavailable text when distance_km is null", async () => {
+        cargo.getCargo.mockResolvedValue(fakeCargo({ distance_km: null }));
+        mount();
+        await screen.findByText("Confirmar oferta");
+        expect(screen.getByTestId("offer-distance")).toHaveTextContent("No disponible");
+        expect(screen.getByRole("button", { name: "Enviar oferta" })).toBeDisabled();
+    });
+
+    it("posts with cargo.distance_km and redirects to the cargo detail", async () => {
+        cargo.getCargo.mockResolvedValue(fakeCargo({ distance_km: "712.45" }));
         offers.createCargoOffer.mockResolvedValue({
             id: 1,
             cargo_id: 7,
             carrier_id: 1,
             transport_window_id: 5,
-            amount_cents: 105_000_000,
+            amount_cents: 1_068_675,
             currency: "ARS",
             status: "pending",
             expires_at: "2026-05-27T10:00:00Z",
@@ -194,10 +191,6 @@ describe("CreateOfferPage — cargo-scoped confirm step", () => {
         const user = userEvent.setup();
         mount();
         await screen.findByText("Confirmar oferta");
-        await user.type(
-            screen.getByLabelText("Kilómetros estimados del viaje"),
-            "700",
-        );
         await user.click(
             screen.getByRole("button", { name: "Enviar oferta" }),
         );
@@ -206,12 +199,12 @@ describe("CreateOfferPage — cargo-scoped confirm step", () => {
         );
         expect(offers.createCargoOffer).toHaveBeenCalledWith(7, {
             transport_window_id: 5,
-            estimated_km: "700",
+            estimated_km: "712.45",
         });
     });
 
     it("shows an error alert when the offer submit fails", async () => {
-        cargo.getCargo.mockResolvedValue(fakeCargo());
+        cargo.getCargo.mockResolvedValue(fakeCargo({ distance_km: "712.45" }));
         const { ApiError } = await import("../../api");
         offers.createCargoOffer.mockRejectedValue(
             new ApiError(422, "unprocessable", "unprocessable", {}),
@@ -219,10 +212,6 @@ describe("CreateOfferPage — cargo-scoped confirm step", () => {
         const user = userEvent.setup();
         mount();
         await screen.findByText("Confirmar oferta");
-        await user.type(
-            screen.getByLabelText("Kilómetros estimados del viaje"),
-            "700",
-        );
         await user.click(
             screen.getByRole("button", { name: "Enviar oferta" }),
         );

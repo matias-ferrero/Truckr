@@ -19,9 +19,7 @@ module Api
 
       def index
         shipper = ::Shipper.find(params[:shipper_id])
-        scope = Review.carrier_authored
-                      .where(shipper_id: shipper.id)
-                      .order(created_at: :desc)
+        scope = shipper.carrier_authored_reviews.order(created_at: :desc)
         @pagy, reviews = pagy(scope, limit: 10)
         render json: ReviewResource.new(reviews).serialize
       end

@@ -97,6 +97,9 @@ group :development, :test do
   # Test data factories
   gem "factory_bot_rails", "~> 6.4"
   gem "faker", "~> 3.4"
+
+  # Load backend/.env in development and test so GOOGLE_MAPS_API_KEY is available.
+  gem "dotenv-rails", "~> 3.1", require: "dotenv/load"
 end
 
 group :test do

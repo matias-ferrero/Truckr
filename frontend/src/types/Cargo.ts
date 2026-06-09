@@ -23,6 +23,7 @@ export type CargoCarrierSummary = {
     id: number;
     display_name: string | null;
     rating_avg: string;
+    reviews_count: number;
 };
 
 /** Vehicle summary embedded inside a match. */
@@ -76,6 +77,10 @@ export type CargoOffer = {
     expires_at: string;
     created_at: string;
     updated_at: string;
+    carrier?: {
+        id: number;
+        display_name: string | null;
+    };
     transport_window?: {
         id: number;
         origin_locality: string;
@@ -109,6 +114,7 @@ export type Cargo = {
     weight_kg: string;
     volume_cm3: number | null;
     declared_value_cents: number;
+    distance_km: string | null;
     cancelled_at: string | null;
     created_at: string;
     updated_at: string;

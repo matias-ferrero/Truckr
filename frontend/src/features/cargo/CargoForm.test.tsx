@@ -66,7 +66,13 @@ vi.mock("../../components/AddressPicker", () => ({
 // in unit tests — the map preview itself is exercised in its own spec.
 vi.mock("./CargoMapPreview", () => ({
     __esModule: true,
-    default: ({ pickup, delivery }: { pickup: AddressPickerValue | null; delivery: AddressPickerValue | null }) => (
+    default: ({
+        pickup,
+        delivery,
+    }: {
+        pickup: AddressPickerValue | null;
+        delivery: AddressPickerValue | null;
+    }) => (
         <div
             data-testid="cargo-map-preview"
             data-pickup-lat={pickup?.lat ?? ""}
@@ -100,6 +106,7 @@ function makeCargo(over: Partial<Cargo> = {}): Cargo {
         weight_kg:            "900.0",
         volume_cm3:           1_000_000,
         declared_value_cents: 2_000_000,
+        distance_km:          null,
         cancelled_at:         null,
         created_at:           "",
         updated_at:           "",
@@ -221,7 +228,7 @@ describe("CargoForm — new", () => {
         expect(preview).toHaveAttribute("data-delivery-lng", "-64.188776");
     });
 
-    it("maps server-side field errors onto the inputs", async () => {
+    it("maps server-side field errors onto the inputs and opens the error dialog", async () => {
         api.createCargo.mockRejectedValue(
             new ApiError(422, "x", "x", { cargo_description: ["ya existe"] }),
         );
@@ -231,7 +238,23 @@ describe("CargoForm — new", () => {
         await fillCommonFields(user);
         await user.click(screen.getByRole("button", { name: "Publicar carga" }));
         expect(await screen.findByText("ya existe")).toBeInTheDocument();
-        expect(screen.getByText(/No pudimos guardar la carga/)).toBeInTheDocument();
+        const dialog = await screen.findByRole("dialog");
+        expect(dialog).toHaveTextContent(/No pudimos guardar la carga/);
+    });
+
+    it("shows a base error from the server in the error dialog", async () => {
+        api.createCargo.mockRejectedValue(
+            new ApiError(422, "x", "x", { base: ["No se pudo calcular la distancia del recorrido."] }),
+        );
+        const user = userEvent.setup();
+        renderNew();
+        await fillAddresses(user);
+        await fillCommonFields(user);
+        await user.click(screen.getByRole("button", { name: "Publicar carga" }));
+        const dialog = await screen.findByRole("dialog");
+        expect(dialog).toHaveTextContent("No se pudo calcular la distancia del recorrido.");
+        // base error has no FormField — no inline validation error should appear
+        expect(screen.queryByText("ya existe")).not.toBeInTheDocument();
     });
 
     it("explains that the declared value is entered in ARS and stored as cents", async () => {

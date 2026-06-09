@@ -17,7 +17,7 @@ class CargoResource
              :delivery_locality, :delivery_admin_area,
              :pickup_lat, :pickup_lng, :delivery_lat, :delivery_lng,
              :pickup_window_start, :pickup_window_end,
-             :weight_kg, :volume_cm3, :declared_value_cents,
+             :weight_kg, :volume_cm3, :declared_value_cents, :distance_km,
              :cancelled_at, :cancellation_reason, :created_at, :updated_at
 
   attribute :editable do |cargo|
@@ -51,6 +51,12 @@ class CargoResource
           destination_lat:        window.destination_lat,
           available_from:         window.available_from,
           available_to:           window.available_to
+        },
+        carrier: offer.carrier && {
+          id:           offer.carrier.id,
+          display_name: offer.carrier.legal_name.presence ||
+                        offer.carrier.user&.full_name ||
+                        offer.carrier.user&.email
         }
       }
     end

@@ -75,6 +75,12 @@ class Vehicle < ApplicationRecord
     { thumbnail: base.url_for(photo), card: base.url_for(photo), full: base.url_for(photo) }
   end
 
+  # Detaches and purges the given attachment IDs. IDs are scoped to this
+  # vehicle's own attachments so callers cannot reference foreign blobs.
+  def remove_photos(ids)
+    photos.attachments.where(id: ids).each(&:purge_later)
+  end
+
   def self.ransackable_attributes(_auth_object = nil)
     %w[id carrier_id plate make model year vehicle_type max_load_kg
        length_cm width_cm height_cm volume_cm3 gps_enabled created_at updated_at]

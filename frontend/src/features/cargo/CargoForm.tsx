@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createCargo, fieldErrorsFrom, getCargo, updateCargo } from "./api";
 import type { Cargo, CargoDraft } from "../../types/Cargo";
@@ -173,9 +173,11 @@ export default function CargoForm({ mode }: Props) {
     const [draft, setDraft] = useState<Draft>(EMPTY);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [errorDialogOpen, setErrorDialogOpen] = useState(false);
     const [loadError, setLoadError] = useState<string | null>(null);
     const [hydrating, setHydrating] = useState(editingId != null);
     const [submitting, setSubmitting] = useState(false);
+    const errorDialogRef = useRef<HTMLDialogElement>(null);
 
     useEffect(() => {
         if (editingId == null) return;
@@ -194,6 +196,13 @@ export default function CargoForm({ mode }: Props) {
             cancelled = true;
         };
     }, [editingId]);
+
+    useEffect(() => {
+        const dialog = errorDialogRef.current;
+        if (!dialog) return;
+        if (errorDialogOpen && !dialog.open) dialog.showModal();
+        else if (!errorDialogOpen && dialog.open) dialog.close();
+    }, [errorDialogOpen]);
 
     const declaredValuePreview = useMemo(() => {
         const raw = draft.declared_value_cents.trim();
@@ -242,8 +251,13 @@ export default function CargoForm({ mode }: Props) {
             navigate(`/shipper/cargos/${saved.id}`);
         } catch (err) {
             const fieldErrors = fieldErrorsFrom(err);
-            if (Object.keys(fieldErrors).length > 0) setErrors(fieldErrors);
-            setSubmitError(f.saveError);
+            const baseError = fieldErrors.base ?? null;
+            const fieldLevelErrors = Object.fromEntries(
+                Object.entries(fieldErrors).filter(([k]) => k !== "base"),
+            );
+            if (Object.keys(fieldLevelErrors).length > 0) setErrors(fieldLevelErrors);
+            setSubmitError(baseError ?? f.saveError);
+            setErrorDialogOpen(true);
         } finally {
             setSubmitting(false);
         }
@@ -280,6 +294,7 @@ export default function CargoForm({ mode }: Props) {
     }
 
     return (
+        <>
         <main className="page" id="main">
             <div className="container">
                 <header className="formHeader">
@@ -299,12 +314,6 @@ export default function CargoForm({ mode }: Props) {
                     onSubmit={handleSubmit}
                     noValidate
                 >
-                    {submitError && (
-                        <Alert tone="error" aria-live="assertive">
-                            {submitError}
-                        </Alert>
-                    )}
-
                     <fieldset className="cargoFormSection">
                         <legend className="cargoFormLegend">
                             {f.sections.what}
@@ -491,5 +500,28 @@ export default function CargoForm({ mode }: Props) {
                 </form>
             </div>
         </main>
+
+        <dialog
+            ref={errorDialogRef}
+            className="confirmDialog"
+            aria-labelledby="cargo-error-dialog-title"
+            onClose={() => setErrorDialogOpen(false)}
+        >
+            <div className="confirmDialogBody">
+                <h2 id="cargo-error-dialog-title" className="confirmDialogTitle">
+                    {f.saveErrorDialog.title}
+                </h2>
+                <p className="confirmDialogText">{submitError}</p>
+                <div className="confirmDialogActions">
+                    <Button
+                        type="button"
+                        onClick={() => setErrorDialogOpen(false)}
+                    >
+                        {f.saveErrorDialog.close}
+                    </Button>
+                </div>
+            </div>
+        </dialog>
+        </>
     );
 }

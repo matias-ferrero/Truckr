@@ -11,24 +11,35 @@ import { cargosContent } from "./cargosContent";
 export interface CargoMapPreviewProps {
     pickup: AddressPickerValue | null;
     delivery: AddressPickerValue | null;
+    /** When supplied, the stored distance is shown as-is and the client-side
+     *  DistanceMatrixService call is skipped entirely. */
+    distanceKm?: number;
+    /** Set to false to suppress the section title (e.g. in detail view where
+     *  the parent section already provides a heading). Defaults to true. */
+    showTitle?: boolean;
 }
 
 type LoadState = "idle" | "loading" | "ready" | "error";
+type DistanceState = "idle" | "loading" | "ready" | "error";
 
 const m = cargosContent.form.mapPreview;
 
-export function CargoMapPreview({ pickup, delivery }: CargoMapPreviewProps) {
+export function CargoMapPreview({ pickup, delivery, distanceKm, showTitle = true }: CargoMapPreviewProps) {
     const apiKey = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) ?? "";
     const both = pickup !== null && delivery !== null;
 
     const [loadState, setLoadState] = useState<LoadState>(both && apiKey ? "loading" : "idle");
+    const [routeDistanceKm, setRouteDistanceKm] = useState<number | null>(null);
+    const [distanceState, setDistanceState] = useState<DistanceState>("idle");
     const mapElRef = useRef<HTMLDivElement | null>(null);
     const mapRef = useRef<google.maps.Map | null>(null);
     const markersRef = useRef<google.maps.Marker[]>([]);
+    const rendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
 
     useEffect(() => {
         if (!both) {
             setLoadState("idle");
+            setDistanceState("idle");
             return;
         }
         if (!apiKey) {
@@ -55,11 +66,15 @@ export function CargoMapPreview({ pickup, delivery }: CargoMapPreviewProps) {
     useEffect(() => {
         if (loadState !== "ready" || !pickup || !delivery || !mapElRef.current) return;
 
+        let cancelled = false;
+
         const bounds = new google.maps.LatLngBounds();
         bounds.extend({ lat: pickup.lat, lng: pickup.lng });
         bounds.extend({ lat: delivery.lat, lng: delivery.lng });
 
-        if (!mapRef.current) {
+        // If the canvas div remounted (e.g. after clearing an address), the old
+        // Map instance points to a detached element — reinitialise on the new div.
+        if (!mapRef.current || mapRef.current.getDiv() !== mapElRef.current) {
             mapRef.current = new google.maps.Map(mapElRef.current, {
                 disableDefaultUI: true,
                 zoomControl: true,
@@ -83,12 +98,52 @@ export function CargoMapPreview({ pickup, delivery }: CargoMapPreviewProps) {
         ];
 
         mapRef.current.fitBounds(bounds, 48);
-    }, [loadState, pickup, delivery]);
+
+        setDistanceState("loading");
+        const svc = new google.maps.DirectionsService();
+        svc.route(
+            {
+                origin:      { lat: pickup.lat, lng: pickup.lng },
+                destination: { lat: delivery.lat, lng: delivery.lng },
+                travelMode:  google.maps.TravelMode.DRIVING,
+            },
+            (result, status) => {
+                if (cancelled) return;
+                if (status === "OK" && result) {
+                    if (!rendererRef.current) {
+                        rendererRef.current = new google.maps.DirectionsRenderer({
+                            suppressMarkers:  true,
+                            preserveViewport: true,
+                            polylineOptions: {
+                                strokeColor:   "#0041c2",
+                                strokeOpacity: 1,
+                                strokeWeight:  6,
+                            },
+                        });
+                        rendererRef.current.setMap(mapRef.current);
+                    }
+                    rendererRef.current.setDirections(result);
+                    const legMeters = result.routes[0].legs[0].distance.value;
+                    setRouteDistanceKm(distanceKm ?? legMeters / 1000);
+                    setDistanceState("ready");
+                } else {
+                    setRouteDistanceKm(null);
+                    setDistanceState("error");
+                }
+            },
+        );
+
+        return () => {
+            cancelled = true;
+            rendererRef.current?.setMap(null);
+            rendererRef.current = null;
+        };
+    }, [loadState, pickup, delivery, distanceKm]);
 
     if (!both) {
         return (
             <div className="cargoMapPreview cargoMapPreviewIdle" data-state="idle">
-                <p className="cargoMapPreviewTitle">{m.title}</p>
+                {showTitle && <p className="cargoMapPreviewTitle">{m.title}</p>}
                 <p className="cargoMapPreviewHelp">{m.help}</p>
             </div>
         );
@@ -97,7 +152,7 @@ export function CargoMapPreview({ pickup, delivery }: CargoMapPreviewProps) {
     if (loadState === "error") {
         return (
             <div className="cargoMapPreview cargoMapPreviewError" data-state="error" role="status">
-                <p className="cargoMapPreviewTitle">{m.title}</p>
+                {showTitle && <p className="cargoMapPreviewTitle">{m.title}</p>}
                 <p className="cargoMapPreviewHelp">{m.unavailable}</p>
             </div>
         );
@@ -105,7 +160,7 @@ export function CargoMapPreview({ pickup, delivery }: CargoMapPreviewProps) {
 
     return (
         <div className="cargoMapPreview" data-state={loadState}>
-            <p className="cargoMapPreviewTitle">{m.title}</p>
+            {showTitle && <p className="cargoMapPreviewTitle">{m.title}</p>}
             <div
                 ref={mapElRef}
                 className="cargoMapPreviewCanvas"
@@ -117,6 +172,30 @@ export function CargoMapPreview({ pickup, delivery }: CargoMapPreviewProps) {
                 data-delivery-lat={delivery.lat}
                 data-delivery-lng={delivery.lng}
             />
+            {distanceState === "loading" && (
+                <p
+                    className="cargoMapPreviewDistance"
+                    data-testid="cargo-map-preview-distance-loading"
+                >
+                    {m.distanceLoading}
+                </p>
+            )}
+            {distanceState === "ready" && routeDistanceKm != null && (
+                <p
+                    className="cargoMapPreviewDistance"
+                    data-testid="cargo-map-preview-distance"
+                >
+                    {m.distance(routeDistanceKm)}
+                </p>
+            )}
+            {distanceState === "error" && (
+                <p
+                    className="cargoMapPreviewDistance"
+                    data-testid="cargo-map-preview-distance-error"
+                >
+                    {m.distanceUnavailable}
+                </p>
+            )}
         </div>
     );
 }

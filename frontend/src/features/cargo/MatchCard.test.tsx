@@ -32,7 +32,7 @@ function makeMatch(over: Partial<CargoMatch> = {}): CargoMatch {
             plate:       "AB123CD",
             max_load_kg: "8000.0",
         },
-        carrier: { id: 1, display_name: "Transportes del Sur", rating_avg: "4.7" },
+        carrier: { id: 1, display_name: "Transportes del Sur", rating_avg: "4.7", reviews_count: 12 },
         ...over,
     };
 }
@@ -81,15 +81,9 @@ describe("MatchCard", () => {
     it("renders the window route, carrier and capacity", () => {
         renderCard(makeMatch());
         expect(screen.getByText("CABA, Buenos Aires → Córdoba")).toBeInTheDocument();
-        expect(
-            screen.getByText("Transportista: Transportes del Sur"),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText("Volvo FH · AB123CD"),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText("Capacidad: 8000.0 kg"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Transportes del Sur")).toBeInTheDocument();
+        expect(screen.getByText("Volvo FH · AB123CD")).toBeInTheDocument();
+        expect(screen.getByText("Capacidad: 8000.0 kg")).toBeInTheDocument();
     });
 
     it("renders locality only when admin_area is empty", () => {
@@ -100,13 +94,13 @@ describe("MatchCard", () => {
     it("falls back to a generic carrier label when display_name is null", () => {
         renderCard(
             makeMatch({
-                carrier: { id: 1, display_name: null, rating_avg: "4.0" },
+                carrier: { id: 1, display_name: null, rating_avg: "4.0", reviews_count: 0 },
             }),
         );
-        expect(screen.getByText("Transportista: Transportista")).toBeInTheDocument();
+        expect(screen.getByText("Transportista")).toBeInTheDocument();
     });
 
-    it("the whole card is a link into the cargo-scoped offer route", async () => {
+    it("the Enviar oferta button navigates to the cargo-scoped offer route", async () => {
         const user = userEvent.setup();
         renderCard(makeMatch(), 7);
         await user.click(
@@ -129,6 +123,21 @@ describe("MatchCard", () => {
         expect(screen.getByText("CABA, Buenos Aires → Cualquier destino")).toBeInTheDocument();
     });
 
+    it("shows the rating with count when reviews_count > 0", () => {
+        renderCard(makeMatch());
+        expect(screen.getByText("4.7 ★ (12)")).toBeInTheDocument();
+    });
+
+    it("shows 'Sin calificaciones' when reviews_count is 0", () => {
+        renderCard(
+            makeMatch({
+                carrier: { id: 1, display_name: "Transportes del Sur", rating_avg: "0.0", reviews_count: 0 },
+            }),
+        );
+        expect(screen.getByText("Sin calificaciones")).toBeInTheDocument();
+        expect(screen.queryByText(/★/)).not.toBeInTheDocument();
+    });
+
     it("renders Haversine distance from cargo pickup when pickup coords are supplied", () => {
         // CABA pickup vs La Plata origin (~50–60 km) — same fixture pair the
         // backend Geo spec uses. Tolerate the exact rounded km because the
@@ -138,7 +147,7 @@ describe("MatchCard", () => {
             7,
             { lat: -34.603722, lng: -58.381592 },
         );
-        expect(screen.getByText(/^A \d+ km del retiro$/)).toBeInTheDocument();
+        expect(screen.getByText(/^A [\d.]+ km del retiro$/)).toBeInTheDocument();
     });
 
     it("hides the distance line when no pickup coords are supplied", () => {

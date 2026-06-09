@@ -38,6 +38,10 @@ const mountAt = (path: string) =>
 
 describe("ShipperMeRedirect", () => {
     it("redirects anonymous users to /login", async () => {
+        // Explicitly force 401 regardless of any JWT in storage from concurrent tests.
+        server.use(http.get(`${API}/api/auth/me`, () =>
+            HttpResponse.json({ error: "unauthorized" }, { status: 401 }),
+        ));
         mountAt("/shippers/me");
         expect(await screen.findByText("login-screen")).toBeInTheDocument();
     });

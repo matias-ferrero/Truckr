@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_06_000000) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.integer "author_id"
     t.string "author_type"
@@ -97,6 +97,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_220000) do
     t.decimal "delivery_lat", precision: 9, scale: 6, null: false
     t.decimal "delivery_lng", precision: 9, scale: 6, null: false
     t.text "delivery_locality", null: false
+    t.decimal "distance_km", precision: 10, scale: 2
     t.string "pickup_address", null: false
     t.text "pickup_admin_area", null: false
     t.decimal "pickup_lat", precision: 9, scale: 6, null: false

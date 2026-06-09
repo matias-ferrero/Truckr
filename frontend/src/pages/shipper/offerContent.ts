@@ -5,7 +5,8 @@
    Post-remediation the offer flow is a single confirm step: it bids an
    already-published Cargo against a chosen TransportWindow. The old 3-step
    wizard copy (addresses, cargo fields) is gone — that data lives on the
-   published Cargo. */
+   published Cargo. Distance and price are read-only, derived from the
+   cargo's stored distance_km and the window's price_per_km. */
 
 export const offerContent = {
     title: "Confirmar oferta",
@@ -31,10 +32,9 @@ export const offerContent = {
         rate: (rate: string) => `$${rate} / km`,
         availability: (from: string, to: string) => `Disponible ${from} – ${to}`,
     },
-    estimatedKm: "Kilómetros estimados del viaje",
-    estimatedKmError: "Ingresá una cantidad de kilómetros mayor a cero.",
-    estimatedCost: "Costo estimado",
-    noEstimate: "Ingresá los km para ver el costo",
+    distanceLabel: "Distancia del viaje",
+    distanceUnavailable: "No disponible",
+    totalCost: "Costo total",
     submit: "Enviar oferta",
     submitting: "Enviando…",
     cancel: "Cancelar",

@@ -33,6 +33,7 @@ function makeOffer(overrides: Partial<carrierOffersApi.CarrierCargoOffer> = {}):
             pickup_window_end: "2026-06-13T18:00:00Z",
             cargo_description: "Pallets",
             status: "open",
+            distance_km: "301.0",
         },
         shipper: { id: 1, name: "Test User" },
         transport_window: {

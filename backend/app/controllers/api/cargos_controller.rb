@@ -75,7 +75,7 @@ module Api
     private
 
     def set_cargo
-      @cargo = Cargo.find(params[:id])
+      @cargo = Cargo.includes(cargo_offers: [ :transport_window, { carrier: :user } ]).find(params[:id])
     end
 
     def cargo_params

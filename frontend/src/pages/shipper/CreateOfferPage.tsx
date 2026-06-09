@@ -5,8 +5,7 @@ import { getCargo, getMatches } from "../../features/cargo/api";
 import type { Cargo, CargoMatch } from "../../types/Cargo";
 import { offerContent } from "./offerContent";
 import { formatRoute } from "../../lib/format-place";
-import { FormField } from "../../components/ui/form-field";
-import { Input } from "../../components/ui/input";
+import { formatDistance } from "../../lib/format-distance";
 import { Button } from "../../components/ui/button";
 import { Alert } from "../../components/ui/alert";
 
@@ -48,10 +47,9 @@ type LoadState =
  * Cargo-scoped offer confirm step (US7 / REQ-FE-00015 remediation, plan §4.10).
  *
  * Route: `/shipper/cargos/:id/offers/new?window=:windowId`. The offer bids an
- * already-published `Cargo` against a chosen `TransportWindow`. The window is
- * passed via router state from the match list, with a `getMatches` refetch
- * fallback for deep links / reloads. The old 3-step wizard (addresses, cargo
- * fields, date) is gone — that data lives on the published Cargo.
+ * already-published `Cargo` against a chosen `TransportWindow`. Distance and
+ * price are read-only: distance comes from the cargo's stored distance_km and
+ * total cost is distance × window price_per_km.
  */
 export default function CreateOfferPage() {
     const { id } = useParams<{ id: string }>();
@@ -64,8 +62,6 @@ export default function CreateOfferPage() {
     const navWindow = (location.state as NavState | null)?.window;
 
     const [state, setState] = useState<LoadState>({ status: "loading" });
-    const [estimatedKm, setEstimatedKm] = useState("");
-    const [kmTouched, setKmTouched] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
@@ -97,19 +93,15 @@ export default function CreateOfferPage() {
         // navWindow is read once on mount; windowId/cargoId drive the fetch.
     }, [cargoId, windowId]);
 
-    const parsedKm = parseFloat(estimatedKm);
-    const kmValid = parsedKm > 0;
-
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        setKmTouched(true);
-        if (!kmValid || state.status !== "ready") return;
+        if (state.status !== "ready" || state.cargo.distance_km == null) return;
         setSubmitting(true);
         setSubmitError(null);
         try {
             await createCargoOffer(cargoId, {
                 transport_window_id: state.window.id,
-                estimated_km: estimatedKm,
+                estimated_km: state.cargo.distance_km,
             });
             navigate(`/shipper/cargos/${cargoId}`);
         } catch {
@@ -150,11 +142,11 @@ export default function CreateOfferPage() {
 
     const { cargo, window } = state;
     const pricePerKm = parseFloat(window.price_per_km);
-    const estimatedCost = kmValid && pricePerKm > 0
-        ? parsedKm * pricePerKm
+    const distanceKm = cargo.distance_km != null ? parseFloat(cargo.distance_km) : null;
+    const totalCost = distanceKm != null && pricePerKm > 0
+        ? arsFormatter.format(distanceKm * pricePerKm)
         : null;
-    const carrierName = window.carrier.display_name ??
-        t.windowSection.carrierFallback;
+    const carrierName = window.carrier.display_name ?? t.windowSection.carrierFallback;
 
     return (
         <main className="page" id="main">
@@ -252,38 +244,27 @@ export default function CreateOfferPage() {
                             {submitError}
                         </Alert>
                     )}
-                    <FormField
-                        id="estimated_km"
-                        label={t.estimatedKm}
-                        error={
-                            kmTouched && !kmValid ? t.estimatedKmError : undefined
-                        }
-                        required
-                    >
-                        <Input
-                            id="estimated_km"
-                            type="number"
-                            min="1"
-                            step="1"
-                            value={estimatedKm}
-                            onChange={(e) => setEstimatedKm(e.target.value)}
-                            onBlur={() => setKmTouched(true)}
-                        />
-                    </FormField>
-                    <div
-                        className="costEstimate"
-                        aria-live="polite"
-                        data-testid="cost-estimate"
-                    >
-                        <span>{t.estimatedCost}: </span>
-                        <strong>
-                            {estimatedCost != null
-                                ? arsFormatter.format(estimatedCost)
-                                : t.noEstimate}
-                        </strong>
-                    </div>
+                    <dl className="detailGrid">
+                        <div>
+                            <dt>{t.distanceLabel}</dt>
+                            <dd data-testid="offer-distance">
+                                {distanceKm != null
+                                    ? formatDistance(distanceKm)
+                                    : t.distanceUnavailable}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>{t.totalCost}</dt>
+                            <dd aria-live="polite" data-testid="cost-estimate">
+                                {totalCost ?? "—"}
+                            </dd>
+                        </div>
+                    </dl>
                     <div className="offerFormActions">
-                        <Button type="submit" disabled={submitting}>
+                        <Button
+                            type="submit"
+                            disabled={submitting || distanceKm == null}
+                        >
                             {submitting ? t.submitting : t.submit}
                         </Button>
                         <Button

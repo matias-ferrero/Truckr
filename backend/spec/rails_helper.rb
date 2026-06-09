@@ -48,6 +48,12 @@ RSpec.configure do |config|
   # instead of true.
   config.use_transactional_fixtures = true
 
+  # Prevent real HTTP calls to Google Maps Distance Matrix API in all specs.
+  # Individual specs that test the service itself override this stub explicitly.
+  config.before(:each) do
+    allow(GoogleMaps::DistanceService).to receive(:fetch_km).and_return(712.0)
+  end
+
   config.before(:suite) do
     conn = ActiveRecord::Base.connection
     conn.execute("PRAGMA foreign_keys = OFF")

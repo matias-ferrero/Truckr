@@ -257,4 +257,73 @@ RSpec.describe Cargo, type: :model do
       expect(Cargo.for_shipper(shipper)).to contain_exactly(mine)
     end
   end
+
+  describe "#distance_km auto-calculation" do
+    before do
+      allow(GoogleMaps::DistanceService).to receive(:fetch_km).and_return(712.0)
+    end
+
+    it "is set on create using the Google Maps Distance Matrix API" do
+      cargo = create(:cargo)
+      expect(cargo.distance_km).to be_a(BigDecimal).and(be_positive)
+      expect(cargo.distance_km.to_f).to eq(712.0)
+    end
+
+    it "is not recalculated when non-route fields change" do
+      cargo    = create(:cargo)
+      original = cargo.distance_km
+      cargo.update!(cargo_description: "updated description")
+      # fetch_km was called once (on create) and not again for the description update.
+      expect(GoogleMaps::DistanceService).to have_received(:fetch_km).once
+      expect(cargo.reload.distance_km).to eq(original)
+    end
+
+    it "is refreshed when pickup coordinates change" do
+      cargo = create(:cargo)
+      allow(GoogleMaps::DistanceService).to receive(:fetch_km).and_return(350.0)
+      cargo.update!(pickup_lat: -32.0, pickup_lng: -60.0)
+      expect(cargo.reload.distance_km.to_f).to eq(350.0)
+    end
+
+    it "is refreshed when delivery coordinates change" do
+      cargo = create(:cargo)
+      allow(GoogleMaps::DistanceService).to receive(:fetch_km).and_return(280.0)
+      cargo.update!(delivery_lat: -33.0, delivery_lng: -65.0)
+      expect(cargo.reload.distance_km.to_f).to eq(280.0)
+    end
+
+    it "preserves the previous distance_km if the API fails during an update" do
+      cargo    = create(:cargo)
+      original = cargo.distance_km
+      allow(GoogleMaps::DistanceService).to receive(:fetch_km).and_return(nil)
+      cargo.update!(pickup_lat: -32.0, pickup_lng: -60.0)
+      expect(cargo.reload.distance_km).to eq(original)
+    end
+
+    it "skips the API call when distance_km is pre-assigned (e.g. seeds)" do
+      cargo = build(:cargo, distance_km: 500.0)
+      expect(GoogleMaps::DistanceService).not_to receive(:fetch_km)
+      cargo.save!
+      expect(cargo.distance_km.to_f).to eq(500.0)
+    end
+
+    context "when the Distance Matrix API returns nil" do
+      before do
+        allow(GoogleMaps::DistanceService).to receive(:fetch_km).and_return(nil)
+      end
+
+      it "does not save the cargo" do
+        cargo = build(:cargo)
+        expect(cargo.save).to be(false)
+      end
+
+      it "adds a base error with the distance_unavailable key" do
+        cargo = build(:cargo)
+        cargo.save
+        expect(cargo.errors[:base]).to include(
+          I18n.t("activerecord.errors.models.cargo.attributes.base.distance_unavailable")
+        )
+      end
+    end
+  end
 end

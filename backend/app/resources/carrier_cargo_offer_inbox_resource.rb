@@ -16,7 +16,7 @@ class CarrierCargoOfferInboxResource
     attributes :id, :pickup_address, :delivery_address,
                :weight_kg, :volume_cm3, :declared_value_cents,
                :pickup_window_start, :pickup_window_end,
-               :cargo_description, :status
+               :cargo_description, :status, :distance_km
   end
 
   attribute :shipper do |offer|

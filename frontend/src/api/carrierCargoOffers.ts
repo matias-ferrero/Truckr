@@ -19,6 +19,7 @@ export type CarrierCargoOfferCargo = {
     pickup_window_end: string;
     cargo_description: string;
     status: string;
+    distance_km: string | null;
 };
 
 export type CarrierCargoOfferShipper = {

@@ -34,6 +34,7 @@ export const offersAndShipmentsContent = {
         windowDate: "Disponibilidad",
         windowRate: "Tarifa",
         windowMaxKm: "Máx. km",
+        distance: "Distancia del viaje",
         accept: "Aceptar",
         reject: "Rechazar",
         processing: "Procesando…",
