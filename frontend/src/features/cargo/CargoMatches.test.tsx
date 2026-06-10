@@ -147,6 +147,75 @@ describe("CargoMatches — open cargo", () => {
     });
 });
 
+describe("CargoMatches — pagination", () => {
+    it("shows the total compatible-carrier count above the list", async () => {
+        api.getCargo.mockResolvedValue(makeCargo());
+        api.getMatches.mockResolvedValue({
+            items: [makeMatch()],
+            meta: { total: 23, page: 1, perPage: 20, totalPages: 2 },
+        });
+        renderScreen();
+        expect(
+            await screen.findByText("23 transportistas compatibles"),
+        ).toBeInTheDocument();
+    });
+
+    it("singularises the count for a lone compatible carrier", async () => {
+        api.getCargo.mockResolvedValue(makeCargo());
+        api.getMatches.mockResolvedValue(matchResult([makeMatch()]));
+        renderScreen();
+        expect(
+            await screen.findByText("1 transportista compatible"),
+        ).toBeInTheDocument();
+    });
+
+    it("steps to the next page and requests it from the API", async () => {
+        api.getCargo.mockResolvedValue(makeCargo());
+        api.getMatches.mockImplementation((_id, page = 1) =>
+            Promise.resolve({
+                items: [
+                    makeMatch({
+                        id: page,
+                        carrier: {
+                            id: page,
+                            display_name: page === 1 ? "Primera" : "Segunda",
+                            rating_avg: "4.7",
+                            reviews_count: 5,
+                        },
+                    }),
+                ],
+                meta: { total: 23, page, perPage: 20, totalPages: 2 },
+            }),
+        );
+        const user = userEvent.setup();
+        renderScreen();
+
+        expect(await screen.findByText("Primera")).toBeInTheDocument();
+        expect(screen.getByText("Página 1 de 2")).toBeInTheDocument();
+        expect(
+            screen.getByRole("button", { name: "← Anterior" }),
+        ).toBeDisabled();
+
+        await user.click(screen.getByRole("button", { name: "Siguiente →" }));
+
+        expect(await screen.findByText("Segunda")).toBeInTheDocument();
+        expect(screen.getByText("Página 2 de 2")).toBeInTheDocument();
+        expect(api.getMatches).toHaveBeenLastCalledWith(7, 2);
+    });
+
+    it("omits the paginator when the results fit on one page", async () => {
+        api.getCargo.mockResolvedValue(makeCargo());
+        api.getMatches.mockResolvedValue(matchResult([makeMatch()]));
+        renderScreen();
+        await screen.findByText("Transportes del Sur");
+        expect(
+            screen.queryByRole("navigation", {
+                name: "Paginación de transportistas",
+            }),
+        ).not.toBeInTheDocument();
+    });
+});
+
 describe("CargoMatches — non-open cargo", () => {
     it("shows the not-open notice and skips the matches request", async () => {
         api.getCargo.mockResolvedValue(

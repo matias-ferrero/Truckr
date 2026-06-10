@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getCargo, getMatches } from "./api";
+import type { CargoListMeta } from "./api";
 import type { Cargo, CargoMatch } from "../../types/Cargo";
 import { cargosContent } from "./cargosContent";
 import MatchCard from "./MatchCard";
@@ -25,7 +26,7 @@ type CargoState =
 type MatchesState =
     | { status: "idle" }
     | { status: "loading" }
-    | { status: "ready"; items: CargoMatch[] }
+    | { status: "ready"; items: CargoMatch[]; meta: CargoListMeta }
     | { status: "error" };
 
 /**
@@ -41,6 +42,13 @@ export default function CargoMatches() {
 
     const [state, setState] = useState<CargoState>({ status: "loading" });
     const [matches, setMatches] = useState<MatchesState>({ status: "idle" });
+    const [page, setPage] = useState(1);
+
+    // A different cargo means a fresh result set: rewind to the first page so
+    // we never request a page index that the new cargo may not have.
+    useEffect(() => {
+        setPage(1);
+    }, [cargoId]);
 
     const loadCargo = useCallback(async () => {
         setState({ status: "loading" });
@@ -65,9 +73,15 @@ export default function CargoMatches() {
         }
         let cancelled = false;
         setMatches({ status: "loading" });
-        getMatches(cargoId)
+        getMatches(cargoId, page)
             .then((res) => {
-                if (!cancelled) setMatches({ status: "ready", items: res.items });
+                if (!cancelled) {
+                    setMatches({
+                        status: "ready",
+                        items: res.items,
+                        meta: res.meta,
+                    });
+                }
             })
             .catch(() => {
                 if (!cancelled) setMatches({ status: "error" });
@@ -75,7 +89,7 @@ export default function CargoMatches() {
         return () => {
             cancelled = true;
         };
-    }, [state, cargoId]);
+    }, [state, cargoId, page]);
 
     if (state.status === "loading") {
         return (
@@ -188,6 +202,12 @@ export default function CargoMatches() {
                         >
                             {t.listLabel}
                         </h2>
+                        {matches.status === "ready" &&
+                            matches.meta.total > 0 && (
+                                <p className="sectionLead" role="status">
+                                    {t.matchesCount(matches.meta.total)}
+                                </p>
+                            )}
                         {matches.status === "loading" && (
                             <p
                                 className="sectionLead"
@@ -208,19 +228,59 @@ export default function CargoMatches() {
                             )}
                         {matches.status === "ready" &&
                             matches.items.length > 0 && (
-                                <ul className="matchList">
-                                    {matches.items.map((m) => (
-                                        <MatchCard
-                                            key={m.id}
-                                            cargoId={cargo.id}
-                                            match={m}
-                                            pickup={{
-                                                lat: Number(cargo.pickup_lat),
-                                                lng: Number(cargo.pickup_lng),
-                                            }}
-                                        />
-                                    ))}
-                                </ul>
+                                <>
+                                    <ul className="matchList">
+                                        {matches.items.map((m) => (
+                                            <MatchCard
+                                                key={m.id}
+                                                cargoId={cargo.id}
+                                                match={m}
+                                                pickup={{
+                                                    lat: Number(
+                                                        cargo.pickup_lat,
+                                                    ),
+                                                    lng: Number(
+                                                        cargo.pickup_lng,
+                                                    ),
+                                                }}
+                                            />
+                                        ))}
+                                    </ul>
+                                    {matches.meta.totalPages > 1 && (
+                                        <nav
+                                            className="paginator"
+                                            aria-label={t.pagination.label}
+                                        >
+                                            <button
+                                                type="button"
+                                                className="button buttonGhost"
+                                                disabled={page <= 1}
+                                                onClick={() =>
+                                                    setPage((p) =>
+                                                        Math.max(1, p - 1),
+                                                    )}
+                                            >
+                                                {t.pagination.previous}
+                                            </button>
+                                            <p>
+                                                {t.pagination.page(
+                                                    matches.meta.page,
+                                                    matches.meta.totalPages,
+                                                )}
+                                            </p>
+                                            <button
+                                                type="button"
+                                                className="button buttonGhost"
+                                                disabled={page >=
+                                                    matches.meta.totalPages}
+                                                onClick={() =>
+                                                    setPage((p) => p + 1)}
+                                            >
+                                                {t.pagination.next}
+                                            </button>
+                                        </nav>
+                                    )}
+                                </>
                             )}
                     </section>
                 )}
