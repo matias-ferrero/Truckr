@@ -97,7 +97,10 @@ describe("Header", () => {
         await waitFor(() => expect(screen.getByText("Carrier User")).toBeInTheDocument());
         expect(screen.getByRole("link", { name: /perfil público de carrier user/i }))
             .toHaveAttribute("href", "/carriers/me");
-        // Carrier section links + the pending-offers badge moved to the Sidebar.
+        // Carrier section links ("Bandeja", "Mis Pagos", "Mis Viajes", "Envíos")
+        // and the pending-offers badge moved to the persistent Sidebar / the
+        // Carrier-Dashboard-v2 board — the header carries only brand +
+        // notifications + session for carriers.
         expect(screen.queryByRole("link", { name: /bandeja/i })).toBeNull();
         expect(screen.queryByRole("link", { name: /mis pagos/i })).toBeNull();
         expect(screen.queryByRole("link", { name: /mis viajes/i })).toBeNull();

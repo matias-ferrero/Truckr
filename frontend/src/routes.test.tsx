@@ -157,6 +157,34 @@ describe("AppRoutes", () => {
         );
     });
 
+    it("redirects a logged-in carrier from / to the carrier v2 dashboard", async () => {
+        const listHeaders = {
+            "X-Total": "0",
+            "X-Page": "1",
+            "X-Per-Page": "20",
+            "X-Total-Pages": "1",
+        };
+        server.use(
+            http.get(`${API}/api/auth/me`, () => HttpResponse.json(carrierMe)),
+            http.get(`${API}/api/carriers/me/cargo-offers`, () =>
+                HttpResponse.json([], { headers: listHeaders })),
+            http.get(`${API}/api/carriers/me/shipments`, () => HttpResponse.json([])),
+            http.get(`${API}/api/carriers/me/vehicles`, () =>
+                HttpResponse.json([], { headers: listHeaders })),
+            http.get(`${API}/api/carriers/me/transport_windows`, () =>
+                HttpResponse.json([], { headers: listHeaders })),
+            http.get(`${API}/api/carriers/me/activity`, () => HttpResponse.json([])),
+        );
+        window.history.pushState({}, "", "/");
+        render(<AppRoutes />);
+        // The carrier greeting proves we landed on the job-funnel dashboard,
+        // not the retired multi-section one.
+        await waitFor(() =>
+            expect(screen.getByRole("heading", { name: /Hola, Ana/ })).toBeInTheDocument()
+        );
+        expect(window.location.pathname).toBe("/carrier/dashboard");
+    });
+
     it("redirects a logged-in shipper from / to the v2 dashboard", async () => {
         const shipperMe = { ...carrierMe, roles: ["shipper"], carrier: null,
             shipper: { id: 1, company_name: null, tax_id: null, billing_address: null } };

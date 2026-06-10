@@ -28,6 +28,10 @@ export type Shipment = {
     // US-Shipper-Dashboard — true once the Shipper has left their review for a
     // delivered shipment. Drives the "pendiente de reseña" attention surface.
     shipper_reviewed: boolean;
+    // Carrier-Dashboard-v2 — mirror flag for the Carrier viewer (US30), and
+    // the settlement timestamp that splits Entregadas (por cobrar) / Pagadas.
+    carrier_reviewed: boolean;
+    settled_at: string | null;
 };
 
 export type CounterpartyContact = {
@@ -146,6 +150,35 @@ export async function getShipmentDetail(id: number): Promise<ShipmentDetail> {
 
 export async function listShipperActivity(): Promise<ShipperActivityEvent[]> {
     return apiFetch<ShipperActivityEvent[]>("/api/shippers/me/activity");
+}
+
+// Carrier-Dashboard-v2 — the heterogeneous news feed from
+// GET /api/carriers/me/activity: payouts settled, reviews received from
+// shippers, and inbound offer events. Self-triggered shipment milestones are
+// deliberately absent (they're a log, not news).
+export type CarrierActivityKind =
+    | "payout_paid"
+    | "review_received"
+    | "offer_received"
+    | "offer_accepted"
+    | "offer_rejected";
+
+export type CarrierActivityEvent = {
+    /** composite key, e.g. "payout-3" / "offer-9-accepted" */
+    id: string;
+    kind: CarrierActivityKind;
+    occurred_at: string;
+    shipment_id: number | null;
+    cargo_offer_id: number | null;
+    origin: string;
+    destination: string;
+    amount_cents: number | null;
+    currency: string | null;
+    rating: number | null;
+};
+
+export async function listCarrierActivity(): Promise<CarrierActivityEvent[]> {
+    return apiFetch<CarrierActivityEvent[]>("/api/carriers/me/activity");
 }
 
 export async function createShipmentPayment(id: number): Promise<PaymentResult> {

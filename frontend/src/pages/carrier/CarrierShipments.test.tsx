@@ -21,6 +21,9 @@ function makeShipment(overrides: Partial<Shipment> = {}): Shipment {
         currency: "ARS",
         latest_activity_at: "2026-06-11T10:00:00Z",
         payment_escrowed: false,
+        shipper_reviewed: false,
+        carrier_reviewed: false,
+        settled_at: null,
         ...overrides,
     };
 }

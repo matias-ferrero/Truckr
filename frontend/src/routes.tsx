@@ -9,7 +9,6 @@ import RequireCarrier from "./auth/RequireCarrier";
 import RequireShipper from "./auth/RequireShipper";
 import RequireAuth from "./auth/RequireAuth";
 import { useCurrentUser } from "./auth/useCurrentUser";
-import { DashboardPage } from "./pages/dashboard/DashboardPage";
 
 const LoginPage = lazy(() => import("./auth/LoginPage").then((m) => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import("./auth/RegisterPage").then((m) => ({ default: m.RegisterPage })));
@@ -19,6 +18,7 @@ const VehicleList           = lazy(() => import("./pages/carrier/VehicleList"));
 const TransportWindowList   = lazy(() => import("./pages/carrier/TransportWindowList"));
 const TransportWindowForm   = lazy(() => import("./pages/carrier/TransportWindowForm"));
 const CarrierCargoOfferInbox = lazy(() => import("./pages/carrier/CarrierCargoOfferInbox"));
+const CarrierDashboardPage = lazy(() => import("./pages/carrier/dashboard/CarrierDashboardPage"));
 const CarrierShipments = lazy(() => import("./pages/carrier/CarrierShipments"));
 const CarrierPayoutsPage = lazy(() => import("./pages/carrier/CarrierPayoutsPage").then((m) => ({ default: m.CarrierPayoutsPage })));
 const ShipmentDetailPage = lazy(() => import("./pages/shipments/ShipmentDetailPage"));
@@ -114,16 +114,17 @@ function IndexRoute() {
     if (loading) return null;
 
     if (me) {
-        // Shippers land on the Cargo-centric v2 dashboard as their home.
-        // Carriers (including dual-role) keep the multi-section dashboard.
-        if (me.roles.includes("shipper") && !me.roles.includes("carrier")) {
+        // Every carrier — including dual-role carrier+shipper — lands on the
+        // job-funnel v2 dashboard; shippers land on the cargo-centric v2 one.
+        // The old multi-section DashboardPage is retired as a landing.
+        if (me.roles.includes("carrier")) {
+            return <Navigate to="/carrier/dashboard" replace />;
+        }
+        if (me.roles.includes("shipper")) {
             return <Navigate to="/shipper/dashboard" replace />;
         }
-        return (
-            <AppShell pageClass="dashboardPage" mainClass="dashboardMain">
-                <DashboardPage />
-            </AppShell>
-        );
+        // A logged-in user with neither role (edge case) sees the public
+        // landing; the old multi-section DashboardPage was retired.
     }
 
     return <LandingPage />;
@@ -161,6 +162,7 @@ export function AppRoutes() {
                         }
                     />
                     <Route path="/carrier" element={<CarrierLayout />}>
+                        <Route path="dashboard" element={<CarrierDashboardPage />} />
                         <Route path="vehicle" element={<VehicleForm mode="primary" />} />
                         <Route path="vehicle/new" element={<VehicleForm mode="new" />} />
                         <Route path="vehicle/:id" element={<VehicleForm mode="edit" />} />

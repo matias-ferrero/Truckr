@@ -70,6 +70,8 @@ function makeShipment(overrides: Partial<Shipment> = {}): Shipment {
         payment_escrowed: true,
         counterparty_display_name: "Carrier SA",
         shipper_reviewed: false,
+        carrier_reviewed: false,
+        settled_at: null,
         ...overrides,
     };
 }

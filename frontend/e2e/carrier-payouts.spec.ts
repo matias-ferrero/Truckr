@@ -8,10 +8,9 @@ test("carrier can view their payouts history", async ({ page }) => {
     await page.getByRole("button", { name: /iniciar sesión/i }).click();
     await expect(page.getByRole("button", { name: /salir/i })).toBeVisible();
 
-    // Navigates to the carrier dashboard
-    await page.goto("/carrier/availability");
-
-    // "Mis Pagos" now lives in the persistent sidebar.
+    // The carrier lands on the v2 dashboard; "Mis Pagos" lives in the
+    // persistent sidebar (the header link was consolidated away).
+    await page.goto("/carrier/dashboard");
     await page.getByRole("navigation", { name: "Navegación principal" })
         .getByRole("link", { name: "Mis Pagos" }).click();
 

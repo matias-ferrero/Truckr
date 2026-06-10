@@ -56,6 +56,8 @@ Rails.application.routes.draw do
                                     module: "carriers/me"
       resources :shipments, only: %i[index], module: "carriers/me"
       resources :payouts,   only: %i[index], module: "carriers/me"
+      # Carrier Dashboard activity feed — read-only mirror of the Shipper one.
+      resources :activity,  only: %i[index], module: "carriers/me"
     end
 
     scope path: "carriers/me/cargo-offers", as: :me_cargo_offers, module: "carriers/me" do

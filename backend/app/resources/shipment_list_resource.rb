@@ -8,7 +8,9 @@
 class ShipmentListResource
   include Alba::Resource
 
-  attributes :id, :created_at
+  # `settled_at` is the Entregadas → Pagadas split on the Carrier dashboard
+  # board (delivered && settled_at == null ⇒ "por cobrar").
+  attributes :id, :created_at, :settled_at
 
   attribute :state do |shipment|
     shipment.status
@@ -62,5 +64,13 @@ class ShipmentListResource
   # viewers, who never author a shipper-directed review.
   attribute :shipper_reviewed do |shipment|
     shipment.reviews.any?(&:shipper_authored?)
+  end
+
+  # Mirror of `shipper_reviewed` for the Carrier viewer (US30 / REQ-BE-00044):
+  # true once the Carrier has authored their Carrier→Shipper review. Drives
+  # the dashboard's "expedidores por calificar" count off the same
+  # eager-loaded association — no extra query, no new column.
+  attribute :carrier_reviewed do |shipment|
+    shipment.reviews.any?(&:carrier_authored?)
   end
 end

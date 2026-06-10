@@ -30,6 +30,8 @@ export type TransportWindow = {
     available_from: string;
     available_to: string;
     active: boolean;
+    /** marketplace lifecycle — "open" windows are visible to shippers */
+    status: "open" | "pending_offer" | "reserved";
     cargo_offers_count: number;
     vehicle: TransportWindowVehicle;
     created_at: string;

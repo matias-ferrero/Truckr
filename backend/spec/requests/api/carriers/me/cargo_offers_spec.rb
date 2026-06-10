@@ -63,6 +63,53 @@ RSpec.describe "Api::Carriers::Me::CargoOffers", type: :request do
       expect(ids).not_to include(pending.id)
     end
 
+    it "exposes the shipper's identity and review headline numbers (carrier-dashboard-v2)" do
+      vehicle = create(:vehicle, carrier: carrier)
+      window = create(:transport_window, vehicle: vehicle, status: "pending_offer",
+                      available_from: 2.days.from_now, available_to: 10.days.from_now)
+      cargo = create(:cargo, shipper: shipper_user.shipper,
+                     pickup_window_start: pickup_start, pickup_window_end: pickup_end)
+      create(:cargo_offer, cargo: cargo, carrier: carrier, transport_window: window, status: "pending")
+      # Two carrier-authored reviews about this shipper → avg 4.5, count 2.
+      create(:review, :carrier_authored, rating: 4,
+             shipment: create(:shipment, :delivered,
+                              cargo_offer: create(:cargo_offer, :accepted,
+                                                  cargo: create(:cargo, shipper: shipper_user.shipper,
+                                                                pickup_window_start: pickup_start,
+                                                                pickup_window_end: pickup_end))))
+      create(:review, :carrier_authored, rating: 5,
+             shipment: create(:shipment, :delivered,
+                              cargo_offer: create(:cargo_offer, :accepted,
+                                                  cargo: create(:cargo, shipper: shipper_user.shipper,
+                                                                pickup_window_start: pickup_start,
+                                                                pickup_window_end: pickup_end))))
+
+      get "/api/carriers/me/cargo-offers"
+
+      shipper = JSON.parse(response.body).first.fetch("shipper")
+      expect(shipper).to include(
+        "id"            => shipper_user.shipper.id,
+        "name"          => shipper_user.full_name,
+        "rating_avg"    => "4.5",
+        "reviews_count" => 2
+      )
+    end
+
+    it "nulls rating_avg for an unrated shipper" do
+      vehicle = create(:vehicle, carrier: carrier)
+      window = create(:transport_window, vehicle: vehicle, status: "pending_offer",
+                      available_from: 2.days.from_now, available_to: 10.days.from_now)
+      cargo = create(:cargo, shipper: shipper_user.shipper,
+                     pickup_window_start: pickup_start, pickup_window_end: pickup_end)
+      create(:cargo_offer, cargo: cargo, carrier: carrier, transport_window: window, status: "pending")
+
+      get "/api/carriers/me/cargo-offers"
+
+      shipper = JSON.parse(response.body).first.fetch("shipper")
+      expect(shipper["rating_avg"]).to be_nil
+      expect(shipper["reviews_count"]).to eq(0)
+    end
+
     it "rejects unauthenticated requests" do
       sign_out carrier_user
 

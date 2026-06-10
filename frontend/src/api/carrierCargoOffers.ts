@@ -12,6 +12,8 @@ export type CarrierCargoOfferCargo = {
     id: number;
     pickup_address: string;
     delivery_address: string;
+    pickup_locality: string;
+    delivery_locality: string;
     weight_kg: string;
     volume_cm3: number | null;
     declared_value_cents: number;
@@ -25,6 +27,9 @@ export type CarrierCargoOfferCargo = {
 export type CarrierCargoOfferShipper = {
     id: number;
     name: string | null;
+    /** avg of carrier-authored ratings, 1 dp (e.g. "4.5"); null when unrated */
+    rating_avg: string | null;
+    reviews_count: number;
 };
 
 export type CarrierCargoOfferTransportWindow = {

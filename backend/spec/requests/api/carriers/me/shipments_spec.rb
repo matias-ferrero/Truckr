@@ -89,9 +89,36 @@ RSpec.describe "Api::Carriers::Me::Shipments", type: :request do
         row = JSON.parse(response.body).first
         expect(row.keys).to include(
           "id", "state", "origin", "destination",
-          "created_at", "amount_cents", "currency", "latest_activity_at", "payment_escrowed"
+          "created_at", "amount_cents", "currency", "latest_activity_at", "payment_escrowed",
+          "settled_at", "carrier_reviewed"
         )
         expect(row.keys).not_to include("payment_state")
+      end
+
+      it "flags carrier_reviewed once the Carrier has authored their review (carrier-dashboard-v2)" do
+        reviewed   = create(:shipment, :delivered, cargo_offer: create(:cargo_offer, :accepted, carrier: carrier))
+        unreviewed = create(:shipment, :delivered, cargo_offer: create(:cargo_offer, :accepted, carrier: carrier))
+        create(:review, :carrier_authored, shipment: reviewed)
+        # A shipper-authored review must NOT count as the carrier's.
+        create(:review, :shipper_authored, shipment: unreviewed)
+
+        get "/api/carriers/me/shipments"
+
+        rows = JSON.parse(response.body).index_by { |s| s["id"] }
+        expect(rows.fetch(reviewed.id)["carrier_reviewed"]).to be(true)
+        expect(rows.fetch(unreviewed.id)["carrier_reviewed"]).to be(false)
+      end
+
+      it "exposes settled_at so the dashboard can split Entregadas / Pagadas" do
+        unsettled = create(:shipment, :delivered, cargo_offer: create(:cargo_offer, :accepted, carrier: carrier))
+        settled   = create(:shipment, :delivered, cargo_offer: create(:cargo_offer, :accepted, carrier: carrier))
+        settled.update_columns(settled_at: 1.hour.ago)
+
+        get "/api/carriers/me/shipments"
+
+        rows = JSON.parse(response.body).index_by { |s| s["id"] }
+        expect(rows.fetch(unsettled.id)["settled_at"]).to be_nil
+        expect(rows.fetch(settled.id)["settled_at"]).to be_present
       end
     end
   end

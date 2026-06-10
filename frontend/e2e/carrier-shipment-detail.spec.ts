@@ -84,6 +84,11 @@ test.describe("Carrier — shipment detail (REQ-FE-00024 / US39)", () => {
         await deliveredLink.click();
 
         await expect(page).toHaveURL(/\/carrier\/shipments\/\d+$/);
+        // Wait for the detail view to mount (the back link is detail-only) before
+        // querying the state chip. The list renders one .shipmentStateChip per row,
+        // so asserting mid-SPA-transition — while the list DOM lingers — would match
+        // all five seeded delivered shipments and trip strict mode.
+        await expect(page.getByRole("link", { name: /volver a mis envíos/i })).toBeVisible();
         await expect(page.locator(".shipmentStateChip").getByText("Entregado")).toBeVisible();
 
         // Shipment-detail v2 §6 — rail contact card links to the shipper's reputation.
