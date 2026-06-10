@@ -126,6 +126,13 @@ echo "▸ bundle install (backend)"
 echo "▸ deno install (frontend)"
 (cd "$WT/frontend" && deno install)
 
+# foreman runs the backend Procfile but isn't in the Gemfile (it's a dev-only
+# tool the repo installs ad hoc). Mirror backend/bin/dev and install on demand.
+if ! gem list foreman -i --silent >/dev/null 2>&1; then
+    echo "▸ installing foreman"
+    gem install foreman
+fi
+
 # ── DB prep ────────────────────────────────────────────────────────────────
 DB_FILE="$WT/backend/storage/development.sqlite3"
 if [[ -f "$DB_FILE" ]]; then
@@ -136,21 +143,39 @@ else
     (cd "$WT/backend" && bin/rails db:prepare && bin/rails db:seed)
 fi
 
+# ── Generate a backend Procfile with the chosen port baked in ──────────────
+# We can't reuse the worktree's bin/dev / Procfile.dev: a worktree may be on
+# any branch, and older branches hardcode `-p 3000`, ignoring our PORT env. By
+# generating our own Procfile (port literal-expanded by bash here) and running
+# foreman directly, the bind port is enforced no matter the branch. `foreman
+# -p $BE_PORT` also exports PORT=$BE_PORT to the web process so ActiveStorage's
+# signed-URL port matches the Puma bind port (see backend/bin/dev for why).
+# `-d $WT/backend` (on the launch below) is required: foreman defaults its
+# working dir to the Procfile's location (/tmp here), which would otherwise
+# break the relative `bin/rails`.
+BE_PROCFILE="$(mktemp -t review-worktree.XXXXXX.procfile)"
+cat >"$BE_PROCFILE" <<EOF
+web: bin/rails server -p $BE_PORT -b 127.0.0.1
+css: bin/rails dartsass:watch
+EOF
+
 # ── Spawn kitty session ────────────────────────────────────────────────────
 SESSION="$(mktemp -t review-worktree.XXXXXX.conf)"
 SHELL_BIN="${SHELL:-/bin/bash}"
 
-# Per-pane env carries the chosen ports into each server:
-#   • backend pane: PORT pins Puma/foreman to BE_PORT; FRONTEND_ORIGIN scopes
-#     CORS + the impersonation redirect to this session's SPA.
+# Per-pane env + args carry the chosen ports into each server:
+#   • backend pane: foreman runs our generated Procfile (Puma → BE_PORT);
+#     FRONTEND_ORIGIN scopes CORS + the impersonation redirect to this SPA.
 #   • frontend pane: VITE_API_BASE_URL points the SPA at this session's backend;
-#     --port binds Vite to FE_PORT, --strictPort fails loudly instead of
+#     `deno task dev` forwards trailing args to Vite WITHOUT a `--` separator
+#     (a literal `--` reaches Vite and makes it ignore --port, drifting back to
+#     5173). --port binds Vite to FE_PORT; --strictPort fails loudly instead of
 #     silently drifting to another port (which would break the wiring above).
 cat >"$SESSION" <<EOF
 new_tab review:$NAME
 
-launch --cwd=$WT/backend --env PORT=$BE_PORT --env FRONTEND_ORIGIN=$FRONTEND_ORIGIN --title=backend bin/dev
-launch --location=vsplit --cwd=$WT/frontend --env VITE_API_BASE_URL=$BACKEND_URL --title=frontend deno task dev -- --open --port $FE_PORT --strictPort
+launch --cwd=$WT/backend --env PORT=$BE_PORT --env FRONTEND_ORIGIN=$FRONTEND_ORIGIN --title=backend foreman start -f $BE_PROCFILE -d $WT/backend -p $BE_PORT
+launch --location=vsplit --cwd=$WT/frontend --env VITE_API_BASE_URL=$BACKEND_URL --title=frontend deno task dev --port $FE_PORT --strictPort --open
 launch --location=hsplit --cwd=$WT --title=shell $SHELL_BIN
 EOF
 
