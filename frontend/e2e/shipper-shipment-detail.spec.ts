@@ -60,8 +60,8 @@ test.describe("Shipper — shipment detail (REQ-FE-00024 / US39)", () => {
         const acceptedLink = page.getByRole("link", { name: /envío #\d+.*aceptado/i }).first();
         await acceptedLink.click();
 
-        await expect(page.getByText(/pendiente de pago/i)).toBeVisible();
-        await expect(page.getByRole("button", { name: /^pagar$/i })).toBeVisible();
+        await expect(page.getByText(/pendiente de pago/i).first()).toBeVisible();
+        await expect(page.getByRole("button", { name: /pagar ahora/i })).toBeVisible();
     });
 
     test("delivered shipment detail shows no action buttons and shows Pagado chip", async ({ page }) => {
@@ -86,8 +86,18 @@ test.describe("Shipper — shipment detail (REQ-FE-00024 / US39)", () => {
         // Text is "Pagado" or "Pendiente de pago" depending on seed payment data.
         await expect(page.locator(".paymentStateChip")).toBeVisible();
 
-        // US20 / REQ-BE-00042 — Shipper can leave a Carrier review on delivered shipments (AC7)
+        // Shipment-detail v2 §6 — rail contact card links to the carrier's reputation.
+        await expect(page.getByRole("link", { name: /ver reputación del transportista/i })).toBeVisible();
+
+        // US20 / REQ-BE-00042 — Shipper can leave a Carrier review on delivered
+        // shipments (AC7). v2 §5: the rail CTA opens the form in a modal. Close
+        // without submitting so the seeded shipment stays reviewable across runs.
+        const reviewCta = page.getByRole("button", { name: /dejá tu reseña/i });
+        await expect(reviewCta).toBeVisible();
+        await reviewCta.click();
         await expect(page.getByRole("heading", { name: /dejar reseña/i })).toBeVisible();
         await expect(page.getByRole("radiogroup", { name: /puntuación/i })).toBeVisible();
+        await page.getByRole("button", { name: /cerrar/i }).click();
+        await expect(page.getByRole("radiogroup", { name: /puntuación/i })).not.toBeVisible();
     });
 });

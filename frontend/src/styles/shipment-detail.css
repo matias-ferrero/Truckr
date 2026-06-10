@@ -5,11 +5,6 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes banner-enter {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
 @keyframes timeline-item-enter {
     from { opacity: 0; transform: translateX(-6px); }
     to   { opacity: 1; transform: translateX(0); }
@@ -32,26 +27,31 @@
     padding-block: var(--space-7);
 }
 
-/* Role-voice surface tinting.
-   IMPORTANT: carrier.css overrides --brand-primary and --surface to near-white
-   values scoped to .carrierPage. Any var() referencing those tokens inside the
-   carrier shell resolves to near-white instead of the global sky blue. All
+/* Two-column layout needs more room than the default 1120px container. */
+.shipmentDetailPage .container,
+.shipmentDetailSkeleton .container {
+    width: min(1280px, calc(100% - 2 * var(--space-5)));
+}
+
+/* Role-voice surface tinting — canonical palette (Shipper = sky, Carrier =
+   saffron), matching the role dashboards.
+   IMPORTANT: carrier.css overrides --brand-primary, --brand-secondary and
+   --surface to near-white values scoped to .carrierPage. Any var() referencing
+   those tokens inside the carrier shell resolves to near-white. All
    carrier-specific color rules below use absolute oklch() values to bypass
    that cascade. Shipper rules can keep using global tokens because shipper.css
    does not override them. */
 
 /* oklch anchors for both voices — not inherited from the token chain */
-/* sky  ≈ #46aadc → oklch(67% 0.13 234) */
+/* sky     ≈ #46aadc → oklch(67% 0.13 234) */
 /* saffron ≈ #e1be5a → oklch(78% 0.12 80) */
 
 .shipmentDetailPage--carrier {
-    background: oklch(97% 0.012 233);
-    /* Override Tailwind primary button warm token to actual sky blue */
-    --color-brand-warm: oklch(67% 0.13 234);
+    background: oklch(97.5% 0.014 85);
 }
 
 .shipmentDetailPage--shipper {
-    background: color-mix(in oklab, var(--brand-secondary) 7%, var(--surface));
+    background: color-mix(in oklab, var(--brand-primary) 6%, var(--surface));
 }
 
 .shipmentDetailPage > .container {
@@ -76,23 +76,23 @@
 }
 
 /* Resting state: tinted toward the dominant voice so the back link is
-   visually distinct between carrier (sky) and shipper (saffron) even
+   visually distinct between shipper (sky) and carrier (saffron) even
    before the user hovers. Hover deepens to the full chip-ink token. */
-/* Absolute oklch — var(--brand-primary) is near-white inside .carrierPage */
+/* Absolute oklch — brand tokens are near-white inside .carrierPage */
 .shipmentDetailPage--carrier .shipmentDetailBack {
-    color: color-mix(in oklab, oklch(67% 0.13 234) 38%, var(--ink-2));
+    color: color-mix(in oklab, oklch(78% 0.12 80) 42%, var(--ink-2));
 }
 
 .shipmentDetailPage--carrier .shipmentDetailBack:hover {
-    color: var(--chip-ink-primary);
+    color: var(--chip-ink-warning);
 }
 
 .shipmentDetailPage--shipper .shipmentDetailBack {
-    color: color-mix(in oklab, var(--brand-secondary) 32%, var(--ink-2));
+    color: color-mix(in oklab, var(--brand-primary) 38%, var(--ink-2));
 }
 
 .shipmentDetailPage--shipper .shipmentDetailBack:hover {
-    color: var(--chip-ink-warning);
+    color: var(--chip-ink-primary);
 }
 
 .shipmentDetailBack::before {
@@ -119,7 +119,7 @@
     flex-wrap: wrap;
     align-items: flex-start;
     gap: var(--space-4);
-    margin-block-end: var(--space-4);
+    margin-block-end: var(--space-5);
 }
 
 .shipmentDetailTitleGroup {
@@ -144,86 +144,246 @@
     gap: var(--space-2);
 }
 
-/* ── Next-step banner (composite label) ───────────────────────── */
-/* Distinct from state chips — this is a call-to-action, not a fact */
+/* ── Layout — sticky action rail + scrolling main column ───────── */
+/* shipment-detail v2 / ADR-015: the rail concentrates all role/state
+   divergence; the main column (map → facts → timeline) is role-agnostic. */
 
-.shipmentDetailNextStep {
+.shipmentDetailLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+    align-items: start;
+}
+
+.shipmentDetailMain {
     display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-4) var(--space-5);
-    border-radius: var(--radius-md);
-    margin-block-end: var(--space-6);
+    flex-direction: column;
+    gap: var(--space-5);
+    min-width: 0;
+}
+
+.shipmentDetailRail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
+}
+
+@media (min-width: 980px) {
+    .shipmentDetailLayout {
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: var(--space-6);
+    }
+
+    /* Rail is first in DOM (primary action first in tab order) but renders on
+       the right; sticky keeps "situation + action" in view while the main
+       column scrolls. Top offset clears the sticky .topbar. */
+    .shipmentDetailRail {
+        order: 2;
+        position: sticky;
+        top: calc(72px + var(--space-4));
+        max-height: calc(100vh - 72px - var(--space-6));
+        overflow-y: auto;
+    }
+
+    .shipmentDetailMain {
+        order: 1;
+    }
+}
+
+/* ── Rail cards ───────────────────────────────────────────────── */
+
+.shipmentDetailRailCard {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-2);
+    padding: var(--space-5);
+}
+
+.shipmentDetailPage--carrier .shipmentDetailRailCard {
+    background: oklch(99% 0.008 85);
+    border-color: color-mix(in oklab, oklch(78% 0.12 80) 32%, transparent);
+}
+
+.shipmentDetailPage--shipper .shipmentDetailRailCard {
+    border-color: color-mix(in oklab, var(--brand-primary) 26%, var(--border-2));
+}
+
+/* Single-column dl for the narrow rail */
+.shipmentDetailRailList {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    margin: 0;
+}
+
+.shipmentDetailRailList dt {
     font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.9375rem;
-    letter-spacing: -0.01em;
-    line-height: 1.3;
-    animation: banner-enter 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-block-end: var(--space-1);
 }
 
-.shipmentDetailNextStepIcon {
-    display: inline-flex;
-    align-items: center;
-    flex-shrink: 0;
-    width: 1.125rem;
-    height: 1.125rem;
+.shipmentDetailRailList dd {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--ink);
+    margin: 0;
+    font-weight: 500;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
-.shipmentDetailNextStepIcon svg {
-    width: 100%;
-    height: 100%;
+.shipmentDetailPage--carrier .shipmentDetailRailList dt {
+    color: var(--chip-ink-warning);
 }
 
-.shipmentDetailNextStep--to_pick_up {
-    background: color-mix(in oklab, var(--brand-primary) 14%, var(--surface));
-    border: 1px solid color-mix(in oklab, var(--brand-primary) 35%, transparent);
+.shipmentDetailPage--shipper .shipmentDetailRailList dt {
     color: var(--chip-ink-primary);
 }
 
-.shipmentDetailNextStep--awaiting_payment {
-    background: color-mix(in oklab, var(--brand-error) 12%, var(--surface));
-    border: 1px solid color-mix(in oklab, var(--brand-error) 30%, transparent);
-    color: var(--chip-ink-error);
+/* ── Primary action card — the state×role matrix made visible ──── */
+
+.primaryActionCard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-2);
+    background: var(--surface);
 }
 
-/* Banner CTA — "Pagar ahora" link for shippers in awaiting_payment state */
-.shipmentDetailNextStepText {
-    flex: 1;
-    min-width: 0; /* allows text to shrink below intrinsic width in flex row */
+/* ACTION mode: the viewer holds the next move — strongest role tint */
+.shipmentDetailPage--shipper .primaryActionCard--action {
+    background: color-mix(in oklab, var(--brand-primary) 12%, var(--surface));
+    border-color: color-mix(in oklab, var(--brand-primary) 45%, transparent);
 }
 
-.shipmentDetailNextStepCta {
+.shipmentDetailPage--carrier .primaryActionCard--action {
+    background: color-mix(in oklab, oklch(78% 0.12 80) 14%, oklch(99% 0.005 85));
+    border-color: color-mix(in oklab, oklch(78% 0.12 80) 50%, transparent);
+}
+
+/* WAITING / STATUS modes: calm, never look like a disabled control */
+.primaryActionCard--waiting,
+.primaryActionCard--status {
+    background: var(--surface);
+    border-style: dashed;
+}
+
+.shipmentDetailPage--carrier .primaryActionCard--waiting,
+.shipmentDetailPage--carrier .primaryActionCard--status {
+    background: oklch(99% 0.008 85);
+    border-color: color-mix(in oklab, oklch(78% 0.12 80) 35%, transparent);
+}
+
+.shipmentDetailPage--shipper .primaryActionCard--waiting,
+.shipmentDetailPage--shipper .primaryActionCard--status {
+    border-color: color-mix(in oklab, var(--brand-primary) 32%, transparent);
+}
+
+.primaryActionCard__eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 0 0 var(--space-2);
+}
+
+.shipmentDetailPage--carrier .primaryActionCard__eyebrow {
+    color: var(--chip-ink-warning);
+}
+
+.shipmentDetailPage--shipper .primaryActionCard__eyebrow {
+    color: var(--chip-ink-primary);
+}
+
+.primaryActionCard__headline {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    margin: 0 0 var(--space-2);
+}
+
+.primaryActionCard__lead {
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--ink-2);
+    margin: 0;
+}
+
+.primaryActionCard__amount {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: color-mix(in oklab, var(--brand-secondary) 75%, var(--ink));
+    margin: 0;
+}
+
+.shipmentDetailPage--carrier .primaryActionCard__amount {
+    color: color-mix(in oklab, oklch(78% 0.12 80) 75%, var(--ink));
+}
+
+.primaryActionCard__cta {
+    width: 100%;
+}
+
+/* <ShipmentActions /> flattens inside the card: the card already provides the
+   command-zone surface, so the embedded section drops its own chrome. */
+.primaryActionCard .shipmentActionsSection {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+}
+
+.primaryActionCard .shipmentActionsButtons {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+/* ── Reputation link (v2 §6) ──────────────────────────────────── */
+
+.shipmentReputationLink {
     display: inline-flex;
     align-items: center;
     gap: 2px;
+    margin-block-start: var(--space-4);
     font-family: var(--font-display);
     font-size: 0.875rem;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: -0.01em;
-    color: inherit;
     text-decoration: underline;
     text-underline-offset: 2px;
-    text-decoration-thickness: 1.5px;
-    white-space: nowrap;
-    flex-shrink: 0;
-    transition: opacity 150ms var(--ease-out);
-    /* button resets — this class is used on both <a> and <button> */
-    padding: 0;
-    background: none;
-    border: none;
-    cursor: pointer;
 }
 
-.shipmentDetailNextStepCta:hover {
-    opacity: 0.75;
+.shipmentDetailPage--shipper .shipmentReputationLink {
+    color: var(--chip-ink-primary);
 }
 
-.shipmentDetailNextStepCta:focus-visible {
+.shipmentDetailPage--carrier .shipmentReputationLink {
+    color: var(--chip-ink-warning);
+}
+
+.shipmentReputationLink:hover {
+    text-decoration: none;
+}
+
+.shipmentReputationLink:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 3px;
     border-radius: 2px;
-    text-decoration: none;
 }
 
 /* ── Detail body — definition list grid ──────────────────────── */
@@ -233,19 +393,16 @@
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-2);
     padding: var(--space-6);
-    margin-block-end: var(--space-4);
 }
 
-/* Role-voiced card surfaces.
-   Carrier uses absolute oklch — var(--surface-cool) and var(--border-sky) both
-   inherit carrier.css's near-white --brand-primary and resolve to near-white. */
+/* Role-voiced card surfaces — absolute oklch under .carrierPage. */
 .shipmentDetailPage--carrier .shipmentDetailBody {
-    background: oklch(99% 0.006 233);
-    border-color: oklch(78% 0.10 233);
+    background: oklch(99% 0.008 85);
+    border-color: color-mix(in oklab, oklch(78% 0.12 80) 45%, transparent);
 }
 
 .shipmentDetailPage--shipper .shipmentDetailBody {
-    border-color: var(--border-cream);
+    border-color: color-mix(in oklab, var(--brand-primary) 35%, var(--border-2));
 }
 
 .shipmentDetailGrid {
@@ -268,11 +425,11 @@
 /* chip-ink tokens are oklch(36% 0.14 …) — dark enough for WCAG AA on
    any surface in the two-voice system, and clearly branded at a glance. */
 .shipmentDetailPage--carrier .shipmentDetailGrid dt {
-    color: var(--chip-ink-primary);
+    color: var(--chip-ink-warning);
 }
 
 .shipmentDetailPage--shipper .shipmentDetailGrid dt {
-    color: var(--chip-ink-warning);
+    color: var(--chip-ink-primary);
 }
 
 .shipmentDetailGrid dd {
@@ -295,17 +452,20 @@
     color: color-mix(in oklab, var(--brand-secondary) 75%, var(--ink));
 }
 
-/* Contact info — detail-voice divider (opposite of dominant).
-   Default = sky (correct for shipper). Carrier overrides to saffron.
-   Carrier uses absolute oklch — var(--brand-secondary) is near-white inside .carrierPage. */
+.shipmentDetailPage--carrier .shipmentDetailAmount {
+    color: color-mix(in oklab, oklch(78% 0.12 80) 75%, var(--ink));
+}
+
+/* ── Contact card (rail) ──────────────────────────────────────── */
+/* Detail-voice top accent (opposite of dominant): saffron for shipper,
+   sky for carrier — keeps the counterparty card visually "theirs". */
+
 .shipmentDetailContactSection {
-    margin-block-start: var(--space-5);
-    padding-block-start: var(--space-5);
-    border-top: 2px solid color-mix(in oklab, var(--brand-primary) 28%, transparent);
+    border-top: 3px solid color-mix(in oklab, var(--brand-secondary) 45%, transparent);
 }
 
 .shipmentDetailPage--carrier .shipmentDetailContactSection {
-    border-top-color: color-mix(in oklab, oklch(78% 0.12 80) 32%, transparent);
+    border-top-color: color-mix(in oklab, oklch(67% 0.13 234) 45%, transparent);
 }
 
 .shipmentDetailContactTitle {
@@ -320,14 +480,13 @@
 /* ── Timeline ─────────────────────────────────────────────────── */
 
 .shipmentTimelineSection {
-    margin-block-end: var(--space-4);
+    min-width: 0;
 }
 
-/* US30 / REQ-BE-00044 — wrapper around CarrierReviewForm on the Carrier's
-   delivered-shipment detail view. Keeps the vertical rhythm with the timeline
-   above; the card itself owns its surface styling (see shipments.css). */
+/* US20 / US30 — read-only review card in the rail once the viewer's review
+   exists. The card itself owns its surface styling (see shipments.css). */
 .shipmentReviewSection {
-    margin-block-start: var(--space-5);
+    min-width: 0;
 }
 
 .shipmentTimelineTitle {
@@ -342,25 +501,25 @@
     gap: var(--space-3);
 }
 
-/* Count badge uses the detail voice — same logic as the connector and divider.
-   Carrier uses absolute oklch — var(--brand-secondary) is near-white inside .carrierPage. */
+/* Count badge uses the detail voice — same logic as the connector and the
+   contact accent. Absolute oklch under .carrierPage. */
 .shipmentTimelineCount {
     font-family: var(--font-display);
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.02em;
     color: var(--ink-on-sky, var(--ink));
-    background: color-mix(in oklab, var(--brand-primary) 16%, var(--surface));
-    border: 1px solid color-mix(in oklab, var(--brand-primary) 30%, transparent);
+    background: color-mix(in oklab, var(--brand-secondary) 18%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--brand-secondary) 32%, transparent);
     padding: 2px 8px;
     border-radius: 999px;
     line-height: 1.6;
 }
 
 .shipmentDetailPage--carrier .shipmentTimelineCount {
-    color: var(--chip-ink-warning);
-    background: color-mix(in oklab, oklch(78% 0.12 80) 16%, oklch(99% 0.005 233));
-    border-color: color-mix(in oklab, oklch(78% 0.12 80) 30%, transparent);
+    color: var(--chip-ink-primary);
+    background: color-mix(in oklab, oklch(67% 0.13 234) 14%, oklch(99% 0.005 233));
+    border-color: color-mix(in oklab, oklch(67% 0.13 234) 30%, transparent);
 }
 
 /* Container — uses a 36px dot column so the line and dots align precisely */
@@ -372,8 +531,8 @@
 }
 
 /* Vertical connector through dot centres: left = (36px − 2px) / 2 = 17px */
-/* Default = sky (detail voice for shipper). Carrier overrides to saffron (its detail voice).
-   Using the detail voice keeps the connector visible against each role's dominant surface. */
+/* Detail voice: saffron for shipper, sky for carrier — visible against each
+   role's dominant surface. */
 .trackingTimeline::before {
     content: '';
     position: absolute;
@@ -383,16 +542,16 @@
     width: 2px;
     background: linear-gradient(
         to bottom,
-        color-mix(in oklab, var(--brand-primary) 55%, transparent),
+        color-mix(in oklab, var(--brand-secondary) 60%, transparent),
         color-mix(in oklab, var(--border-2) 40%, transparent)
     );
 }
 
-/* Absolute oklch — var(--brand-secondary) is near-white inside .carrierPage */
+/* Absolute oklch — brand tokens are near-white inside .carrierPage */
 .shipmentDetailPage--carrier .trackingTimeline::before {
     background: linear-gradient(
         to bottom,
-        color-mix(in oklab, oklch(78% 0.12 80) 55%, transparent),
+        color-mix(in oklab, oklch(67% 0.13 234) 55%, transparent),
         color-mix(in oklab, var(--border-2) 40%, transparent)
     );
 }
@@ -532,30 +691,12 @@
     color: var(--ink-2);
 }
 
-/* ── Action section — command zone ────────────────────────────── */
+/* ── Action section — embedded command zone (see .primaryActionCard) ── */
 
 .shipmentActionsSection {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-    margin-block-start: var(--space-7);
-    padding: var(--space-4) var(--space-5);
-    background: var(--surface-2);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-2);
-}
-
-/* Role-voiced action zone.
-   Carrier uses absolute oklch — var(--brand-primary) and var(--surface) are
-   near-white inside .carrierPage. */
-.shipmentDetailPage--carrier .shipmentActionsSection {
-    background: oklch(98% 0.009 233);
-    border-color: color-mix(in oklab, oklch(67% 0.13 234) 22%, transparent);
-}
-
-.shipmentDetailPage--shipper .shipmentActionsSection {
-    background: color-mix(in oklab, var(--brand-secondary) 8%, var(--surface));
-    border-color: color-mix(in oklab, var(--brand-secondary) 22%, transparent);
 }
 
 .shipmentActionsSection[data-success] {
@@ -597,6 +738,53 @@
     to { transform: rotate(360deg); }
 }
 
+/* ── Pay confirmation dialog — restate the money (P1) ─────────── */
+
+.confirmDialogPayAmount {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: color-mix(in oklab, var(--brand-secondary) 80%, var(--ink));
+    margin: var(--space-2) 0 var(--space-3);
+}
+
+/* ── Review modal (v2 §5) ─────────────────────────────────────── */
+/* The base .confirmDialog caps max-width at 420px; the review form needs
+   more room, so override both width and max-width here. */
+.reviewDialog {
+    width: min(560px, calc(100vw - 2 * var(--space-5)));
+    max-width: min(560px, calc(100vw - 2 * var(--space-5)));
+}
+
+.reviewDialogBody {
+    align-items: stretch;
+    text-align: left;
+}
+
+/* The form card already has its own surface; flatten it inside the dialog. */
+.reviewDialogBody .carrierReviewCard {
+    border: none;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+}
+
+/* Give the rating stars a ≥44px touch target inside the modal (mobile a11y) —
+   the shared form renders them smaller for inline contexts. */
+.reviewDialogBody .carrierReviewStar {
+    font-size: 1.85rem;
+    padding: var(--space-2);
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.reviewDialogActions {
+    justify-content: flex-end;
+    margin-block-start: var(--space-3);
+}
+
 /* ── Skeleton ─────────────────────────────────────────────────── */
 
 .shipmentDetailSkeleton {
@@ -631,6 +819,36 @@
     height: 1.5rem;
     width: 6rem;
     border-radius: 999px;
+    background: var(--surface-2);
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.shipmentDetailSkeletonLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+    align-items: start;
+}
+
+@media (min-width: 980px) {
+    .shipmentDetailSkeletonLayout {
+        grid-template-columns: minmax(0, 1fr) 360px;
+    }
+
+    .shipmentDetailSkeletonRail {
+        order: 2;
+    }
+}
+
+.shipmentDetailSkeletonRail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.shipmentDetailSkeletonCard {
+    height: 10rem;
+    border-radius: var(--radius-lg);
     background: var(--surface-2);
     animation: skeleton-shimmer 1.4s ease-in-out infinite;
 }
@@ -697,45 +915,23 @@
     .shipmentDetailBody         { padding: var(--space-4); }
     .shipmentDetailGrid         { grid-template-columns: 1fr; }
     .shipmentDetailSkeletonBody { grid-template-columns: 1fr; }
-    .shipmentActionsButtons     { flex-direction: column; }
     .trackingTimelineItem       { grid-template-columns: 32px 1fr; }
-
-    /* Dock the action zone to the viewport bottom so the primary CTA is
-       always reachable without scrolling to the end of a long detail page. */
-    .shipmentActionsSection {
-        position: sticky;
-        bottom: 0;
-        margin-block-start: var(--space-5);
-        border-radius: var(--radius-md) var(--radius-md) 0 0;
-        border-bottom: none;
-        /* base border-top already provides the separator — shadow adds lift only */
-        box-shadow: 0 -8px 24px color-mix(in oklab, var(--ink) 8%, transparent);
-        padding: var(--space-4);
-        background: var(--surface);
-        z-index: 10;
-    }
-
-    /* Banner: tighter gap + allow wrap so text+CTA stay readable on 320px phones */
-    .shipmentDetailNextStep {
-        gap: var(--space-2);
-        flex-wrap: wrap;
-        row-gap: var(--space-1);
-    }
+    .shipmentDetailRailCard,
+    .primaryActionCard          { padding: var(--space-4); }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .shipmentDetailPage > .container,
-    .shipmentDetailNextStep,
     .trackingTimelineItem,
     .shipmentActionsSection[data-success],
     .shipmentDetailSkeletonBack,
     .shipmentDetailSkeletonTitle,
     .shipmentDetailSkeletonChip,
+    .shipmentDetailSkeletonCard,
     .shipmentDetailSkeletonField { animation: none; }
     .shipmentActionsSpinner         { animation: none; }
     .shipmentDetailBack::before     { transition: none; }
     .trackingTimelineDot            { transition: none; }
-    .shipmentDetailNextStepCta      { transition: none; }
     /* Success outline: skip the fade animation, still show the green outline briefly */
     .shipmentActionsSection[data-success] { outline: 2px solid color-mix(in oklab, var(--brand-success) 55%, transparent); outline-offset: -1px; }
 }
@@ -750,7 +946,7 @@
     text-decoration: none;
 }
 
-/* ── US15 — Liquidación del envío (payout breakdown) ─────────────────────── */
+/* ── US15 — Liquidación del envío (payout breakdown, rail card) ──────────── */
 
 /* Heading row: title + state chip side by side */
 .shipmentDetailSectionHeading {
@@ -758,6 +954,11 @@
     align-items: center;
     gap: var(--space-4);
     flex-wrap: wrap;
+    margin-block-end: var(--space-4);
+}
+
+.shipmentDetailSectionHeading .shipmentDetailContactTitle {
+    margin: 0;
 }
 
 /* Commission row — negative signal (deduction from gross) */
@@ -776,9 +977,9 @@
 /* ── US51 / REQ-FE-00028 — shipment location map + Google Maps deep-links ─── */
 
 .shipmentMapSection {
-    margin-top: var(--space-6);
     display: grid;
     gap: var(--space-4);
+    min-width: 0;
 }
 
 .shipmentMapTitle {
@@ -823,8 +1024,8 @@
     color: var(--ink-2);
 }
 
-/* Origin + destination deep-link buttons. Side by side on desktop, stacked on
-   mobile (AC2). */
+/* Navigation deep-link buttons. The state-promoted primary nav (carrier) leads;
+   the full-route link follows. Side by side on desktop, stacked on mobile (AC2). */
 .shipmentMapActions {
     display: flex;
     flex-wrap: wrap;

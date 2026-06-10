@@ -54,6 +54,11 @@ test.describe("Carrier — shipment detail (REQ-FE-00024 / US39)", () => {
         await expect(page.locator(".shipmentStateChip").getByText("En tránsito")).toBeVisible();
         // The detail page still exposes the carrier action for this state.
         await expect(page.getByRole("button", { name: /confirmar entrega/i })).toBeVisible();
+
+        // v2 §4 — state-aware navigation: while in_transit the delivery nav link
+        // is promoted alongside the full-route deep-link.
+        await expect(page.getByRole("link", { name: /navegar al punto de entrega/i })).toBeVisible();
+        await expect(page.getByRole("link", { name: /ver ruta.*google maps/i })).toBeVisible();
     });
 
     test("404: non-existent shipment shows not-found screen with back CTA", async ({ page }) => {
@@ -81,9 +86,19 @@ test.describe("Carrier — shipment detail (REQ-FE-00024 / US39)", () => {
         await expect(page).toHaveURL(/\/carrier\/shipments\/\d+$/);
         await expect(page.locator(".shipmentStateChip").getByText("Entregado")).toBeVisible();
 
+        // Shipment-detail v2 §6 — rail contact card links to the shipper's reputation.
+        await expect(page.getByRole("link", { name: /ver reputación del expedidor/i })).toBeVisible();
+
+        // v2 §5 — the rail CTA opens the review form in a modal. Close without
+        // submitting so the seeded shipment stays reviewable across runs.
+        const reviewCta = page.getByRole("button", { name: /dejá tu reseña/i });
+        await expect(reviewCta).toBeVisible();
+        await reviewCta.click();
         await expect(page.getByRole("heading", { name: /reseñar al expedidor/i })).toBeVisible();
         await expect(page.getByRole("radiogroup", { name: /puntuación/i })).toBeVisible();
         await expect(page.getByRole("button", { name: /enviar reseña/i })).toBeVisible();
+        await page.getByRole("button", { name: /cerrar/i }).click();
+        await expect(page.getByRole("radiogroup", { name: /puntuación/i })).not.toBeVisible();
     });
 
     // Full golden path requires the seeded in_transit shipment to actually
@@ -91,12 +106,12 @@ test.describe("Carrier — shipment detail (REQ-FE-00024 / US39)", () => {
     test.skip("golden path: Carrier start_transit → deliver → chip updates to Entregado", async ({ page }) => {
         await page.goto("/carrier/shipments");
 
-        // Find accepted+escrowed shipment showing "Iniciar transporte"
+        // Find accepted+escrowed shipment showing "Confirmar Retiro"
         const acceptedLink = page.getByRole("link", { name: /aceptado/i }).first();
         await acceptedLink.click();
 
-        await expect(page.getByRole("button", { name: /iniciar transporte/i })).toBeVisible();
-        await page.getByRole("button", { name: /iniciar transporte/i }).click();
+        await expect(page.getByRole("button", { name: /confirmar retiro/i })).toBeVisible();
+        await page.getByRole("button", { name: /confirmar retiro/i }).click();
 
         const dialog = page.getByRole("dialog");
         await expect(dialog).toBeVisible();

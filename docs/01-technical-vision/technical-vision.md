@@ -238,6 +238,31 @@ A second branch of the same decision: the matcher today filters on pickup proxim
 - **Shipper-side `delivery_radius_km` on `cargos`** instead of carrier-side `dropoff_radius_km` on `transport_windows`. Considered and rejected by the user during design grilling: the radius semantics ("how far am I willing to deviate") belongs to the side doing the deviating, and pickup already lives on the Carrier side. Asymmetric ownership would also force Expedidores to think about routing slop, which is the Carrier's domain.
 - **Forward-migrate province strings into pseudo-coordinates** instead of truncating. Engineering effort with zero upside on coursework data; the destructive path is faster, simpler, and acceptable under the project's scope (no production users).
 
+### ADR-015 — Shipment detail stays one shared role-parameterized component; role divergence isolated to the rail
+
+**Context**: The shipment detail page (`frontend/src/pages/shipments/ShipmentDetailPage.tsx`) is mounted twice — `/carrier/shipments/:id` and `/shipper/shipments/:id` — as a single component taking a `role: "carrier" | "shipper"` prop, with role branches scattered across ten vertically-stacked sections (action bar, payout block, pay banner, review forms, per-role CSS tints). The v2 overhaul (`docs/features/shipment-detail-v2.prd.md`) moves this to a sticky-rail + two-column layout where the primary action, money block, and contact card live in a pinned rail and the map + facts + timeline form a shared scrolling spine. That raised the structural question: should the overhaul **split** into `CarrierShipmentDetailPage` + `ShipperShipmentDetailPage` (killing the branching), or stay **one component** with the branching corralled?
+
+The split option is not hypothetical — it is the precedent set by the dashboard work. The shipper dashboard v2 (PR #332) is a shipper-only page (`ShipperDashboardPage`) while carriers keep the older multi-section `DashboardPage`; the two dashboards are genuinely different products (a cargo kanban vs a carrier panel), so the split was correct there. A future reader who sees that precedent will reasonably ask why the detail page did *not* follow suit.
+
+**Decision**:
+
+- **Keep a single shared `ShipmentDetailPage` parameterized by `role`.** Do not split per role. The two sides are the **same shipment viewed from two ends of one contract**, not two products: origin/destination, route map, event timeline, facts (route/weight/vehicle/amount), and counterparty contact are byte-for-byte identical regardless of who is looking. Roughly 70% of the page is this shared spine.
+- **Isolate all role/state divergence to the rail.** Extract `<PrimaryActionCard role state payment />` (the state×role matrix: Shipper-Pay/Retry/Waiting/Review, Carrier-Waiting/ConfirmarRetiro/ConfirmarEntrega/Payout) and `<MoneyBlock role />` (shipper agreed-amount vs carrier payout breakdown). The branching that is today smeared across ten sections collapses into these two rail components.
+- **The main column stays role-agnostic, with exactly one deliberate exception**: the map's primary navigation button is role- and state-aware ("Navegar al retiro" / "Navegar a la entrega" for the Carrier by FSM state; "Ver ruta completa" for the Shipper). This exception is documented so it is not mistaken for drift back toward scattered branching.
+- **Action buttons render strictly off the backend's `available_actions: string[]`** (safe by delegation); only the waiting/status/done *copy* is derived FE-side from `state` + `payment`. The rail's primary card is never a dead/disabled button — when a role cannot act it shows reassuring status.
+
+**Consequences**:
+
+- One component, one set of data wiring (`useShipmentDetail`), one i18n content module (`shipmentDetailContent.ts`), one route-level mount per role. Map/timeline/facts changes are made once and both roles inherit them — no duplicated spine to keep in sync.
+- The "pervasive role branching" smell is resolved not by splitting but by *relocation*: divergence is concentrated in two named rail components plus the one documented map-button exception, instead of inlined across the page.
+- The dashboard precedent is deliberately *not* followed; this ADR is the answer to "why didn't the detail page split too." The distinguishing test: split when the two roles see **different products**, share when they see **the same entity from opposite sides**.
+- If role divergence later grows past the rail + nav-button exception (e.g. a carrier-only sub-page, a shipper-only sub-flow), this decision should be revisited — the shared-component bet is sized to the *current* ~70% overlap, not an unconditional rule.
+
+**Alternatives rejected**:
+
+- **Split into `CarrierShipmentDetailPage` + `ShipperShipmentDetailPage`.** Cleanest kill of the branching, matches the dashboard precedent — but duplicates the map, timeline, facts, and contact wiring plus the i18n bundle across two files, doubling the maintenance surface for the 70% that is identical. The branching is better corralled than duplicated.
+- **Keep the status quo (branches inlined across all sections).** The thing the overhaul exists to fix; rejected by definition.
+
 ### Decisions Closed (not deferred)
 
 - **Production database**: SQLite. Permanent. See `CLAUDE.md` § "Database policy" and ADR-002. No PostgreSQL migration is planned, queued, or under consideration.
