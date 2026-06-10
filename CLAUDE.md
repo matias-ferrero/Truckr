@@ -75,6 +75,23 @@ just clean                    # delete generated PDFs under docs/
 
 Typst compile invocations always pass `--root docs` so `#import "../template.typ"` resolves correctly. New artifacts must follow the same import pattern (`#import "../template.typ": conf` then `#show: conf`).
 
+## Parallel worktrees & dev-server ports (UTMOST importance)
+
+Multiple worktrees can run their dev servers **at the same time**, so nothing may hardcode the default ports (Rails `:3000`, Vite `:5173`) when booting a worktree. Two worktrees both binding `:3000`/`:5173` collide and the second silently fails or steals the first one's traffic.
+
+**The reusable allocator lives in [`script/review-worktree.sh`](script/review-worktree.sh) — `pick_free_port lo hi`.** It reads the actual `LISTEN` set via `ss -Hltn` and returns a *random* free port in range (random, not lowest-free, so two sessions booted back-to-back don't race for the same port). `just review <name>` already uses it to pick a backend port (3001–3999) and a frontend port (5174–5999) per session. **Any other helper that boots a worktree's servers (including anything `/worktree` runs) must reuse `pick_free_port` — do not reinvent port selection or fall back to the defaults.**
+
+Once ports are chosen, four wiring points must follow them (all already handled by `just review`; replicate them anywhere else):
+
+| Knob | Where | Purpose |
+|---|---|---|
+| `PORT=<be>` | backend process env | foreman/Puma bind (`Procfile.dev` + `bin/dev` read `${PORT:-3000}`) |
+| `FRONTEND_ORIGIN=http://localhost:<fe>,http://127.0.0.1:<fe>` | backend process env | scopes CORS (`config/initializers/cors.rb`) **and** the ActiveAdmin impersonation redirect (`app/admin/users.rb`) to this session's SPA |
+| `VITE_API_BASE_URL=http://localhost:<be>` | frontend process env | points the SPA at this session's backend instead of `:3000` |
+| `--port <fe> --strictPort` | `deno task dev` args | binds Vite to the chosen port and fails loudly instead of drifting |
+
+Action Cable's dev allowlist already accepts any `localhost:<port>` / `127.0.0.1:<port>` (`config/environments/development.rb`), so no per-port wiring is needed there. Caveat: `just review main` targets the **root clone** and shares its single `storage/development.sqlite3`; distinct worktrees each get their own DB and are fully independent.
+
 ## Architecture
 
 ### `docs/` — planning artifacts (the bulk of the repo)

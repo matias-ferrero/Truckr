@@ -20,6 +20,28 @@ require_cmd mise
 require_cmd deno
 require_cmd bundle
 require_cmd mktemp
+require_cmd ss
+
+# Pick a free TCP port in [lo, hi]. `ss -Hltn` lists every socket in LISTEN
+# state; we extract the trailing :port from each local address and reject any
+# random candidate that's already bound. Random candidates (not lowest-free)
+# so two reviews booted back-to-back are unlikely to race for the same port
+# before either server binds it. `excluded` lets the caller reserve a port it
+# just picked but hasn't bound yet (the backend port while choosing frontend).
+pick_free_port() {
+    local lo="$1" hi="$2" excluded="${3:-}" port
+    local busy
+    busy="$(ss -Hltn 2>/dev/null | awk '{print $4}' | sed -E 's/.*:([0-9]+)$/\1/')"
+    for _ in $(seq 1 100); do
+        port=$(( (RANDOM % (hi - lo + 1)) + lo ))
+        [[ "$port" == "$excluded" ]] && continue
+        if ! grep -qx "$port" <<<"$busy"; then
+            echo "$port"
+            return 0
+        fi
+    done
+    die "no free port found in $lo-$hi after 100 tries"
+}
 
 # Worktrees dir is optional: `just review main` targets the root clone and
 # doesn't need it. Empty it out rather than dying so `main` always works.
@@ -50,10 +72,28 @@ fi
 [[ -d "$WT/backend" ]] || die "no backend/ in $NAME"
 [[ -d "$WT/frontend" ]] || die "no frontend/ in $NAME"
 
+# ── Pick two random free ports so reviews run in parallel ──────────────────
+# Each review session binds its own backend (Rails) and frontend (Vite) port,
+# so several worktrees can run side by side without colliding on :3000/:5173.
+# The chosen ports are threaded through three places:
+#   • FE_PORT  → Vite's --port, and the backend's FRONTEND_ORIGIN allowlist so
+#                CORS (config/initializers/cors.rb) and ActiveAdmin's
+#                impersonation redirect (app/admin/users.rb) target this SPA.
+#   • BE_PORT  → foreman/Puma via PORT, and the SPA's VITE_API_BASE_URL so the
+#                frontend calls this backend instead of the default :3000.
+# Action Cable's dev origin allowlist already accepts any localhost:<port>
+# (config/environments/development.rb), so no extra wiring is needed there.
+BE_PORT="$(pick_free_port 3001 3999)"
+FE_PORT="$(pick_free_port 5174 5999)"
+FRONTEND_ORIGIN="http://localhost:$FE_PORT,http://127.0.0.1:$FE_PORT"
+BACKEND_URL="http://localhost:$BE_PORT"
+
 # ── Anchor banner ──────────────────────────────────────────────────────────
 BRANCH="$(git -C "$WT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')"
 echo
-echo "Reviewing $BRANCH  →  http://localhost:5173"
+echo "Reviewing $BRANCH"
+echo "  frontend →  http://localhost:$FE_PORT"
+echo "  backend  →  $BACKEND_URL"
 echo
 
 # ── Trust worktree's mise config (idempotent) ──────────────────────────────
@@ -100,11 +140,17 @@ fi
 SESSION="$(mktemp -t review-worktree.XXXXXX.conf)"
 SHELL_BIN="${SHELL:-/bin/bash}"
 
+# Per-pane env carries the chosen ports into each server:
+#   • backend pane: PORT pins Puma/foreman to BE_PORT; FRONTEND_ORIGIN scopes
+#     CORS + the impersonation redirect to this session's SPA.
+#   • frontend pane: VITE_API_BASE_URL points the SPA at this session's backend;
+#     --port binds Vite to FE_PORT, --strictPort fails loudly instead of
+#     silently drifting to another port (which would break the wiring above).
 cat >"$SESSION" <<EOF
 new_tab review:$NAME
 
-launch --cwd=$WT/backend --title=backend bin/dev
-launch --location=vsplit --cwd=$WT/frontend --title=frontend deno task dev -- --open
+launch --cwd=$WT/backend --env PORT=$BE_PORT --env FRONTEND_ORIGIN=$FRONTEND_ORIGIN --title=backend bin/dev
+launch --location=vsplit --cwd=$WT/frontend --env VITE_API_BASE_URL=$BACKEND_URL --title=frontend deno task dev -- --open --port $FE_PORT --strictPort
 launch --location=hsplit --cwd=$WT --title=shell $SHELL_BIN
 EOF
 
