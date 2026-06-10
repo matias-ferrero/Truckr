@@ -4,7 +4,7 @@ phase: development
 status: closed
 window: 2026-06-03 → 2026-06-10
 in_progress_user_stories: []
-completed_user_stories: [US25, US53, US51, US15, US40, US60, US64, US65, US66]
+completed_user_stories: [US25, US53, US51, US15, US40, US60, US64, US65, US66, US67]
 ---
 
 ## Resumen
@@ -25,6 +25,7 @@ pactadas para el MVP, cerrando así la etapa de desarrollo.
 - US64 — Panel Centrado en Cargas del Expedidor — completado.
 - US65 — Panel de Trabajo del Transportista — completado.
 - US66 — Detalle de Envío Centrado en la Acción — completado.
+- US67 — Navegación Lateral Persistente por Rol — completado.
 
 ## Observaciones
 

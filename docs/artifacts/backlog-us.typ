@@ -111,11 +111,15 @@
 
 #include "backlog-us/US059.typ"
 
+#include "backlog-us/US060.typ"
+
 #include "backlog-us/US064.typ"
 
 #include "backlog-us/US065.typ"
 
 #include "backlog-us/US066.typ"
+
+#include "backlog-us/US067.typ"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Post MVP — Release 2
