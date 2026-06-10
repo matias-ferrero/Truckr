@@ -1,4 +1,4 @@
-#import "template.typ": c-brand, c-brand-mid, conf
+#import "../template.typ": c-brand, c-brand-mid, conf
 #import "@preview/cetz:0.3.4": canvas, draw
 #import "@preview/cetz-plot:0.1.1": plot
 
@@ -20,40 +20,41 @@
 // One row per *closed* sprint:
 // (index, "window_start → window_end", completed_count, wip_at_end)
 #let sprints = (
-  (1, "2026-05-07 → 2026-05-13", 3, 12),
-  (2, "2026-05-14 → 2026-05-20", 16, 4),
-  (3, "2026-05-21 → 2026-05-27", 10, 2),
-  (4, "2026-05-27 → 2026-06-03", 14, 0),
+  (1, "2026-05-06 → 2026-05-13", 2, 5),
+  (2, "2026-05-13 → 2026-05-20", 15, 6),
+  (3, "2026-05-20 → 2026-05-27", 9, 3),
+  (4, "2026-05-27 → 2026-06-03", 15, 0),
+  (5, "2026-06-03 → 2026-06-10", 8, 1),
 )
 
-#let throughput-mean = 10.75
-#let throughput-median = 12.0
-#let throughput-stdev = 5.737304826019502
-#let throughput-min = 3
-#let throughput-max = 16
+#let throughput-mean = 9.8
+#let throughput-median = 9
+#let throughput-stdev = 5.449770637375485
+#let throughput-min = 2
+#let throughput-max = 15
 #let lead-p50 = 0.0
 #let lead-p75 = 1.0
 #let lead-p90 = 1.0
 
 // Projection — set `has-projection` to `false` if JSON `projection == null`
 #let has-projection = true
-#let target-us = 5
+#let target-us = 49
 
 // Inverse — always present when has-projection
-#let inv-p50 = 1
-#let inv-p85 = 2
-#let inv-p95 = 2
-#let inv-p99 = 2
+#let inv-p50 = 5
+#let inv-p85 = 7
+#let inv-p95 = 8
+#let inv-p99 = 9
 #let inv-did-not-finish = 0.0
 #let inv-cap = 60
 
 // Forward — set has-forward = false if JSON `projection.forward == null`
-#let has-forward = true
-#let remaining-sprints = 3
-#let p-meet = 1.0
-#let proj-p10 = 20
-#let proj-p50 = 33
-#let proj-p90 = 44
+#let has-forward = false
+#let remaining-sprints = 0
+#let p-meet = 0.0
+#let proj-p10 = 0
+#let proj-p50 = 0
+#let proj-p90 = 0
 
 // Traffic-light selection — see §3 of SKILL.md
 #let verdict = if not has-projection {
@@ -392,11 +393,16 @@
 - El throughput es *grumoso*: las US grandes abarcan varios sprints, así que
   hay sprints con pocas US completadas. Los intervalos de proyección son anchos.
 - El lead time se mide en *sprints enteros*.
+- La proyección inversa modela el throughput *desde cero*: estima cuántos
+  sprints toma entregar #target-us User Stories al ritmo observado, sin
+  descontar las ya entregadas. El equipo alcanzó las #target-us en 5 sprints,
+  por debajo de la mediana simulada (p50 = #inv-p50).
 - Cambios futuros de capacidad (feriados, cambios en el equipo) *no* están
   modelados. El bootstrap asume que los sprints futuros se comportan como los
   pasados.
-- "Target = #target-us" se pasó como entrada (User Stories restantes del MVP /
-  Release 1). Si cambia el alcance, volver a correr con el nuevo conteo.
+- "Target = #target-us" se pasó como entrada (alcance comprometido / MVP, ya
+  entregado al cierre del Sprint 5). Si cambia el alcance, volver a correr con
+  el nuevo conteo.
 - Los números son *agregados del equipo*. La desagregación por persona no se
   produce intencionalmente.
 - Reproducible con seed *#seed* contra el mismo ledger para obtener salida

@@ -14,9 +14,13 @@ build: build-artifacts build-chats
 
 # ── Artifacts ───────────────────────────────────────────────────────────────
 
-# Compile the main artifacts report (includes all sub-artifacts)
-build-artifacts:
+# Compile the main artifacts report (includes all sub-artifacts) plus the per-sprint reports
+build-artifacts: build-team-performance
     typst compile --root {{ root }} {{ root }}/artifacts/main.typ
+
+# Compile every per-sprint team-performance report under docs/team-performance/
+build-team-performance:
+    for f in {{ root }}/team-performance/*.typ; do typst compile --root {{ root }} "$f"; done
 
 # Compile a single artifact by name (e.g. `just build-artifact wbs`)
 build-artifact name:
