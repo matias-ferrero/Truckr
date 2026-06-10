@@ -68,6 +68,9 @@ just build-artifact <name>    # single artifact, e.g. `just build-artifact wbs`
 just watch-artifact <name>    # live-reload a single artifact
 just build-chats              # convert raw JSON chats → .typ then compile
 just convert-chats            # JSON → .typ only (no compile)
+just build-progress-reports          # render every docs/progress-reports/*.md → PDF
+just build-progress-report <name>    # single report, e.g. `just build-progress-report sprint-05`
+just watch-progress-report <name>    # live-reload a single report
 just fmt                      # typstyle on all .typ files
 just lint                     # all pre-commit hooks
 just clean                    # delete generated PDFs under docs/
@@ -99,6 +102,7 @@ Action Cable's dev allowlist already accepts any `localhost:<port>` / `127.0.0.1
 - **`docs/template.typ`** — shared Typst config (lang `"es"`, 10pt, 2cm margins, justified). Every artifact imports `conf` from here.
 - **`docs/artifacts/`** — individual planning artifacts (`wbs.typ`, `personas.typ`, `usm.typ`, `features.typ`, `cost-report.typ`, etc.). `main.typ` includes them all into one report.
 - **`docs/00-platform-architecture/` … `docs/05-appendices/`** — numbered architecture sections (technical vision, HLD, architecture & DB diagrams, appendices). These are sections of the deliverable, not application code modules.
+- **`docs/progress-reports/`** — per-sprint progress reports authored as markdown (`sprint-NN.md`) with a YAML frontmatter header. **`render.typ`** turns each one into a themed PDF via `@preview/cmarker` and the shared `template.typ`; drive it with `just build-progress-reports` (all) or `just build-progress-report <name>` (single). Drop a new `sprint-NN.md` next to it — no Typst edits needed. Generated PDFs are gitignored (`docs/**/*.pdf`).
 - **`docs/raw/`** — raw chat session JSON exports.
 - **`docs/scripts/chat_json2typ.py`** — converts those JSON exports into `docs/prompts/chat-*.typ` files; `docs/prompts/main.typ` aggregates them. Re-run via `just convert-chats` after adding a new export to `docs/raw/`.
 - Special chars in Typst data must be escaped: `\"`, `\#`, `\$`, `\@`, `\\`.

@@ -9,8 +9,8 @@ default:
 
 # ── Build everything ────────────────────────────────────────────────────────
 
-# Build all documentation (artifacts + chat sessions)
-build: build-artifacts build-chats
+# Build all documentation (artifacts + chat sessions + progress reports)
+build: build-artifacts build-chats build-progress-reports
 
 # ── Artifacts ───────────────────────────────────────────────────────────────
 
@@ -33,6 +33,23 @@ watch-artifacts:
 # Watch a single artifact for live reload (e.g. `just watch-artifact wbs`)
 watch-artifact name:
     typst watch --root {{ root }} {{ root }}/artifacts/{{ name }}.typ
+
+# ── Progress reports ────────────────────────────────────────────────────────
+
+# Render every markdown sprint report under docs/progress-reports/ to a themed PDF
+build-progress-reports:
+    for f in {{ root }}/progress-reports/*.md; do \
+        name="$(basename "$f" .md)"; \
+        typst compile --root {{ root }} --input report="/progress-reports/$name.md" {{ root }}/progress-reports/render.typ "{{ root }}/progress-reports/$name.pdf"; \
+    done
+
+# Render a single sprint report by name (e.g. `just build-progress-report sprint-05`)
+build-progress-report name:
+    typst compile --root {{ root }} --input report="/progress-reports/{{ name }}.md" {{ root }}/progress-reports/render.typ {{ root }}/progress-reports/{{ name }}.pdf
+
+# Watch a single sprint report for live reload (e.g. `just watch-progress-report sprint-05`)
+watch-progress-report name:
+    typst watch --root {{ root }} --input report="/progress-reports/{{ name }}.md" {{ root }}/progress-reports/render.typ {{ root }}/progress-reports/{{ name }}.pdf
 
 # ── Chat sessions ───────────────────────────────────────────────────────────
 
