@@ -4,6 +4,7 @@ import LandingPage from "./App";
 import { AuthProvider } from "./auth/AuthContext";
 import { NotificationsProvider } from "./components/notifications/NotificationsProvider";
 import { Header } from "./components/Header";
+import { Sidebar } from "./components/Sidebar";
 import RequireCarrier from "./auth/RequireCarrier";
 import RequireShipper from "./auth/RequireShipper";
 import RequireAuth from "./auth/RequireAuth";
@@ -48,16 +49,40 @@ function AuthShell({ children }: { children: React.ReactNode }) {
     );
 }
 
+/**
+ * Authenticated app shell: sticky Header on top, persistent role-based Sidebar
+ * to the left, page content to the right. Used by every logged-in surface so
+ * the sidebar is present on any page. `pageClass` carries the section voice
+ * (carrier / shipper / dashboard) via its CSS variables; `mainClass` styles the
+ * Suspense fallback's <main>.
+ */
+function AppShell(
+    { pageClass, mainClass, children }: {
+        pageClass: string;
+        mainClass: string;
+        children: React.ReactNode;
+    },
+) {
+    return (
+        <div className={pageClass}>
+            <a className="skipLink" href="#main">Saltar al contenido</a>
+            <Header />
+            <div className="appShellBody">
+                <Sidebar />
+                <Suspense fallback={<main className={mainClass} id="main" aria-busy="true" />}>
+                    {children}
+                </Suspense>
+            </div>
+        </div>
+    );
+}
+
 function CarrierLayout() {
     return (
         <RequireCarrier>
-            <div className="carrierPage">
-                <a className="skipLink" href="#main">Saltar al contenido</a>
-                <Header />
-                <Suspense fallback={<main className="carrierMain" id="main" aria-busy="true" />}>
-                    <Outlet />
-                </Suspense>
-            </div>
+            <AppShell pageClass="carrierPage" mainClass="carrierMain">
+                <Outlet />
+            </AppShell>
         </RequireCarrier>
     );
 }
@@ -65,13 +90,9 @@ function CarrierLayout() {
 function ShipperLayout() {
     return (
         <RequireShipper>
-            <div className="shipperPage">
-                <a className="skipLink" href="#main">Saltar al contenido</a>
-                <Header />
-                <Suspense fallback={<main className="shipperMain" id="main" aria-busy="true" />}>
-                    <Outlet />
-                </Suspense>
-            </div>
+            <AppShell pageClass="shipperPage" mainClass="shipperMain">
+                <Outlet />
+            </AppShell>
         </RequireShipper>
     );
 }
@@ -99,13 +120,9 @@ function IndexRoute() {
             return <Navigate to="/shipper/dashboard" replace />;
         }
         return (
-            <div className="dashboardPage">
-                <a className="skipLink" href="#main">Saltar al contenido</a>
-                <Header />
-                <Suspense fallback={<main className="dashboardMain" id="main" aria-busy="true" />}>
-                    <DashboardPage />
-                </Suspense>
-            </div>
+            <AppShell pageClass="dashboardPage" mainClass="dashboardMain">
+                <DashboardPage />
+            </AppShell>
         );
     }
 

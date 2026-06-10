@@ -11,8 +11,9 @@ test("carrier can view their payouts history", async ({ page }) => {
     // Navigates to the carrier dashboard
     await page.goto("/carrier/availability");
 
-    // The header should contain "Mis Pagos"
-    await page.getByRole("link", { name: "Mis Pagos" }).click();
+    // "Mis Pagos" now lives in the persistent sidebar.
+    await page.getByRole("navigation", { name: "Navegación principal" })
+        .getByRole("link", { name: "Mis Pagos" }).click();
 
     // Verify URL and title
     await expect(page).toHaveURL(/\/carrier\/payouts/);

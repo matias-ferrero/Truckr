@@ -1,0 +1,176 @@
+/* ── App sidebar ───────────────────────────────────────────────────────────
+   Persistent role-based navigation rail shown on every authenticated app
+   surface (carrier, shipper, dashboard). Inherits the per-section voice via
+   the page-class CSS variables (.carrierPage / .shipperPage / .dashboardPage);
+   falls back to :root tokens elsewhere. Tokens only — no raw hex, no >1px
+   side-stripe (design-system lint). es-AR copy lives in sidebarContent.ts.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Horizontal band under the sticky header that lays out the rail + content. */
+.appShellBody {
+    --app-header-h: 61px;
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+}
+
+/* The page's <main> is the flex child to the right of the rail. min-width:0
+   lets wide tables scroll inside it instead of forcing the row wider. */
+.appShellBody > main {
+    flex: 1;
+    min-width: 0;
+}
+
+.appSidebar {
+    flex: 0 0 auto;
+    width: 232px;
+    align-self: stretch;
+    position: sticky;
+    top: var(--app-header-h);
+    max-height: calc(100vh - var(--app-header-h));
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: var(--space-5) var(--space-4);
+    background: color-mix(in oklab, var(--brand-primary) 6%, var(--surface));
+    border-right: 1px solid var(--border);
+}
+
+.appSidebarGroup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.appSidebarHeading {
+    margin: 0;
+    padding: 0 var(--space-2);
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    /* ink-2 (not ink-3) so this 12px label clears the WCAG 1.4.3 4.5:1 floor,
+       per the design-system precedent in DESIGN.md (wizard step labels). */
+    color: var(--ink-2);
+}
+
+.appSidebarList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.appSidebarLink {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--ink-2);
+    text-decoration: none;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    transition: background-color 160ms ease, color 160ms ease;
+}
+
+/* Decorative leading icon. Slightly dimmer than the label at rest, snaps to
+   full ink on hover/active so the row reads as one unit. Tied to ink (not the
+   brand token) because the carrier voice remaps --brand-primary to a pale sky
+   that would drop the icon below the 3:1 non-text contrast floor. */
+.appSidebarIcon {
+    flex: 0 0 auto;
+    color: var(--ink-3);
+    transition: color 160ms ease;
+}
+
+.appSidebarLink:hover .appSidebarIcon,
+.appSidebarLink--active .appSidebarIcon {
+    color: var(--ink);
+}
+
+.appSidebarLabel {
+    min-width: 0;
+}
+
+/* Live pending-cargo-offers count on the Ofertas item: a red notification dot
+   holding just the number, pushed to the row end. Absolute oklch (not the
+   --brand-error token) because the carrier voice remaps error to a pale coral
+   that fails white-on-red contrast; this fixed alert red clears 4.5:1 (6.15:1)
+   for the white numerals. Same absolute-oklch pattern as carrier-payouts.css. */
+.appSidebarBadge {
+    margin-left: auto;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: oklch(52% 0.21 25);
+    color: var(--paper);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.appSidebarLink:hover {
+    background: color-mix(in oklab, var(--brand-primary) 16%, transparent);
+    color: var(--ink);
+}
+
+/* NavLink active route — also carries aria-current="page" for assistive tech. */
+.appSidebarLink--active {
+    background: color-mix(in oklab, var(--brand-primary) 26%, transparent);
+    color: var(--ink);
+}
+
+/* ── Mobile: the rail collapses to a horizontal scrollable strip so it stays
+      present on every page without a toggle. ─────────────────────────────── */
+@media (max-width: 860px) {
+    .appShellBody {
+        flex-direction: column;
+    }
+
+    .appSidebar {
+        width: auto;
+        align-self: stretch;
+        position: static;
+        max-height: none;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space-4);
+        overflow-x: auto;
+        padding: var(--space-3) var(--space-4);
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .appSidebarGroup {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space-3);
+    }
+
+    .appSidebarHeading {
+        padding: 0;
+        white-space: nowrap;
+    }
+
+    .appSidebarList {
+        flex-direction: row;
+        gap: var(--space-2);
+    }
+
+    .appSidebarLink {
+        white-space: nowrap;
+    }
+}

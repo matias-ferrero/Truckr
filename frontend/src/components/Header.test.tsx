@@ -97,10 +97,13 @@ describe("Header", () => {
         await waitFor(() => expect(screen.getByText("Carrier User")).toBeInTheDocument());
         expect(screen.getByRole("link", { name: /perfil público de carrier user/i }))
             .toHaveAttribute("href", "/carriers/me");
-        expect(screen.getByRole("link", { name: /bandeja/i })).toHaveAttribute("href", "/carrier/cargo-offers");
+        // Carrier section links + the pending-offers badge moved to the Sidebar.
+        expect(screen.queryByRole("link", { name: /bandeja/i })).toBeNull();
+        expect(screen.queryByRole("link", { name: /mis pagos/i })).toBeNull();
         expect(screen.queryByRole("link", { name: /mis viajes/i })).toBeNull();
         expect(screen.queryByRole("link", { name: /envíos/i })).toBeNull();
-        await waitFor(() => expect(screen.getByText(/3 pendientes/i)).toBeInTheDocument());
+        // Even with pending offers, the header shows no badge now.
+        expect(screen.queryByText(/pendientes/i)).toBeNull();
     });
 
     it("logs out when Salir is clicked", async () => {
