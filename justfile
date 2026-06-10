@@ -34,6 +34,18 @@ watch-artifacts:
 watch-artifact name:
     typst watch --root {{ root }} {{ root }}/artifacts/{{ name }}.typ
 
+# Export the WBS artifact to a formatted .docx outline
+export-wbs:
+    uv run --with python-docx docs/scripts/wbs_typ2docx.py
+
+# Export the WBS artifact as a high-quality PNG (300 PPI, auto-trimmed)
+export-wbs-png:
+    uv run --with pillow docs/scripts/wbs_typ2png.py
+
+# Export the Features Matrix artifact to a formatted .xlsx
+export-features:
+    uv run --with openpyxl docs/scripts/features_typ2xlsx.py
+
 # ── Progress reports ────────────────────────────────────────────────────────
 
 # Render every markdown sprint report under docs/progress-reports/ to a themed PDF

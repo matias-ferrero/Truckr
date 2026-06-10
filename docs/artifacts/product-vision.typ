@@ -12,7 +12,7 @@
   [buscan simplificar el proceso de búsqueda, pago y gestión de transportes],
 
   [*el*], [Truckr ®],
-  [*es un*], [un sitio web de contratado de servicios de transporte de bienes],
+  [*es un*], [un sitio web de contratación de servicios de transporte de bienes],
   [*que*],
   [permite a transportistas y expedidores publicar y unir sus disponibilidades y necesidades],
 

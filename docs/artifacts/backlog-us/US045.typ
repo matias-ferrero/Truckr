@@ -7,7 +7,7 @@
 *Descripción:*
 Como expedidor,
 quiero poder filtrar mis cargas,
-para poder observar mas rapido una de ellas.
+para poder observar más rápido una de ellas.
 
 *Criterios de Aceptación:*
 + En la sección "Mis cargas", se puede seleccionar un estado posible de carga.

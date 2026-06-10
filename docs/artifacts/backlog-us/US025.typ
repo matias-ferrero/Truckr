@@ -6,7 +6,7 @@
 
 *Descripción:*
 Como expedidor,
-quiero ver en distintas paginas el listado de ventanas de transporte compatibles con una carga,
+quiero ver en distintas páginas el listado de ventanas de transporte compatibles con una carga,
 para poder visualizarlas de manera más cómoda sin tener que bajar infinitamente si tengo muchas.
 
 *Criterios de Aceptación:*

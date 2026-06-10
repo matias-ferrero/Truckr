@@ -12,4 +12,4 @@ para tener un registro de mis posibles envíos.
 *Criterios de Aceptación:*
 + El transportista puede visualizar sus ventanas activas, junto con sus detalles.
 + Se observan botones para editarlas, ocultarlas o eliminarlas en cualquier momento.
-+ En la pagina de Mi Disponibilidad, se encuentra un boton para poder publicar una nueva.
++ En la página de Mi Disponibilidad, se encuentra un botón para poder publicar una nueva.

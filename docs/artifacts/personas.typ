@@ -88,12 +88,12 @@
 
   persona-card(
     number: 1,
-    name: "Hugo Fernandez (64 años)",
+    name: "Hugo Fernández (64 años)",
     role: "TRANSPORTISTA",
     photo: "images/personas/hugo.png",
-    profile: "Es un transportista independiente desde hace 30 años que vive en BSAS, trabaja con su hijo (Martín) y tienen 2 camiones.",
-    behavior: "Tiene una vida estable con su familia, y quiere mantener ese lugar como su base, y tener más envíos pero siempre volviendo a su casa. Está cerca de jubilarse, así que hace envíos ocasionalmente y no es tan constante.
-No es bueno con la técnología, pero quiere expandirse facilmente manteniendo su estilo de vida.",
+    profile: "Es un transportista independiente desde hace 30 años que vive en BSAS, trabaja con su hijo Martín y tienen 2 camiones.",
+    behavior: "Tiene una vida estable con su familia, y quiere mantener ese lugar como su base, y tener más envíos pero siempre volviendo a su casa. Está cerca de jubilarse, así que hace envíos ocasionalmente.
+No es bueno con la tecnología, pero quiere expandirse fácilmente manteniendo su estilo de vida.",
     needs: "Trabajar con una clientela estable que necesite trabajo ocasional/estacional.
 Necesita una interfaz simple y accesible que no le de tantos problemas, incluida una plataforma simple y confiable de pagos.
 Además, necesita llevar siempre carga llena o encadenar varios envíos en uno, para aprovechar cada envío que haga.",
@@ -101,13 +101,12 @@ Además, necesita llevar siempre carga llena o encadenar varios envíos en uno, 
 
   persona-card(
     number: 2,
-    name: "Martín Fernandez (32 años)",
+    name: "Martín Fernández (32 años)",
     role: "TRANSPORTISTA",
     photo: "images/personas/martin.png",
-    profile: "Trabaja como transportista con su padre (Hugo) desde hace 10 años.",
-    behavior: "Dado que sus clientes son siempre los mismos, está aburrido de su trabajo. Quiere aprovechar los transportes que hace para viajar y conocer diferentes lugares, a corta, mediana o larga distancia.",
-    needs: "Necesita expandir su clientela para tener distintos tipos de envíos, y no le importa sin son recurrentes u ocasionales. Estos envíos pueden ser a cualquier distancia, pero necesita encadenar envíos para que lo lleven a un lugar desde donde pueda conseguir otro, y así sucesivamente, haciendo envíos mientras trabaja.
-No conoce los lugares a donde va, así que necesita integración con gps para saber su recorrido.",
+    profile: "Trabaja como transportista con su padre Hugo desde hace 10 años.",
+    behavior: "Dado que sus clientes son siempre los mismos, está aburrido de su trabajo. Quiere aprovechar los transportes que hace para viajar y conocer diferentes lugares a corta, mediana o larga distancia.",
+    needs: "Necesita expandir su clientela para tener distintos tipos de envíos, y no le importa si son recurrentes u ocasionales. Estos envíos pueden ser a cualquier distancia, pero necesita encadenar envíos para que lo lleven a un lugar desde donde pueda conseguir otro, y así sucesivamente, trabajando mientras viaja. No conoce cómo llegar a cada lugar, así que va a estar buscando las indicaciones en algún GPS como Google Maps.",
   ),
 
   persona-card(
@@ -115,24 +114,24 @@ No conoce los lugares a donde va, así que necesita integración con gps para sa
     name: "AgroTransport",
     role: "TRANSPORTISTA",
     photo: "images/personas/agrotransport.png",
-    profile: "Una empresa con base en BSAS que tiene una flota de 10 camiones con transportistas contratados a tiempo completo, que está en el rubro hace 2 años.",
+    profile: "Una empresa que está en el rubro hace 2 años con base en BSAS que tiene una flota de 10 camiones con transportistas contratados a tiempo completo.",
     behavior: "Tienen empleados que hacen envíos en simultáneo, la empresa los controla desde la base. Reciben peticiones de transporte y despachan un camión a hacer el encargo. Pueden despachar a corta, media o larga distancia, pero siempre buscan planificar sus transportes.
 Quieren aprovechar mejor sus camiones, pues muchas veces tienen a algunos sin usar por varias semanas, y no quieren seguir desperdiciando esos recursos.",
-    needs: "Necesitan expandir su clientela facilmente para mejorar su ganancia. Para ello también necesitan por hacer seguimiento de los envíos que hacen e hicieron (historial de envíos, características de los productos, etc.). Además, para mejorar su planificación, necesitan hacer un trackeo vía GPS de sus camiones, así como también poder hacer varíos envíos en un solo envío si es posible, y asegurarlos en caso de daños.",
+    needs: "Necesitan expandir su clientela fácilmente para mejorar su ganancia. Para ello también necesitan hacer seguimiento de los envíos que hacen e hicieron (historial de envíos, características de los productos, etc.). Además, para mejorar su planificación, necesitan hacer un trackeo vía GPS de sus camiones, así como también poder hacer varias cargas y descargas en un solo viaje si es posible, y asegurarlos en caso de daños.",
   ),
 
   persona-card(
     number: 4,
-    name: "Juan Martinez (41 años)",
+    name: "Juan Martínez (41 años)",
     role: "TRANSPORTISTA",
     photo: "images/personas/juan.png",
     profile: "Hombre casado con 3 hijos, vive en CABA, y es dueño de un negocio de entregas hace 8 años.
 Además de ser el dueño, también es transportista en el negocio.",
     behavior: "Realiza múltiples entregas a corta distancia por día (entre 10 y 20) de paquetes de volumen reducido. Opera en CABA y alrededores principalmente.
-Tiene varias vans medianas, así que no lleva volúmenes grandes de producto.
+Tiene varias VANs medianas, así que no lleva volúmenes grandes.
 Frecuenta la aplicación en busca de nuevas entregas a corto plazo.",
     needs: "Tener un volumen constante de entregas a muy corto plazo, y recibir pagos rápidos.
-Necesita una interfaz simple, que cuente con filtros por ubicación para hacer entregas cortas de bajo/mediano volume, para facilitar el sistema de entregas en su negocio.",
+Necesita una interfaz simple, que cuente con filtros por ubicación para hacer entregas cortas de bajo/mediano volumen, para facilitar el sistema de entregas en su negocio.",
   ),
 
   persona-card(
@@ -154,32 +153,32 @@ Su carga no es común, así que necesita clientes confiables a largo plazo.",
     photo: "images/personas/manuel.png",
     profile: "Hombre casado, vive en Córdoba, y es dueño de una empresa de distribución de alimentos que lleva 20 años en el rubro.",
     behavior: "Distribuye alimentos controlados con cumplimiento regulatorio (ANMAT, SENASA, etc.) desde puertos/aduanas hasta distribuidores locales. Trabaja bajo los protocolos impuestos y no son modificables (cadena de frío, trazabilidad, etc.)",
-    needs: "Transportistas confiables y certificados, con documentación apropiada, capaciados para hacer las entregas.
+    needs: "Transportistas confiables, capacitados para hacer las entregas de manera segura.
 También necesita tener la trazabilidad completa del envío, y un seguro especializado sobre los productos.",
   ),
 
   persona-card(
     number: 7,
-    name: "Daniela Perez (55 años)",
+    name: "Daniela Pérez (55 años)",
     role: "EXPEDIDOR",
     photo: "images/personas/daniela.png",
     profile: "Mujer recientemente divorciada, es diseñadora de interiores y trabaja en el rubro hace años.",
     behavior: "Muchos clientes de ella necesitan amueblado, refacciones, y/o productos para hacer remodelaciones.
 Si bien ocasionalmente necesita hacer y/o recibe estos envíos para su trabajo, se le complica hacerlos por su cuenta, aunque tampoco puede permitirse hacer grandes erogaciones de dinero en envíos para no sufrir tantas pérdidas.",
-    needs: "Busca hacer y recibir envíos baratos ocasionalmente de forma fácil. Necesita asegurar algunos productos de sus clientes para protegerse de posibles daños.
-No es mala con la técnología, puede aprender, pero sería más fácil con una interfaz simple para evitar una curva de aprendizaje empinada.",
+    needs: "Busca hacer y recibir envíos baratos ocasionalmente de forma fácil. Necesita asegurar algunos productos para protegerse de posibles daños.
+No es mala con la tecnología, puede aprender, pero sería más fácil con una interfaz simple para evitar una curva de aprendizaje empinada.",
   ),
 
   persona-card(
     number: 8,
-    name: "Florencia Scazzola (40 años).",
+    name: "Florencia Scazzola (40 años)",
     role: "EXPEDIDOR",
     photo: "images/personas/florencia.png",
     profile: "Mujer emprendedora que tiene su propio centro de estética",
-    behavior: "Le encanta el maquillaje, el skincare y el cuidado personal. Muy interesada en la cultura coreana.
+    behavior: "Le encanta el maquillaje, el skin-care y el cuidado personal.
 Busca conseguir productos para su nuevo emprendimiento, a un precio mucho menor al que lo conseguiría en el mercado local.",
     needs: "Recibir entregas de productores locales, y eventualmente hacer entregas de sus ventas, con un servicio barato.
-Además necesita leer reseñas de buenos transportias que cuiden bien sus productos para evitar problemas.",
+Además necesita leer reseñas de buenos transportistas que cuiden bien sus productos para evitar problemas.",
   ),
 
   persona-card(
@@ -199,10 +198,10 @@ Necesitan asegurar su producto para protegerse en caso de un problema.",
     name: "Sofía Carrasco (24 años)",
     role: "EXPEDIDOR",
     photo: "images/personas/sofia.png",
-    profile: "Mujer soltera, vive en BSAS, es estudiante en FIUBA, y trabaja part time en Mercado Libre hace 2 años.",
-    behavior: "Quiere mudarse a CABA para estar más cerca de la Facultad y de la oficina, de esa forma puede reducir distancias y ahorrar tiempo.
-No tiene problemas con la tecnología, pero no tiene contactos de alguien que le pueda hacer la mudanza.",
+    profile: "Mujer soltera, vive en BSAS, es estudiante en FIUBA, y trabaja part-time en Mercado Libre desde hace 2 años.",
+    behavior: "Quiere mudarse a CABA para estar más cerca de la facultad y de la oficina, de esa forma puede reducir distancias y ahorrar tiempo.
+No tiene problemas con la tecnología, pero tampoco tiene contactos de alguien que le pueda hacer la mudanza.",
     needs: "Servicio barato, accesible y rápido para un flete ocasional de sus cosas a su nuevo departamento.
-No tiene experiencia en el tema, así que necesita reseñas para buscar un transportista confiable.",
+No tiene experiencia en el tema, así que necesita reseñas para asegurarse un transportista confiable.",
   ),
 )

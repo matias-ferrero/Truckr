@@ -9,7 +9,7 @@ El progreso se mide contando ítems entregados y comparándolos con el backlog p
 
 === Disciplina de Slicing de Stories
 
-Cada historia de usuario debe ser *independiente y pequeña*: idealmente, no más de 1 día de desarrollo. El objetivo es entregar entre 6 y 12 stories por sprint de 1 semana.
+El objetivo es entregar entre 6 y 12 stories por sprint de 1 semana.
 
 === Medición de Throughput
 
@@ -136,12 +136,12 @@ Estos no son costos vinculados a reducir horas en tareas específicas — son *i
   ),
   [Asistente de código IA (Cursor / Copilot / Claude Code)],
   [\$20/seat],
-  [6 seats],
-  [\$120],
+  [5 seats],
+  [\$100],
   table.cell(fill: luma(240), colspan: 3)[#align(
     right,
   )[*Total mensual tooling IA*]],
-  table.cell(fill: luma(240))[*\$120*],
+  table.cell(fill: luma(240))[*\$100*],
 )
 
 #v(0.8em)
@@ -257,11 +257,11 @@ Topología fijada por `CLAUDE.md § "Database policy"`: SQLite + un único conte
       weight: "bold",
     )[Proyecto — 7 Sprints (USD)]],
   ),
-  [Equipo (5 Dev + 1 PM)], [\$1.072], [\$3.216], [\$7.504],
-  [Tooling IA], [\$30], [\$90], [\$210],
+  [Equipo (5 devs + 1 PM)], [\$1.072], [\$3.216], [\$7.504],
+  [Tooling IA], [\$25], [\$75], [\$175],
   [Infraestructura AWS], [\$10,74], [\$10,74], [\$21,48],
   table.cell(fill: luma(240), colspan: 1)[#align(right)[*Total*]],
-  table.cell(fill: luma(240))[*\$1.112,74*],
-  table.cell(fill: luma(240))[*\$3.316,74*],
-  table.cell(fill: luma(240))[*\$7.735,48*],
+  table.cell(fill: luma(240))[*\$1.107,74*],
+  table.cell(fill: luma(240))[*\$3.301,74*],
+  table.cell(fill: luma(240))[*\$7.700,48*],
 )

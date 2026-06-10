@@ -6,7 +6,7 @@
 
 *Descripción:*
 Como expedidor,
-quiero publicar una carga con toda su informacion detallada,
+quiero publicar una carga con toda su información detallada,
 para poder enviarla.
 
 *Criterios de Aceptación:*

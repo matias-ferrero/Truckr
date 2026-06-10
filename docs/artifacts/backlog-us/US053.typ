@@ -7,7 +7,7 @@
 *Descripción:*
 Como expedidor,
 quiero que al ingresar los datos al crear mi carga, se vea la distancia de forma automatizada,
-para observar la ruta del envio de mi carga.
+para observar la ruta del envío de mi carga.
 
 *Criterios de Aceptación:*
 + Se agrega una conexión a Google Maps para observar el recorrido.

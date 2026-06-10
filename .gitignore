@@ -220,6 +220,7 @@ pyrightconfig.json
 
 docs/prompts/raw/*
 docs/**/*.pdf
+docs/**/*.docx
 docs/raw/*
 
 # gdsi-sdlc automation state (local only)

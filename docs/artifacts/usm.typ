@@ -227,7 +227,7 @@
     - US015: Pago al Transportista
   ],
   table.cell(fill: col18-task)[
-    - US040: Mis pagos como transportista
+    - US040: Bandeja de pagos
   ],
   table.cell(fill: col19-task)[
     - US058: Notificacion en tiempo real de Oferta Recibida

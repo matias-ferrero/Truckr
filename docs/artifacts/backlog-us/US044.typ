@@ -11,4 +11,4 @@ para poder administrar todas ellas.
 
 *Criterios de Aceptación:*
 + El expedidor puede ver el listado de sus cargas publicadas, desde una sección "Mis cargas".
-+ Se puede acceder a los detalles de una carga especifica, eliminarla o editarla.
++ Se puede acceder a los detalles de una carga específica, eliminarla o editarla.

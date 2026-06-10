@@ -45,87 +45,64 @@ El Plan de Comunicaciones establece los canales, frecuencias y objetivos de cada
   // ── Reunión de Kickoff ─────────────────────────────────────────────────
   [*Reunión de Kickoff*],
   [Formal],
-  [Una única vez (inicio)],
+  [Una única vez (al inicio del proyecto)],
   [Establecer visión, scope, objetivos, roles y cronograma del proyecto],
-  [PM],
-  [Equipo + PO],
-
-  // ── Daily Standup ──────────────────────────────────────────────────────
-  [*Daily Standup*],
-  [Informal],
-  [2-3 veces por semana (máx. 15 min)],
-  [Sincronización rápida: qué se hizo, qué se hace ahora, impedimentos],
-  [Scrum Master / PM],
+  [PO],
   [Equipo],
 
   // ── Sprint Planning ──────────────────────────────────────────────
   [*Sprint Planning*],
   [Formal],
-  [Semanal (inicio de semana)],
+  [Semanal (inicio de sprint)],
   [Seleccionar user stories, definir alcance del sprint],
-  [Scrum Master / PM],
-  [Equipo + PO],
+  [PM],
+  [Equipo],
 
   // ── Sprint Review ──────────────────────────────────────────────────────
   [*Sprint Review*],
   [Formal],
-  [Quincenal (fin de sprint)],
-  [Demostración de incrementos entregables, feedback de stakeholders],
-  [Equipo],
+  [Semanal (fin de sprint)],
+  [Demostración de incrementos entregables, informe de avance],
   [PO],
+  [Equipo],
 
   // ── Sprint Retrospectiva ───────────────────────────────────────────────
   [*Sprint Retrospectiva*],
   [Formal],
-  [Quincenal (fin de sprint, post-review)],
+  [Semanal (fin de sprint, post-review)],
   [Identificar mejoras en procesos, dinámicas y herramientas del equipo],
-  [Scrum Master / PM],
-  [Equipo + PO],
+  [PM],
+  [Equipo],
 
   // ── Comunicación Formal (Email) ────────────────────────────────────────
   [*Comunicación Oficial (Email)*],
   [Formal],
-  [Frecuencia variable (según necesidad)],
-  [Decisiones, cambios de scope, comunicados a stakeholders],
-  [Product Owner / Scrum Master],
-  [Equipo + Stakeholders (según destino)],
+  [Variable (según necesidad)],
+  [Decisiones, preguntas formales, documentación importante],
+  [PO],
+  [Equipo],
 
-  // ── Slack / Discord ────────────────────────────────────────────────────
+  // ── Discord ───────────────────────────────────────────────────────────
   [*Canal de Chat (Discord)*],
+  [Informal],
+  [Frecuencia variable],
+  [Documentación rápida, preguntas],
+  [N/A (abierto)],
+  [Equipo],
+
+  // ── WhatsApp / Grupo de Emergencias ────────────────────────────────────
+  [*Grupo de WhatsApp*],
   [Informal],
   [Diaria (continua)],
   [Comunicación rápida, preguntas, colaboración, notificaciones],
   [N/A (abierto)],
-  [Equipo de Desarrollo],
-
-  // ── WhatsApp / Grupo de Emergencias ────────────────────────────────────
-  [*Grupo WhatsApp (Urgencias)*],
-  [Informal],
-  [Según necesidad (urgencias)],
-  [Notificación rápida de incidentes críticos o bloqueadores],
-  [N/A (abierto)],
-  [Equipo de Desarrollo],
+  [Equipo],
 
   // ── Demo Final ─────────────────────────────────────────
-  [*Demo Final*], [Formal], [Una vez (final del proyecto)],
-  // "cliente" / "Clientes" aquí refiere al stakeholder académico (cátedra GDSI / PO), NO a la persona del producto Truckr® (que es Expedidor); ver docs/05-appendices/glossary.md.
+  [*Demo Final*],
+  [Formal],
+  [Una vez (al final del proyecto)],
   [Mostrar resultados al cliente y entregar el MVP completado],
+  [PO],
   [Equipo],
-  [PO + Clientes],
 )
-
-#v(1em)
-
-== Notas y Consideraciones
-
-- *Flexibilidad:* Esta estructura puede ajustarse según la evolución del proyecto. Cualquier cambio debe justificarse ante el Product Owner.
-
-- *Herramientas por Tipo:*
-  - *Formal* — Reuniones síncronas (Google Meet, Zoom), Email, Documentos compartidos
-  - *Informal* — Discord, WhatsApp, comunicación verbal en la facultad
-
-- *Objetivos de Alineación:* Las reuniones formales (Kickoff, Planning, Review, Retrospectiva) son obligatorias para alineación y toma de decisiones. Las dailies y chats son para fluidez operativa.
-
-- *Owner:* Cada instancia tiene un propietario responsable de convocar, moderar y documentar outcomes.
-
-- *Documentación de Decisiones:* Las decisiones importantes deben quedar registradas como documentación en formato .typ dentro del repositorio

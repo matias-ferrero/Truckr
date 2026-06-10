@@ -6,9 +6,9 @@
 
 *Descripción:*
 Como expedidor,
-quiero entrar a los detalles mis cargas creadas,
-para poder observar todas su informacion detallada.
+quiero entrar a los detalles de mis cargas creadas,
+para poder observar toda su información detallada.
 
 *Criterios de Aceptación:*
-+ El expedidor puede ver toda la informacion de dicha carga publicada.
++ El expedidor puede ver toda la información de dicha carga publicada.
 + Se pueden visualizar las ofertas enviadas a transportistas de dicha carga.

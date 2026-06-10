@@ -1,4 +1,4 @@
-== US31: Editar Vehiculo de mi Flota
+== US31: Editar Vehículo de mi Flota
 
 *Release:* MVP \
 *Prioridad:* Media \

@@ -12,5 +12,5 @@ para comprometerme a realizarlo y generar ingresos.
 *Criterios de Aceptación:*
 + Se puede aceptar una oferta de envío recibida.
 + Al aceptarse una oferta, las ofertas restantes de esa misma carga que haya hecho el expedidor son canceladas.
-+ Al aceptarse una oferta, automaticamente sera generado un envío nuevo envío.
++ Al aceptarse una oferta, automáticamente será generado un nuevo envío.
 + Los nuevos envíos se pueden observar en el dashboard del transportista.
