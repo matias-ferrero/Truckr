@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.2.4](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.2.3...v0.2.4) (2026-06-18)
+
+
+### Features
+
+* **backend:** add console-remote helper for deployed Rails console ([#331](https://github.com/tcorzo/fiuba-gestion-tp/issues/331)) ([63509cd](https://github.com/tcorzo/fiuba-gestion-tp/commit/63509cd0600ca39803178c8f9c0fd782ab1344bb))
+* **cargo:** autocalculado de distancia en carga vía Google Routes API (US53) ([#322](https://github.com/tcorzo/fiuba-gestion-tp/issues/322)) ([e7adf2d](https://github.com/tcorzo/fiuba-gestion-tp/commit/e7adf2da101fe40a187388112f31220a55383143))
+* **cargo:** paginate compatible transport windows with total count ([#348](https://github.com/tcorzo/fiuba-gestion-tp/issues/348)) ([e2ec9ac](https://github.com/tcorzo/fiuba-gestion-tp/commit/e2ec9ac17c453e941b5b4f0680e9f96f2e4ef4c9))
+* **carrier:** carrier dashboard v2 — job-funnel command center ([#345](https://github.com/tcorzo/fiuba-gestion-tp/issues/345)) ([63db6d4](https://github.com/tcorzo/fiuba-gestion-tp/commit/63db6d4bc305cc438cada3443ef5dd151a751914))
+* **fulfilment:** shipment detail v2 — sticky action rail + two-column layout ([#343](https://github.com/tcorzo/fiuba-gestion-tp/issues/343)) ([1715694](https://github.com/tcorzo/fiuba-gestion-tp/commit/17156940d0c0e90f894d2441d9ccdee5ddde57c8))
+* **fulfilment:** shipment map & Google Maps deep-links on detail (US51) ([#334](https://github.com/tcorzo/fiuba-gestion-tp/issues/334)) ([d3f27ad](https://github.com/tcorzo/fiuba-gestion-tp/commit/d3f27ad5cf6d735b2b6ed13136342d4c02d9e767))
+* **fulfilment:** us15 — carrier payout on delivery (fullstack) ([#320](https://github.com/tcorzo/fiuba-gestion-tp/issues/320)) ([bbdeaf1](https://github.com/tcorzo/fiuba-gestion-tp/commit/bbdeaf1791b7f1f383663feddc6c872364c71dec))
+* **infra:** provision VITE_GOOGLE_MAPS_API_KEY for staging and production ([#323](https://github.com/tcorzo/fiuba-gestion-tp/issues/323)) ([c0d3c5f](https://github.com/tcorzo/fiuba-gestion-tp/commit/c0d3c5f260629ea5362a792bde071daf7e7faeb4))
+* **navigation:** persistent role-based sidebar; move "Mis Pagos" out of header ([#341](https://github.com/tcorzo/fiuba-gestion-tp/issues/341)) ([f822c80](https://github.com/tcorzo/fiuba-gestion-tp/commit/f822c8058b20591d04bedc4359405b81181d04d4))
+* **shipper:** cargo-centric shipper dashboard v2 at /shipper/dashboard ([#332](https://github.com/tcorzo/fiuba-gestion-tp/issues/332)) ([5e6afb6](https://github.com/tcorzo/fiuba-gestion-tp/commit/5e6afb6524d27579e3f7d88dc5b256a2f035923d))
+
+
+### Bug Fixes
+
+* **cable:** allow CloudFront SPA origin for Action Cable in production ([#329](https://github.com/tcorzo/fiuba-gestion-tp/issues/329)) ([1ba3acf](https://github.com/tcorzo/fiuba-gestion-tp/commit/1ba3acfe582e199ced469171040507eefa48291d))
+* **cargos:** backfill coordinates before NOT NULL constraint ([#328](https://github.com/tcorzo/fiuba-gestion-tp/issues/328)) ([9006315](https://github.com/tcorzo/fiuba-gestion-tp/commit/9006315554b3a50b103c6a9c079715cfb4659b85))
+* **deps:** bump puma to 8.0.2 to patch PROXY protocol CVEs ([#326](https://github.com/tcorzo/fiuba-gestion-tp/issues/326)) ([fe47125](https://github.com/tcorzo/fiuba-gestion-tp/commit/fe47125b14071c8a453de2c5cf54cac4df5aa5cf))
+* **fulfilment:** broadcast payout notification after the write transaction commits ([#337](https://github.com/tcorzo/fiuba-gestion-tp/issues/337)) ([e1aafbd](https://github.com/tcorzo/fiuba-gestion-tp/commit/e1aafbd7e2211594fe97686d10cb6e5bf78b41b2))
+* **review:** enforce per-session ports independent of the worktree's branch ([#344](https://github.com/tcorzo/fiuba-gestion-tp/issues/344)) ([848266c](https://github.com/tcorzo/fiuba-gestion-tp/commit/848266c5fb1c7661ca8f89ad242b44eff02e8ba4))
+* **transport-windows:** backfill coordinates before NOT NULL constraint ([#325](https://github.com/tcorzo/fiuba-gestion-tp/issues/325)) ([6d2c319](https://github.com/tcorzo/fiuba-gestion-tp/commit/6d2c31908e2d0f05115f03f22df7ccfa439ce808))
+
 ## [0.2.3](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.2.2...v0.2.3) (2026-06-04)
 
 
