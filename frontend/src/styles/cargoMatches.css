@@ -1,0 +1,473 @@
+/* Cargo Matches v2 — `/shipper/cargos/:id/matches`
+   (docs/features/cargo-matches-v2.prd.md)
+
+   Decision command center: sticky cargo-context bar → Recomendados picks
+   strip → sortable/filterable match grid. Shipper surface: sky
+   (--brand-primary) carries interactive emphasis, cream/saffron carries the
+   ambient warmth (per the as-built dashboard idiom). Tokens only — no raw
+   hex, no side-stripes, no gradient text (stylelint-enforced). */
+
+/* ── Page frame ──────────────────────────────────────────────────────── */
+
+/* The comparison grid earns a wider canvas than the default container. */
+.matchesPage .container {
+    width: min(1400px, calc(100% - 2 * var(--space-5)));
+}
+
+/* ── Sticky cargo-context bar ────────────────────────────────────────── */
+
+.cargoContextBar {
+    position: sticky;
+    top: var(--space-2);
+    z-index: 5;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    margin: var(--space-2) 0 var(--space-5);
+    padding: var(--space-3) var(--space-4);
+    background: color-mix(in oklab, var(--brand-secondary) 14%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--brand-secondary) 38%, var(--border));
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.cargoContextEyebrow {
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--chip-ink-warning);
+}
+
+.cargoContextRoute {
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 32ch;
+}
+
+.cargoContextMeta {
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+}
+
+.cargoContextLink {
+    margin-left: auto;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--chip-ink-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.cargoContextLink:hover {
+    color: var(--ink);
+}
+
+/* ── Recomendados strip ──────────────────────────────────────────────── */
+
+.picksStrip {
+    margin-bottom: var(--space-6);
+}
+
+.picksHeading {
+    font-family: var(--font-display);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin: 0 0 var(--space-3);
+}
+
+.picksList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+}
+
+/* Picks are structurally distinct from grid cards: sky-tinted surface,
+   heavier border, badge-led hierarchy. The strip must read as "curated",
+   not as the first three rows of the grid. */
+.pickCard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    height: 100%;
+    padding: var(--space-4) var(--space-4) var(--space-4);
+    background: color-mix(in oklab, var(--brand-primary) 10%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--brand-primary) 45%, var(--border));
+    border-radius: var(--radius-md);
+    animation: pickIn 280ms var(--ease-out) backwards;
+}
+
+.pickCard:nth-child(2) {
+    animation-delay: 60ms;
+}
+
+.pickCard:nth-child(3) {
+    animation-delay: 120ms;
+}
+
+@keyframes pickIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+.pickBadge {
+    align-self: flex-start;
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--chip-ink-primary);
+    background: color-mix(in oklab, var(--brand-primary) 22%, var(--surface));
+    border-radius: var(--radius-pill);
+    padding: 2px var(--space-3);
+}
+
+.pickWhy {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+}
+
+.pickFacts {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-top: var(--space-1);
+}
+
+.pickPrice {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: color-mix(in oklab, var(--chip-ink-warning) 75%, var(--ink));
+    font-variant-numeric: tabular-nums;
+}
+
+.pickTrust {
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: var(--chip-ink-warning);
+    white-space: nowrap;
+}
+
+.pickTrust--new {
+    color: var(--ink-2);
+    font-weight: 500;
+}
+
+.pickMeta {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+}
+
+.pickCta {
+    margin-top: auto;
+    align-self: stretch;
+    text-align: center;
+}
+
+/* ── Controls bar ────────────────────────────────────────────────────── */
+
+.matchesControls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: var(--space-3) var(--space-4);
+    margin: var(--space-3) 0 var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.matchesCount {
+    margin: 0 auto 0 0;
+    align-self: center;
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--ink-2);
+    white-space: nowrap;
+}
+
+.matchesControlFields {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: var(--space-3);
+}
+
+.matchesControl {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.matchesControlLabel {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-2);
+}
+
+.matchesControlInput {
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid color-mix(in oklab, var(--ink) 22%, transparent);
+    border-radius: var(--radius-sm);
+    padding: var(--space-1) var(--space-2);
+    min-height: 36px;
+    min-width: 9.5rem;
+}
+
+.matchesControlInput:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.matchesClearFilters {
+    align-self: end;
+}
+
+.matchesNoResults {
+    padding: var(--space-5) 0;
+}
+
+/* ── Match grid ──────────────────────────────────────────────────────── */
+
+.matchGrid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-4);
+}
+
+.matchGrid > li {
+    display: flex;
+}
+
+.matchCard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    flex: 1;
+    padding: var(--space-4);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: box-shadow 180ms var(--ease-out), border-color 180ms var(--ease-out);
+}
+
+.matchCard:hover {
+    border-color: color-mix(in oklab, var(--brand-primary) 55%, var(--border));
+    box-shadow: var(--shadow-md);
+}
+
+/* A pick repeated in the grid keeps its badge so curation never hides rows.
+   Extra top padding keeps the floating badge clear of the trust chip. */
+.matchCard[data-pick] {
+    border-color: color-mix(in oklab, var(--brand-primary) 45%, var(--border));
+    padding-top: var(--space-5);
+}
+
+.matchPickBadge {
+    position: absolute;
+    top: calc(-1 * var(--space-2));
+    right: var(--space-3);
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--chip-ink-primary);
+    background: color-mix(in oklab, var(--brand-primary) 22%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--brand-primary) 45%, var(--border));
+    border-radius: var(--radius-pill);
+    padding: 1px var(--space-2);
+}
+
+.matchCardTop {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.matchPrice {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Monetary weight belongs to the saffron voice (DESIGN.md amount rule). */
+.matchPriceTotal {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: color-mix(in oklab, var(--chip-ink-warning) 75%, var(--ink));
+    font-variant-numeric: tabular-nums;
+}
+
+.matchPriceRate {
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+}
+
+.matchTrust {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+    text-align: right;
+}
+
+.matchTrustHead {
+    font-family: var(--font-display);
+    font-size: var(--text-base);
+    font-weight: 700;
+    color: var(--chip-ink-warning);
+    white-space: nowrap;
+}
+
+.matchTrust--new .matchTrustHead {
+    font-size: var(--text-sm);
+    color: var(--chip-ink-primary);
+}
+
+.matchTrustSub {
+    font-size: var(--text-xs);
+    color: var(--ink-2);
+    white-space: nowrap;
+}
+
+.matchCarrier {
+    margin: 0;
+    font-weight: 700;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.matchMetaStrip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-3);
+    margin: 0;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--border);
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+}
+
+.matchMetaRoute {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.matchCardActions {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-top: auto;
+    padding-top: var(--space-2);
+}
+
+/* ── Pagination ──────────────────────────────────────────────────────── */
+
+.matchesPagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+}
+
+.matchesPageStatus {
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+    /* The strip degrades to a horizontal scroller, never stacks: three
+       stacked picks would push the full grid below the fold. */
+    .picksList {
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(260px, 80%);
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding-bottom: var(--space-2);
+    }
+
+    .picksList > li {
+        scroll-snap-align: start;
+    }
+
+    .matchesCount {
+        flex-basis: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .cargoContextBar {
+        position: static;
+    }
+
+    .cargoContextLink {
+        margin-left: 0;
+    }
+
+    .matchGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pickCard {
+        animation: none;
+    }
+
+    .matchCard {
+        transition: none;
+    }
+}

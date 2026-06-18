@@ -147,12 +147,12 @@ describe("cancelCargo", () => {
 });
 
 describe("getMatches", () => {
-    it("GETs /api/cargos/:id/matches with the page param", async () => {
-        mockFetch([{ id: 5 }], 200, { "X-Total": "1" });
-        const res = await getMatches(7, 2);
-        expect(res.items).toHaveLength(1);
+    it("GETs the full unpaginated set from /api/cargos/:id/matches", async () => {
+        mockFetch([{ id: 5 }, { id: 6 }], 200);
+        const res = await getMatches(7);
+        expect(res).toHaveLength(2);
         const url = vi.mocked(fetch).mock.calls[0][0] as string;
-        expect(url).toBe(`${BASE}/api/cargos/7/matches?page=2`);
+        expect(url).toBe(`${BASE}/api/cargos/7/matches`);
     });
 
     it("raises an ApiError on a non-ok response", async () => {

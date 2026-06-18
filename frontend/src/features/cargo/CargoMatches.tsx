@@ -1,22 +1,24 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getCargo, getMatches } from "./api";
-import type { CargoListMeta } from "./api";
 import type { Cargo, CargoMatch } from "../../types/Cargo";
-import { cargosContent } from "./cargosContent";
+import {
+    buildMatchesModel,
+    DEFAULT_SORT,
+    EMPTY_FILTERS,
+    type MatchFilters,
+    type MatchSort,
+} from "./buildMatchesModel";
+import { cargoMatchesContent } from "./cargoMatchesContent";
+import CargoContextBar from "./CargoContextBar";
+import RecommendedStrip from "./RecommendedStrip";
+import MatchesControls from "./MatchesControls";
+import MatchesPagination from "./MatchesPagination";
 import MatchCard from "./MatchCard";
-import { formatRoute } from "../../lib/format-place";
 import { Alert } from "../../components/ui/alert";
+import "../../styles/cargoMatches.css";
 
-const t = cargosContent.matchesScreen;
-
-function formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString("es-AR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "2-digit",
-    });
-}
+const t = cargoMatchesContent;
 
 type CargoState =
     | { status: "loading" }
@@ -26,14 +28,14 @@ type CargoState =
 type MatchesState =
     | { status: "idle" }
     | { status: "loading" }
-    | { status: "ready"; items: CargoMatch[]; meta: CargoListMeta }
+    | { status: "ready"; items: CargoMatch[] }
     | { status: "error" };
 
 /**
- * `/shipper/cargos/:id/matches` — the cargo-scoped transport-window search
- * screen (plan §9 D2). Pins the selected cargo on top and lists the
- * `GET /api/cargos/:id/matches` results; each result links straight into the
- * cargo-scoped offer flow. The single funnel:
+ * `/shipper/cargos/:id/matches` — the Cargo Matches v2 decision screen
+ * (docs/features/cargo-matches-v2.prd.md). Fetches the *full* compatible
+ * set once; a pure `buildMatchesModel` derives the Recomendados picks and
+ * the sortable / filterable / client-paginated grid. The single funnel:
  * dashboard → cargo → matches → offer.
  */
 export default function CargoMatches() {
@@ -42,13 +44,9 @@ export default function CargoMatches() {
 
     const [state, setState] = useState<CargoState>({ status: "loading" });
     const [matches, setMatches] = useState<MatchesState>({ status: "idle" });
+    const [sort, setSort] = useState<MatchSort>(DEFAULT_SORT);
+    const [filters, setFilters] = useState<MatchFilters>(EMPTY_FILTERS);
     const [page, setPage] = useState(1);
-
-    // A different cargo means a fresh result set: rewind to the first page so
-    // we never request a page index that the new cargo may not have.
-    useEffect(() => {
-        setPage(1);
-    }, [cargoId]);
 
     const loadCargo = useCallback(async () => {
         setState({ status: "loading" });
@@ -64,8 +62,8 @@ export default function CargoMatches() {
         loadCargo();
     }, [loadCargo]);
 
-    // Matches are only meaningful while the cargo is still open (plan §9 D3):
-    // a non-open cargo can't take new offers, so skip the request entirely.
+    // Matches are only meaningful while the cargo is still open: a non-open
+    // cargo can't take new offers, so skip the request entirely.
     useEffect(() => {
         if (state.status !== "ready" || state.cargo.status !== "open") {
             setMatches({ status: "idle" });
@@ -73,15 +71,9 @@ export default function CargoMatches() {
         }
         let cancelled = false;
         setMatches({ status: "loading" });
-        getMatches(cargoId, page)
-            .then((res) => {
-                if (!cancelled) {
-                    setMatches({
-                        status: "ready",
-                        items: res.items,
-                        meta: res.meta,
-                    });
-                }
+        getMatches(cargoId)
+            .then((items) => {
+                if (!cancelled) setMatches({ status: "ready", items });
             })
             .catch(() => {
                 if (!cancelled) setMatches({ status: "error" });
@@ -89,11 +81,35 @@ export default function CargoMatches() {
         return () => {
             cancelled = true;
         };
-    }, [state, cargoId, page]);
+    }, [state, cargoId]);
+
+    const cargo = state.status === "ready" ? state.cargo : null;
+
+    const model = useMemo(() => {
+        if (matches.status !== "ready" || cargo === null) return null;
+        return buildMatchesModel(matches.items, {
+            distanceKm: cargo.distance_km !== null
+                ? Number(cargo.distance_km)
+                : null,
+            pickup: {
+                lat: Number(cargo.pickup_lat),
+                lng: Number(cargo.pickup_lng),
+            },
+        }, { sort, filters, page });
+    }, [matches, cargo, sort, filters, page]);
+
+    const changeSort = (next: MatchSort) => {
+        setSort(next);
+        setPage(1);
+    };
+    const changeFilters = (next: MatchFilters) => {
+        setFilters(next);
+        setPage(1);
+    };
 
     if (state.status === "loading") {
         return (
-            <main className="page" id="main">
+            <main className="page matchesPage" id="main">
                 <div className="container">
                     <p className="sectionLead" role="status" aria-busy="true">
                         {t.loadingLabel}
@@ -105,7 +121,7 @@ export default function CargoMatches() {
 
     if (state.status === "error") {
         return (
-            <main className="page" id="main">
+            <main className="page matchesPage" id="main">
                 <div className="container">
                     <div className="errorPanel" role="alert">
                         <p>
@@ -124,17 +140,15 @@ export default function CargoMatches() {
         );
     }
 
-    const { cargo } = state;
-    const route = formatRoute(
-        { locality: cargo.pickup_locality, admin_area: cargo.pickup_admin_area },
-        { locality: cargo.delivery_locality, admin_area: cargo.delivery_admin_area },
-        cargosContent.list.openDestinationLabel,
-    );
+    const readyCargo = state.cargo;
 
     return (
-        <main className="page" id="main">
+        <main className="page matchesPage" id="main">
             <div className="container">
-                <Link to={`/shipper/cargos/${cargo.id}`} className="backLink">
+                <Link
+                    to={`/shipper/cargos/${readyCargo.id}`}
+                    className="backLink"
+                >
                     {t.backToCargo}
                 </Link>
 
@@ -145,145 +159,107 @@ export default function CargoMatches() {
                     </div>
                 </header>
 
-                <div className="selectedCargoCard">
-                    <span className="selectedCargoEyebrow">
-                        {t.selectedCargoLabel}
-                    </span>
-                    <div className="cargoCardHeader">
-                        <span className="cargoRoute" title={route}>
-                            {route}
-                        </span>
-                        <span
-                            className={`statusBadge ${
-                                cargosContent.statusBadgeClass[cargo.status] ??
-                                "pendiente"
-                            }`}
-                        >
-                            {cargosContent.statusLabel[cargo.status] ??
-                                cargo.status}
-                        </span>
-                    </div>
-                    <p className="cargoCardDescription">
-                        {cargo.cargo_description}
-                    </p>
-                    <p className="cargoCardMeta">
-                        {cargosContent.list.pickupWindow(
-                            formatDate(cargo.pickup_window_start),
-                            formatDate(cargo.pickup_window_end),
-                        )}
-                    </p>
-                    <Link
-                        to={`/shipper/cargos/${cargo.id}`}
-                        className="button buttonGhost"
-                    >
-                        {t.viewCargoDetail}
-                    </Link>
-                </div>
+                <CargoContextBar cargo={readyCargo} />
 
-                {cargo.status !== "open" ? (
-                    <div className="emptyState">
-                        <h2 className="emptyStateTitle">{t.notOpenTitle}</h2>
-                        <p className="sectionLead">{t.notOpenLead}</p>
-                        <Link
-                            to={`/shipper/cargos/${cargo.id}`}
-                            className="button buttonPrimary"
-                        >
-                            {t.viewCargoDetail}
-                        </Link>
-                    </div>
-                ) : (
-                    <section
-                        className="detailSection"
-                        aria-labelledby="cargo-matches-title"
-                    >
-                        <h2
-                            id="cargo-matches-title"
-                            className="sectionSubtitle"
-                        >
-                            {t.listLabel}
-                        </h2>
-                        {matches.status === "ready" &&
-                            matches.meta.total > 0 && (
-                                <p className="sectionLead" role="status">
-                                    {t.matchesCount(matches.meta.total)}
+                {readyCargo.status !== "open"
+                    ? (
+                        <div className="emptyState">
+                            <h2 className="emptyStateTitle">
+                                {t.notOpen.title}
+                            </h2>
+                            <p className="sectionLead">{t.notOpen.lead}</p>
+                            <Link
+                                to={`/shipper/cargos/${readyCargo.id}`}
+                                className="button buttonPrimary"
+                            >
+                                {t.notOpen.cta}
+                            </Link>
+                        </div>
+                    )
+                    : (
+                        <>
+                            {matches.status === "loading" && (
+                                <p
+                                    className="sectionLead"
+                                    role="status"
+                                    aria-busy="true"
+                                >
+                                    {t.states.matchesLoading}
                                 </p>
                             )}
-                        {matches.status === "loading" && (
-                            <p
-                                className="sectionLead"
-                                role="status"
-                                aria-busy="true"
-                            >
-                                {t.matchesLoading}
-                            </p>
-                        )}
-                        {matches.status === "error" && (
-                            <Alert tone="error" role="alert">
-                                {t.matchesError}
-                            </Alert>
-                        )}
-                        {matches.status === "ready" &&
-                            matches.items.length === 0 && (
-                                <p className="detailMuted">{t.matchesEmpty}</p>
+                            {matches.status === "error" && (
+                                <Alert tone="error" role="alert">
+                                    {t.states.matchesError}
+                                </Alert>
                             )}
-                        {matches.status === "ready" &&
-                            matches.items.length > 0 && (
+                            {model !== null && model.totalCount === 0 && (
+                                <div className="emptyState">
+                                    <h2 className="emptyStateTitle">
+                                        {t.states.matchesEmptyTitle}
+                                    </h2>
+                                    <p className="sectionLead">
+                                        {t.states.matchesEmptyHint}
+                                    </p>
+                                    <Link
+                                        to={`/shipper/cargos/${readyCargo.id}`}
+                                        className="button buttonPrimary"
+                                    >
+                                        {t.states.matchesEmptyCta}
+                                    </Link>
+                                </div>
+                            )}
+                            {model !== null && model.totalCount > 0 && (
                                 <>
-                                    <ul className="matchList">
-                                        {matches.items.map((m) => (
-                                            <MatchCard
-                                                key={m.id}
-                                                cargoId={cargo.id}
-                                                match={m}
-                                                pickup={{
-                                                    lat: Number(
-                                                        cargo.pickup_lat,
-                                                    ),
-                                                    lng: Number(
-                                                        cargo.pickup_lng,
-                                                    ),
-                                                }}
-                                            />
-                                        ))}
-                                    </ul>
-                                    {matches.meta.totalPages > 1 && (
-                                        <nav
-                                            className="paginator"
-                                            aria-label={t.pagination.label}
+                                    <RecommendedStrip
+                                        cargoId={readyCargo.id}
+                                        picks={model.picks}
+                                    />
+                                    <section
+                                        className="matchesSection"
+                                        aria-labelledby="cargo-matches-title"
+                                    >
+                                        <h2
+                                            id="cargo-matches-title"
+                                            className="sectionSubtitle"
                                         >
-                                            <button
-                                                type="button"
-                                                className="button buttonGhost"
-                                                disabled={page <= 1}
-                                                onClick={() =>
-                                                    setPage((p) =>
-                                                        Math.max(1, p - 1),
-                                                    )}
-                                            >
-                                                {t.pagination.previous}
-                                            </button>
-                                            <p>
-                                                {t.pagination.page(
-                                                    matches.meta.page,
-                                                    matches.meta.totalPages,
-                                                )}
-                                            </p>
-                                            <button
-                                                type="button"
-                                                className="button buttonGhost"
-                                                disabled={page >=
-                                                    matches.meta.totalPages}
-                                                onClick={() =>
-                                                    setPage((p) => p + 1)}
-                                            >
-                                                {t.pagination.next}
-                                            </button>
-                                        </nav>
-                                    )}
+                                            {t.controls.heading}
+                                        </h2>
+                                        <MatchesControls
+                                            sort={sort}
+                                            filters={filters}
+                                            shownCount={model.filteredCount}
+                                            totalCount={model.totalCount}
+                                            onSortChange={changeSort}
+                                            onFiltersChange={changeFilters}
+                                        />
+                                        {model.filteredCount === 0
+                                            ? (
+                                                <p className="detailMuted matchesNoResults">
+                                                    {t.controls.noFilterResults}
+                                                </p>
+                                            )
+                                            : (
+                                                <ul className="matchGrid">
+                                                    {model.rows.map((row) => (
+                                                        <MatchCard
+                                                            key={row.match.id}
+                                                            cargoId={readyCargo
+                                                                .id}
+                                                            row={row}
+                                                        />
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        <MatchesPagination
+                                            page={model.page}
+                                            pageCount={model.pageCount}
+                                            onPageChange={setPage}
+                                        />
+                                    </section>
                                 </>
                             )}
-                    </section>
-                )}
+                        </>
+                    )}
             </div>
         </main>
     );

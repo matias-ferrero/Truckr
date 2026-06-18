@@ -75,7 +75,7 @@ export default function CreateOfferPage() {
                 let window = navWindow ?? null;
                 if (!window || window.id !== windowId) {
                     const matches = await getMatches(cargoId);
-                    window = matches.items.find((m) => m.id === windowId) ?? null;
+                    window = matches.find((m) => m.id === windowId) ?? null;
                 }
                 if (cancelled) return;
                 if (!window) {

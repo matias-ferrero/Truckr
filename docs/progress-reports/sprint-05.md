@@ -4,7 +4,7 @@ phase: development
 status: closed
 window: 2026-06-03 → 2026-06-10
 in_progress_user_stories: []
-completed_user_stories: [US25, US53, US51, US15, US40, US60, US64, US65, US66, US67]
+completed_user_stories: [US5, US25, US53, US51, US15, US40, US60, US64, US65, US66, US67]
 ---
 
 ## Resumen
@@ -16,6 +16,7 @@ pactadas para el MVP, cerrando así la etapa de desarrollo.
 
 ### US del Sprint 5
 
+- US5 — Filtrar Ventanas Compatibles — completado.
 - US25 — Paginado de Ventanas Compatibles con mi Carga — completado.
 - US53 — Autocalculado de Distancia en Carga — completado.
 - US51 — Mapa en Detalle de Envío — completado.

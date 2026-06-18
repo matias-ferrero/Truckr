@@ -21,11 +21,6 @@ export type CargoListResult = {
     meta: CargoListMeta;
 };
 
-export type CargoMatchListResult = {
-    items: CargoMatch[];
-    meta: CargoListMeta;
-};
-
 function metaFromHeaders(res: Response): CargoListMeta {
     return {
         total: Number(res.headers.get("X-Total") ?? 0),
@@ -95,18 +90,19 @@ export async function cancelCargo(id: number, reason?: string): Promise<void> {
     });
 }
 
-/** GET /api/cargos/:id/matches — zone-compatible transport windows. */
-export async function getMatches(
-    id: number,
-    page = 1,
-): Promise<CargoMatchListResult> {
+/**
+ * GET /api/cargos/:id/matches — the *full* zone-compatible window set.
+ * Unpaginated by design (cargo-matches-v2 PRD): the client computes the
+ * Recomendados picks and sort/filter/pagination over the whole set, so a
+ * server page would make "el más barato" mean "cheapest on page 1".
+ */
+export async function getMatches(id: number): Promise<CargoMatch[]> {
     const res = await fetch(
-        `${API_BASE_URL}/api/cargos/${id}/matches?page=${page}`,
+        `${API_BASE_URL}/api/cargos/${id}/matches`,
         { headers: { Accept: "application/json", ...buildAuthHeaders() } },
     );
     if (!res.ok) await rejectList(res);
-    const items = (await res.json()) as CargoMatch[];
-    return { items, meta: metaFromHeaders(res) };
+    return (await res.json()) as CargoMatch[];
 }
 
 /**

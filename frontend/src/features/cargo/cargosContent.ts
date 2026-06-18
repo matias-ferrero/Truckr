@@ -177,34 +177,7 @@ export const cargosContent = {
         },
     },
 
-    matchesScreen: {
-        loadingLabel: "Cargando la carga",
-        loadError: "No pudimos cargar esta carga",
-        retry: "Reintentar",
-        backToCargo: "← Volver a la carga",
-        title: "Transportistas disponibles",
-        lead: "Explorá los tramos compatibles y elegí el transportista para tu carga.",
-        selectedCargoLabel: "Carga seleccionada",
-        viewCargoDetail: "Ver detalle de la carga",
-        notOpenTitle: "Esta carga ya no está abierta",
-        notOpenLead: "Solo las cargas abiertas pueden recibir nuevas ofertas.",
-        listLabel: "Transportistas compatibles",
-        matchesCount: (total: number) =>
-            `${total} transportista${total === 1 ? "" : "s"} compatible${
-                total === 1 ? "" : "s"
-            }`,
-        matchesLoading: "Buscando transportistas",
-        matchesError: "No pudimos buscar transportistas",
-        matchesEmpty:
-            "Todavía no hay transportistas compatibles con esta carga.",
-        pagination: {
-            label: "Paginación de transportistas",
-            previous: "← Anterior",
-            next: "Siguiente →",
-            page: (page: number, total: number) =>
-                `Página ${page} de ${total}`,
-        },
-    },
+    /* (Matches-screen copy moved to cargoMatchesContent.ts — Cargo Matches v2.) */
 
     dashboardSection: {
         heading: "Mis cargas",
@@ -228,20 +201,7 @@ export const cargosContent = {
     },
 
     match: {
-        carrier: (name: string) => name,
         carrierFallback: "Transportista",
-        viewCarrierDetail: "Ver perfil",
-        rating: (avg: string, count: number) => `${avg} ★ (${count})`,
-        noRating: "Sin calificaciones",
-        offerCta: "Enviar oferta →",
-        vehicle: (make: string, model: string, plate: string) =>
-            `${make} ${model} · ${plate}`,
-        capacity: (kg: string) => `Capacidad: ${kg} kg`,
-        availability: (from: string, to: string) => `Disponible ${from} – ${to}`,
-        pricePerKm: (price: string) => `$${price} / km`,
-        distanceKm: (km: number) =>
-            km < 1 ? "Menos de 1 km del retiro" : `A ${formatDistance(km)} del retiro`,
-        offerCtaAria: (route: string) => `Ofertar para el tramo ${route}`,
     },
 
     /** Maps a CargoOffer status to the `.statusBadge` modifier + label. */

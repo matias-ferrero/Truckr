@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import CargoMatches from "./CargoMatches";
@@ -31,7 +31,7 @@ function makeCargo(over: Partial<Cargo> = {}): Cargo {
         weight_kg:            "1500.0",
         volume_cm3:           3_000_000,
         declared_value_cents: 5_000_000,
-        distance_km:          null,
+        distance_km:          "700.0",
         cancelled_at:         null,
         created_at:           "",
         updated_at:           "",
@@ -42,9 +42,12 @@ function makeCargo(over: Partial<Cargo> = {}): Cargo {
     };
 }
 
+let nextMatchId = 1;
+
 function makeMatch(over: Partial<CargoMatch> = {}): CargoMatch {
+    const id = nextMatchId++;
     return {
-        id:                     5,
+        id,
         origin_address:         "La Plata",
         origin_locality:        "La Plata",
         origin_admin_area:      "Buenos Aires",
@@ -69,15 +72,13 @@ function makeMatch(over: Partial<CargoMatch> = {}): CargoMatch {
             plate:       "AB123CD",
             max_load_kg: "8000.0",
         },
-        carrier: { id: 1, display_name: "Transportes del Sur", rating_avg: "4.7", reviews_count: 5 },
+        carrier: {
+            id:            id,
+            display_name:  `Transportes ${id} SRL`,
+            rating_avg:    "4.7",
+            reviews_count: 5,
+        },
         ...over,
-    };
-}
-
-function matchResult(items: CargoMatch[]) {
-    return {
-        items,
-        meta: { total: items.length, page: 1, perPage: 20, totalPages: 1 },
     };
 }
 
@@ -97,6 +98,10 @@ function renderScreen(id = 7) {
                     path="/shipper/cargos/:id/offers/new"
                     element={<div>offer-screen</div>}
                 />
+                <Route
+                    path="/carriers/:id"
+                    element={<div>carrier-profile</div>}
+                />
             </Routes>
         </MemoryRouter>,
     );
@@ -104,115 +109,174 @@ function renderScreen(id = 7) {
 
 beforeEach(() => {
     vi.resetAllMocks();
+    nextMatchId = 1;
 });
 
 describe("CargoMatches — open cargo", () => {
-    it("pins the selected-cargo card and lists matches", async () => {
+    it("pins the cargo context bar and lists matches", async () => {
         api.getCargo.mockResolvedValue(makeCargo());
-        api.getMatches.mockResolvedValue(matchResult([makeMatch()]));
+        api.getMatches.mockResolvedValue([makeMatch()]);
         renderScreen();
+        expect(await screen.findByText("Tu carga")).toBeInTheDocument();
         expect(
-            await screen.findByText("Carga seleccionada"),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText("Pallets de electrodomésticos"),
-        ).toBeInTheDocument();
-        expect(
-            await screen.findByText("Transportes del Sur"),
+            await screen.findByText("Transportes 1 SRL"),
         ).toBeInTheDocument();
     });
 
-    it("shows the empty state when there are no matches", async () => {
+    it("shows the empty state with an edit nudge when there are no matches", async () => {
         api.getCargo.mockResolvedValue(makeCargo());
-        api.getMatches.mockResolvedValue(matchResult([]));
+        api.getMatches.mockResolvedValue([]);
         renderScreen();
         expect(
             await screen.findByText(
-                "Todavía no hay transportistas compatibles con esta carga.",
+                "Todavía no hay transportistas compatibles",
             ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole("link", { name: "Editar la carga" }),
         ).toBeInTheDocument();
     });
 
     it("each match card links into the cargo-scoped offer flow", async () => {
         api.getCargo.mockResolvedValue(makeCargo());
-        api.getMatches.mockResolvedValue(matchResult([makeMatch()]));
+        api.getMatches.mockResolvedValue([makeMatch()]);
         const user = userEvent.setup();
         renderScreen();
         await user.click(
-            await screen.findByRole("link", {
-                name: /Ofertar para el tramo/,
-            }),
+            await screen.findByRole("link", { name: /Enviar oferta a/ }),
         );
         expect(await screen.findByText("offer-screen")).toBeInTheDocument();
     });
 });
 
-describe("CargoMatches — pagination", () => {
-    it("shows the total compatible-carrier count above the list", async () => {
+describe("CargoMatches — Recomendados strip", () => {
+    it("suppresses the strip at three or fewer matches", async () => {
         api.getCargo.mockResolvedValue(makeCargo());
-        api.getMatches.mockResolvedValue({
-            items: [makeMatch()],
-            meta: { total: 23, page: 1, perPage: 20, totalPages: 2 },
-        });
+        api.getMatches.mockResolvedValue([
+            makeMatch(),
+            makeMatch(),
+            makeMatch(),
+        ]);
         renderScreen();
-        expect(
-            await screen.findByText("23 transportistas compatibles"),
-        ).toBeInTheDocument();
+        await screen.findByText("Transportes 1 SRL");
+        expect(screen.queryByText("Recomendados")).not.toBeInTheDocument();
     });
 
-    it("singularises the count for a lone compatible carrier", async () => {
+    it("shows distinct cheapest / best-rated / soonest picks above the grid", async () => {
         api.getCargo.mockResolvedValue(makeCargo());
-        api.getMatches.mockResolvedValue(matchResult([makeMatch()]));
-        renderScreen();
-        expect(
-            await screen.findByText("1 transportista compatible"),
-        ).toBeInTheDocument();
-    });
-
-    it("steps to the next page and requests it from the API", async () => {
-        api.getCargo.mockResolvedValue(makeCargo());
-        api.getMatches.mockImplementation((_id, page = 1) =>
-            Promise.resolve({
-                items: [
-                    makeMatch({
-                        id: page,
-                        carrier: {
-                            id: page,
-                            display_name: page === 1 ? "Primera" : "Segunda",
-                            rating_avg: "4.7",
-                            reviews_count: 5,
-                        },
-                    }),
-                ],
-                meta: { total: 23, page, perPage: 20, totalPages: 2 },
+        api.getMatches.mockResolvedValue([
+            makeMatch({ price_per_km: "1.0", available_from: "2026-05-28T00:00:00Z" }),
+            makeMatch({
+                price_per_km: "2.0",
+                carrier: { id: 90, display_name: "Premium SRL", rating_avg: "4.9", reviews_count: 12 },
             }),
+            makeMatch({ price_per_km: "3.0", available_from: "2026-05-20T00:00:00Z" }),
+            makeMatch({ price_per_km: "4.0" }),
+        ]);
+        renderScreen();
+        const strip = (await screen.findByText("Recomendados"))
+            .closest("section") as HTMLElement;
+        expect(within(strip).getByText("Más barato")).toBeInTheDocument();
+        expect(within(strip).getByText("Mejor calificado")).toBeInTheDocument();
+        expect(within(strip).getByText("Más próximo")).toBeInTheDocument();
+        expect(within(strip).getByText("Premium SRL")).toBeInTheDocument();
+    });
+
+    it("omits the best-rated pick when no carrier has reviews", async () => {
+        api.getCargo.mockResolvedValue(makeCargo());
+        const unrated = { rating_avg: "0.0", reviews_count: 0 };
+        api.getMatches.mockResolvedValue([
+            makeMatch({ price_per_km: "1.0", carrier: { id: 1, display_name: "A", ...unrated } }),
+            makeMatch({ price_per_km: "2.0", carrier: { id: 2, display_name: "B", ...unrated } }),
+            makeMatch({ price_per_km: "3.0", carrier: { id: 3, display_name: "C", ...unrated } }),
+            makeMatch({ price_per_km: "4.0", carrier: { id: 4, display_name: "D", ...unrated } }),
+        ]);
+        renderScreen();
+        await screen.findByText("Recomendados");
+        expect(screen.queryByText("Mejor calificado")).not.toBeInTheDocument();
+        // The badge legitimately appears twice: in the strip and on the
+        // matching grid card (picked rows stay visible in the grid).
+        expect(screen.getAllByText("Más barato").length).toBeGreaterThan(0);
+    });
+});
+
+describe("CargoMatches — sort and filter", () => {
+    it("re-orders the grid when the sort changes", async () => {
+        api.getCargo.mockResolvedValue(makeCargo());
+        api.getMatches.mockResolvedValue([
+            makeMatch({ price_per_km: "1.0", carrier: { id: 1, display_name: "Barato SRL", rating_avg: "3.0", reviews_count: 1 } }),
+            makeMatch({ price_per_km: "9.0", carrier: { id: 2, display_name: "Caro SRL", rating_avg: "5.0", reviews_count: 9 } }),
+        ]);
+        const user = userEvent.setup();
+        renderScreen();
+        await screen.findByText("Barato SRL");
+
+        let names = screen.getAllByRole("listitem")
+            .map((li) => li.textContent ?? "");
+        expect(names.findIndex((s) => s.includes("Barato SRL")))
+            .toBeLessThan(names.findIndex((s) => s.includes("Caro SRL")));
+
+        await user.selectOptions(
+            screen.getByLabelText("Ordenar por"),
+            "rating-desc",
+        );
+        names = screen.getAllByRole("listitem")
+            .map((li) => li.textContent ?? "");
+        expect(names.findIndex((s) => s.includes("Caro SRL")))
+            .toBeLessThan(names.findIndex((s) => s.includes("Barato SRL")));
+    });
+
+    it("filters by max price and shows the filtered count", async () => {
+        api.getCargo.mockResolvedValue(makeCargo());
+        api.getMatches.mockResolvedValue([
+            makeMatch({ price_per_km: "1.0" }), // total 700
+            makeMatch({ price_per_km: "9.0" }), // total 6300
+        ]);
+        const user = userEvent.setup();
+        renderScreen();
+        await screen.findByText("Transportes 1 SRL");
+
+        await user.type(screen.getByLabelText("Precio máximo"), "1000");
+        expect(screen.getByText("1 de 2 compatibles")).toBeInTheDocument();
+        expect(screen.queryByText("Transportes 2 SRL")).not.toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole("button", { name: "Limpiar filtros" }),
+        );
+        expect(await screen.findByText("Transportes 2 SRL")).toBeInTheDocument();
+    });
+
+    it("shows the no-results hint when filters exclude everything", async () => {
+        api.getCargo.mockResolvedValue(makeCargo());
+        api.getMatches.mockResolvedValue([makeMatch({ price_per_km: "9.0" })]);
+        const user = userEvent.setup();
+        renderScreen();
+        await screen.findByText("Transportes 1 SRL");
+
+        await user.type(screen.getByLabelText("Precio máximo"), "1");
+        expect(
+            screen.getByText(/Ningún transportista entra en esos filtros/),
+        ).toBeInTheDocument();
+    });
+});
+
+describe("CargoMatches — pagination", () => {
+    it("paginates the grid client-side", async () => {
+        api.getCargo.mockResolvedValue(makeCargo());
+        api.getMatches.mockResolvedValue(
+            Array.from({ length: 15 }, (_, i) =>
+                makeMatch({ price_per_km: String(i + 1) })),
         );
         const user = userEvent.setup();
         renderScreen();
-
-        expect(await screen.findByText("Primera")).toBeInTheDocument();
+        // The cheapest match shows twice (pick + grid card) — wait on either.
+        await screen.findAllByText("Transportes 1 SRL");
         expect(screen.getByText("Página 1 de 2")).toBeInTheDocument();
-        expect(
-            screen.getByRole("button", { name: "← Anterior" }),
-        ).toBeDisabled();
+        expect(screen.queryByText("Transportes 15 SRL")).not.toBeInTheDocument();
 
         await user.click(screen.getByRole("button", { name: "Siguiente →" }));
-
-        expect(await screen.findByText("Segunda")).toBeInTheDocument();
+        expect(await screen.findByText("Transportes 15 SRL")).toBeInTheDocument();
         expect(screen.getByText("Página 2 de 2")).toBeInTheDocument();
-        expect(api.getMatches).toHaveBeenLastCalledWith(7, 2);
-    });
-
-    it("omits the paginator when the results fit on one page", async () => {
-        api.getCargo.mockResolvedValue(makeCargo());
-        api.getMatches.mockResolvedValue(matchResult([makeMatch()]));
-        renderScreen();
-        await screen.findByText("Transportes del Sur");
-        expect(
-            screen.queryByRole("navigation", {
-                name: "Paginación de transportistas",
-            }),
-        ).not.toBeInTheDocument();
     });
 });
 
@@ -239,7 +303,7 @@ describe("CargoMatches — error states", () => {
         ).toBeInTheDocument();
 
         api.getCargo.mockResolvedValueOnce(makeCargo());
-        api.getMatches.mockResolvedValue(matchResult([]));
+        api.getMatches.mockResolvedValue([]);
         await user.click(screen.getByRole("button", { name: "Reintentar" }));
         expect(
             await screen.findByRole("heading", {

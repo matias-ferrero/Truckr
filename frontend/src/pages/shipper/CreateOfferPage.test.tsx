@@ -126,10 +126,7 @@ describe("CreateOfferPage — cargo-scoped confirm step", () => {
 
     it("refetches the window from matches when router state is missing", async () => {
         cargo.getCargo.mockResolvedValue(fakeCargo());
-        cargo.getMatches.mockResolvedValue({
-            items: [fakeWindow()],
-            meta: { total: 1, page: 1, perPage: 20, totalPages: 1 },
-        });
+        cargo.getMatches.mockResolvedValue([fakeWindow()]);
         mount({ state: null });
         expect(
             await screen.findByText("Confirmar oferta"),
@@ -139,10 +136,7 @@ describe("CreateOfferPage — cargo-scoped confirm step", () => {
 
     it("shows the load error when the window cannot be resolved", async () => {
         cargo.getCargo.mockResolvedValue(fakeCargo());
-        cargo.getMatches.mockResolvedValue({
-            items: [],
-            meta: { total: 0, page: 1, perPage: 20, totalPages: 1 },
-        });
+        cargo.getMatches.mockResolvedValue([]);
         mount({ state: null });
         expect(
             await screen.findByText(/No pudimos cargar la carga/),

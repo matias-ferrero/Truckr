@@ -1,19 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 import MatchCard from "./MatchCard";
+import type { MatchRow } from "./buildMatchesModel";
 import type { CargoMatch } from "../../types/Cargo";
 
 function makeMatch(over: Partial<CargoMatch> = {}): CargoMatch {
     return {
         id:                     5,
-        origin_address:         "Av. Corrientes 1234, CABA",
-        origin_locality:        "CABA",
+        origin_address:         "La Plata",
+        origin_locality:        "La Plata",
         origin_admin_area:      "Buenos Aires",
-        origin_lat:             "-34.603722",
-        origin_lng:             "-58.381592",
-        destination_address:    "Av. Colón 500, Córdoba",
+        origin_lat:             "-34.921450",
+        origin_lng:             "-57.954529",
+        destination_address:    "Córdoba",
         destination_locality:   "Córdoba",
         destination_admin_area: "Córdoba",
         destination_lat:        "-31.420083",
@@ -32,143 +32,101 @@ function makeMatch(over: Partial<CargoMatch> = {}): CargoMatch {
             plate:       "AB123CD",
             max_load_kg: "8000.0",
         },
-        carrier: { id: 1, display_name: "Transportes del Sur", rating_avg: "4.7", reviews_count: 12 },
+        carrier: {
+            id:            1,
+            display_name:  "Transportes del Sur",
+            rating_avg:    "4.7",
+            reviews_count: 5,
+        },
         ...over,
     };
 }
 
-function LocationProbe() {
-    const loc = useLocation();
-    return (
-        <div>
-            <div data-testid="loc">{loc.pathname + loc.search}</div>
-            <div data-testid="loc-state">{JSON.stringify(loc.state)}</div>
-        </div>
-    );
+function makeRow(over: Partial<MatchRow> = {}): MatchRow {
+    const match = over.match ?? makeMatch();
+    return {
+        match,
+        totalPrice: 1_050_000,
+        pricePerKm: Number(match.price_per_km),
+        ratingAvg: Number(match.carrier.rating_avg),
+        reviewsCount: match.carrier.reviews_count,
+        isUnrated: match.carrier.reviews_count === 0,
+        distanceToPickupKm: 52.3,
+        pick: null,
+        ...over,
+    };
 }
 
-function renderCard(
-    match: CargoMatch,
-    cargoId = 7,
-    pickup?: { lat: number; lng: number },
-) {
+function renderCard(row: MatchRow) {
     return render(
-        <MemoryRouter initialEntries={["/start"]}>
-            <Routes>
-                <Route
-                    path="/start"
-                    element={
-                        <ul>
-                            <MatchCard
-                                cargoId={cargoId}
-                                match={match}
-                                pickup={pickup}
-                            />
-                        </ul>
-                    }
-                />
-                <Route
-                    path="/shipper/cargos/:id/offers/new"
-                    element={<LocationProbe />}
-                />
-                <Route path="/carriers/:id" element={<LocationProbe />} />
-            </Routes>
+        <MemoryRouter>
+            <ul>
+                <MatchCard cargoId={7} row={row} />
+            </ul>
         </MemoryRouter>,
     );
 }
 
 describe("MatchCard", () => {
-    it("renders the window route, carrier and capacity", () => {
-        renderCard(makeMatch());
-        expect(screen.getByText("CABA, Buenos Aires → Córdoba")).toBeInTheDocument();
-        expect(screen.getByText("Transportes del Sur")).toBeInTheDocument();
-        expect(screen.getByText("Volvo FH · AB123CD")).toBeInTheDocument();
-        expect(screen.getByText("Capacidad: 8000.0 kg")).toBeInTheDocument();
+    it("leads with the total estimated price and the per-km rate", () => {
+        renderCard(makeRow());
+        expect(
+            screen.getByLabelText(/Precio total estimado/),
+        ).toHaveTextContent("1.050.000");
+        expect(screen.getByText("$1.500/km")).toBeInTheDocument();
     });
 
-    it("renders locality only when admin_area is empty", () => {
-        renderCard(makeMatch({ origin_admin_area: "", destination_admin_area: "" }));
-        expect(screen.getByText("CABA → Córdoba")).toBeInTheDocument();
+    it("falls back to the per-km rate as headline without a total", () => {
+        renderCard(makeRow({ totalPrice: null }));
+        expect(screen.queryByLabelText(/Precio total estimado/)).toBeNull();
+        expect(screen.getByText("$1.500/km")).toBeInTheDocument();
     });
 
-    it("falls back to a generic carrier label when display_name is null", () => {
-        renderCard(
-            makeMatch({
-                carrier: { id: 1, display_name: null, rating_avg: "4.0", reviews_count: 0 },
-            }),
-        );
-        expect(screen.getByText("Transportista")).toBeInTheDocument();
+    it("shows the trust chip with rating and review count", () => {
+        renderCard(makeRow());
+        expect(screen.getByText(/4,7/)).toBeInTheDocument();
+        expect(screen.getByText("5 reseñas")).toBeInTheDocument();
     });
 
-    it("the Enviar oferta button navigates to the cargo-scoped offer route", async () => {
-        const user = userEvent.setup();
-        renderCard(makeMatch(), 7);
-        await user.click(
-            screen.getByRole("link", { name: /Ofertar para el tramo/ }),
-        );
-        expect(screen.getByTestId("loc")).toHaveTextContent(
+    it("renders the neutral nuevo chip for unrated carriers, never 0★", () => {
+        const match = makeMatch({
+            carrier: { id: 1, display_name: "Nuevo SRL", rating_avg: "0.0", reviews_count: 0 },
+        });
+        renderCard(makeRow({ match, isUnrated: true, ratingAvg: 0, reviewsCount: 0 }));
+        expect(screen.getByText("Transportista nuevo")).toBeInTheDocument();
+        expect(screen.getByText("Sin calificaciones todavía")).toBeInTheDocument();
+        expect(screen.queryByText(/0,0/)).toBeNull();
+    });
+
+    it("demotes pickup date, distance and route to the meta strip", () => {
+        renderCard(makeRow());
+        // Regex, not a literal date: toLocaleDateString renders in the local
+        // timezone, which differs between dev (UTC-3) and CI (UTC).
+        expect(screen.getByText(/^Sale \d{2}\/\d{2}\/\d{2}$/)).toBeInTheDocument();
+        expect(screen.getByText(/del retiro/)).toBeInTheDocument();
+        expect(screen.getByText(/La Plata.*Córdoba/)).toBeInTheDocument();
+    });
+
+    it("omits the distance line when pickup coords are unavailable", () => {
+        renderCard(makeRow({ distanceToPickupKm: null }));
+        expect(screen.queryByText(/del retiro/)).toBeNull();
+    });
+
+    it("shows the pick badge when the row earned one", () => {
+        renderCard(makeRow({ pick: "cheapest" }));
+        expect(screen.getByText("Más barato")).toBeInTheDocument();
+    });
+
+    it("links to the carrier profile and the offer flow", () => {
+        renderCard(makeRow());
+        expect(
+            screen.getByRole("link", { name: "Ver perfil" }),
+        ).toHaveAttribute("href", "/carriers/1");
+        expect(
+            screen.getByRole("link", { name: /Enviar oferta a Transportes del Sur/ }),
+        ).toHaveAttribute(
+            "href",
             "/shipper/cargos/7/offers/new?window=5",
-        );
-    });
-
-    it("shows the open-destination label when destination_lat is null", () => {
-        renderCard(makeMatch({
-            destination_address:    null,
-            destination_locality:   null,
-            destination_admin_area: null,
-            destination_lat:        null,
-            destination_lng:        null,
-            dropoff_radius_km:      null,
-        }));
-        expect(screen.getByText("CABA, Buenos Aires → Cualquier destino")).toBeInTheDocument();
-    });
-
-    it("shows the rating with count when reviews_count > 0", () => {
-        renderCard(makeMatch());
-        expect(screen.getByText("4.7 ★ (12)")).toBeInTheDocument();
-    });
-
-    it("shows 'Sin calificaciones' when reviews_count is 0", () => {
-        renderCard(
-            makeMatch({
-                carrier: { id: 1, display_name: "Transportes del Sur", rating_avg: "0.0", reviews_count: 0 },
-            }),
-        );
-        expect(screen.getByText("Sin calificaciones")).toBeInTheDocument();
-        expect(screen.queryByText(/★/)).not.toBeInTheDocument();
-    });
-
-    it("renders Haversine distance from cargo pickup when pickup coords are supplied", () => {
-        // CABA pickup vs La Plata origin (~50–60 km) — same fixture pair the
-        // backend Geo spec uses. Tolerate the exact rounded km because the
-        // user-visible copy is what we care about, not the integer.
-        renderCard(
-            makeMatch({ origin_lat: "-34.921450", origin_lng: "-57.954529" }),
-            7,
-            { lat: -34.603722, lng: -58.381592 },
-        );
-        expect(screen.getByText(/^A [\d.]+ km del retiro$/)).toBeInTheDocument();
-    });
-
-    it("hides the distance line when no pickup coords are supplied", () => {
-        renderCard(makeMatch());
-        expect(screen.queryByText(/del retiro/)).not.toBeInTheDocument();
-    });
-
-    it("includes a button to open the carrier public profile", async () => {
-        const user = userEvent.setup();
-        renderCard(makeMatch(), 7);
-        await user.click(screen.getByRole("link", { name: /Ver perfil/i }));
-        expect(screen.getByTestId("loc")).toHaveTextContent("/carriers/1");
-    });
-
-    it("carries the matches URL as router state on the Ver perfil link", async () => {
-        const user = userEvent.setup();
-        renderCard(makeMatch(), 7);
-        await user.click(screen.getByRole("link", { name: /Ver perfil/i }));
-        expect(screen.getByTestId("loc")).toHaveTextContent("/carriers/1");
-        expect(screen.getByTestId("loc-state")).toHaveTextContent(
-            '"backToMatches":"/shipper/cargos/7/matches"',
         );
     });
 });

@@ -63,13 +63,17 @@ module Api
 
     # GET /api/cargos/:id/matches
     #
-    # `sort=distance` re-orders by Haversine distance from the cargo's pickup
-    # point ascending (US5 AC8). Default ordering remains by `available_from`.
+    # Returns the FULL compatible set, unpaginated (cargo-matches-v2 PRD):
+    # the client derives the "Recomendados" picks plus sort/filter/pagination
+    # from the whole set — a server page would silently turn "el más barato"
+    # into "cheapest on page 1". Compatibility (open window, date overlap,
+    # capacity, dual Haversine radius) already bounds the set per cargo.
+    # `sort=distance` (US5 AC8) is kept for API back-compat.
     def matches
       authorize @cargo
       windows = @cargo.matching_windows
       windows = windows.order_by_distance_to(@cargo) if params[:sort] == "distance"
-      render_collection(CargoMatchResource, windows)
+      render json: CargoMatchResource.new(windows.to_a).serialize
     end
 
     private

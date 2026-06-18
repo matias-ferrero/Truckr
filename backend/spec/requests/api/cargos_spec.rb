@@ -362,6 +362,28 @@ RSpec.describe "Api::Cargos", type: :request do
         end
       end
 
+      # Cargo Matches v2: the endpoint returns the FULL compatible set in one
+      # response — no Pagy page — because the client computes the global
+      # "Recomendados" picks (cheapest / best-rated / soonest) over the whole
+      # set. 25 windows > the old default page of 20 proves no truncation.
+      response(200, "returns the full compatible set unpaginated") do
+        let!(:windows) do
+          Array.new(25) do
+            create(:transport_window, vehicle: big_vehicle,
+                   origin_lat: -34.603722, origin_lng: -58.381592,
+                   destination_lat: -31.420083, destination_lng: -64.188776,
+                   pickup_radius_km: 50, dropoff_radius_km: 50,
+                   available_from: 2.days.from_now, available_to: 10.days.from_now)
+          end
+        end
+
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body.size).to eq(25)
+          expect(response.headers).not_to have_key("X-Total-Pages")
+        end
+      end
+
       response(403, "another shipper's cargo is forbidden") do
         let(:id) { create(:cargo, shipper: other_shipper.shipper).id }
 

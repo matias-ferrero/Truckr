@@ -186,8 +186,9 @@ export const handlers: RequestHandler[] = [
 
     http.delete(`${API}/api/cargos/:id`, () => new HttpResponse(null, { status: 204 })),
 
+    // Cargo Matches v2: the endpoint returns the full set, unpaginated.
     http.get(`${API}/api/cargos/:id/matches`, () =>
-        HttpResponse.json([fixtureMatch()], { headers: pagyHeaders(1) })),
+        HttpResponse.json([fixtureMatch()])),
 
     http.post(`${API}/api/cargo_offers`, async ({ request }) => {
         const body = (await request.json()) as {

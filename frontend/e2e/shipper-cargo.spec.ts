@@ -10,15 +10,16 @@ import { test, expect } from "@playwright/test";
 //      origin/destination pins + radii + dates + vehicle capacity match the
 //      cargo published below, so the matches screen shows at least one result.
 //
-// Per plan §5, ship with `test.skip` until db/seeds.rb provides those
-// fixtures. Un-skip once the backend half is deployed with seeds.
+// db/seeds.rb now provides the shipper + compatible-window fixtures, so the
+// matches-screen test below runs against them. Only the publish-flow test
+// stays skipped: its AddressPicker step needs a Places stub to capture
+// lat/lng, which the standalone FE env still does not provide.
 test.describe("Shipper — cargo-first offer funnel (REQ-BE-00032 / US27)", () => {
-    test.skip(
-        true,
-        "needs a seeded shipper + an address/date/capacity-compatible active transport window",
-    );
-
     test("dashboard → publish cargo → matches → offer → offer appears", async ({ page }) => {
+        test.skip(
+            true,
+            "the AddressPicker publish step needs a Places stub to capture lat/lng",
+        );
         // 1. Login as a seeded Shipper.
         await page.goto("/login");
         await page.fill('[name="email"]', "shipper@truckr.test");
@@ -51,13 +52,16 @@ test.describe("Shipper — cargo-first offer funnel (REQ-BE-00032 / US27)", () =
         await page.getByRole("link", { name: "Buscar transportistas" }).click();
         await expect(page).toHaveURL(/\/shipper\/cargos\/\d+\/matches$/);
 
-        // 5. The matches screen pins the selected cargo; pick a result —
-        //    the whole match card links straight to the offer screen.
+        // 5. The matches screen (Cargo Matches v2) pins the cargo context bar
+        //    and renders the comparison grid with its sort/filter controls;
+        //    the card's primary CTA links straight to the offer screen.
         await expect(
             page.getByRole("heading", { name: "Transportistas disponibles" }),
         ).toBeVisible();
+        await expect(page.getByText("Tu carga", { exact: true })).toBeVisible();
+        await expect(page.getByLabel("Ordenar por")).toBeVisible();
         await page
-            .getByRole("link", { name: /Ofertar para el tramo/ })
+            .getByRole("link", { name: /Enviar oferta a/ })
             .first()
             .click();
 
@@ -79,14 +83,14 @@ test.describe("Shipper — cargo-first offer funnel (REQ-BE-00032 / US27)", () =
     // link back to the same cargo's matches screen.
     //
     // Uses the seeded Shipper (shipper1@truckr.test) and the cargo db/seeds.rb
-    // designates as the matches demo: "Materiales de construcción" (La Plata →
-    // Mar del Plata, cargo2), which matches the still-free tw3 so the matches
-    // screen shows at least one result with a "Ver perfil" link.
+    // designates as the matches demo: "Pallets de granos (demo matching)"
+    // (CABA → Córdoba, cargo1), which matches the still-free tw1 so the
+    // matches screen shows at least one result with a "Ver perfil" link.
     test("matches → Ver perfil → Volver a la búsqueda returns to matches", async ({ page }) => {
         // 1. Login as the seeded Shipper.
         await page.goto("/login");
-        await page.fill('[name="email"]', "shipper1@truckr.test");
-        await page.fill('[name="password"]', "Password123");
+        await page.fill("#email", "shipper1@truckr.test");
+        await page.fill("#password", "Password123");
         await page.click('button[type="submit"]');
         await page.waitForURL("/");
 
@@ -94,15 +98,25 @@ test.describe("Shipper — cargo-first offer funnel (REQ-BE-00032 / US27)", () =
         //    "Buscar transportistas" CTA lives on the detail, not the list row.
         await page.goto("/shipper/cargos");
         await page
-            .locator("li", { hasText: "Materiales de construcción" })
+            .locator("li", { hasText: "Pallets de granos" })
             .getByRole("link", { name: /ver detalle/i })
             .click();
         await expect(page).toHaveURL(/\/shipper\/cargos\/\d+$/);
-        await page.getByRole("link", { name: /buscar transportistas/i }).click();
+        await page.getByRole("link", { name: /buscar transportistas/i }).first()
+            .click();
         await expect(page).toHaveURL(/\/shipper\/cargos\/\d+\/matches$/);
         const matchesUrl = page.url();
 
-        // 3. Open the carrier profile from a match.
+        // 3. Cargo Matches v2: the sticky cargo context bar and the
+        //    sort/filter controls render above the comparison grid, and each
+        //    card's primary CTA targets the offer flow.
+        await expect(page.getByText("Tu carga", { exact: true })).toBeVisible();
+        await expect(page.getByLabel("Ordenar por")).toBeVisible();
+        await expect(
+            page.getByRole("link", { name: /Enviar oferta a/ }).first(),
+        ).toBeVisible();
+
+        // 4. Open the carrier profile from a match.
         await page.getByRole("link", { name: /ver perfil/i }).first().click();
         await expect(page).toHaveURL(/\/carriers\/\d+$/);
 

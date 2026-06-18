@@ -24,16 +24,16 @@
   (2, "2026-05-13 → 2026-05-20", 15, 6),
   (3, "2026-05-20 → 2026-05-27", 9, 3),
   (4, "2026-05-27 → 2026-06-03", 15, 0),
-  (5, "2026-06-03 → 2026-06-10", 8, 1),
+  (5, "2026-06-03 → 2026-06-10", 11, 0),
 )
 
-#let throughput-mean = 9.8
-#let throughput-median = 9
-#let throughput-stdev = 5.449770637375485
+#let throughput-mean = 10.4
+#let throughput-median = 11
+#let throughput-stdev = 5.366563145999495
 #let throughput-min = 2
 #let throughput-max = 15
 #let lead-p50 = 0.0
-#let lead-p75 = 1.0
+#let lead-p75 = 0.25
 #let lead-p90 = 1.0
 
 // Projection — set `has-projection` to `false` if JSON `projection == null`
@@ -42,9 +42,9 @@
 
 // Inverse — always present when has-projection
 #let inv-p50 = 5
-#let inv-p85 = 7
-#let inv-p95 = 8
-#let inv-p99 = 9
+#let inv-p85 = 6
+#let inv-p95 = 7
+#let inv-p99 = 8
 #let inv-did-not-finish = 0.0
 #let inv-cap = 60
 

@@ -39,7 +39,8 @@ Sprint 5 no abre superficie nueva: completa la terna MVP que quedaba (US15 cierr
 
 ## Fuera de alcance — diferido deliberadamente
 
-- **Todo el remanente del backlog es post-MVP.** Tras US15/US51/US53 no queda historia MVP pendiente. Quedan fuera, como backlog post-MVP (no como "fase pendiente" ni deuda de migración): **US5** (filtrar ventanas), **US11** (filtrado de ofertas), **US13** (realizar envío / navegación GPS), **US16** (cambiar contraseña), **US21** (tracking de envío), **US22** (verificación por email), **US23** (envíos compuestos), **US24** (encadenado de pedidos), **US25** (gestión de seguros), **US28/US29** (editar/eliminar reseña de Transportista), **US55/US56** (editar/eliminar reseña de Expedidor).
+- **Todo el remanente del backlog es post-MVP.** Tras US15/US51/US53 no queda historia MVP pendiente. Quedan fuera, como backlog post-MVP (no como "fase pendiente" ni deuda de migración): **US11** (filtrado de ofertas), **US13** (realizar envío / navegación GPS), **US16** (cambiar contraseña), **US21** (tracking de envío), **US22** (verificación por email), **US23** (envíos compuestos), **US24** (encadenado de pedidos), **US25** (gestión de seguros), **US28/US29** (editar/eliminar reseña de Transportista), **US55/US56** (editar/eliminar reseña de Expedidor).
+- **US5 (filtrar ventanas compatibles) se adelantó y se entregó en este sprint.** Era post-MVP, pero el rediseño de la pantalla de matches (cargo-matches-v2) la incorporó tal cual su definición: ordenar por precio/fecha y filtrar por precio máximo y rango de fecha de retiro. Queda marcada como completada en el reporte de cierre.
 - **Integración real con Mercado Pago (AC1 de US15).** US15 entrega con el **gateway mockeado** detrás del puerto `PaymentGateway`, igual que US8. No es un "fase 1 → luego migramos": es la forma en que se entrega el MVP para la cátedra. Un proveedor real, si llegara, es trabajo nuevo con su propio análisis.
 - **Verificación por email / infraestructura de correo (US22).** Sigue fuera, como en todos los sprints anteriores. El aviso de fallo de transferencia de US15 (AC4) se resuelve sobre el sistema de notificaciones en tiempo real ya entregado (US57/US58), no por email.
 - **Caché / rate-limit fino de las llamadas a Directions.** US53 hace la llamada en la creación de la Carga y persiste el resultado; optimizaciones de costo de API quedan fuera salvo que el volumen lo justifique.
@@ -91,5 +92,6 @@ Consolidación (sin issue — entregable de demo 24/06)
 └── pulido final de UX/UI (/critique → /polish → /audit)   (Tomás, PM/SM)
 
 Post-MVP (fuera de alcance — todo el remanente)
-└── US5, US11, US13, US16, US21, US22, US23, US24, US25, US28, US29, US55, US56
+└── US11, US13, US16, US21, US22, US23, US24, US25, US28, US29, US55, US56
+    (US5 se adelantó: entregada en este sprint vía cargo-matches-v2)
 ```

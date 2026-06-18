@@ -16,10 +16,13 @@
 }
 
 /* The page's <main> is the flex child to the right of the rail. min-width:0
-   lets wide tables scroll inside it instead of forcing the row wider. */
+   lets wide tables scroll inside it instead of forcing the row wider.
+   align-self:stretch makes the main's surface fill the full column height so
+   short pages don't expose the page-bg as a band below the content. */
 .appShellBody > main {
     flex: 1;
     min-width: 0;
+    align-self: stretch;
 }
 
 .appSidebar {
