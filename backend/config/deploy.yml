@@ -29,6 +29,7 @@ env:
     - RAILS_MASTER_KEY
     - SEED_ADMIN_EMAIL
     - SEED_ADMIN_PASSWORD
+    - GOOGLE_MAPS_API_KEY
   clear:
     RAILS_ENV: production
     SOLID_QUEUE_IN_PUMA: true
