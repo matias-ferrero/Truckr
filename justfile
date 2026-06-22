@@ -77,6 +77,18 @@ convert-chats:
 watch-chats:
     typst watch --root {{ root }} {{ root }}/prompts/main.typ
 
+# Copy this machine's Claude Code transcripts for this repo into docs/prompts/raw/claude/
+sync-claude-chats:
+    bash .claude/skills/export-claude-chats/scripts/sync-claude-chats.sh
+
+# Convert local Claude Code .jsonl transcripts to .typ (gitignored; regenerates their main.typ)
+convert-claude-chats:
+    find {{ root }}/prompts/raw/claude -name '*.jsonl' -print0 | xargs -0 python3 {{ root }}/scripts/claude_jsonl2typ.py
+
+# Compile the (local, gitignored) Claude Code chat sessions report
+build-claude-chats: convert-claude-chats
+    typst compile --root {{ root }} {{ root }}/prompts/raw/claude/main.typ {{ root }}/prompts/raw/claude/main.pdf
+
 # ── Frontend (React + Vite + Deno) ──────────────────────────────────────────
 
 # Install frontend dependencies (uses Deno's npm interop)

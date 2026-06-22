@@ -218,7 +218,9 @@ pyrightconfig.json
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
-docs/prompts/raw/*
+# Claude Code chat export: keep raw transcripts local, track converted .typ
+# (generated PDFs are covered by the docs/**/*.pdf rule below)
+docs/prompts/raw/**/*.jsonl
 docs/**/*.pdf
 docs/**/*.docx
 docs/raw/*
