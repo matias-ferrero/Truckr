@@ -45,6 +45,11 @@ RSpec.describe Payouts::Create, type: :service do
       expect(result.paid_at).not_to be_nil
     end
 
+    it "stamps settled_at on the shipment so the dashboard moves it to Pagadas" do
+      result
+      expect(shipment.reload.settled_at).to eq(result.paid_at)
+    end
+
     it "emits a PAYOUT_APPROVED notification" do
       expect(Notifications::Publisher).to receive(:publish).with(
         user_id: carrier_user.id,

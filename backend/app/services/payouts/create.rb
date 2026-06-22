@@ -43,7 +43,7 @@ module Payouts
         commission = (gross * rate).ceil
         net    = gross - commission
 
-        Payout.create!(
+        payout = Payout.create!(
           shipment:             shipment,
           payment:              escrowed_payment,
           gross_amount_cents:   gross,
@@ -54,6 +54,9 @@ module Payouts
           state:                "paid",
           paid_at:              Time.current
         )
+
+        shipment.update!(settled_at: payout.paid_at)
+        payout
       end
 
       # Broadcast AFTER the write transaction commits. Solid Cable's adapter

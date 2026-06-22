@@ -7,6 +7,7 @@ export const sidebarContent = {
     carrier: {
         heading: "Transportista",
         items: {
+            dashboard: "Inicio",
             vehicles: "Vehículos",
             availability: "Disponibilidad",
             offers: "Ofertas",

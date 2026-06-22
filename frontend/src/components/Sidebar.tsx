@@ -63,6 +63,7 @@ export function Sidebar() {
     if (!isCarrier && !isShipper) return null;
 
     const carrierItems: SidebarItem[] = [
+        { to: "/carrier/dashboard", label: t.carrier.items.dashboard, icon: "home" },
         { to: "/carrier/vehicles", label: t.carrier.items.vehicles, icon: "truck" },
         { to: "/carrier/availability", label: t.carrier.items.availability, icon: "calendar" },
         { to: "/carrier/cargo-offers", label: t.carrier.items.offers, icon: "inbox", badge: true },

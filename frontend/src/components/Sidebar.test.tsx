@@ -55,6 +55,10 @@ describe("Sidebar", () => {
         await waitFor(() =>
             expect(screen.getByRole("link", { name: "Vehículos" })).toBeInTheDocument()
         );
+        expect(screen.getByRole("link", { name: "Inicio" })).toHaveAttribute(
+            "href",
+            "/carrier/dashboard",
+        );
         expect(screen.getByRole("link", { name: "Disponibilidad" })).toHaveAttribute(
             "href",
             "/carrier/availability",
@@ -126,7 +130,8 @@ describe("Sidebar", () => {
             expect(screen.getByRole("link", { name: "Vehículos" })).toBeInTheDocument()
         );
         expect(screen.getByRole("link", { name: "Mis Cargas" })).toBeInTheDocument();
-        // "Mis Envíos" exists in both groups → two links.
+        // "Inicio" and "Mis Envíos" exist in both groups → two links each.
+        expect(screen.getAllByRole("link", { name: "Inicio" })).toHaveLength(2);
         expect(screen.getAllByRole("link", { name: "Mis Envíos" })).toHaveLength(2);
         // Each list is named via aria-labelledby so SR users can tell them apart.
         expect(screen.getByRole("list", { name: "Transportista" })).toBeInTheDocument();
