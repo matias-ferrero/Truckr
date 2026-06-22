@@ -33,6 +33,12 @@ env:
   clear:
     RAILS_ENV: production
     SOLID_QUEUE_IN_PUMA: true
+    # Public backend hostname Rails uses to build absolute URLs (Active Storage
+    # links, mailer links) outside a request context, where it can't infer the
+    # host from a request. CI already resolves this from SSM
+    # (/truckr/${TRUCKR_ENV}/app_host) and exports it for proxy.host above; we
+    # reuse the same value inside the container. Laptop deploys export APP_HOST.
+    APP_HOST: <%= ENV["APP_HOST"] %>
     # Public SPA origin for ActiveAdmin's impersonation redirect. CI resolves
     # this from SSM (/truckr/${TRUCKR_ENV}/frontend_origin) before invoking
     # kamal; laptop deploys can override by exporting FRONTEND_ORIGIN.
