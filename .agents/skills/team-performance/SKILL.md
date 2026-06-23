@@ -6,24 +6,33 @@ description: "Run the team-performance CLI to measure throughput in completed Us
 # team-performance
 
 Wraps the `team-performance` CLI (`docs/scripts/team_performance/`) and turns
-its JSON (schema **v3**) into a **Typst report (`docs/team-performance.typ` →
-`.pdf`)**. The unit is the **completed User Story**, not the GitHub issue —
-issues vary too much in size to be a stable throughput unit. The report leads
-with a colour-coded probability badge and lays out both **inverse** (sprints
-needed at p50/p85/p95/p99) and **forward** (P[≥ target] in N sprints)
-projections. Every number prints with a one-line caption — no orphaned metrics.
+its JSON (schema **v4**) into a **Typst report** under
+`docs/team-performance/sprint-NN-performance.typ` → `.pdf`. The unit is the
+**completed User Story**, not the GitHub issue — issues vary too much in size to
+be a stable throughput unit. The report leads with a colour-coded probability
+badge and shows throughput stats, a per-sprint bar chart, and a cumulative
+burn-up chart.
+
+**Two modes.**
+- **Reconstruction (`--as-of-sprint N`, the usual one):** replay the ledger *as
+  of* sprint `N` and report the forecast as it would have read then. A **single
+  input** — the sprint number, bare `--as-of-sprint` = latest closed — derives
+  everything else: history window `1..N`, the remaining-MVP target, and the
+  `6 − N` horizon. Run it once per past sprint to build a burndown story. See
+  [ADR 0001](../../../docs/adr/0001-team-performance-reconstruction-derives-scope.md).
+- **Manual (`--target-user-stories` / `--remaining-sprints`):** you type the
+  target and horizon. Use only when the question isn't about a past sprint.
 
 **Data source.** The CLI reads a hand-maintained **per-sprint ledger**:
 `docs/progress-reports/sprint-NN.md`, one Markdown file per sprint. These files
-are the canonical, machine-readable form of the per-sprint progress reports
-(originally authored as `Informe de Avance` PDFs — the PDFs are the source of
-truth from which each file's frontmatter is derived). There is no GitHub access.
-A sprint's `completed_user_stories` is whatever the team recorded — the tool
-trusts the ledger.
+are the canonical, machine-readable form of the per-sprint progress reports.
+There is no GitHub access. A sprint's `completed_user_stories` is whatever the
+team recorded — the tool trusts the ledger.
 
 **Language convention.** The CLI text/JSON output and the generated Typst report are **product content** (an academic deliverable shown to the team and reviewers) and therefore in **es-AR** — see `CLAUDE.md` "Language Rules". Only Python identifiers, JSON keys, Typst variable names, and this SKILL.md prose stay in English.
 
 **Use when:**
+- "Reconstruí la performance sprint a sprint" / "what did our forecast look like at sprint N?" → **reconstruction**.
 - "What are the chances we finish all the backlog in N sprints?"
 - "How many sprints will it take?"
 - "What's our team's throughput?"
@@ -41,14 +50,16 @@ trusts the ledger.
 | Input | Required | How to obtain |
 |-------|----------|---------------|
 | `sprints_dir`          | No (default `docs/progress-reports`) | Directory of `sprint-NN.md` ledger files. |
-| `phase`                | No (default `development`)  | `development` or `documentation`. The CLI counts only ledger files whose `phase` matches. Default to **development** unless the user asks otherwise. |
-| `backlog_us`           | No (default `docs/artifacts/backlog-us.typ`) | The US backlog artifact, used to validate that ledger US ids are real. |
-| `no_us_validation`     | No (default off) | Pass `--no-us-validation` to skip checking ledger US ids against `backlog-us.typ`. Use while the ledger references stories the backlog artifact hasn't caught up with yet — otherwise an unknown id is a fatal data error (exit 3). |
-| `target_user_stories`  | If projecting | Triggers the **inverse** projection. Count the User Stories the team commits to delivering — **not** necessarily all 35 in `backlog-us.typ` (Release 3 USs may be out of course scope). **Always confirm what counts as "the backlog" before running.** |
-| `remaining_sprints`    | Optional | If given alongside `--target-user-stories`, also runs the **forward** projection. Cannot be used alone. |
+| `phase`                | No (default `development`)  | `development` or `documentation`. |
+| `backlog_us`           | No (default `docs/artifacts/backlog-us.typ`) | The US backlog artifact, used to validate US ids. |
+| `no_us_validation`     | No (default off) | Pass `--no-us-validation` to skip checking ledger US ids against `backlog-us.typ`. Use while the ledger references stories the backlog artifact hasn't caught up with yet. |
+| `as_of_sprint`         | Reconstruction mode | `--as-of-sprint N` reconstructs as of sprint `N`; bare = latest closed sprint. Derives target and horizon from `N` — **cannot** be combined with `target_user_stories` / `remaining_sprints`. |
+| `total_dev_sprints`    | No (default `6`) | Development-phase length, for the derived horizon (`total_dev_sprints − N`). `6` per `CALENDAR.md`. |
+| `target_user_stories`  | Manual mode only | Triggers the inverse projection. MVP = **50** USs (`MVP — Release 1` section of `backlog-us.typ`; backlog has **66** total). In reconstruction mode this is **derived**, not passed. |
+| `remaining_sprints`    | Manual mode only | Also runs the forward projection. Cannot be used alone, nor with `--as-of-sprint`. |
 | `bootstrap_samples`    | No | Default `10000`. |
 | `seed`                 | No | Default `42`. Only override if the user explicitly asks. |
-| `output_path`          | No | Default `docs/team-performance.typ` (compiled to `docs/team-performance.pdf`). Must live **under `docs/`** so `--root docs` resolves `template.typ`. |
+| `output_path`          | No | Reconstruction reports go to `docs/team-performance/sprint-NN-performance.typ`. Must live **under `docs/`** so `--root docs` resolves `template.typ`. |
 
 ### The sprint ledger file
 
@@ -64,25 +75,18 @@ completed_user_stories: [US1, US2, US14]
 ## Retro / ## Notas por US  (free-form body; the tool ignores it)
 ```
 
-Each file's frontmatter is derived from that sprint's progress report (the
-`Informe de Avance` PDF) — the report is the source of truth for the window and
-for which User Stories were completed vs. left in progress. `CALENDAR.md` lists
-the course-schedule sprint numbers and nominal windows; note the reports may use
-slightly different (overlapping) day boundaries — the ledger follows the report.
-
 ---
 
 ## Critical caveats — surface these to the user before reporting numbers
 
-1. **Throughput is lumpy.** Big User Stories span several sprints, so many sprints score 0 completed USs. The throughput distribution is sparse and the projection intervals are wide. This is honest — do not smooth it over.
-2. **Need ≥ 2 closed sprints.** Otherwise the CLI exits 4 (`InsufficientDataError`); the projection block is `null`. Render the report anyway — the headline becomes "Muestra insuficiente".
-3. **"Backlog" is whatever you pass to `--target-user-stories`.** The CLI does not auto-count. Confirm scope: all 35 USs, MVP only, or minus Release 3.
-4. **No per-person numbers, ever.** Team aggregates only. If asked for an assignee breakdown, refuse and cite the policy.
-5. **The ledger is trusted as-is.** A US counts as completed because the team wrote it in `completed_user_stories`. Garbage in, garbage out — if the ledger is stale the forecast is wrong.
-6. **Infra/docs work is invisible.** `INF-*` and doc work are not User Stories, so they never appear. This is "product throughput", not "team throughput".
-7. **Lead time is coarse.** Measured in whole sprints (`completion sprint − first-seen sprint`); p50/p75/p90 are often equal.
-8. **Bootstrap is empirical.** Each future sprint's throughput is resampled (with replacement) from the observed per-sprint throughput. Not adjusted for capacity changes, holidays, or known scope shifts.
-9. **Determinism: same seed + same ledger → byte-identical output** (excluding `generated_at`).
+1. **Throughput is lumpy.** Big User Stories span several sprints, so many sprints score 0 completed USs. The projection intervals are wide. This is honest — do not smooth it over.
+2. **Need ≥ 2 closed sprints.** Otherwise `has-forward = false`; render the report anyway — the headline becomes "Muestra insuficiente".
+3. **"Backlog" scope.** In reconstruction mode the target is auto-derived as the remaining MVP. In manual mode confirm scope: the 50 MVP USs, or some other slice.
+4. **No per-person numbers, ever.** Team aggregates only.
+5. **The ledger is trusted as-is.** Garbage in, garbage out.
+6. **Infra/docs work is invisible.** `INF-*` and doc work are not User Stories.
+7. **Bootstrap is empirical.** Each future sprint's throughput is resampled (with replacement) from the observed per-sprint throughput. Not adjusted for capacity changes.
+8. **Determinism: same seed + same ledger → byte-identical output** (excluding `generated_at`).
 
 ---
 
@@ -91,66 +95,82 @@ slightly different (overlapping) day boundaries — the ledger follows the repor
 ### 1. Clarify scope with the user
 
 - Confirm the **phase** (dev vs documentation; default dev).
-- Confirm what counts as **the backlog** for `--target-user-stories`.
-- (Optional) a specific horizon `--remaining-sprints`.
+- **Reconstruction** (the usual ask): confirm which sprint(s). To reconstruct the whole project, run once per closed sprint. Target and horizon are derived — nothing else to ask.
+- **Manual** mode only: confirm what counts as **the backlog** for `--target-user-stories` and, optionally, the horizon `--remaining-sprints`.
 
 ### 2. Run the CLI (JSON only — Typst owns the rendering)
 
+**Reconstruction** — one call per past sprint:
+
 ```sh
 uv run team-performance \
-    --sprints-dir docs/progress-reports \
-    --phase development \
-    --target-user-stories <COUNT> \
-    --remaining-sprints <N>         # optional; adds the forward block \
-    --no-us-validation              # optional; skip the backlog-artifact id check \
+    --sprints-dir docs/progress-reports --phase development \
+    --as-of-sprint <N> \
+    --no-us-validation \
     --format json \
-    > /tmp/team-performance.json
+    > /tmp/team-performance-s<N>.json
+```
+
+**Manual** — type the target/horizon yourself:
+
+```sh
+uv run team-performance --sprints-dir docs/progress-reports --phase development \
+    --target-user-stories <COUNT> --remaining-sprints <N> --no-us-validation \
+    --format json > /tmp/team-performance.json
 ```
 
 Handle exit codes:
-- `0` → success, parse `/tmp/team-performance.json`.
-- `2` → usage error. `--remaining-sprints` cannot be used without `--target-user-stories`.
-- `3` → data source error (ledger missing, unparseable, or failed validation). If stderr says a US id "is not declared in the US backlog", either add the story to `backlog-us.typ` or re-run with `--no-us-validation`.
-- `4` → insufficient sample. The JSON is still valid (`projection: null`). Render the report; the headline becomes "Muestra insuficiente".
+- `0` → success, parse the JSON. In reconstruction mode an `already_complete: true` report also exits `0` with `projection: null`.
+- `2` → usage error.
+- `3` → data source error. If stderr says a US id "is not declared in the US backlog", re-run with `--no-us-validation`.
+- `4` → insufficient sample (< 2 closed sprints). JSON still valid (`projection: null`). Render anyway; `has-forward = false` → headline becomes "Muestra insuficiente".
 
-### 3. Generate `docs/team-performance.typ`
+### 3. Generate `docs/team-performance/sprint-NN-performance.typ`
 
 Write the file using the template in §"Typst Report Template" below. **Substitute every `<placeholder>` with values from the JSON.**
+
+Key mappings from JSON to template variables:
+- `has-forward`: `true` if `projection != null` AND `projection.forward != null`; `false` otherwise (insufficient data OR already complete with `target-us = 0`)
+- `p-meet`: `projection.forward.p_meet_or_exceed_target` (only when `has-forward = true`; set to `0` otherwise)
+- `remaining-sprints`: `reconstruction.derived_remaining_sprints` (reconstruction) or the `--remaining-sprints` arg (manual)
+- `target-us`: `reconstruction.derived_target_user_stories` (reconstruction) or `--target-user-stories` (manual); set to `0` when `already_complete = true`
+- `throughput-mean/min/max`: from `aggregate.throughput.*`
+- `mvp-total`: `reconstruction.mvp_total`
+- `mvp-done`: `reconstruction.mvp_completed_through`
+- `already-complete`: `reconstruction.already_complete`
+
+**Small sample warning:** include the warning block (see template) when `has-forward = true` AND the number of closed sprints in the history window (N) is ≤ 3. The block references N directly: `"Muestra pequeña (N = X sprints):"`. Remove the block entirely for N ≥ 4 or when `has-forward = false`.
 
 Pick the headline colour:
 
 | Condition | Colour | Verdict (es-AR) |
 |-----------|--------|-----------------|
-| `forward` present and `p_meet_or_exceed_target ≥ 0.85` | `c-good` | "Estamos en camino." |
-| `forward` present and `p_meet_or_exceed_target ≥ 0.50` | `c-warn` | "Está ajustado — protejamos el alcance." |
-| `forward` present and `p_meet_or_exceed_target < 0.50` | `c-bad` | "No llegamos en el horizonte — recortar alcance o extender." |
-| `forward` absent and `did_not_finish_pct ≤ 0.05` | `c-good` | "Backlog alcanzable al ritmo actual." |
-| `forward` absent and `did_not_finish_pct ≤ 0.25` | `c-warn` | "Alcanzable pero ajustado — protejamos el alcance." |
-| `forward` absent and `did_not_finish_pct > 0.25` | `c-bad` | "El backlog crece más rápido que el throughput — recortar alcance." |
-| `projection` is `null` | `c-warn` | "Se necesitan ≥ 2 sprints cerrados antes de poder proyectar." |
+| `already-complete` is `true` | `c-good` | "MVP completo a esta altura." |
+| `has-forward` is `false` (and not already-complete) | `c-warn` | "Muestra insuficiente para proyectar (< 2 sprints)." |
+| `p-meet ≥ 0.85` | `c-good` | "Estábamos en camino." |
+| `p-meet ≥ 0.50` | `c-warn` | "Estaba ajustado — proteger el alcance." |
+| `p-meet < 0.50` | `c-bad` | "No llegábamos en el horizonte — recortar o extender." |
 
 ### 4. Compile to PDF
 
 ```sh
-typst compile --root docs docs/team-performance.typ
-# → docs/team-performance.pdf
+typst compile --root docs docs/team-performance/sprint-NN-performance.typ
+# or compile the whole set: just build-team-performance
 ```
-
-If the compile fails, fix the `.typ` template and re-run — never edit the PDF or JSON.
 
 ### 5. End-of-task checks
 
-- Read the PDF and verify the headline matches the JSON, every metric table has its "Significado" column populated, and all copy is es-AR.
-- Tell the user the report path, the headline number + verdict, and offer to rerun with a different scope/horizon.
+- Verify the headline matches the JSON, the reconstruction header states the right as-of sprint / window / horizon, and all copy is es-AR.
+- Tell the user the report path, the headline number + verdict, and (for a full reconstruction) offer to render the remaining sprints.
 
 ---
 
-## Typst Report Template (`docs/team-performance.typ`)
+## Typst Report Template (`docs/team-performance/sprint-NN-performance.typ`)
 
 Substitute every `<…>` with values from the JSON. The data block at the top is the **only** thing that changes between runs.
 
 ```typst
-#import "template.typ": c-brand, c-brand-mid, conf
+#import "../template.typ": c-brand, c-brand-mid, conf
 #import "@preview/cetz:0.3.4": canvas, draw
 #import "@preview/cetz-plot:0.1.1": plot
 
@@ -162,11 +182,12 @@ Substitute every `<…>` with values from the JSON. The data block at the top is
 #let c-warn = rgb("#d68910")
 #let c-bad  = rgb("#c0392b")
 #let c-muted = luma(120)
+#let c-proj = rgb("#1a1a1a")
 
 // ── Data block (regenerated each run from the CLI JSON) ───────────────────
 #let phase = "<config_snapshot.phase>"
 #let schema-version = "<schema_version>"
-#let bootstrap-samples = <projection.bootstrap_samples or 0>
+#let bootstrap-samples = <projection.bootstrap_samples or 10000>
 #let seed = <config_snapshot.seed>
 
 // One row per *closed* sprint:
@@ -176,50 +197,37 @@ Substitute every `<…>` with values from the JSON. The data block at the top is
   // …repeat per sprint…
 )
 
-#let throughput-mean   = <aggregate.throughput.mean>
-#let throughput-median = <aggregate.throughput.median>
-#let throughput-stdev  = <aggregate.throughput.stdev>     // or `none` if null
-#let throughput-min    = <aggregate.throughput.min>
-#let throughput-max    = <aggregate.throughput.max>
-#let lead-p50 = <aggregate.lead_time_sprints.p50>          // or `none`
-#let lead-p75 = <aggregate.lead_time_sprints.p75>
-#let lead-p90 = <aggregate.lead_time_sprints.p90>
+#let throughput-mean = <aggregate.throughput.mean>
+#let throughput-min  = <aggregate.throughput.min>
+#let throughput-max  = <aggregate.throughput.max>
 
-// Projection — set `has-projection` to `false` if JSON `projection == null`
-#let has-projection = true
-#let target-us = <projection.target_user_stories>
+#let target-us = <derived_target_user_stories or 0 when already_complete>
 
-// Inverse — always present when has-projection
-#let inv-p50 = <projection.sprints_to_target.p50>
-#let inv-p85 = <projection.sprints_to_target.p85>
-#let inv-p95 = <projection.sprints_to_target.p95>
-#let inv-p99 = <projection.sprints_to_target.p99>
-#let inv-did-not-finish = <projection.sprints_to_target.did_not_finish_pct>
-#let inv-cap = <projection.sprints_to_target.cap_sprints>
+// Set has-forward = true when projection != null AND projection.forward != null.
+// Set has-forward = false for sprint 1 (insufficient data) or already-complete.
+#let has-forward = <true | false>
+#let remaining-sprints = <derived_remaining_sprints or remaining_sprints>
+#let p-meet = <projection.forward.p_meet_or_exceed_target or 0>
 
-// Forward — set has-forward = false if JSON `projection.forward == null`
-#let has-forward = true
-#let remaining-sprints = <projection.forward.remaining_sprints>
-#let p-meet = <projection.forward.p_meet_or_exceed_target>
-#let proj-p10 = <projection.forward.total_projected_p10>
-#let proj-p50 = <projection.forward.total_projected_p50>
-#let proj-p90 = <projection.forward.total_projected_p90>
+// Reconstruction — set is-reconstruction = false if JSON reconstruction == null.
+#let is-reconstruction = true
+#let as-of-sprint = <reconstruction.as_of_sprint>
+#let hist-from = <reconstruction.history_from>
+#let hist-to = <reconstruction.history_to>
+#let mvp-total = <reconstruction.mvp_total>
+#let mvp-done = <reconstruction.mvp_completed_through>
+#let already-complete = <reconstruction.already_complete>
 
-// Traffic-light selection — see §3 of SKILL.md
-#let verdict = if not has-projection {
-  ("Se necesitan ≥ 2 sprints cerrados antes de poder proyectar.", c-warn)
-} else if has-forward and p-meet >= 0.85 {
-  ("Estamos en camino.", c-good)
-} else if has-forward and p-meet >= 0.50 {
-  ("Está ajustado — protejamos el alcance.", c-warn)
-} else if has-forward {
-  ("No llegamos en el horizonte — recortar alcance o extender.", c-bad)
-} else if inv-did-not-finish <= 0.05 {
-  ("Backlog alcanzable al ritmo actual.", c-good)
-} else if inv-did-not-finish <= 0.25 {
-  ("Alcanzable pero ajustado — protejamos el alcance.", c-warn)
+#let verdict = if is-reconstruction and already-complete {
+  ("MVP completo a esta altura.", c-good)
+} else if not has-forward {
+  ("Muestra insuficiente para proyectar (< 2 sprints).", c-warn)
+} else if p-meet >= 0.85 {
+  ("Estábamos en camino.", c-good)
+} else if p-meet >= 0.50 {
+  ("Estaba ajustado — proteger el alcance.", c-warn)
 } else {
-  ("El backlog crece más rápido que el throughput — recortar alcance.", c-bad)
+  ("No llegábamos en el horizonte — recortar o extender.", c-bad)
 }
 #let headline-color = verdict.at(1)
 #let headline-msg   = verdict.at(0)
@@ -232,7 +240,18 @@ Substitute every `<…>` with values from the JSON. The data block at the top is
   ]
   #v(0.2cm)
   #text(size: 28pt, weight: "bold", fill: c-brand)[
-    Throughput de User Stories y proyección
+    Performance del Equipo
+  ]
+  #if is-reconstruction [
+    #v(0.15cm)
+    #text(size: 12pt, weight: "medium", fill: c-brand-mid)[
+      Reconstrucción al cierre del Sprint #as-of-sprint
+    ]
+    #v(0.1cm)
+    #text(size: 9pt, fill: c-muted)[
+      Historia Sprints #hist-from–#hist-to · MVP restante #target-us de #mvp-total
+      (#mvp-done ya completadas) · horizonte #remaining-sprints sprints
+    ]
   ]
 ]
 
@@ -242,29 +261,29 @@ Substitute every `<…>` with values from the JSON. The data block at the top is
 #align(center)[
   #block(
     fill: headline-color,
-    inset: (x: 1.5cm, y: 0.9cm),
-    radius: 8pt,
-    width: 80%,
+    inset: (x: 0.75cm, y: 0.45cm),
+    radius: 6pt,
+    width: 40%,
     [
       #set text(fill: white)
-      #if has-projection [
-        #if has-forward [
-          #text(size: 11pt)[Probabilidad de completar #target-us User Stories en #remaining-sprints sprints]
-          #v(0.15cm)
-          #text(size: 56pt, weight: "black")[
-            #calc.round(p-meet * 100, digits: 1)%
-          ]
-        ] else [
-          #text(size: 11pt)[Sprints para completar #target-us User Stories (confianza 85%)]
-          #v(0.15cm)
-          #text(size: 56pt, weight: "black")[#inv-p85]
+      #if has-forward [
+        #text(size: 9pt)[Probabilidad de completar #target-us User Stories en #remaining-sprints sprints]
+        #v(0.08cm)
+        #text(size: 28pt, weight: "black")[
+          #calc.round(p-meet * 100, digits: 1)%
         ]
-        #v(-0.2cm)
-        #text(size: 13pt, weight: "medium")[#headline-msg]
-      ] else [
-        #text(size: 32pt, weight: "black")[Muestra insuficiente]
         #v(-0.1cm)
-        #text(size: 13pt, weight: "medium")[#headline-msg]
+        #text(size: 9pt, weight: "medium")[#headline-msg]
+      ] else if is-reconstruction and already-complete [
+        #text(size: 9pt)[MVP completado al cierre del Sprint #as-of-sprint]
+        #v(0.08cm)
+        #text(size: 28pt, weight: "black")[100%]
+        #v(-0.1cm)
+        #text(size: 10pt, weight: "medium")[#headline-msg]
+      ] else [
+        #text(size: 16pt, weight: "black")[Muestra insuficiente]
+        #v(-0.05cm)
+        #text(size: 9pt, weight: "medium")[#headline-msg]
       ]
     ],
   )
@@ -278,10 +297,74 @@ Substitute every `<…>` with values from the JSON. The data block at the top is
   Fase *#phase* · esquema *#schema-version* · seed *#seed* · muestras *#bootstrap-samples*
 ]
 
-#v(0.6cm)
+// ── Small sample warning (include when has-forward = true AND N ≤ 3) ──────
+// Replace <X> with the actual sprint count in the history window (hist-to value).
+// Remove this block entirely for N ≥ 4 or when has-forward = false.
+#v(0.4cm)
+#block(
+  fill: c-warn.lighten(85%),
+  stroke: 0.5pt + c-warn,
+  inset: (x: 0.6cm, y: 0.35cm),
+  radius: 4pt,
+  width: 100%,
+  [
+    #text(weight: "bold", fill: c-warn)[Muestra pequeña (N = <X> sprints):] resultado indicativo — con tan pocos datos el bootstrap es muy sensible a valores individuales.
+  ],
+)
+
+#v(0.4cm)
+
+// ── Detalle por sprint ────────────────────────────────────────────────────
+== Detalle por sprint
+
+#align(center)[
+  #table(
+    columns: (auto, 1fr, auto, auto),
+    align: (center, left, right, right),
+    fill: (col, row) => if row == 0 { c-brand.lighten(80%) } else { none },
+    [*\#*], [*Ventana*], [*US completadas*], [*WIP\@fin*],
+    ..sprints
+      .map(s => (
+        [#s.at(0)],
+        [#s.at(1)],
+        [#s.at(2)],
+        [#s.at(3)],
+      ))
+      .flatten(),
+  )
+  #text(size: 8pt, fill: c-muted)[
+    *US completadas* = User Stories del MVP terminadas (todos los criterios) en la ventana.
+    *WIP\@fin* = User Stories en progreso, no terminadas, al cierre del sprint.
+  ]
+]
+
+#v(0.4cm)
+
+// ── Estadísticas de throughput ────────────────────────────────────────────
+== Estadísticas de throughput
+
+#block(
+  fill: luma(248),
+  stroke: 0.5pt + luma(200),
+  inset: 0.7cm,
+  radius: 4pt,
+  width: 100%,
+  [
+    #text(size: 11pt, weight: "bold", fill: c-brand)[Throughput (US MVP completadas / sprint)]
+    #v(0.2cm)
+    #table(
+      columns: (auto, auto, 1fr),
+      stroke: none,
+      [*Media*],   [#calc.round(throughput-mean, digits: 2)], [Promedio de User Stories del MVP completadas por sprint.],
+      [*Mín/Máx*], [#throughput-min / #throughput-max],       [Peor / mejor sprint observado.],
+    )
+  ],
+)
+
+#v(0.4cm)
 
 // ── Throughput per closed sprint ──────────────────────────────────────────
-== Throughput por sprint cerrado
+== Throughput por sprint
 
 #align(center)[
   #canvas(length: 1cm, {
@@ -289,15 +372,15 @@ Substitute every `<…>` with values from the JSON. The data block at the top is
     plot.plot(
       size: (14, 5),
       x-tick-step: 1,
-      y-tick-step: none,
+      y-tick-step: 5,
       y-min: 0,
       x-label: "Sprint #",
-      y-label: "User Stories completadas",
+      y-label: "US Completadas",
       axis-style: "school-book",
       {
         plot.add-bar(
           sprints.map(s => (s.at(0), s.at(2))),
-          bar-width: 0.6,
+          bar-width: 0.4,
           style: (fill: c-brand-mid, stroke: c-brand),
         )
         plot.add-hline(
@@ -308,212 +391,115 @@ Substitute every `<…>` with values from the JSON. The data block at the top is
     )
   })
   #text(size: 8pt, fill: c-muted)[
-    Barras: User Stories completadas por sprint.
+    Barras: User Stories del MVP completadas por sprint.
     Línea punteada: throughput medio (#calc.round(throughput-mean, digits: 2) US/sprint).
   ]
 ]
 
 #v(0.4cm)
 
-== Detalle por sprint
+// ── Cumulative burn-up (CFD) ──────────────────────────────────────────────
+== Avance acumulado (burn-up)
+
+#let total-dev = as-of-sprint + remaining-sprints
+
+// Cumulative MVP completions, with a Sprint 0 baseline at zero.
+#let cum-points = {
+  let acc = 0
+  let pts = ((0, 0),)
+  for s in sprints {
+    acc += s.at(2)
+    pts += ((s.at(0), acc),)
+  }
+  pts
+}
+
+// Full-scope bars (red) overlaid by the done bars (blue) → stacked look.
+#let scope-bars = cum-points.map(p => (p.at(0), mvp-total))
+
+// Linear "done" projection at mean throughput, from the origin to the ceiling.
+#let release-x = if throughput-mean > 0 { mvp-total / throughput-mean } else { 0 }
+#let cross-on-chart = has-forward and release-x <= total-dev
+#let proj-end = if cross-on-chart {
+  (release-x, mvp-total)
+} else {
+  (total-dev, calc.min(throughput-mean * total-dev, mvp-total))
+}
 
 #align(center)[
-  #table(
-    columns: (auto, 1fr, auto, auto),
-    align: (center, left, right, right),
-    fill: (col, row) => if row == 0 { c-brand.lighten(80%) } else { none },
-    [*#*], [*Ventana*], [*US completadas*], [*WIP\@fin*],
-    ..sprints.map(s => (
-      [#s.at(0)],
-      [#s.at(1)],
-      [#s.at(2)],
-      [#s.at(3)],
-    )).flatten()
-  )
-  #text(size: 8pt, fill: c-muted)[
-    *US completadas* = User Stories terminadas (todos los criterios de aceptación) en la ventana.
-    *WIP\@fin* = User Stories en progreso, no terminadas, al cierre del sprint.
-  ]
-]
-
-#v(0.4cm)
-
-== Agregado
-
-#grid(
-  columns: (1fr, 1fr),
-  gutter: 0.6cm,
-  block(
-    fill: luma(248), stroke: 0.5pt + luma(200), inset: 0.7cm, radius: 4pt, width: 100%,
-    [
-      #text(size: 11pt, weight: "bold", fill: c-brand)[Throughput (US completadas / sprint)]
-      #v(0.2cm)
-      #table(
-        columns: (auto, auto, 1fr),
-        stroke: none,
-        [*Media*],   [#calc.round(throughput-mean, digits: 2)],   [Promedio de User Stories completadas por sprint.],
-        [*Mediana*], [#calc.round(throughput-median, digits: 2)], [User Stories completadas en un sprint típico.],
-        [*Desv. estándar*],  [#if throughput-stdev == none { "—" } else { calc.round(throughput-stdev, digits: 2) }], [Dispersión alrededor de la media — mayor = menos predecible.],
-        [*Mín/Máx*], [#throughput-min / #throughput-max], [Peor / mejor sprint observado.],
-      )
-    ],
-  ),
-  block(
-    fill: luma(248), stroke: 0.5pt + luma(200), inset: 0.7cm, radius: 4pt, width: 100%,
-    [
-      #text(size: 11pt, weight: "bold", fill: c-brand)[Lead time (sprints)]
-      #v(0.2cm)
-      #if lead-p50 == none [
-        #text(fill: c-muted)[No hay User Stories completadas todavía.]
-      ] else [
-        #table(
-          columns: (auto, auto, 1fr),
-          stroke: none,
-          [*p50*], [#calc.round(lead-p50, digits: 1)], [La mitad de las US se completan dentro de esta cantidad de sprints.],
-          [*p75*], [#calc.round(lead-p75, digits: 1)], [Tres cuartos se completan dentro de esta cantidad de sprints.],
-          [*p90*], [#calc.round(lead-p90, digits: 1)], [Nueve de cada diez se completan dentro de esta cantidad de sprints.],
+  #canvas(length: 1cm, {
+    import draw: *
+    plot.plot(
+      size: (14, 7),
+      x-min: -0.5,
+      x-max: total-dev + 0.5,
+      x-tick-step: 1,
+      y-min: 0,
+      y-max: mvp-total + 6,
+      y-tick-step: 10,
+      x-label: "Sprint",
+      y-label: "US completas (acumuladas)",
+      axis-style: "left",
+      {
+        // Remaining (red, full scope) first, then Done (blue) overlaid.
+        plot.add-bar(
+          scope-bars,
+          bar-width: 0.5,
+          style: (fill: c-bad.lighten(35%), stroke: c-bad.darken(5%)),
         )
-      ]
-    ],
-  ),
-)
-
-#v(0.5cm)
-
-#if has-projection [
-  == Proyección — inversa (sprints para llegar al target)
-
-  #align(center)[
-    #table(
-      columns: (auto, auto, 1fr),
-      align: (center, center, left),
-      fill: (col, row) => if row == 0 { c-brand.lighten(80%) } else { none },
-      [*Confianza*], [*Sprints*], [*Significado*],
-      [p50],  [#inv-p50],  [La mitad de los futuros simulados terminan en este sprint (mediana).],
-      [p85],  [#inv-p85],  [Línea base de planificación — el 85% de los futuros terminan en este sprint.],
-      [p95],  [#inv-p95],  [Compromiso con confianza — el 95% de los futuros terminan en este sprint.],
-      [p99],  [#inv-p99],  [Peor caso — el 99% de los futuros terminan en este sprint.],
-      [did_not_finish],  [#calc.round(inv-did-not-finish * 100, digits: 1)%],  [Simulaciones que llegan al tope de #inv-cap sprints. Distinto de cero ⇒ alcance > capacidad.],
+        plot.add-bar(
+          cum-points,
+          bar-width: 0.5,
+          style: (fill: c-brand-mid, stroke: c-brand),
+        )
+        // MVP scope ceiling.
+        plot.add-hline(
+          mvp-total,
+          style: (stroke: (paint: c-bad, thickness: 1.2pt)),
+        )
+        if has-forward {
+          plot.add(
+            ((0, 0), proj-end),
+            style: (stroke: (paint: c-proj, dash: "dashed", thickness: 1.6pt)),
+          )
+          if cross-on-chart {
+            plot.add-vline(
+              release-x,
+              style: (stroke: (paint: c-proj, dash: "dotted", thickness: 0.8pt)),
+            )
+          }
+        }
+      },
     )
-    #text(size: 8pt, fill: c-muted)[
-      Método: bootstrap del throughput observado · #bootstrap-samples muestras · seed #seed.
-    ]
+  })
+  #text(size: 8pt, fill: c-muted)[
+    Barras apiladas: #text(fill: c-brand)[*completadas*] (abajo) y #text(fill: c-bad)[*restantes*] (arriba) sobre un alcance MVP de #mvp-total US (línea roja). El Sprint 0 es el punto de partida (0 completadas).#if has-forward [ Diagonal punteada: proyección lineal al throughput medio (#calc.round(throughput-mean, digits: 2) US/sprint), que alcanza el MVP hacia el *Sprint #calc.ceil(release-x)*.]
   ]
-
-  #v(0.4cm)
-
-  #if has-forward [
-    == Proyección — directa (horizonte fijo)
-
-    #align(center)[
-      #canvas(length: 1cm, {
-        import draw: *
-        plot.plot(
-          size: (14, 5),
-          x-tick-step: none,
-          y-tick-step: none,
-          y-min: 0,
-          x-label: none,
-          y-label: "US completadas (total proyectado)",
-          axis-style: "school-book",
-          {
-            plot.add-bar(
-              ((1, proj-p10), (2, proj-p50), (3, proj-p90)),
-              bar-width: 0.6,
-              style: (fill: c-brand-mid, stroke: c-brand),
-            )
-            plot.add-hline(
-              target-us,
-              style: (stroke: (paint: c-bad, dash: "dashed", thickness: 1.4pt)),
-            )
-          },
-        )
-      })
-      #text(size: 8pt, fill: c-muted)[
-        Barras: total proyectado de US completadas en p10 / p50 / p90 sobre #bootstrap-samples muestras.
-        Línea roja punteada: target = #target-us.
-      ]
-    ]
-
-    #v(0.3cm)
-
-    #align(center)[
-      #table(
-        columns: (auto, auto, 1fr),
-        align: (left, right, left),
-        fill: (col, row) => if row == 0 { c-brand.lighten(80%) } else { none },
-        [*Métrica*], [*Valor*], [*Significado*],
-        [P(completar ≥ target) en #remaining-sprints sprints], [#calc.round(p-meet * 100, digits: 1)%], [Probabilidad de terminar el backlog dentro del horizonte fijo.],
-        [Total pesimista (p10)], [#proj-p10], [Sólo el 10% de los futuros entregan menos que esto.],
-        [Total mediano (p50)], [#proj-p50], [Mediana del total entregado sobre el horizonte.],
-        [Total optimista (p90)], [#proj-p90], [Sólo el 10% de los futuros entregan más que esto.],
-      )
-    ]
-
-    #v(0.4cm)
-  ]
-] else [
-  == Proyección
-
-  #block(
-    fill: c-warn.lighten(85%),
-    stroke: 0.5pt + c-warn,
-    inset: 0.7cm,
-    radius: 4pt,
-    width: 100%,
-    [
-      *Muestra insuficiente.* La proyección por bootstrap requiere al menos 2
-      sprints cerrados en el ledger. Volver a correr cuando cierre un sprint más.
-    ],
-  )
 ]
-
-#v(0.6cm)
-
-== Aclaraciones
-
-#set text(size: 9pt)
-- La unidad es la *User Story completada*. El trabajo de infraestructura y
-  documentación no son User Stories y no aparecen acá.
-- El throughput es *grumoso*: las US grandes abarcan varios sprints, así que
-  hay sprints con 0 US completadas. Los intervalos de proyección son anchos.
-- El lead time se mide en *sprints enteros*.
-- Cambios futuros de capacidad (feriados, cambios en el equipo) *no* están
-  modelados. El bootstrap asume que los sprints futuros se comportan como los
-  pasados.
-- "Target = #target-us" se pasó como entrada. Si cambia el alcance, volver a
-  correr con el nuevo conteo.
-- Los números son *agregados del equipo*. La desagregación por persona no se
-  produce intencionalmente.
-- Reproducible con seed *#seed* contra el mismo ledger para obtener salida
-  byte-idéntica (excluyendo `generated_at`).
 ```
 
 ---
 
 ## Examples
 
-### Example 1 — "Will we finish all the backlog in 5 sprints?"
+### Example 1 — "Reconstruct our performance sprint by sprint" (the usual ask)
 
-1. Confirm phase (development) and what "the backlog" means → e.g. 18 remaining USs.
-2. Run:
-   ```sh
-   uv run team-performance \
-       --sprints-dir docs/progress-reports --phase development \
-       --target-user-stories 18 --remaining-sprints 5 \
-       --format json > /tmp/tp.json
-   ```
-3. Generate `docs/team-performance.typ` from the template; pick the headline colour from the forward rule.
-4. `typst compile --root docs docs/team-performance.typ`.
-5. Report path + headline number + verdict.
+```sh
+for n in 1 2 3 4 5; do
+  uv run team-performance --sprints-dir docs/progress-reports --phase development \
+      --as-of-sprint $n --no-us-validation --format json > /tmp/tp-s$n.json
+done
+```
 
-### Example 2 — "How many sprints do we need?" (inverse only)
+For each: read the `reconstruction` block, generate `docs/team-performance/sprint-0$n-performance.typ` from the template, then compile. Expect **sprint 1 → "Muestra insuficiente"** (`has-forward = false`), **sprints 2-3 → small sample warning**, and once the MVP is burned down, **`already_complete = true` → "MVP completo a esta altura."**.
 
-Drop `--remaining-sprints`; keep `--target-user-stories`. `forward` is `null`; the headline becomes "p85 = N sprints".
+### Example 2 — "What were our odds at the end of sprint 3?"
 
-### Example 3 — "Just stats, no projection."
+`uv run team-performance --as-of-sprint 3 --no-us-validation --format json`. Headline = forward `p_meet_or_exceed_target` for the derived target over the `6 − 3 = 3`-sprint horizon.
 
-Run without `--target-user-stories`. `projection` is `null`; set `has-projection = false`; the headline falls back to "Muestra insuficiente". The throughput chart, sprint detail and aggregate cards still render.
+### Example 3 — Manual "What are our odds of finishing X USs in N sprints?"
+
+Drop `--as-of-sprint`; pass `--target-user-stories X --remaining-sprints N`. Set `is-reconstruction = false`; headline becomes the forward `p_meet_or_exceed_target`.
 
 ---
 
@@ -521,19 +507,23 @@ Run without `--target-user-stories`. `projection` is `null`; set `has-projection
 
 - **Don't** invent projection numbers when the CLI emitted `projection: null`.
 - **Don't** add per-assignee tables, even if asked.
-- **Don't** commit `team-performance.typ` / `team-performance.pdf` to git unless the user asks.
-- **Don't** edit the JSON output by hand. If it's wrong, fix the ledger and re-run.
+- **Don't** combine `--as-of-sprint` with `--target-user-stories` / `--remaining-sprints` — the CLI exits 2.
+- **Don't** pass the *total* MVP count as the reconstruction target — the tool forecasts *remaining* work.
+- **Don't** commit `team-performance/*.typ` / `*.pdf` to git unless the user asks.
+- **Don't** edit the JSON output by hand.
 - **Don't** skip the `--root docs` flag when compiling.
-- **Don't** put the `.typ` outside `docs/`.
-- **Don't** put a number in the report without a one-line meaning beside it.
-- **Don't** leave English copy in the rendered PDF. Code identifiers (Python, Typst variable names, JSON keys) stay English.
+- **Don't** put the `.typ` outside `docs/team-performance/`.
+- **Don't** include `throughput-median`, `throughput-stdev`, `lead-p*`, `inv-*`, or `proj-p10/50/90` variables — they are not in the template and will cause Typst errors.
+- **Don't** use the large badge dimensions (`width: 80%`, `56pt` text) — the real template uses `width: 40%` and `28pt`.
+- **Don't** include "Proyección — inversa", "Proyección — directa", or "Aclaraciones" sections — those are not part of the current report structure.
 
 ---
 
 ## See also
 
-- Tool source + JSON schema: `docs/scripts/team_performance/README.md`
+- **Design decision:** [ADR 0001 — reconstruction derives its scope](../../../docs/adr/0001-team-performance-reconstruction-derives-scope.md)
+- Tool source + JSON schema (v4): `docs/scripts/team_performance/README.md`
 - The sprint ledger: `docs/progress-reports/sprint-NN.md`
-- Calendar / sprint windows: `CALENDAR.md`
-- Issue: `INF-GEN-00003` (refactor to the User-Story ledger); predecessor `INF-GEN-00001`
+- Calendar / sprint windows (6 dev sprints): `CALENDAR.md`
+- MVP scope source: `MVP — Release 1` section of `docs/artifacts/backlog-us.typ`
 - Shared Typst styling: `docs/template.typ` (palette: `c-brand`, `c-brand-mid`)

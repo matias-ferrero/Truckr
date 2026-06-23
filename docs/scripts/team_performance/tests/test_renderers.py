@@ -13,6 +13,7 @@ from team_performance.models import (
     ForwardOutcome,
     LeadTimePercentiles,
     Projection,
+    Reconstruction,
     Report,
     Sprint,
     SprintsToTarget,
@@ -122,3 +123,49 @@ def test_render_text_projection_withheld_message():
     console = Console(file=buf, force_terminal=False, no_color=True, width=120)
     render_text(_sample_report(with_projection=False), console)
     assert "Proyección retenida" in buf.getvalue()
+
+
+def _recon_report(*, already_complete: bool) -> Report:
+    base = _sample_report(with_projection=not already_complete)
+    return Report(
+        schema_version=base.schema_version,
+        generated_at=base.generated_at,
+        config_snapshot=base.config_snapshot,
+        sprints=base.sprints,
+        aggregate=base.aggregate,
+        projection=base.projection,
+        reconstruction=Reconstruction(
+            as_of_sprint=3,
+            history_from=1,
+            history_to=3,
+            total_dev_sprints=6,
+            mvp_total=48,
+            mvp_completed_through=48 if already_complete else 26,
+            derived_target_user_stories=0 if already_complete else 22,
+            derived_remaining_sprints=3,
+            already_complete=already_complete,
+        ),
+    )
+
+
+def test_render_json_reconstruction_block():
+    payload = json.loads(render_json(_recon_report(already_complete=False)))
+    rec = payload["reconstruction"]
+    assert rec["as_of_sprint"] == 3
+    assert rec["derived_target_user_stories"] == 22
+    assert rec["velocity_scope"] == "mvp"
+    assert rec["derived_target_user_stories_meaning"]  # meanings present
+
+
+def test_render_text_reconstruction_line():
+    buf = io.StringIO()
+    console = Console(file=buf, force_terminal=False, no_color=True, width=120)
+    render_text(_recon_report(already_complete=False), console)
+    assert "Reconstrucción al cierre del Sprint 3" in buf.getvalue()
+
+
+def test_render_text_reconstruction_already_complete():
+    buf = io.StringIO()
+    console = Console(file=buf, force_terminal=False, no_color=True, width=120)
+    render_text(_recon_report(already_complete=True), console)
+    assert "MVP completo" in buf.getvalue()

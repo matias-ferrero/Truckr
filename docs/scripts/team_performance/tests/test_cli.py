@@ -73,7 +73,7 @@ def test_end_to_end_stats_only(
     rc = main(_base_args(sprints_fixture_dir, backlog_us_fixture))
     assert rc == EXIT_OK
     payload = json.loads(capsys.readouterr().out)
-    assert payload["schema_version"] == "3"
+    assert payload["schema_version"] == "4"
     assert len(payload["sprints"]) == 3
     assert payload["sprints"][0]["completed_count"] == 2
     assert payload["sprints"][2]["completed_count"] == 1
@@ -154,6 +154,103 @@ def test_unknown_us_id_exits_3_by_default(
     make_sprint(tmp_path, 1, completed=["US1"])
     make_sprint(tmp_path, 2, completed=["US99"])  # not in the US1..US5 fixture catalogue
     assert main(_base_args(tmp_path, backlog_us_fixture)) == EXIT_DATA
+
+
+def _recon_args(sprints_dir: Path, backlog_mvp: Path, *extra: str) -> list[str]:
+    # The MVP fixture is in #include form, which the legacy us_catalog parser can't read,
+    # so reconstruction runs with --no-us-validation (matching real-repo usage).
+    return [
+        "--sprints-dir",
+        str(sprints_dir),
+        "--backlog-us",
+        str(backlog_mvp),
+        "--no-us-validation",
+        "--format",
+        "json",
+        *extra,
+    ]
+
+
+def test_reconstruction_midstream_emits_block(
+    capsys: pytest.CaptureFixture[str],
+    sprints_fixture_dir: Path,
+    backlog_mvp_fixture: Path,
+):
+    # Fixture ledger completes US1..US4 by end of sprint 2; MVP = US1..US5.
+    rc = main(
+        _recon_args(sprints_fixture_dir, backlog_mvp_fixture, "--as-of-sprint", "2", "--seed", "1")
+    )
+    assert rc == EXIT_OK
+    payload = json.loads(capsys.readouterr().out)
+    rec = payload["reconstruction"]
+    assert rec is not None
+    assert rec["as_of_sprint"] == 2
+    assert rec["history_to"] == 2
+    assert len(payload["sprints"]) == 2  # sprint 3 is hindsight, dropped
+    assert rec["mvp_total"] == 5
+    assert rec["derived_target_user_stories"] == 1  # 5 - 4
+    assert rec["derived_remaining_sprints"] == 4  # 6 - 2
+    assert rec["velocity_scope"] == "mvp"
+    assert payload["projection"] is not None
+    assert payload["projection"]["target_user_stories"] == 1
+
+
+def test_reconstruction_sprint_1_has_no_forecast(
+    capsys: pytest.CaptureFixture[str],
+    sprints_fixture_dir: Path,
+    backlog_mvp_fixture: Path,
+):
+    rc = main(_recon_args(sprints_fixture_dir, backlog_mvp_fixture, "--as-of-sprint", "1"))
+    assert rc == EXIT_INSUFFICIENT_SAMPLE
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["projection"] is None
+    assert payload["reconstruction"]["as_of_sprint"] == 1
+    assert payload["reconstruction"]["already_complete"] is False
+
+
+def test_reconstruction_already_complete(
+    capsys: pytest.CaptureFixture[str],
+    sprints_fixture_dir: Path,
+    backlog_mvp_fixture: Path,
+):
+    # By end of sprint 3 the fixture ledger has completed all of US1..US5 (the whole MVP).
+    rc = main(_recon_args(sprints_fixture_dir, backlog_mvp_fixture, "--as-of-sprint", "3"))
+    assert rc == EXIT_OK
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["reconstruction"]["already_complete"] is True
+    assert payload["reconstruction"]["derived_target_user_stories"] == 0
+    assert payload["projection"] is None
+
+
+def test_reconstruction_bare_flag_resolves_latest(
+    capsys: pytest.CaptureFixture[str],
+    sprints_fixture_dir: Path,
+    backlog_mvp_fixture: Path,
+):
+    rc = main(_recon_args(sprints_fixture_dir, backlog_mvp_fixture, "--as-of-sprint"))
+    assert rc == EXIT_OK
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["reconstruction"]["as_of_sprint"] == 3  # latest closed sprint
+
+
+def test_as_of_sprint_with_target_is_usage_error(
+    capsys: pytest.CaptureFixture[str],
+    sprints_fixture_dir: Path,
+    backlog_mvp_fixture: Path,
+):
+    with pytest.raises(SystemExit) as exc_info:
+        main(
+            _recon_args(
+                sprints_fixture_dir,
+                backlog_mvp_fixture,
+                "--as-of-sprint",
+                "2",
+                "--target-user-stories",
+                "5",
+            )
+        )
+    assert exc_info.value.code == EXIT_USAGE
+    assert "as-of-sprint" in capsys.readouterr().err.lower()
 
 
 def test_no_us_validation_skips_catalog(

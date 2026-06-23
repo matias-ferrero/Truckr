@@ -56,9 +56,33 @@ uv run team-performance \
     --remaining-sprints 5 \
     --format both
 
+# Reconstruction — what the report read at the end of sprint 3 (single input)
+uv run team-performance --as-of-sprint 3 --no-us-validation --format both
+
 # Module form (no entrypoint needed)
 python -m team_performance --help
 ```
+
+## Reconstruction mode (`--as-of-sprint`)
+
+Replays the ledger **as of** a past sprint to reconstruct the report it would
+have produced then — "what was our chance of success back then?". Everything is
+derived from `N`, so the operator types one number (bare `--as-of-sprint` =
+latest closed sprint):
+
+| Derived | From |
+|---|---|
+| History window (sprints `1..N`) | the ledger, truncated at `N` |
+| Target (remaining MVP) | `MVP — Release 1` section of `backlog-us.typ` − MVP completed through `N` |
+| Horizon (`6 − N`) | `--total-dev-sprints` (default 6; Sprint 7 is artifact-polish) |
+| Velocity | MVP-tagged completions per sprint only |
+
+Cannot be combined with `--target-user-stories` / `--remaining-sprints` (those
+*are* the derived values). `--as-of-sprint 1` has no forecast (< 2 closed
+sprints). When the MVP is already burned down by `N`, the report is flagged
+`already_complete` and skips the projection. The MVP scope is measured against
+**today's** backlog, not the scope as it stood at sprint `N`. See
+[ADR 0001](../../adr/0001-team-performance-reconstruction-derives-scope.md).
 
 ## Output formats
 
@@ -70,7 +94,30 @@ python -m team_performance --help
 
 `text` and `both` write to **stderr** so the JSON on stdout stays pipeable.
 
-## JSON schema (v3)
+## JSON schema (v4)
+
+> **v4** adds a `reconstruction` block (non-null only in `--as-of-sprint` mode)
+> and, in that mode, scopes `sprints[].completed_*` and throughput to MVP-tagged
+> User Stories. The `projection.target_user_stories` / `forward.remaining_sprints`
+> are the *derived* values. Manual mode (no `--as-of-sprint`) is otherwise
+> unchanged from v3.
+
+```jsonc
+// reconstruction (null unless --as-of-sprint was given):
+"reconstruction": {
+  "as_of_sprint": 3,
+  "history_from": 1, "history_to": 3,
+  "total_dev_sprints": 6,
+  "mvp_total": 50, "mvp_completed_through": 26,
+  "derived_target_user_stories": 24,   // mvp_total - mvp_completed_through
+  "derived_remaining_sprints": 3,      // total_dev_sprints - as_of_sprint; null if <= 0
+  "already_complete": false,
+  "velocity_scope": "mvp",
+  "scope_yardstick": "current"
+}
+```
+
+### Base schema
 
 ```jsonc
 {

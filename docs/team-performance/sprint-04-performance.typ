@@ -23,27 +23,26 @@
   (2, "2026-05-13 → 2026-05-20", 15, 6),
   (3, "2026-05-20 → 2026-05-27", 9, 3),
   (4, "2026-05-27 → 2026-06-03", 14, 0),
-  (5, "2026-06-03 → 2026-06-10", 11, 0),
 )
 
-#let throughput-mean = 10.4
+#let throughput-mean = 10.25
 #let throughput-min = 3
 #let throughput-max = 15
 
-#let target-us = 0
+#let target-us = 11
 
-#let has-forward = false
-#let remaining-sprints = 1
-#let p-meet = 0
+#let has-forward = true
+#let remaining-sprints = 2
+#let p-meet = 0.9361
 
 // Reconstruction
 #let is-reconstruction = true
-#let as-of-sprint = 5
+#let as-of-sprint = 4
 #let hist-from = 1
-#let hist-to = 5
+#let hist-to = 4
 #let mvp-total = 52
-#let mvp-done = 52
-#let already-complete = true
+#let mvp-done = 41
+#let already-complete = false
 
 #let verdict = if is-reconstruction and already-complete {
   ("MVP completo a esta altura.", c-good)
@@ -102,7 +101,7 @@
           #calc.round(p-meet * 100, digits: 1)%
         ]
         #v(-0.1cm)
-        #text(size: 10pt, weight: "medium")[#headline-msg]
+        #text(size: 9pt, weight: "medium")[#headline-msg]
       ] else if is-reconstruction and already-complete [
         #text(size: 9pt)[MVP completado al cierre del Sprint #as-of-sprint]
         #v(0.08cm)

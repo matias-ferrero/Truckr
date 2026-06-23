@@ -16,7 +16,7 @@ from dataclasses import asdict, is_dataclass
 from datetime import date, datetime
 from typing import Any
 
-from team_performance.models import AggregateStats, Projection, Report
+from team_performance.models import AggregateStats, Projection, Reconstruction, Report
 
 
 def _default(obj: object) -> Any:
@@ -123,6 +123,52 @@ def _projection_block(p: Projection) -> dict[str, Any]:
     return out
 
 
+def _reconstruction_block(r: Reconstruction) -> dict[str, Any]:
+    return {
+        "as_of_sprint": r.as_of_sprint,
+        "as_of_sprint_meaning": "Sprint al cierre del cual se reconstruye el reporte.",
+        "history_from": r.history_from,
+        "history_to": r.history_to,
+        "history_window_meaning": (
+            "Sólo los sprints de esta ventana alimentan el bootstrap; el resto es información "
+            "posterior y se descarta."
+        ),
+        "total_dev_sprints": r.total_dev_sprints,
+        "total_dev_sprints_meaning": (
+            "Duración de la fase de desarrollo (Sprint 7 es pulido de artefactos, no desarrollo)."
+        ),
+        "mvp_total": r.mvp_total,
+        "mvp_total_meaning": "User Stories en la sección 'MVP — Release 1' del backlog (hoy).",
+        "mvp_completed_through": r.mvp_completed_through,
+        "mvp_completed_through_meaning": (
+            "User Stories del MVP completadas hasta el cierre del sprint as-of."
+        ),
+        "derived_target_user_stories": r.derived_target_user_stories,
+        "derived_target_user_stories_meaning": (
+            "MVP restante = mvp_total - mvp_completed_through. El target se reduce sprint a sprint."
+        ),
+        "derived_remaining_sprints": r.derived_remaining_sprints,
+        "derived_remaining_sprints_meaning": (
+            "Horizonte = total_dev_sprints - as_of_sprint. null cuando ya no quedan sprints de "
+            "desarrollo."
+        ),
+        "already_complete": r.already_complete,
+        "already_complete_meaning": (
+            "true cuando no quedaba MVP por completar al cierre del sprint as-of."
+        ),
+        "velocity_scope": r.velocity_scope,
+        "velocity_scope_meaning": (
+            "El throughput cuenta sólo User Stories del MVP; el trabajo no-MVP es invisible al "
+            "pronóstico."
+        ),
+        "scope_yardstick": r.scope_yardstick,
+        "scope_yardstick_meaning": (
+            "El alcance MVP se mide contra la definición actual del backlog, no la vigente al "
+            "cierre del sprint as-of."
+        ),
+    }
+
+
 def render_json(report: Report, *, include_generated_at: bool = True) -> str:
     payload: dict[str, Any] = {
         "schema_version": report.schema_version,
@@ -143,6 +189,9 @@ def render_json(report: Report, *, include_generated_at: bool = True) -> str:
         "aggregate": _aggregate_block(report.aggregate),
         "projection": _projection_block(report.projection)
         if report.projection is not None
+        else None,
+        "reconstruction": _reconstruction_block(report.reconstruction)
+        if report.reconstruction is not None
         else None,
     }
     if include_generated_at:

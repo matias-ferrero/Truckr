@@ -196,6 +196,7 @@
   ],
   table.cell(fill: col10-task)[
     - US004: Busqueda de Ventanas Compatibles con mi Carga
+    - US005: Filtrar ventanas compatibles
     - US025: Paginado de Ventanas Compatibles con mi Carga
   ],
   table.cell(fill: col11-task)[
@@ -257,9 +258,7 @@
   table.cell(fill: col7-task)[],
   table.cell(fill: col8-task)[],
   table.cell(fill: col9-task)[],
-  table.cell(fill: col10-task)[
-    - US005: Filtrar ventanas compatibles
-  ],
+  table.cell(fill: col10-task)[],
   table.cell(fill: col11-task)[
     - US011: Filtrado de ofertas de envio
   ],

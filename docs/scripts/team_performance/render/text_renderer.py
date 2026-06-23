@@ -48,6 +48,22 @@ def render_text(report: Report, console: Console) -> None:
         f"target_user_stories={cfg.get('target_user_stories')}"
     )
 
+    rec = report.reconstruction
+    if rec is not None:
+        horizon = (
+            "—" if rec.derived_remaining_sprints is None else str(rec.derived_remaining_sprints)
+        )
+        console.print(
+            f"[cyan]Reconstrucción al cierre del Sprint {rec.as_of_sprint}[/] — "
+            f"historia {rec.history_from}-{rec.history_to} · horizonte {horizon} sprints · "
+            f"MVP restante {rec.derived_target_user_stories}/{rec.mvp_total} "
+            f"(velocidad MVP, alcance {rec.scope_yardstick})"
+        )
+        if rec.already_complete:
+            console.print(
+                f"[green]MVP completo[/] al cierre del Sprint {rec.as_of_sprint} — sin pronóstico."
+            )
+
     # ── Sprints ──────────────────────────────────────────────────────────
     sprints_table = Table(title="Sprints completados", title_style="bold")
     sprints_table.add_column("#", justify="right")

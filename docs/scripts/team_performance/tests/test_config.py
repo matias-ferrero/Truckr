@@ -55,6 +55,34 @@ def test_remaining_sprints_alone_raises():
         load_config(_ns(remaining_sprints=5), env={})
 
 
+def test_total_dev_sprints_defaults_to_six():
+    assert load_config(_ns(), env={}).total_dev_sprints == 6
+
+
+def test_total_dev_sprints_non_positive_raises():
+    with pytest.raises(ConfigError, match="total-dev-sprints must be positive"):
+        load_config(_ns(total_dev_sprints=0), env={})
+
+
+def test_as_of_sprint_negative_raises():
+    with pytest.raises(ConfigError, match="as-of-sprint must be >= 1"):
+        load_config(_ns(as_of_sprint=-2), env={})
+
+
+def test_as_of_sprint_with_target_raises():
+    with pytest.raises(ConfigError, match="as-of-sprint derives"):
+        load_config(_ns(as_of_sprint=2, target_user_stories=5), env={})
+
+
+def test_as_of_sprint_env_latest_keyword():
+    cfg = load_config(_ns(), env={"TEAM_PERF_AS_OF_SPRINT": "latest"})
+    assert cfg.as_of_sprint == 0  # AS_OF_LATEST sentinel
+
+
+def test_as_of_sprint_absent_is_none():
+    assert load_config(_ns(), env={}).as_of_sprint is None
+
+
 def test_target_alone_is_allowed():
     cfg = load_config(_ns(target_user_stories=10), env={})
     assert cfg.target_user_stories == 10

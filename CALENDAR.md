@@ -9,7 +9,10 @@ This file is the source of truth for `--sprint-start` and `--sprint-length-days`
 | Phase                 | Sprints                    | Window                        |
 |-----------------------|----------------------------|-------------------------------|
 | Documentation         | Doc Sprint 1 – Doc Sprint 4 | 2026-04-09 → 2026-05-06       |
-| Development           | Sprint 1 – Sprint 7        | 2026-05-07 → 2026-06-24       |
+| Development           | Sprint 1 – Sprint 6        | 2026-05-07 → 2026-06-17       |
+| Artifact polish       | Sprint 7                   | 2026-06-18 → 2026-06-24       |
+
+**Development is 6 sprints.** Sprint 7 is dedicated to final artifact polish and the delivery event — **no development work; no User Stories are completed in it**. The `team-performance` forecast horizon is therefore `6 − N` remaining dev sprints as of sprint *N* (the CLI's `--total-dev-sprints` defaults to 6).
 
 ## Documentation sprints
 
@@ -33,8 +36,8 @@ Dev phase begins the day after the artifact defense. Sprint *N* defense is the c
 | Sprint 3 | 2026-05-21 → 2026-05-27        | Sprint 3 defense (demo + retro; presencial) + Parcialito       |
 | Sprint 4 | 2026-05-28 → 2026-06-03        | Sprint 4 defense (demo + retro; remota) + Parcialito           |
 | Sprint 5 | 2026-06-04 → 2026-06-10        | Sprint 5 defense (demo + retro; presencial)                    |
-| Sprint 6 | 2026-06-11 → 2026-06-17        | Sprint 6 defense (demo + retro; presencial)                    |
-| Sprint 7 | 2026-06-18 → 2026-06-24        | Sprint 7 closure + **Final Expo / Delivery** (17:00–21:00, two shifts, presencial) |
+| Sprint 6 | 2026-06-11 → 2026-06-17        | Sprint 6 defense (demo + retro; presencial) — **last development sprint** |
+| Sprint 7 | 2026-06-18 → 2026-06-24        | **Artifact polish only** — final artifact polish + **Final Expo / Delivery** (17:00–21:00, two shifts, presencial). No development. |
 
 ## Canonical inputs for `team-performance`
 

@@ -167,21 +167,28 @@ def _validate_run(sprints: list[Sprint], *, us_catalog: frozenset[str] | None) -
     for sprint in sprints:
         for us in sprint.completed:
             if us in completed_at:
-                raise DataSourceError(
-                    f"{us} is completed in both sprint {completed_at[us]} and sprint "
-                    f"{sprint.index} — a US can only be completed once"
+                logger.warning(
+                    "%s completed in both sprint %d and sprint %d — "
+                    "only the first occurrence counts toward throughput",
+                    us,
+                    completed_at[us],
+                    sprint.index,
                 )
-            completed_at[us] = sprint.index
+            else:
+                completed_at[us] = sprint.index
 
     for sprint in sprints:
         for us in sprint.in_progress:
             done = completed_at.get(us)
             if done is not None and done < sprint.index:
-                raise DataSourceError(
-                    f"{us} is in_progress in sprint {sprint.index} but was already "
-                    f"completed in sprint {done}"
+                logger.warning(
+                    "%s is in_progress in sprint %d but was already completed in sprint %d "
+                    "— treated as a reopened US",
+                    us,
+                    sprint.index,
+                    done,
                 )
-            if done is None and sprint.index < len(sprints):
+            elif done is None and sprint.index < len(sprints):
                 logger.warning(
                     "%s is in_progress in sprint %d but never completed in the ledger",
                     us,

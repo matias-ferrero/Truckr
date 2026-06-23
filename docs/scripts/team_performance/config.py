@@ -18,6 +18,8 @@ DEFAULT_BACKLOG_US = "docs/artifacts/backlog-us.typ"
 DEFAULT_BOOTSTRAP_SAMPLES = 10_000
 DEFAULT_SEED = 42
 DEFAULT_OUTPUT_FORMAT = "json"
+DEFAULT_TOTAL_DEV_SPRINTS = 6  # Sprint 7 is artifact-polish only — see CALENDAR.md
+AS_OF_LATEST = 0  # Sentinel: `--as-of-sprint` with no value → latest closed sprint
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,6 +30,8 @@ class AppConfig:
     validate_us_ids: bool
     target_user_stories: int | None
     remaining_sprints: int | None
+    as_of_sprint: int | None  # Reconstruction mode; AS_OF_LATEST sentinel = latest closed
+    total_dev_sprints: int
     bootstrap_samples: int
     seed: int
     output_format: str
@@ -108,6 +112,34 @@ def load_config(args: Namespace, *, env: dict[str, str] | None = None) -> AppCon
     if remaining_sprints is not None and remaining_sprints <= 0:
         raise ConfigError("remaining-sprints must be positive")
 
+    as_of_raw = _coalesce(getattr(args, "as_of_sprint", None), env.get("TEAM_PERF_AS_OF_SPRINT"))
+    if isinstance(as_of_raw, str) and as_of_raw.strip().lower() in {"latest", "current"}:
+        as_of_sprint: int | None = AS_OF_LATEST
+    elif as_of_raw is not None:
+        as_of_sprint = _coerce_int(as_of_raw, name="as-of-sprint")
+    else:
+        as_of_sprint = None
+
+    if as_of_sprint is not None:
+        if as_of_sprint < 0:
+            raise ConfigError("as-of-sprint must be >= 1 (or bare for the latest sprint)")
+        if target_user_stories is not None or remaining_sprints is not None:
+            raise ConfigError(
+                "--as-of-sprint derives the target and horizon from the ledger; do not combine "
+                "it with --target-user-stories or --remaining-sprints"
+            )
+
+    total_dev_sprints = _coerce_int(
+        _coalesce(
+            getattr(args, "total_dev_sprints", None),
+            env.get("TEAM_PERF_TOTAL_DEV_SPRINTS"),
+            DEFAULT_TOTAL_DEV_SPRINTS,
+        ),
+        name="total-dev-sprints",
+    )
+    if total_dev_sprints <= 0:
+        raise ConfigError("total-dev-sprints must be positive")
+
     bootstrap_samples = _coerce_int(
         _coalesce(
             getattr(args, "bootstrap_samples", None),
@@ -145,6 +177,8 @@ def load_config(args: Namespace, *, env: dict[str, str] | None = None) -> AppCon
         "validate_us_ids": validate_us_ids,
         "target_user_stories": target_user_stories,
         "remaining_sprints": remaining_sprints,
+        "as_of_sprint": as_of_sprint,
+        "total_dev_sprints": total_dev_sprints,
         "bootstrap_samples": bootstrap_samples,
         "seed": seed,
         "format": output_format,
@@ -157,6 +191,8 @@ def load_config(args: Namespace, *, env: dict[str, str] | None = None) -> AppCon
         validate_us_ids=validate_us_ids,
         target_user_stories=target_user_stories,
         remaining_sprints=remaining_sprints,
+        as_of_sprint=as_of_sprint,
+        total_dev_sprints=total_dev_sprints,
         bootstrap_samples=bootstrap_samples,
         seed=seed,
         output_format=output_format,

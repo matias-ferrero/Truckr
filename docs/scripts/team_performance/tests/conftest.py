@@ -32,6 +32,12 @@ def backlog_us_fixture() -> Path:
 
 
 @pytest.fixture
+def backlog_mvp_fixture() -> Path:
+    """Reconstruction-format backlog: #include + release banners. MVP = US1..US5."""
+    return FIXTURES_DIR / "backlog-us-mvp.typ"
+
+
+@pytest.fixture
 def make_sprint() -> SprintWriter:
     """Factory writing an ad-hoc sprint-NN.md into ``directory`` for a test."""
 

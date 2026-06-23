@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from rich.console import Console
 
 from team_performance import __version__
-from team_performance.config import AppConfig, load_config
+from team_performance.config import AS_OF_LATEST, AppConfig, load_config
 from team_performance.errors import (
     ConfigError,
     DataSourceError,
@@ -21,7 +21,9 @@ from team_performance.ledger_source import load_sprints
 from team_performance.logging_setup import configure_logging
 from team_performance.metrics import compute_aggregate
 from team_performance.models import Projection, Report, Sprint
+from team_performance.mvp_scope import load_mvp_scope
 from team_performance.projection import bootstrap_forward, bootstrap_inverse
+from team_performance.reconstruction import build_reconstruction, resolve_as_of
 from team_performance.render.json_renderer import render_json
 from team_performance.render.text_renderer import render_text
 from team_performance.us_catalog import load_us_catalog
@@ -31,7 +33,7 @@ EXIT_USAGE = 2
 EXIT_DATA = 3
 EXIT_INSUFFICIENT_SAMPLE = 4
 
-SCHEMA_VERSION = "3"
+SCHEMA_VERSION = "4"
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +95,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     pj.add_argument("--seed", type=int, help="RNG seed (default: 42)")
 
+    rec = p.add_argument_group("Reconstruction (optional)")
+    rec.add_argument(
+        "--as-of-sprint",
+        dest="as_of_sprint",
+        type=int,
+        nargs="?",
+        const=AS_OF_LATEST,
+        help="Reconstruct the report as it stood at the end of sprint N (bare flag = latest "
+        "closed sprint). Derives the target (remaining MVP) and horizon from N; cannot be "
+        "combined with --target-user-stories / --remaining-sprints.",
+    )
+    rec.add_argument(
+        "--total-dev-sprints",
+        dest="total_dev_sprints",
+        type=int,
+        help="Development-phase length, for the derived horizon (default: 6; Sprint 7 is "
+        "artifact-polish, not development).",
+    )
+
     out = p.add_argument_group("Output")
     out.add_argument(
         "--format",
@@ -121,36 +142,40 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-def _build_projection(cfg: AppConfig, throughput: list[int]) -> Projection | None:
-    """Build a Projection if --target-user-stories was given. None on insufficient sample."""
-    if cfg.target_user_stories is None:
-        return None
-
+def _project(
+    throughput: list[int],
+    *,
+    target: int,
+    horizon: int | None,
+    samples: int,
+    seed: int,
+) -> Projection | None:
+    """Bootstrap a projection for an explicit target/horizon. None on insufficient sample."""
     try:
         inverse = bootstrap_inverse(
             throughput,
-            target_user_stories=cfg.target_user_stories,
-            samples=cfg.bootstrap_samples,
-            seed=cfg.seed,
-            horizon_hint=cfg.remaining_sprints,
+            target_user_stories=target,
+            samples=samples,
+            seed=seed,
+            horizon_hint=horizon,
         )
     except InsufficientDataError as exc:
         logger.warning("%s", exc)
         return None
 
     forward = None
-    if cfg.remaining_sprints is not None:
+    if horizon is not None:
         forward = bootstrap_forward(
             throughput,
-            target_user_stories=cfg.target_user_stories,
-            remaining_sprints=cfg.remaining_sprints,
-            samples=cfg.bootstrap_samples,
-            seed=cfg.seed,
+            target_user_stories=target,
+            remaining_sprints=horizon,
+            samples=samples,
+            seed=seed,
         )
 
     return Projection(
-        target_user_stories=cfg.target_user_stories,
-        bootstrap_samples=cfg.bootstrap_samples,
+        target_user_stories=target,
+        bootstrap_samples=samples,
         method="bootstrap_throughput",
         sprints_to_target=inverse,
         forward=forward,
@@ -163,10 +188,23 @@ def _build_report(cfg: AppConfig, *, now: datetime | None = None) -> tuple[Repor
     sprints: tuple[Sprint, ...] = load_sprints(
         cfg.sprints_dir, phase=cfg.phase, us_catalog=us_catalog
     )
-    aggregate = compute_aggregate(sprints)
 
+    if cfg.as_of_sprint is not None:
+        return _build_reconstruction_report(cfg, sprints, now=now)
+
+    aggregate = compute_aggregate(sprints)
     throughput = [len(s.completed) for s in sprints]
-    projection = _build_projection(cfg, throughput)
+    projection = (
+        _project(
+            throughput,
+            target=cfg.target_user_stories,
+            horizon=cfg.remaining_sprints,
+            samples=cfg.bootstrap_samples,
+            seed=cfg.seed,
+        )
+        if cfg.target_user_stories is not None
+        else None
+    )
     insufficient = cfg.target_user_stories is not None and projection is None
 
     report = Report(
@@ -176,6 +214,50 @@ def _build_report(cfg: AppConfig, *, now: datetime | None = None) -> tuple[Repor
         sprints=sprints,
         aggregate=aggregate,
         projection=projection,
+    )
+    return report, insufficient
+
+
+def _build_reconstruction_report(
+    cfg: AppConfig, sprints: tuple[Sprint, ...], *, now: datetime | None = None
+) -> tuple[Report, bool]:
+    """Reconstruct the report as of sprint N: truncate, MVP-scope, derive target + horizon."""
+    assert cfg.as_of_sprint is not None  # guarded by the caller
+    latest_closed = sprints[-1].index if sprints else 0
+    as_of = resolve_as_of(cfg.as_of_sprint, latest_closed)
+    mvp_ids = load_mvp_scope(cfg.backlog_us)
+
+    window, recon = build_reconstruction(
+        sprints,
+        as_of_sprint=as_of,
+        total_dev_sprints=cfg.total_dev_sprints,
+        mvp_ids=mvp_ids,
+    )
+    aggregate = compute_aggregate(window)
+    throughput = [len(s.completed) for s in window]
+
+    if recon.already_complete:
+        projection, insufficient = None, False
+    elif len(window) < 2:
+        projection, insufficient = None, True
+    else:
+        projection = _project(
+            throughput,
+            target=recon.derived_target_user_stories,
+            horizon=recon.derived_remaining_sprints,
+            samples=cfg.bootstrap_samples,
+            seed=cfg.seed,
+        )
+        insufficient = projection is None
+
+    report = Report(
+        schema_version=SCHEMA_VERSION,
+        generated_at=now or datetime.now(UTC),
+        config_snapshot=cfg.config_snapshot,
+        sprints=window,
+        aggregate=aggregate,
+        projection=projection,
+        reconstruction=recon,
     )
     return report, insufficient
 

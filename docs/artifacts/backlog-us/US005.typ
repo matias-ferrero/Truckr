@@ -1,6 +1,6 @@
 == US5: Filtrar Ventanas Compatibles
 
-*Release:* Release 2 \
+*Release:* MVP \
 *Prioridad:* Baja \
 *Épica:* Reservar Transportista
 

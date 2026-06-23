@@ -109,11 +109,15 @@ def test_overlap_completed_and_in_progress_raises(tmp_path: Path, make_sprint: S
         load_sprints(tmp_path, phase="development")
 
 
-def test_double_complete_raises(tmp_path: Path, make_sprint: SprintWriter):
+def test_double_complete_warns(tmp_path: Path, make_sprint: SprintWriter, caplog):
     make_sprint(tmp_path, 1, completed=["US1"])
     make_sprint(tmp_path, 2, completed=["US1"])
-    with pytest.raises(DataSourceError, match="completed in both sprint"):
-        load_sprints(tmp_path, phase="development")
+    import logging
+
+    with caplog.at_level(logging.WARNING, logger="team_performance.ledger_source"):
+        sprints = load_sprints(tmp_path, phase="development")
+    assert len(sprints) == 2
+    assert any("counts toward throughput" in r.message for r in caplog.records)
 
 
 def test_non_contiguous_indices_raises(tmp_path: Path, make_sprint: SprintWriter):
@@ -123,11 +127,15 @@ def test_non_contiguous_indices_raises(tmp_path: Path, make_sprint: SprintWriter
         load_sprints(tmp_path, phase="development")
 
 
-def test_in_progress_after_completed_raises(tmp_path: Path, make_sprint: SprintWriter):
+def test_in_progress_after_completed_warns(tmp_path: Path, make_sprint: SprintWriter, caplog):
     make_sprint(tmp_path, 1, completed=["US1"])
     make_sprint(tmp_path, 2, completed=["US2"], in_progress=["US1"])
-    with pytest.raises(DataSourceError, match=r"already.*completed in sprint"):
-        load_sprints(tmp_path, phase="development")
+    import logging
+
+    with caplog.at_level(logging.WARNING, logger="team_performance.ledger_source"):
+        sprints = load_sprints(tmp_path, phase="development")
+    assert len(sprints) == 2
+    assert any("reopened" in r.message for r in caplog.records)
 
 
 def test_us_catalog_rejects_unknown_id(tmp_path: Path, make_sprint: SprintWriter):

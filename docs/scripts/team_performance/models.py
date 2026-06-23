@@ -79,6 +79,28 @@ class Projection:
 
 
 @dataclass(frozen=True, slots=True)
+class Reconstruction:
+    """Point-in-time context for an ``--as-of-sprint N`` run.
+
+    Everything here is *derived* from ``N``: the history window, the remaining
+    MVP target, and the horizon. Emitted so the rendered report can show its
+    own arithmetic.
+    """
+
+    as_of_sprint: int
+    history_from: int  # First sprint in the replayed window (always 1)
+    history_to: int  # Last sprint in the window (== as_of_sprint)
+    total_dev_sprints: int  # Course-defined development phase length (default 6)
+    mvp_total: int  # User Stories in the MVP — Release 1 backlog section
+    mvp_completed_through: int  # MVP US completed in sprints 1..N
+    derived_target_user_stories: int  # max(0, mvp_total - mvp_completed_through)
+    derived_remaining_sprints: int | None  # total_dev_sprints - N; None if <= 0
+    already_complete: bool  # True when no MVP remained at the end of sprint N
+    velocity_scope: str = "mvp"  # Throughput counts MVP-tagged completions only
+    scope_yardstick: str = "current"  # MVP measured against today's backlog
+
+
+@dataclass(frozen=True, slots=True)
 class Report:
     schema_version: str
     generated_at: datetime
@@ -86,3 +108,4 @@ class Report:
     sprints: tuple[Sprint, ...]
     aggregate: AggregateStats
     projection: Projection | None
+    reconstruction: Reconstruction | None = None

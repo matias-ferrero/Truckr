@@ -21,29 +21,26 @@
 #let sprints = (
   (1, "2026-05-06 → 2026-05-13", 3, 4),
   (2, "2026-05-13 → 2026-05-20", 15, 6),
-  (3, "2026-05-20 → 2026-05-27", 9, 3),
-  (4, "2026-05-27 → 2026-06-03", 14, 0),
-  (5, "2026-06-03 → 2026-06-10", 11, 0),
 )
 
-#let throughput-mean = 10.4
+#let throughput-mean = 9
 #let throughput-min = 3
 #let throughput-max = 15
 
-#let target-us = 0
+#let target-us = 34
 
-#let has-forward = false
-#let remaining-sprints = 1
-#let p-meet = 0
+#let has-forward = true
+#let remaining-sprints = 4
+#let p-meet = 0.6918
 
 // Reconstruction
 #let is-reconstruction = true
-#let as-of-sprint = 5
+#let as-of-sprint = 2
 #let hist-from = 1
-#let hist-to = 5
+#let hist-to = 2
 #let mvp-total = 52
-#let mvp-done = 52
-#let already-complete = true
+#let mvp-done = 18
+#let already-complete = false
 
 #let verdict = if is-reconstruction and already-complete {
   ("MVP completo a esta altura.", c-good)
@@ -102,7 +99,7 @@
           #calc.round(p-meet * 100, digits: 1)%
         ]
         #v(-0.1cm)
-        #text(size: 10pt, weight: "medium")[#headline-msg]
+        #text(size: 9pt, weight: "medium")[#headline-msg]
       ] else if is-reconstruction and already-complete [
         #text(size: 9pt)[MVP completado al cierre del Sprint #as-of-sprint]
         #v(0.08cm)
@@ -126,7 +123,20 @@
   Fase *#phase* · esquema *#schema-version* · seed *#seed* · muestras *#bootstrap-samples*
 ]
 
-#v(0.6cm)
+#v(0.4cm)
+
+#block(
+  fill: c-warn.lighten(85%),
+  stroke: 0.5pt + c-warn,
+  inset: (x: 0.6cm, y: 0.35cm),
+  radius: 4pt,
+  width: 100%,
+  [
+    #text(weight: "bold", fill: c-warn)[Muestra pequeña (N = 2 sprints):] resultado indicativo — con tan pocos datos el bootstrap es muy sensible a valores individuales.
+  ],
+)
+
+#v(0.4cm)
 
 == Detalle por sprint
 
