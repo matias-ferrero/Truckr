@@ -8,9 +8,13 @@
 # expressed relative to Time.current so "vigente" stays in the future and
 # "pasado" stays in the past whenever the seed is run.
 #
-# In non-production this seed is DESTRUCTIVE: it wipes every domain record
-# (keeping only the ActiveAdmin AdminUser) and rebuilds from scratch, so the
-# demo never accumulates stale rows across runs.
+# This seed is DESTRUCTIVE: it wipes every domain record (keeping only the
+# ActiveAdmin AdminUser) and rebuilds from scratch, so the demo never
+# accumulates stale rows across runs. It runs automatically in dev/test. On a
+# production-env database (staging included — it deploys with RAILS_ENV=production)
+# it ONLY runs when explicitly opted in with SEED_DEMO=true, so a routine deploy
+# never nukes live data while an operator can still reset the staging demo on
+# demand:  SEED_DEMO=true bin/rails db:seed. Real production: never set the flag.
 #
 # Personas (all password "Password123"):
 #   carrier  diego.sosa@truckr.test          Diego Sosa            transportista independiente (base Rosario)
@@ -50,13 +54,17 @@ AdminUser.find_or_create_by!(email: admin_email) do |u|
   u.password_confirmation = admin_password
 end
 
-# Production stops here — never wipe or seed demo data on a live database.
-if Rails.env.production?
-  puts "Production environment: only the AdminUser is ensured; demo data skipped."
+# On production-env, the destructive rebuild only runs with SEED_DEMO=true. This
+# keeps real production safe (never pass the flag) while letting an operator
+# reset the staging demo deliberately. dev/test always rebuild.
+seed_demo = ActiveModel::Type::Boolean.new.cast(ENV["SEED_DEMO"])
+
+if Rails.env.production? && !seed_demo
+  puts "Production environment without SEED_DEMO=true: only the AdminUser is ensured; demo data skipped."
   return
 end
 
-# ── Clean slate (non-production only) ────────────────────────────────────────
+# ── Clean slate (dev/test, or production-env with SEED_DEMO=true) ─────────────
 # Children first so FK restrict constraints never trip. AdminUser lives in its
 # own table and is intentionally untouched.
 Payout.with_discarded.delete_all
