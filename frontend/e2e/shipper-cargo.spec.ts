@@ -22,7 +22,7 @@ test.describe("Shipper — cargo-first offer funnel (REQ-BE-00032 / US27)", () =
         );
         // 1. Login as a seeded Shipper.
         await page.goto("/login");
-        await page.fill('[name="email"]', "shipper@truckr.test");
+        await page.fill('[name="email"]', "contacto@granjalaesperanza.test");
         await page.fill('[name="password"]', "Password123");
         await page.click('button[type="submit"]');
         await page.waitForURL("/");
@@ -82,14 +82,15 @@ test.describe("Shipper — cargo-first offer funnel (REQ-BE-00032 / US27)", () =
     // profile; a Shipper who arrived this way gets a "Volver a la búsqueda"
     // link back to the same cargo's matches screen.
     //
-    // Uses the seeded Shipper (shipper1@truckr.test) and the cargo db/seeds.rb
-    // designates as the matches demo: "Pallets de granos (demo matching)"
-    // (CABA → Córdoba, cargo1), which matches the still-free tw1 so the
-    // matches screen shows at least one result with a "Ver perfil" link.
+    // Uses the seeded Shipper (contacto@granjalaesperanza.test) and the cargo db/seeds.rb
+    // designates as the matches demo: "Pallets de soja a granel para exportación"
+    // (Rosario → CABA), which matches the still-free active window of the
+    // independent carrier so the matches screen shows at least one result with a
+    // "Ver perfil" link.
     test("matches → Ver perfil → Volver a la búsqueda returns to matches", async ({ page }) => {
         // 1. Login as the seeded Shipper.
         await page.goto("/login");
-        await page.fill("#email", "shipper1@truckr.test");
+        await page.fill("#email", "contacto@granjalaesperanza.test");
         await page.fill("#password", "Password123");
         await page.click('button[type="submit"]');
         await page.waitForURL("/");
@@ -98,7 +99,7 @@ test.describe("Shipper — cargo-first offer funnel (REQ-BE-00032 / US27)", () =
         //    "Buscar transportistas" CTA lives on the detail, not the list row.
         await page.goto("/shipper/cargos");
         await page
-            .locator("li", { hasText: "Pallets de granos" })
+            .locator("li", { hasText: "Pallets de soja" })
             .getByRole("link", { name: /ver detalle/i })
             .click();
         await expect(page).toHaveURL(/\/shipper\/cargos\/\d+$/);

@@ -52,7 +52,8 @@ class ShipmentListResource
     if user&.shipper && shipment.cargo_offer.cargo.shipper_id == user.shipper.id
       shipment.cargo_offer.carrier.legal_name
     elsif user&.carrier && shipment.cargo_offer.carrier_id == user.carrier.id
-      shipment.cargo_offer.cargo.shipper.company_name
+      shipper = shipment.cargo_offer.cargo.shipper
+      shipper.company_name.presence || shipper.user.full_name
     end
   end
 

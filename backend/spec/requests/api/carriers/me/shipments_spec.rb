@@ -120,6 +120,19 @@ RSpec.describe "Api::Carriers::Me::Shipments", type: :request do
         expect(rows.fetch(unsettled.id)["settled_at"]).to be_nil
         expect(rows.fetch(settled.id)["settled_at"]).to be_present
       end
+
+      it "falls back to user full_name as counterparty_display_name when the shipper has no company_name" do
+        individual_user   = create(:user, full_name: "Laura Fernández")
+        individual_shipper = create(:shipper, user: individual_user, company_name: nil)
+        offer  = create(:cargo_offer, :accepted, carrier: carrier,
+                        cargo: create(:cargo, shipper: individual_shipper))
+        create(:shipment, :accepted, cargo_offer: offer)
+
+        get "/api/carriers/me/shipments"
+
+        row = JSON.parse(response.body).find { |s| s["id"] }
+        expect(row["counterparty_display_name"]).to eq("Laura Fernández")
+      end
     end
   end
 end

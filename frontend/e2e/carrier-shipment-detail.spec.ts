@@ -2,14 +2,14 @@ import { test, expect } from "@playwright/test";
 
 // REQ-FE-00024 / US39 — Shipment detail page, Carrier role.
 //
-// Uses the seeded carrier1@truckr.test account. Seeds create shipments in
+// Uses the seeded operaciones@andinacargo.test account. Seeds create shipments in
 // multiple states; in_transit sorts first (sort order weight 0), so the
 // first row in the carrier list is reliably an in_transit shipment.
 
 test.describe("Carrier — shipment detail (REQ-FE-00024 / US39)", () => {
     test.beforeEach(async ({ page }) => {
         await page.goto("/login");
-        await page.fill("#email", "carrier1@truckr.test");
+        await page.fill("#email", "operaciones@andinacargo.test");
         await page.fill("#password", "Password123");
         await page.getByRole("button", { name: /ingresar|iniciar sesión/i }).click();
         await expect(page.getByRole("button", { name: /salir/i })).toBeVisible();

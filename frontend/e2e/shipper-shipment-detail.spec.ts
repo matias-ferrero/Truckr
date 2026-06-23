@@ -2,14 +2,14 @@ import { test, expect } from "@playwright/test";
 
 // REQ-FE-00024 / US39 — Shipment detail page, Shipper role.
 //
-// Uses the seeded shipper1@truckr.test account. Seeds create shipments in
+// Uses the seeded contacto@granjalaesperanza.test account. Seeds create shipments in
 // multiple states (accepted, in_transit, delivered, cancelled) so the list
 // always has entries to navigate into.
 
 test.describe("Shipper — shipment detail (REQ-FE-00024 / US39)", () => {
     test.beforeEach(async ({ page }) => {
         await page.goto("/login");
-        await page.fill("#email", "shipper1@truckr.test");
+        await page.fill("#email", "contacto@granjalaesperanza.test");
         await page.fill("#password", "Password123");
         await page.getByRole("button", { name: /ingresar|iniciar sesión/i }).click();
         await expect(page.getByRole("button", { name: /salir/i })).toBeVisible({ timeout: 10_000 });
@@ -68,7 +68,7 @@ test.describe("Shipper — shipment detail (REQ-FE-00024 / US39)", () => {
         await page.goto("/shipper/shipments");
         await expect(page.getByRole("heading", { name: "Mis Envíos" })).toBeVisible();
 
-        // Navigate to the REVIEW-ME seed: "Maquinaria liviana", La Plata → Mar del Plata,
+        // Navigate to the review-pending seed: "Maquinaria agrícola", La Plata → Mar del Plata,
         // delivered with no shipper review yet — the review form must be visible.
         const deliveredLink = page.getByRole("link", {
             name: /la plata.*mar del plata.*entregado/i,

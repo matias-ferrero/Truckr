@@ -2,13 +2,14 @@ import { test, expect } from "@playwright/test";
 
 // REQ-BE-00033 / US8 — Shipper payment flow with fake gateway.
 //
-// Golden path against the seeded shipper1@truckr.test account, which owns
-// (per `backend/db/seeds.rb`) the "Insumos médicos" shipment in
-// `accepted + payment pending` — the exact precondition for the Pagar CTA.
+// Golden path against the seeded contacto@granjalaesperanza.test account, which owns
+// (per `backend/db/seeds.rb`) the "Semillas de maíz en bolsas" shipment in
+// `accepted + payment pending` — the exact precondition for the Pagar CTA. Its
+// carrier is the independent transporter Diego Sosa.
 test.describe("Shipper — payment flow (REQ-BE-00033 / US8)", () => {
     test("golden path: shipper pays an accepted shipment and sees the carrier's contact info", async ({ page }) => {
         await page.goto("/login");
-        await page.fill("#email", "shipper1@truckr.test");
+        await page.fill("#email", "contacto@granjalaesperanza.test");
         await page.fill("#password", "Password123");
         await page.getByRole("button", { name: /ingresar|iniciar sesión/i }).click();
         await expect(page.getByRole("button", { name: /salir/i })).toBeVisible();
@@ -45,16 +46,16 @@ test.describe("Shipper — payment flow (REQ-BE-00033 / US8)", () => {
         // Contact reveal — at least the email comes from a seeded User row.
         const contactPanel = page.getByLabel("Datos de contacto del transportista");
         await expect(contactPanel).toBeVisible();
-        await expect(contactPanel.getByText("carrier1@truckr.test")).toBeVisible();
+        await expect(contactPanel.getByText("diego.sosa@truckr.test")).toBeVisible();
 
         await page.getByRole("link", { name: "Volver a Mis Envíos" }).click();
         await expect(page).toHaveURL(/\/shipper\/shipments$/);
 
         // Post-payment interlock: the just-paid shipment advanced to
         // `pending_payment`, so its Pagar CTA is gone and the carrier's
-        // legal name (seeded as "Carrier One Transport SRL") is unmasked.
+        // legal name (seeded as "Diego Sosa") is unmasked.
         await expect(
-            page.getByText("Carrier One Transport SRL").first(),
+            page.getByText("Diego Sosa").first(),
         ).toBeVisible();
     });
 });

@@ -16,7 +16,7 @@ test.describe("Shipment detail — map & Google Maps route link (REQ-FE-00028 / 
         await page.route("https://maps.googleapis.com/**", (route) => route.abort());
 
         await page.goto("/login");
-        await page.fill("#email", "carrier1@truckr.test");
+        await page.fill("#email", "operaciones@andinacargo.test");
         await page.fill("#password", "Password123");
         await page.getByRole("button", { name: /ingresar|iniciar sesión/i }).click();
         await expect(page.getByRole("button", { name: /salir/i })).toBeVisible({ timeout: 10_000 });

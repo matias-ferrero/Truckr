@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test("carrier can view their payouts history", async ({ page }) => {
     // Login as the seeded carrier
     await page.goto("/login");
-    await page.fill("#email", "carrier1@truckr.test");
+    await page.fill("#email", "operaciones@andinacargo.test");
     await page.fill("#password", "Password123");
     await page.getByRole("button", { name: /iniciar sesión/i }).click();
     await expect(page.getByRole("button", { name: /salir/i })).toBeVisible();

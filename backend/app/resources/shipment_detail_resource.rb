@@ -56,7 +56,7 @@ class ShipmentDetailResource
       {
         kind:         "shipper",
         id:           shipper.id,
-        display_name: shipper.company_name
+        display_name: shipper.company_name.presence || shipper.user.full_name
       }
     elsif role == :shipper
       # `cargo_offer.carrier` is the canonical denormalised FK that the

@@ -46,7 +46,7 @@ module Api
             created_at:          payout.created_at.iso8601,
             origin:              cargo.pickup_address,
             destination:         cargo.delivery_address,
-            shipper_name:        shipper.company_name
+            shipper_name:        shipper.company_name.presence || shipper.user.full_name
           }
         end
       end
