@@ -153,6 +153,10 @@ backend-console:
 backend-console-remote env="production" *args="":
     cd backend && TRUCKR_ENV={{ env }} bin/console-remote {{ args }}
 
+# Reset the staging demo DB via Kamal+SSM (destructive: wipes domain rows + reseeds the demo; staging-only via SEED_DEMO gate — never production)
+backend-reset-staging:
+    cd backend && TRUCKR_ENV=staging bin/console-remote app exec --reuse "env SEED_DEMO=true bin/rails db:seed"
+
 # Run database migrations
 backend-migrate:
     cd backend && bin/rails db:migrate
