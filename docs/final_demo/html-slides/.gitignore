@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.slidev/
+*.pdf
+*.pptx
+public/*.png
+*.png

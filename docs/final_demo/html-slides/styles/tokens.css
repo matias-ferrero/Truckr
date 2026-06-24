@@ -1,0 +1,92 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Impeccable design tokens — EXTRACTED VERBATIM from the shipped frontend.
+   Source of truth: frontend/src/styles/global.css (`:root`), mirrored by
+   tailwind.css (@theme) and landing.css. See frontend DESIGN.md.
+
+   Do NOT hand-edit values here. If a token changes in the frontend, re-copy
+   this block so the deck stays pixel-identical to the product. This is the
+   whole point of the HTML deck: the slides and the app share one palette.
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  color-scheme: light;
+
+  /* Spacing scale (4pt base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  /* Typography */
+  --font-display: "Unbounded", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Alegreya Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+
+  /* Shadows are tinted toward the ink hue (240) so they pick up the same
+     under-cool the rest of the system uses. Pure black would punch a hole
+     in the warm cream surfaces and look like a paste-in. */
+  --shadow-sm: 0 1px 0.5px color-mix(in oklab, oklch(10% 0.02 240) 18%, transparent);
+  --shadow-md: 0 10px 30px color-mix(in oklab, oklch(10% 0.02 240) 16%, transparent);
+
+  /* ─── Committed two-voice palette (mirrors landing.css; see DESIGN.md) ───
+     Made global so auth / dashboard / carrier / public inherit the same
+     saturated tokens as the landing instead of the pre-committed wash. */
+  --brand-primary: #46aadc;   /* Open-Sky Blue — shipper voice */
+  --brand-secondary: #e1be5a; /* Honey Saffron — carrier voice */
+  --brand-success: oklch(72% 0.13 150); /* Success (green) */
+  --brand-warning: oklch(78% 0.13 80);  /* Warning (amber) */
+  --brand-tertiary: #9ca0a8;  /* Cool Concrete — structural neutral */
+  --brand-error: #e26464;     /* Signal Coral — reserved */
+  --brand-neutral: #ffffff;   /* Paper White — reserved surface */
+
+  /* Tinted neutrals — never pure black/white */
+  --ink: oklch(18% 0.02 240);
+  --ink-2: color-mix(in oklab, var(--ink) 78%, white);
+  --ink-3: color-mix(in oklab, var(--ink) 58%, white);
+  --ink-on-sky: oklch(20% 0.04 230);
+
+  /* Two-voice surfaces — Committed: cream + sky carry real coverage */
+  --surface: color-mix(in oklab, white 96%, var(--brand-secondary));
+  --surface-2: color-mix(in oklab, white 90%, var(--brand-secondary));
+  --surface-3: color-mix(in oklab, white 82%, var(--brand-secondary));
+  --surface-cool: color-mix(in oklab, white 88%, var(--brand-primary));
+  --surface-cool-2: color-mix(in oklab, white 72%, var(--brand-primary));
+  --tint-sky: color-mix(in oklab, white 60%, var(--brand-primary));
+  --tint-cream: color-mix(in oklab, white 58%, var(--brand-secondary));
+
+  /* Legacy alias kept for auth/carrier/dashboard/public selectors that
+     still reference --paper. Inherit the cream surface so a card with
+     `background: var(--paper)` actually pops against `--surface-2`. */
+  --paper: var(--brand-neutral);
+
+  --border: color-mix(in oklab, var(--brand-tertiary) 55%, white);
+  --border-2: color-mix(in oklab, var(--ink) 14%, transparent);
+  --border-sky: color-mix(in oklab, var(--brand-primary) 78%, var(--border));
+  --border-cream: color-mix(in oklab, var(--brand-secondary) 82%, var(--border));
+
+  /* Editorial accent — stamp only */
+  --accent: oklch(45% 0.09 220);
+
+  /* Chip foreground ink — dark readable text on tinted chip backgrounds. */
+  --chip-ink-primary: oklch(36% 0.14 235);
+  --chip-ink-warning: oklch(36% 0.14 80);
+  --chip-ink-success: oklch(36% 0.13 150);
+  --chip-ink-error:   oklch(36% 0.16 25);
+}

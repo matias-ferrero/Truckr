@@ -196,6 +196,30 @@ team-performance-lint:
 review name="":
     @script/review-worktree.sh {{ name }}
 
+# ── Final-demo slides (Slidev) ──────────────────────────────────────────────
+
+slides_dir := "docs/final_demo/html-slides"
+
+# Install the Slidev deck dependencies (run once)
+slides-install:
+    cd {{ slides_dir }} && npm install
+
+# Serve the final-defense deck and open it (override port: `just slides 3040`)
+slides port="3030":
+    cd {{ slides_dir }} && npm run dev -- --open --port {{ port }}
+
+# Build the deck to static HTML (outputs to {{ slides_dir }}/dist)
+slides-build:
+    cd {{ slides_dir }} && npm run build
+
+# Export the deck to docs/final_demo/html-slides/truckr-defensa-final.pdf
+slides-export:
+    cd {{ slides_dir }} && npm run export
+
+# Export the deck to .pptx
+slides-export-pptx:
+    cd {{ slides_dir }} && npm run export:pptx
+
 # ── Utilities ───────────────────────────────────────────────────────────────
 
 # Format all .typ files with typstyle

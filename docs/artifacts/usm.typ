@@ -165,6 +165,9 @@
   table.cell(fill: col4-task)[
     - US036: Dashboard del Transportista
     - US037: Dashboard del Expedidor
+    - US064: Panel Centrado en Cargas del Expedidor
+    - US065: Panel de Trabajo del Transportista
+    - US067: Navegación Lateral Persistente por Rol
   ],
   table.cell(fill: col5-task)[
     - US014: Registro de Vehiculo
@@ -208,6 +211,7 @@
     - US052: Listado de envios de Expedidor
     - US039: Detalles de envio
     - US051: Mapa en detalles de envio
+    - US066: Detalle de Envío Centrado en la Acción
   ],
   table.cell(fill: col13-task)[
     - US012: Aceptacion de oferta de envio

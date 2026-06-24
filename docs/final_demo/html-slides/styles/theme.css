@@ -1,0 +1,477 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Truckr® defensa final — deck theme.
+   Maps the Impeccable tokens (tokens.css) onto Slidev's slide DOM.
+   Rules honored from frontend DESIGN.md:
+     · Two-Voice Rule — sky = Expedidor/shipper, saffron = Transportista/carrier.
+       Role colors are used ONLY on the product (Parte 1) and the role chips.
+       Process slides (Parte 2) lean on ink + the Deep Harbor accent.
+     · No-Pure-Neutral Rule — text/interactive states never use #000/#fff.
+     · Single-Display Rule — Unbounded for all display type; Alegreya Sans body.
+     · Pill-or-Container Rule — pill radius only on chips; cards use 16/24px.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* ── Base slide surface ──────────────────────────────────────────────────── */
+.slidev-layout {
+  background: var(--brand-neutral);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  padding: var(--space-8) var(--space-9);
+}
+
+.slidev-layout h1,
+.slidev-layout h2,
+.slidev-layout h3 {
+  font-family: var(--font-display);
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+/* Unbounded is a tall display face — tight leading collides on wrapped lines.
+   !important overrides the Slidev default-theme prose line-height that wins on
+   source order (computed 24px ≈ leading-6 otherwise). */
+.slidev-layout h1 {
+  font-size: 2.6rem;
+  line-height: 1.16 !important;
+  margin-bottom: var(--space-5);
+}
+
+.slidev-layout h2 {
+  font-size: 2rem;
+  line-height: 1.18 !important;
+}
+
+.slidev-layout h3 {
+  font-size: 1.3rem;
+  letter-spacing: -0.025em;
+}
+
+.slidev-layout ul,
+.slidev-layout ol {
+  font-size: 1.25rem;
+  line-height: 1.65;
+}
+
+.slidev-layout li { margin: var(--space-3) 0; }
+.slidev-layout li::marker { color: var(--accent); }
+
+.slidev-layout strong { color: var(--ink); font-weight: 700; }
+.slidev-layout em { color: var(--ink-2); }
+.slidev-layout code {
+  font-size: 0.92em;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-cool);
+  border: 1px solid var(--border-sky);
+  color: var(--ink-on-sky);
+}
+
+/* Uppercase labels carry positive letterspacing (DESIGN.md). */
+.kicker,
+.section-by,
+.by {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.foot {
+  margin-top: var(--space-7);
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+/* ── Role chips (pill radius only here) ──────────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.chip--shipper {
+  background: color-mix(in oklab, var(--brand-primary) 90%, white);
+  color: var(--chip-ink-primary);
+  border: 1px solid var(--border-sky);
+}
+.chip--carrier {
+  background: color-mix(in oklab, var(--brand-secondary) 95%, white);
+  color: var(--chip-ink-warning);
+  border: 1px solid var(--border-cream);
+}
+
+.chip-inline {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.55em;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+  vertical-align: middle;
+}
+
+/* In-text role highlights (geometric, not a blend). box-decoration-break keeps
+   the rounded padding clean when the highlight wraps across lines. */
+.hl-shipper,
+.hl-carrier {
+  color: var(--ink);
+  padding: 0.04em 0.3em;
+  border-radius: var(--radius-sm);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.hl-shipper { background: var(--tint-sky); }
+.hl-carrier { background: var(--tint-cream); }
+
+/* ── Thesis / lead statement ─────────────────────────────────────────────── */
+.thesis {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-size: 1.6rem;
+  /* Generous leading: Unbounded + multi-line + inline highlights need room.
+     !important beats the Slidev default-theme prose line-height (source order). */
+  line-height: 1.5 !important;
+  max-width: 26ch;
+  margin: var(--space-4) 0 var(--space-6) 0;
+  text-wrap: balance;
+}
+
+/* ── Cover ───────────────────────────────────────────────────────────────── */
+.cover-truckr {
+  background:
+    radial-gradient(120% 90% at 88% 8%, var(--surface-cool) 0%, transparent 55%),
+    radial-gradient(110% 80% at 6% 96%, var(--surface-2) 0%, transparent 50%),
+    var(--brand-neutral);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.cover-truckr h1 {
+  font-size: 5rem;
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+  margin-bottom: var(--space-4);
+}
+.cover-truckr .reg { font-size: 0.32em; vertical-align: super; color: var(--accent); }
+.cover-sub {
+  font-size: 1.5rem;
+  color: var(--ink);
+  max-width: 30ch;
+  line-height: 1.3;
+  margin: 0 0 var(--space-6) 0;
+}
+.cover-voices { display: flex; gap: var(--space-3); margin-bottom: var(--space-7); }
+.cover-meta { color: var(--ink-3); font-size: var(--text-sm); line-height: 1.5; }
+
+/* ── Section dividers ────────────────────────────────────────────────────── */
+.slidev-layout.section-shipper,
+.slidev-layout.section-process {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.slidev-layout.section-shipper {
+  background: linear-gradient(105deg, var(--surface-cool-2) 0%, var(--surface-cool) 60%, var(--brand-neutral) 100%);
+}
+.slidev-layout.section-process {
+  background: linear-gradient(105deg, color-mix(in oklab, var(--accent) 16%, var(--brand-neutral)) 0%, var(--brand-neutral) 70%);
+}
+.section-shipper h1,
+.section-process h1 { font-size: 3.4rem; margin-bottom: var(--space-3); }
+.section-by { color: var(--ink-2); }
+
+/* ── Agenda ──────────────────────────────────────────────────────────────── */
+.agenda { display: grid; gap: var(--space-5); margin-top: var(--space-6); }
+.agenda-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+.agenda-item.voice-shipper { background: var(--surface-cool); border-color: var(--border-sky); }
+.agenda-item.voice-carrier { background: var(--surface-2); border-color: var(--border-cream); }
+.agenda-item h3 { margin: 0; }
+.agenda-item p { margin: 4px 0 0 0; color: var(--ink-2); font-size: var(--text-base); }
+.agenda-num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2rem;
+  color: var(--accent);
+  letter-spacing: -0.03em;
+}
+
+/* ── Demo "cartel" slide ─────────────────────────────────────────────────── */
+.slidev-layout.demo-slide {
+  /* Drenched two-voice: sky ground with a cream radial bleed (final-CTA style). */
+  background:
+    radial-gradient(90% 120% at 88% 92%, color-mix(in oklab, var(--brand-secondary) 45%, transparent) 0%, transparent 55%),
+    linear-gradient(120deg, color-mix(in oklab, var(--brand-primary) 42%, white) 0%, color-mix(in oklab, var(--brand-primary) 24%, white) 100%);
+}
+.demo-stage { text-align: center; }
+.demo-stage h1 { font-size: 4.4rem; letter-spacing: -0.045em; margin-bottom: var(--space-5); }
+.demo-chips { display: inline-flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-4); }
+.demo-chips .chip { font-size: 0.95rem; padding: 8px 18px; }
+.demo-chips .arrow { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; color: var(--ink-2); }
+.demo-sub { color: var(--ink-on-sky); font-size: 1.2rem; }
+
+/* ── Proof placeholder (replace with <img> once the screenshot exists) ────── */
+.proof-slot {
+  margin-top: var(--space-6);
+  padding: var(--space-6);
+  border: 2px dashed var(--border-2);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink-3);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+/* ── Closing statement ───────────────────────────────────────────────────── */
+.slidev-layout.closing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(110% 90% at 50% 50%, var(--surface-cool) 0%, var(--brand-neutral) 70%);
+}
+.closing .thesis {
+  font-size: 2.2rem;
+  max-width: 22ch;
+  text-align: center;
+  color: var(--ink);
+}
+.closing em { color: var(--accent); font-style: normal; }
+
+.thanks { text-align: center; }
+.thanks h1 { font-size: 3.6rem; }
+.thanks p { color: var(--ink-2); font-size: 1.15rem; }
+
+/* ── Per-slide presenter attribution kicker ──────────────────────────────── */
+.by { display: block; margin-bottom: var(--space-2); }
+
+/* ═════════════════════════════════════════════════════════════════════════
+   Tomás · Parte 2 — process diagrams (ciclo · worktrees · atención · RPI)
+   Reveal-driven (v-click): each frame's end-state is what PPTX export captures,
+   so we lean on progressive reveal, not CSS state-toggling.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ── Slide: flujo — single pipeline, mutates on click ─────────────────────── */
+/* The slide becomes a flex column so the pipeline sits vertically centered in
+   the body below the title. Negative horizontal margin reclaims the gutter so
+   the full (widest) pipeline fits on one line. */
+.slidev-layout.flow-slide { display: flex; flex-direction: column; justify-content: center; }
+.flow {
+  display: flex; align-items: center; justify-content: center; flex-wrap: nowrap;
+  margin: var(--space-7) calc(-1 * var(--space-8)) 0;
+}
+.step {
+  font-family: var(--font-display); font-weight: 600; font-size: 0.95rem;
+  color: var(--ink); height: 58px; padding: 0 22px; box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md); border: 1px solid var(--border-2);
+  white-space: nowrap; box-shadow: none; overflow: hidden;
+  transition: font-size 0.45s var(--ease-out), padding 0.45s var(--ease-out),
+              opacity 0.45s var(--ease-out), max-width 0.45s var(--ease-out),
+              transform 0.45s var(--ease-out);
+}
+/* Saturated palette: sky for the work that grows (Requisitos·Diseño),
+   coral for the step that falls off (Estimar), cool-concrete for the dev work
+   that collapses, saffron for the terminal Deploy. */
+.step-up  { background: color-mix(in oklab, var(--brand-primary) 42%, white);   color: var(--ink-on-sky); border-color: color-mix(in oklab, var(--brand-primary) 70%, white); }
+.step-dev { background: color-mix(in oklab, var(--brand-tertiary) 46%, white);  color: var(--ink);        border-color: color-mix(in oklab, var(--brand-tertiary) 70%, white); }
+.step-est { background: color-mix(in oklab, var(--brand-error) 50%, white);     color: var(--chip-ink-error); border-color: color-mix(in oklab, var(--brand-error) 70%, white); }
+.step-dep { background: color-mix(in oklab, var(--brand-secondary) 52%, white); color: var(--ink);        border-color: color-mix(in oklab, var(--brand-secondary) 78%, white); }
+.step-arrow {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.35rem;
+  color: var(--accent); padding: 0 12px; overflow: hidden; white-space: nowrap;
+  transition: padding 0.45s var(--ease-out), opacity 0.45s var(--ease-out),
+              max-width 0.45s var(--ease-out);
+}
+
+/* CLICK 1 (+IA): implementación y testing se achican SOLO en lo horizontal
+   (misma altura, mismo color) — leen como una barra de Gantt más corta:
+   toman menos tiempo, no menos relevancia. */
+.flow--ia .step-dev {
+  font-size: 0.62rem; padding: 0 9px; letter-spacing: -0.03em;
+}
+
+/* CLICK 2 (+#NoEstimates): el paso «Estimar» y su flecha salen del flujo */
+.flow--noest .step-est,
+.flow--noest .step-arrow--est {
+  max-width: 0; padding-left: 0; padding-right: 0; margin: 0;
+  border-width: 0; opacity: 0; transform: scale(0.6);
+}
+
+/* h1 deltas appended on click (highlighted) */
+.h1-tag {
+  font-family: var(--font-display); font-weight: 700; font-size: 0.4em;
+  vertical-align: middle; margin-left: 0.42em; padding: 0.1em 0.42em;
+  border-radius: var(--radius-sm); color: var(--ink); letter-spacing: -0.01em;
+}
+.h1-tag--ia    { background: var(--tint-cream); }
+.h1-tag--noest { background: var(--tint-sky); }
+
+/* ── Slide: worktrees — agent config cards (solo → clash → isolated) ──────── */
+.wt {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  gap: var(--space-5); margin: var(--space-5) 0 var(--space-4);
+}
+.wt-card {
+  border-radius: var(--radius-md); padding: 16px 18px;
+  background: var(--surface-2); border: 1px solid var(--border-cream);
+  box-shadow: var(--shadow-sm);
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+.wt-name {
+  display: block; margin-bottom: 10px;
+  font-family: var(--font-display); font-weight: 700; font-size: 0.95rem;
+  letter-spacing: -0.01em; color: var(--ink);
+}
+.wt-cfg {
+  display: grid; grid-template-columns: auto 1fr; gap: 6px var(--space-3);
+  margin: 0; align-items: baseline; font-size: 0.8rem;
+}
+.wt-cfg dt {
+  font-family: var(--font-display); font-weight: 600; color: var(--ink-3);
+  white-space: nowrap;
+}
+.wt-cfg dd { margin: 0; min-width: 0; }
+.wt-cfg code {
+  font-size: 0.92em; padding: 1px 6px; border-radius: var(--radius-sm);
+  background: var(--surface-cool); color: var(--ink-on-sky);
+  transition: background 0.25s ease, color 0.25s ease;
+  word-break: break-all;
+}
+/* collision: identical config across both agents flares coral */
+.wt.is-clash .wt-card {
+  background: color-mix(in oklab, var(--brand-error) 8%, white);
+  border-color: color-mix(in oklab, var(--brand-error) 42%, white);
+}
+.wt.is-clash .wt-cfg code {
+  background: color-mix(in oklab, var(--brand-error) 16%, white);
+  color: var(--chip-ink-error);
+}
+/* isolated: each agent gets its own calm, distinct config */
+.wt.is-safe .wt-card { background: var(--surface-cool); border-color: var(--border-sky); }
+.wt.is-safe .wt-cfg code { background: var(--tint-sky); color: var(--chip-ink-primary); }
+
+.wt-verdict { display: grid; place-items: center; min-height: 44px; }
+.wt-verdict > * { grid-area: 1 / 1; }
+.wt-pill {
+  font-family: var(--font-display); font-weight: 700; font-size: 0.78rem;
+  letter-spacing: 0.02em; white-space: nowrap;
+  padding: 7px 13px; border-radius: var(--radius-pill);
+}
+.wt-pill--bad { background: color-mix(in oklab, var(--brand-error) 20%, white); color: var(--chip-ink-error); }
+.wt-pill--ok  { background: var(--tint-sky); color: var(--chip-ink-primary); }
+
+.wt-foot { margin: 0; font-size: 0.82rem; color: var(--ink-2); line-height: 1.5; text-align: center; }
+.wt-foot code { font-size: 0.9em; }
+.wt-foot--ok { color: var(--accent); }
+
+/* ── Slide: atención — one fixed budget cut into ever-thinner shares ──────── */
+.slidev-layout.attn-slide { display: flex; flex-direction: column; justify-content: center; }
+.attn { position: relative; width: 760px; max-width: 100%; margin: var(--space-7) auto 0; }
+
+/* The bar is a FIXED budget: the same outer rectangle throughout. Each click
+   cuts it into more shares (1 → 2 → 4 → 8), so every slice gets thinner — the
+   attention divides, it does not multiply. Past the "mínimo útil" width the
+   shares go coral (starved). */
+.attn-track {
+  display: flex; gap: 0; height: 150px; overflow: hidden;
+  border-radius: var(--radius-md); border: 1px solid var(--border-sky);
+}
+.attn-seg {
+  flex: 1; min-width: 0; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  background: color-mix(in oklab, var(--brand-primary) 34%, white);
+  border-left: 1px solid color-mix(in oklab, var(--brand-primary) 62%, white);
+  transition: background 0.4s var(--ease-out), color 0.4s var(--ease-out);
+}
+.attn-seg:first-child { border-left: 0; }
+/* Starved — 4+ sessions: every share is under the minimum useful width. */
+.attn.is-starved .attn-seg {
+  border-left-color: color-mix(in oklab, var(--brand-error) 45%, white);
+  background:
+    repeating-linear-gradient(135deg,
+      transparent 0 7px,
+      color-mix(in oklab, var(--brand-error) 22%, white) 7px 9px),
+    color-mix(in oklab, var(--brand-error) 20%, white);
+}
+
+.seg-pct {
+  font-family: var(--font-display); font-weight: 700; font-size: 0.9rem;
+  color: var(--ink-on-sky); white-space: nowrap;
+  transition: color 0.4s var(--ease-out);
+}
+.attn.c3 .seg-pct { font-size: 0.74rem; }
+.attn.is-starved .seg-pct { color: var(--chip-ink-error); }
+
+/* "mínimo útil" — the width a share needs to stay useful (~3 sessions). Fixed
+   and left-aligned so it overlays the first share: wider = useful, narrower =
+   starved. Appears once the budget starts dividing. Lives outside the clipped
+   track so the bracket can sit above the bar. */
+.attn-min {
+  position: absolute; top: -34px; left: 0; width: 33%; height: 9px;
+  border: 2px dashed var(--accent); border-bottom: 0;
+  opacity: 0; transition: opacity 0.4s var(--ease-out) 0.1s;
+}
+.attn.is-split .attn-min { opacity: 1; }
+.attn-min span {
+  position: absolute; left: 50%; top: -22px; transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-display); font-weight: 700; font-size: 0.66rem;
+  color: var(--accent); letter-spacing: 0.02em;
+}
+
+.attn-cap {
+  position: relative; height: 1.5em; margin-top: var(--space-6); text-align: center;
+}
+.attn-cap .cap {
+  position: absolute; left: 0; right: 0; opacity: 0;
+  font-family: var(--font-display); font-weight: 600; font-size: 0.95rem;
+  color: var(--accent); letter-spacing: -0.01em;
+  transition: opacity 0.4s var(--ease-out);
+}
+.attn-cap .cap-0 { opacity: 1; }
+.attn.c1 .cap-0 { opacity: 0; }
+.attn.c1 .cap-1 { opacity: 1; }
+.attn.c2 .cap-1 { opacity: 0; }
+.attn.c2 .cap-2 { opacity: 1; }
+.attn.c3 .cap-2 { opacity: 0; }
+.attn.c3 .cap-3 { opacity: 1; }
+.attn.is-starved .cap-2,
+.attn.is-starved .cap-3 { color: color-mix(in oklab, var(--brand-error) 55%, var(--ink)); }
+
+/* ── Slide: RPI — Research / Plan / Implement cards ───────────────────────── */
+.rpi { display: grid; grid-template-columns: 1.1fr 1.1fr 0.85fr; gap: var(--space-4); align-items: stretch; margin: var(--space-5) 0; }
+.rpi-card {
+  background: var(--surface-cool); border: 1px solid var(--border-sky);
+  border-radius: var(--radius-md); padding: 18px 20px; box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.rpi-card--cheap { background: var(--surface-2); border-color: var(--border-cream); opacity: 0.92; }
+.rpi-step {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.15rem;
+  letter-spacing: -0.02em; color: var(--ink);
+}
+.rpi-io { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 0.82rem; color: var(--accent); }
+.rpi-arrow { color: var(--ink-3); margin: 0 4px; }
+.rpi-desc { margin: 0; font-size: 0.85rem; color: var(--ink-2); line-height: 1.45; }

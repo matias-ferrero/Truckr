@@ -219,7 +219,7 @@
     let co-bus-1 = (co-bus-bx, -14.2)
     node(co-bus-1, hw, hh, [3.3.1 Buscar Ventanas])
     let co-bus-2 = (co-bus-bx, -15.8)
-    node(co-bus-2, hw, hh, [3.3.2 Filtrar Ventanas\*])
+    node(co-bus-2, hw, hh, [3.3.2 Filtrar Ventanas])
 
     let co-ofertas = (co-bx, -17.2)
     node(co-ofertas, hw, hh, [3.4 Ofertas])

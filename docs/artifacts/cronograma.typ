@@ -207,7 +207,7 @@ Cronograma en formato planilla de trabajo por sprint, con tareas numeradas del b
 
   [Sprint 5], [US67], [Navegación Lateral \ Persistente por Rol], [Equipo], [], [], [], [], [X], [], [],
 
-  [Sprint 7], [A3], [Preparación de demo final], [Equipo + PM], [], [], [], [], [], [X], [X],
+  [Sprint 6 y 7], [A3], [Preparación de demo final], [Equipo + PM], [], [], [], [], [], [X], [X],
 )
 
 #v(0.8em)

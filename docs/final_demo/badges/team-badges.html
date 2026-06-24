@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="es-AR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Truckr® · Credenciales del equipo — Demo final GDSI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700&family=Unbounded:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ───────────────────────────────────────────────────────────────
+         Truckr® team name badges — print-ready credential sheet.
+         Tokens mirror frontend/src/styles/global.css (the live design
+         system). No raw white/black: neutrals are oklch / color-mix.
+         ─────────────────────────────────────────────────────────────── */
+      :root {
+        --paper: oklch(99% 0.004 250);
+
+        /* Brand source hexes — declarative, same as global.css */
+        --brand-primary: #46aadc; /* Open-Sky Blue */
+        --brand-secondary: #e1be5a; /* Honey Saffron */
+        --brand-tertiary: #9ca0a8; /* Cool Concrete */
+
+        --ink: oklch(18% 0.02 240);
+        --ink-2: color-mix(in oklab, var(--ink) 78%, var(--paper));
+        --ink-on-sky: oklch(23% 0.055 235);
+        --chip-ink-primary: oklch(36% 0.14 235);
+
+        /* Committed two-voice surfaces (cream + sky) */
+        --surface: color-mix(in oklab, var(--paper) 93%, var(--brand-secondary));
+        --surface-2: color-mix(in oklab, var(--paper) 86%, var(--brand-secondary));
+        --surface-cool: color-mix(in oklab, var(--paper) 88%, var(--brand-primary));
+
+        --border-cream: color-mix(in oklab, var(--brand-secondary) 60%, var(--ink) 10%);
+        --hairline: color-mix(in oklab, var(--ink) 16%, transparent);
+
+        --font-display: "Unbounded", ui-sans-serif, system-ui, sans-serif;
+        --font-body: "Alegreya Sans", ui-sans-serif, system-ui, sans-serif;
+
+        --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+      }
+
+      body {
+        font-family: var(--font-body);
+        color: var(--ink);
+        /* Screen backdrop: cool concrete, badges pop as paper */
+        background: color-mix(in oklab, var(--brand-tertiary) 26%, var(--paper));
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      /* ── Screen scaffolding (hidden in print) ── */
+      .screenIntro {
+        max-width: 60ch;
+        margin: 0 auto;
+        padding: 32px 24px 8px;
+      }
+      .screenIntro h1 {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 1.5rem;
+        letter-spacing: -0.035em;
+        margin: 0 0 6px;
+      }
+      .screenIntro p {
+        margin: 0;
+        max-width: 56ch;
+        color: var(--ink-2);
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+      .screenIntro kbd {
+        font-family: var(--font-display);
+        font-weight: 600;
+        font-size: 0.8em;
+        padding: 1px 6px;
+        border-radius: 6px;
+        background: var(--surface-cool);
+        border: 1px solid var(--hairline);
+      }
+
+      /* ── A4 sheet ── */
+      @page {
+        size: A4 portrait;
+        margin: 8mm 5mm;
+      }
+
+      .sheet {
+        width: 200mm;
+        margin: 18px auto 40px;
+        display: grid;
+        grid-template-columns: repeat(2, 100mm);
+        grid-auto-rows: 70mm;
+        background: var(--paper);
+        box-shadow: 0 24px 60px -28px color-mix(in oklab, var(--ink) 50%, transparent);
+      }
+
+      /* ── The credential ── */
+      .badge {
+        position: relative;
+        width: 100mm;
+        height: 70mm;
+        overflow: hidden;
+        background: var(--surface);
+        /* dashed cut guide between abutting badges */
+        outline: 0.3mm dashed color-mix(in oklab, var(--ink) 28%, transparent);
+        outline-offset: -0.15mm;
+        display: grid;
+        grid-template-rows: 1fr 15mm;
+      }
+
+      /* punch-slot guide — where to clip the lanyard */
+      .badge__slot {
+        position: absolute;
+        top: 3mm;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 15mm;
+        height: 3mm;
+        border: 0.3mm dashed color-mix(in oklab, var(--ink) 32%, transparent);
+        border-radius: 999px;
+      }
+
+      /* ── Content zone (cream) ── */
+      .badge__body {
+        padding: 7mm 7mm 5mm;
+        display: flex;
+        align-items: center;
+        gap: 5mm;
+      }
+
+      .badge__logo {
+        flex: 0 0 auto;
+        width: 18.5mm;
+        height: 18.5mm;
+        border-radius: 3.4mm;
+        background: var(--paper);
+        padding: 1.6mm;
+        border: 0.3mm solid color-mix(in oklab, var(--brand-primary) 30%, var(--hairline));
+        box-shadow: 0 1.2mm 3mm -1mm color-mix(in oklab, oklch(10% 0.02 240) 40%, transparent);
+      }
+      .badge__logo img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 2.2mm;
+      }
+
+      .badge__id {
+        min-width: 0;
+        padding-top: 0.5mm;
+      }
+
+      .badge__eyebrow {
+        font-family: var(--font-display);
+        font-weight: 600;
+        font-size: 7pt;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--chip-ink-primary);
+        margin: 0 0 2.5mm;
+      }
+
+      .badge__first {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 26pt;
+        line-height: 0.96;
+        letter-spacing: -0.04em;
+        color: var(--ink);
+        margin: 0;
+      }
+      .badge__last {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: 14pt;
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        color: var(--ink-2);
+        margin: 1.2mm 0 0;
+      }
+
+      /* ── Footer band (sky) — echoes the logo: saffron route on sky ── */
+      .badge__band {
+        background: var(--brand-primary);
+        color: var(--ink-on-sky);
+        padding: 0 7mm;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 4mm;
+      }
+      .badge__route {
+        flex: 0 0 auto;
+        height: 7mm;
+        width: 22mm;
+      }
+      .badge__mark {
+        text-align: right;
+        line-height: 1;
+      }
+      .badge__wordmark {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 12pt;
+        letter-spacing: -0.03em;
+        color: var(--ink-on-sky);
+      }
+      .badge__wordmark sup {
+        font-size: 0.5em;
+        font-weight: 600;
+        top: -0.8em;
+      }
+      .badge__meta {
+        font-family: var(--font-body);
+        font-weight: 600;
+        font-size: 7.5pt;
+        letter-spacing: 0.02em;
+        color: color-mix(in oklab, var(--ink-on-sky) 88%, var(--brand-primary));
+        margin-top: 1mm;
+      }
+
+      @media print {
+        .screenIntro {
+          display: none;
+        }
+        .sheet {
+          margin: 0;
+          box-shadow: none;
+        }
+        body {
+          background: var(--paper);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="screenIntro">
+      <h1>Credenciales del equipo · Demo final</h1>
+      <p>
+        Seis gafetes Truckr® en una A4 (100&times;70&nbsp;mm c/u). Imprimí al 100&nbsp;%
+        (sin “ajustar a página”), recortá por las guías punteadas y perforá el óvalo
+        superior para el lanyard. Para PDF: <kbd>Ctrl/Cmd&nbsp;+&nbsp;P</kbd> &rarr;
+        Guardar como PDF, márgenes “Predeterminado”, fondos activados.
+      </p>
+    </div>
+
+    <!-- The route SVG used in every footer band: white line, two saffron nodes,
+         a literal echo of the site logo's delivery route. -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="route" viewBox="0 0 66 21">
+        <polyline
+          points="4,15 24,15 38,6 62,6"
+          fill="none"
+          stroke="var(--paper)"
+          stroke-width="2.4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          opacity="0.92"
+        />
+        <circle cx="24" cy="15" r="4.6" fill="var(--brand-secondary)" stroke="var(--paper)" stroke-width="1.6" />
+        <circle cx="38" cy="6" r="4.6" fill="var(--brand-secondary)" stroke="var(--paper)" stroke-width="1.6" />
+      </symbol>
+    </svg>
+
+    <main class="sheet" id="sheet"></main>
+
+    <script>
+      // Roster — first/last split for the two-line name treatment.
+      const team = [
+        { first: "Brian", last: "Céspedes", role: "Backend Developer" },
+        { first: "Fernando", last: "Yu", role: "DevOps Engineer" },
+        { first: "Franco", last: "Ricciardo", role: "QA Engineer" },
+        { first: "Lucas", last: "Dondo", role: "Frontend Developer" },
+        { first: "Matías", last: "Ferrero", role: "UX/UI Designer" },
+        { first: "Tomás", last: "Corzo", role: "Project Manager" },
+      ];
+
+      const sheet = document.getElementById("sheet");
+      sheet.innerHTML = team
+        .map(
+          (m) => `
+        <article class="badge">
+          <span class="badge__slot" aria-hidden="true"></span>
+          <div class="badge__body">
+            <div class="badge__logo">
+              <img src="logo-256.png" alt="" />
+            </div>
+            <div class="badge__id">
+              <p class="badge__eyebrow">${m.role}</p>
+              <p class="badge__first">${m.first}</p>
+              <p class="badge__last">${m.last}</p>
+            </div>
+          </div>
+          <div class="badge__band">
+            <svg class="badge__route" aria-hidden="true"><use href="#route" /></svg>
+            <div class="badge__mark">
+              <div class="badge__wordmark">Truckr<sup>®</sup></div>
+              <div class="badge__meta">GDSI · FIUBA · 2026</div>
+            </div>
+          </div>
+        </article>`
+        )
+        .join("");
+
+      document.title = "Truckr® · Credenciales del equipo — Demo final GDSI";
+    </script>
+  </body>
+</html>

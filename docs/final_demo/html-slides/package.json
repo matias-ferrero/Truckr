@@ -1,0 +1,20 @@
+{
+  "name": "truckr-final-demo-slides",
+  "private": true,
+  "type": "module",
+  "description": "HTML/web alternative of the Truckr final-defense deck, built on Slidev and themed with the Impeccable frontend design tokens.",
+  "scripts": {
+    "dev": "slidev --open",
+    "build": "slidev build",
+    "export": "slidev export --format pdf --output truckr-defensa-final.pdf",
+    "export:pptx": "slidev export --format pptx --output truckr-defensa-final.pptx"
+  },
+  "dependencies": {
+    "@slidev/cli": "latest",
+    "@slidev/theme-default": "latest",
+    "vue": "latest"
+  },
+  "devDependencies": {
+    "playwright-chromium": "^1.61.1"
+  }
+}
