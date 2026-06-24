@@ -187,13 +187,25 @@ Cronograma en formato planilla de trabajo por sprint, con tareas numeradas del b
 
   [Sprint 4], [US57], [Notificación de respuesta \ a mi oferta], [Equipo], [], [], [], [X], [], [], [],
 
-  [Sprint 5], [US15], [Pago al transportista], [Equipo], [], [], [], [], [X], [], [],
+  [Sprint 5], [US25], [Paginado de Ventanas \ Compatibles con mi Carga], [Equipo], [], [], [], [], [X], [], [],
 
-  [Sprint 5], [US60], [Notificación de pago \ recibido], [Equipo], [], [], [], [], [X], [], [],
+  [Sprint 5], [US53], [Autocalculado de \ distancia], [Equipo], [], [], [], [], [X], [], [],
 
   [Sprint 5], [US51], [Mapa en detalle de envío], [Equipo], [], [], [], [], [X], [], [],
 
-  [Sprint 5], [US53], [Autocalculado de \ distancia], [Equipo], [], [], [], [], [X], [], [],
+  [Sprint 5], [US15], [Pago al transportista], [Equipo], [], [], [], [], [X], [], [],
+
+  [Sprint 5], [US40], [Mis Pagos como Transportista], [Equipo], [], [], [], [], [X], [], [],
+
+  [Sprint 5], [US60], [Notificación en Tiempo \ Real de Pago Recibido], [Equipo], [], [], [], [], [X], [], [],
+
+  [Sprint 5], [US64], [Panel Centrado en \ Cargas de Expedidor], [Equipo], [], [], [], [], [X], [], [],
+
+  [Sprint 5], [US65], [Panel Centrado en \ Cargas de Transportista], [Equipo], [], [], [], [], [X], [], [],
+
+  [Sprint 5], [US66], [Detalles de Envío \ centrado en la Acción], [Equipo], [], [], [], [], [X], [], [],
+
+  [Sprint 5], [US67], [Navegación Lateral \ Persistente por Rol], [Equipo], [], [], [], [], [X], [], [],
 
   [Sprint 7], [A3], [Preparación de demo final], [Equipo + PM], [], [], [], [], [], [X], [X],
 )
