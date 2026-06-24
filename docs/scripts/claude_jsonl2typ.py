@@ -382,8 +382,44 @@ def render_session(meta: dict) -> str:
     return "\n".join(lines)
 
 
-def render_main(by_origin: dict[str, list[dict]], root: Path) -> str:
-    """Build the aggregator main.typ that includes every session .typ."""
+# Sub line written by render_session, e.g. `_2026-06-24 01:25 UTC — rama ...`.
+# The "%Y-%m-%d %H:%M" shape sorts lexically in chronological order, so it
+# doubles as a sort key for orphaned sessions whose .jsonl is no longer present.
+_TS_LINE = re.compile(r"^_(\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC", re.MULTILINE)
+
+
+def _session_sort_key(typ_path: Path) -> tuple[int, str]:
+    """Chronological key for a session .typ, read from its own content.
+
+    Sessions with a timestamp sort first (ascending); undated ones fall to the
+    end, ordered by filename. Reading the file keeps fresh and orphaned sessions
+    on the same footing — neither depends on the .jsonl still existing.
+    """
+    try:
+        text = typ_path.read_text(encoding="utf-8")
+    except OSError:
+        text = ""
+    m = _TS_LINE.search(text)
+    return (0, m.group(1)) if m else (1, typ_path.name)
+
+
+def _unit_sort_key(unit: tuple[Path, list[Path]]) -> tuple[int, str]:
+    """Sort a (session_typ_or_None, includes) unit by its earliest content."""
+    typ_path, includes = unit
+    head = typ_path or (includes[0] if includes else None)
+    return _session_sort_key(head) if head else (1, "")
+
+
+def render_main(root: Path) -> str:
+    """Build the aggregator main.typ that includes every session .typ on disk.
+
+    Discovers sessions by scanning the tree rather than only the transcripts
+    converted this run, so previously-committed sessions survive even after
+    Claude Code prunes their .jsonl (30-day retention). Each session is keyed by
+    its ``<origin>/<id>`` stem, merging the top-level ``<id>.typ`` with any
+    ``<id>/subagents/*.typ`` emitted by older converter versions — so even an
+    orphaned subagent directory (parent .typ already pruned) is still rendered.
+    """
     depth = len(root.parts)  # docs/prompts/raw/claude -> 4 -> ../../../../? no
     # root is relative to repo; template.typ lives at docs/template.typ.
     # Compute relative path from root back up to docs/.
@@ -402,21 +438,40 @@ def render_main(by_origin: dict[str, list[dict]], root: Path) -> str:
         "",
     ]
 
+    # Key every session by its <origin>/<id> stem. A top-level <id>.typ is one
+    # directory deep (which excludes main.typ itself); subagent files live at
+    # <origin>/<id>/subagents/*.typ. Merge both so orphans of either kind render.
+    stems: dict[Path, dict] = {}
+    for typ_path in root.glob("*/*.typ"):
+        stems.setdefault(typ_path.with_suffix(""), {})["typ"] = typ_path
+    for sub_typ in root.glob("*/*/subagents/*.typ"):
+        stems.setdefault(sub_typ.parent.parent, {}).setdefault("subs", []).append(
+            sub_typ
+        )
+
+    by_origin: dict[str, list[tuple[Path, list[Path]]]] = defaultdict(list)
+    for stem, parts in stems.items():
+        includes = ([parts["typ"]] if "typ" in parts else []) + sorted(
+            parts.get("subs", [])
+        )
+        by_origin[stem.parent.name].append((parts.get("typ"), includes))
+
     first = True
     for origin in sorted(by_origin):
-        sessions = sorted(by_origin[origin], key=lambda m: m["first_ts"] or "")
+        units = sorted(by_origin[origin], key=_unit_sort_key)
         pretty = "Checkout principal" if origin == "main" else origin
         lines.append("#pagebreak()")
         lines.append("")
         lines.append(f"= Origen: {pretty}")
         lines.append("")
-        for meta in sessions:
-            rel = meta["typ_path"].relative_to(root).as_posix()
-            if not first:
-                lines.append("#pagebreak()")
-                lines.append("")
-            lines.append(f'#include "{rel}"')
-            first = False
+        for _typ_path, includes in units:
+            for inc in includes:
+                rel = inc.relative_to(root).as_posix()
+                if not first:
+                    lines.append("#pagebreak()")
+                    lines.append("")
+                lines.append(f'#include "{rel}"')
+                first = False
         lines.append("")
 
     return "\n".join(lines)
@@ -434,7 +489,6 @@ def main():
         )
         sys.exit(1)
 
-    by_origin: dict[str, list[dict]] = defaultdict(list)
     written = 0
     for path in sorted(paths):
         meta = parse_transcript(path)
@@ -442,21 +496,15 @@ def main():
         out_path.write_text(render_session(meta), encoding="utf-8")
         written += 1
 
-        # Origin label = first path segment under CLAUDE_ROOT (main / worktree-*).
-        try:
-            rel = path.relative_to(CLAUDE_ROOT)
-            origin = rel.parts[0] if len(rel.parts) > 1 else "main"
-        except ValueError:
-            origin = "main"
-        meta["typ_path"] = out_path
-        by_origin[origin].append(meta)
-
+    # Rebuild the aggregator from every session .typ on disk (not just this
+    # run's conversions) so previously-committed sessions are never dropped.
     main_path = CLAUDE_ROOT / "main.typ"
-    main_path.write_text(render_main(by_origin, CLAUDE_ROOT), encoding="utf-8")
+    main_path.write_text(render_main(CLAUDE_ROOT), encoding="utf-8")
 
-    total = sum(len(v) for v in by_origin.values())
-    print(f"  converted {written} transcript(s) across {len(by_origin)} origin(s)")
-    print(f"  -> aggregator: {main_path} ({total} sessions)")
+    sessions = list(CLAUDE_ROOT.glob("*/*.typ"))
+    origins = {p.parent.name for p in sessions}
+    print(f"  converted {written} transcript(s) this run")
+    print(f"  -> aggregator: {main_path} ({len(sessions)} sessions, {len(origins)} origin(s))")
     if not REDACT_PII:
         print("  PII redaction: DISABLED (--no-redact)")
     elif _REDACTION_COUNTS:

@@ -35,13 +35,13 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/f115e2a8-1617-4de8-9d59-9be999c8083f.typ"
 #pagebreak()
 
+#include "main/f115e2a8-1617-4de8-9d59-9be999c8083f/subagents/agent-a437bde2cbca91c6c.typ"
+#pagebreak()
+
 #include "main/f115e2a8-1617-4de8-9d59-9be999c8083f/subagents/agent-acca1f3ddeee73d98.typ"
 #pagebreak()
 
 #include "main/f115e2a8-1617-4de8-9d59-9be999c8083f/subagents/agent-afa8e99f4536e4a4a.typ"
-#pagebreak()
-
-#include "main/f115e2a8-1617-4de8-9d59-9be999c8083f/subagents/agent-a437bde2cbca91c6c.typ"
 #pagebreak()
 
 #include "main/72ab2d5d-993e-4695-bf96-b5cef9af348d.typ"
@@ -68,19 +68,19 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/812dfe50-876a-488b-832b-963dab2dbcfb.typ"
 #pagebreak()
 
-#include "main/375cdf48-e608-470c-8297-e4970f50402e.typ"
-#pagebreak()
-
 #include "main/812dfe50-876a-488b-832b-963dab2dbcfb/subagents/agent-a283a120527f6b00f.typ"
 #pagebreak()
 
-#include "main/812dfe50-876a-488b-832b-963dab2dbcfb/subagents/agent-acfc042aea43105df.typ"
+#include "main/812dfe50-876a-488b-832b-963dab2dbcfb/subagents/agent-a2b478acfdefbc735.typ"
 #pagebreak()
 
 #include "main/812dfe50-876a-488b-832b-963dab2dbcfb/subagents/agent-ac0a3ddc84fa9290a.typ"
 #pagebreak()
 
-#include "main/812dfe50-876a-488b-832b-963dab2dbcfb/subagents/agent-a2b478acfdefbc735.typ"
+#include "main/812dfe50-876a-488b-832b-963dab2dbcfb/subagents/agent-acfc042aea43105df.typ"
+#pagebreak()
+
+#include "main/375cdf48-e608-470c-8297-e4970f50402e.typ"
 #pagebreak()
 
 #include "main/7dd058f7-acf5-465a-803a-3e6c81f26207.typ"
@@ -92,19 +92,19 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/d906f055-f420-46db-8987-96b2f2a5b594.typ"
 #pagebreak()
 
-#include "main/d906f055-f420-46db-8987-96b2f2a5b594/subagents/agent-af21c8d4e880f576f.typ"
-#pagebreak()
-
 #include "main/d906f055-f420-46db-8987-96b2f2a5b594/subagents/agent-a36f0c7d411cb3522.typ"
 #pagebreak()
 
-#include "main/a32b85cc-bdd0-49b1-b5ef-dd76fd44b1b3.typ"
+#include "main/d906f055-f420-46db-8987-96b2f2a5b594/subagents/agent-af21c8d4e880f576f.typ"
+#pagebreak()
+
+#include "main/5cb3ed62-f302-4848-acb4-30ff434fb921.typ"
 #pagebreak()
 
 #include "main/0caa7783-a3d5-442f-80ff-2ae74a91bdb6.typ"
 #pagebreak()
 
-#include "main/5cb3ed62-f302-4848-acb4-30ff434fb921.typ"
+#include "main/a32b85cc-bdd0-49b1-b5ef-dd76fd44b1b3.typ"
 #pagebreak()
 
 #include "main/77f9c85c-6b01-4e8b-9c9b-e9bce7c7c1da.typ"
@@ -134,19 +134,22 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/195cc839-8245-414e-b399-d4bf34414fb8.typ"
 #pagebreak()
 
-#include "main/132d44b0-4752-419c-a181-b4ff19e9dc3a.typ"
-#pagebreak()
-
 #include "main/e24ae86e-0092-4e39-bd4a-97d8c328204c.typ"
 #pagebreak()
 
-#include "main/e24ae86e-0092-4e39-bd4a-97d8c328204c/subagents/agent-ad8aa4712d0fa9679.typ"
+#include "main/e24ae86e-0092-4e39-bd4a-97d8c328204c/subagents/agent-a96716d540b78e782.typ"
+#pagebreak()
+
+#include "main/e24ae86e-0092-4e39-bd4a-97d8c328204c/subagents/agent-aaeb38bf4ee8daa26.typ"
+#pagebreak()
+
+#include "main/e24ae86e-0092-4e39-bd4a-97d8c328204c/subagents/agent-ac117d1057b8ed29e.typ"
 #pagebreak()
 
 #include "main/e24ae86e-0092-4e39-bd4a-97d8c328204c/subagents/agent-ac66c8f27a5e3afa3.typ"
 #pagebreak()
 
-#include "main/e24ae86e-0092-4e39-bd4a-97d8c328204c/subagents/agent-ac117d1057b8ed29e.typ"
+#include "main/e24ae86e-0092-4e39-bd4a-97d8c328204c/subagents/agent-ad8aa4712d0fa9679.typ"
 #pagebreak()
 
 #include "main/e24ae86e-0092-4e39-bd4a-97d8c328204c/subagents/agent-ae33a7cecb604cdee.typ"
@@ -155,10 +158,7 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/e24ae86e-0092-4e39-bd4a-97d8c328204c/subagents/agent-af60afa16e1f6aac9.typ"
 #pagebreak()
 
-#include "main/e24ae86e-0092-4e39-bd4a-97d8c328204c/subagents/agent-aaeb38bf4ee8daa26.typ"
-#pagebreak()
-
-#include "main/e24ae86e-0092-4e39-bd4a-97d8c328204c/subagents/agent-a96716d540b78e782.typ"
+#include "main/132d44b0-4752-419c-a181-b4ff19e9dc3a.typ"
 #pagebreak()
 
 #include "main/7781370c-8189-414c-a45b-ef6fbd1ce9db.typ"
@@ -197,13 +197,13 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/f939a157-02d0-4f26-9904-87ba553ae372.typ"
 #pagebreak()
 
+#include "main/f939a157-02d0-4f26-9904-87ba553ae372/subagents/agent-a14fe78ccd380e5ea.typ"
+#pagebreak()
+
 #include "main/f939a157-02d0-4f26-9904-87ba553ae372/subagents/agent-a31ba10f1edde826c.typ"
 #pagebreak()
 
 #include "main/f939a157-02d0-4f26-9904-87ba553ae372/subagents/agent-ab1c9c66482a8c29f.typ"
-#pagebreak()
-
-#include "main/f939a157-02d0-4f26-9904-87ba553ae372/subagents/agent-a14fe78ccd380e5ea.typ"
 #pagebreak()
 
 #include "main/06409d7a-da30-41a3-9d30-fa83f582563f.typ"
@@ -248,16 +248,16 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/77ce8c35-fe54-4014-a71b-88537e2ac618.typ"
 #pagebreak()
 
-#include "main/56ef6968-729e-4108-bca8-8d242f64ea9f.typ"
-#pagebreak()
-
 #include "main/d6ac3de8-c6b2-4192-a113-93d66ff7288c.typ"
 #pagebreak()
 
-#include "main/69dedb5c-7af7-4e5b-a3e7-25207442799d.typ"
+#include "main/56ef6968-729e-4108-bca8-8d242f64ea9f.typ"
 #pagebreak()
 
 #include "main/3d0ea958-cee9-426f-85b4-0d6ae0c47790.typ"
+#pagebreak()
+
+#include "main/69dedb5c-7af7-4e5b-a3e7-25207442799d.typ"
 #pagebreak()
 
 #include "main/eddd0f17-8460-42f5-8d7d-32f7e1c5a5b8.typ"
@@ -359,6 +359,12 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/03be3790-85b3-4eff-87db-0c57534f9130.typ"
 #pagebreak()
 
+#include "main/15e458fb-f718-4244-8aa5-4f8680eb615a.typ"
+#pagebreak()
+
+#include "main/0196c445-6b1d-4861-b6b0-7f0946fd69b1.typ"
+#pagebreak()
+
 #include "main/c9618286-0212-4784-85d1-88fb76b405b5.typ"
 #pagebreak()
 
@@ -374,13 +380,13 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/51e6e732-addc-48e8-8b89-c92c3c773c23.typ"
 #pagebreak()
 
+#include "main/51e6e732-addc-48e8-8b89-c92c3c773c23/subagents/agent-a2ec943b116400c69.typ"
+#pagebreak()
+
 #include "main/c2dbfc4e-48e8-417a-9f57-8eada4037bdb.typ"
 #pagebreak()
 
 #include "main/8b5ae251-e38a-401a-a09a-a009b813b25e.typ"
-#pagebreak()
-
-#include "main/51e6e732-addc-48e8-8b89-c92c3c773c23/subagents/agent-a2ec943b116400c69.typ"
 #pagebreak()
 
 #include "main/8e9f71d3-e17e-4520-ac11-6f98dea1df2f.typ"
@@ -389,19 +395,13 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/8e9f71d3-e17e-4520-ac11-6f98dea1df2f/subagents/agent-a0a9e75fd1a9630c5.typ"
 #pagebreak()
 
-#include "main/8e9f71d3-e17e-4520-ac11-6f98dea1df2f/subagents/agent-ad74e2b3f804833c6.typ"
-#pagebreak()
-
 #include "main/8e9f71d3-e17e-4520-ac11-6f98dea1df2f/subagents/agent-a224e7590351d1ed2.typ"
 #pagebreak()
 
-#include "main/8e9f71d3-e17e-4520-ac11-6f98dea1df2f/subagents/agent-a6ab1f85b7d1b98aa.typ"
+#include "main/8e9f71d3-e17e-4520-ac11-6f98dea1df2f/subagents/agent-a3b7260f15fe6394d.typ"
 #pagebreak()
 
 #include "main/8e9f71d3-e17e-4520-ac11-6f98dea1df2f/subagents/agent-a4dbff66d7aa60653.typ"
-#pagebreak()
-
-#include "main/8e9f71d3-e17e-4520-ac11-6f98dea1df2f/subagents/agent-a3b7260f15fe6394d.typ"
 #pagebreak()
 
 #include "main/8e9f71d3-e17e-4520-ac11-6f98dea1df2f/subagents/agent-a5243b86e943dbd3e.typ"
@@ -410,22 +410,28 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/8e9f71d3-e17e-4520-ac11-6f98dea1df2f/subagents/agent-a5ef6e96d365719db.typ"
 #pagebreak()
 
+#include "main/8e9f71d3-e17e-4520-ac11-6f98dea1df2f/subagents/agent-a6ab1f85b7d1b98aa.typ"
+#pagebreak()
+
+#include "main/8e9f71d3-e17e-4520-ac11-6f98dea1df2f/subagents/agent-ad74e2b3f804833c6.typ"
+#pagebreak()
+
 #include "main/4f743658-48a3-43ab-a6b3-b7ce7452c6a7.typ"
 #pagebreak()
 
 #include "main/155828e4-a5a9-4844-814c-c1f4af2eff98.typ"
 #pagebreak()
 
-#include "main/155828e4-a5a9-4844-814c-c1f4af2eff98/subagents/agent-a070579778a0317d5.typ"
+#include "main/155828e4-a5a9-4844-814c-c1f4af2eff98/subagents/agent-a05dc97de2f02e15a.typ"
 #pagebreak()
 
-#include "main/155828e4-a5a9-4844-814c-c1f4af2eff98/subagents/agent-a9746069fac53878c.typ"
+#include "main/155828e4-a5a9-4844-814c-c1f4af2eff98/subagents/agent-a070579778a0317d5.typ"
 #pagebreak()
 
 #include "main/155828e4-a5a9-4844-814c-c1f4af2eff98/subagents/agent-a5b209094ef31f508.typ"
 #pagebreak()
 
-#include "main/155828e4-a5a9-4844-814c-c1f4af2eff98/subagents/agent-ab3cb23e3bbde1b74.typ"
+#include "main/155828e4-a5a9-4844-814c-c1f4af2eff98/subagents/agent-a664153bfa9309246.typ"
 #pagebreak()
 
 #include "main/155828e4-a5a9-4844-814c-c1f4af2eff98/subagents/agent-a6f9bb1b54f01cf94.typ"
@@ -434,10 +440,10 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/155828e4-a5a9-4844-814c-c1f4af2eff98/subagents/agent-a7f96595614ed80c2.typ"
 #pagebreak()
 
-#include "main/155828e4-a5a9-4844-814c-c1f4af2eff98/subagents/agent-a664153bfa9309246.typ"
+#include "main/155828e4-a5a9-4844-814c-c1f4af2eff98/subagents/agent-a9746069fac53878c.typ"
 #pagebreak()
 
-#include "main/155828e4-a5a9-4844-814c-c1f4af2eff98/subagents/agent-a05dc97de2f02e15a.typ"
+#include "main/155828e4-a5a9-4844-814c-c1f4af2eff98/subagents/agent-ab3cb23e3bbde1b74.typ"
 #pagebreak()
 
 #include "main/155828e4-a5a9-4844-814c-c1f4af2eff98/subagents/agent-aba84e7a37b12961a.typ"
@@ -467,6 +473,15 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/7161aacd-fc81-43b9-a8b3-f0960733cba6.typ"
 #pagebreak()
 
+#include "main/41ed7fbd-8e5d-4663-9c0b-c80238e7e7aa.typ"
+#pagebreak()
+
+#include "main/b197088b-4645-47a6-85cc-07a71a2c30c6.typ"
+#pagebreak()
+
+#include "main/2c1427b0-2090-4c52-8570-09538d14bbe4.typ"
+#pagebreak()
+
 #include "main/8ca9d968-4334-460e-b0fe-8df84ce278c1.typ"
 #pagebreak()
 
@@ -476,10 +491,10 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/c105f2bb-9217-4c4d-a297-6b707293c466.typ"
 #pagebreak()
 
-#include "main/8f2cb2ea-d20c-407e-a289-0cd545ae9cf0.typ"
+#include "main/0865a97a-3610-481c-9095-25ef513707e0.typ"
 #pagebreak()
 
-#include "main/0865a97a-3610-481c-9095-25ef513707e0.typ"
+#include "main/8f2cb2ea-d20c-407e-a289-0cd545ae9cf0.typ"
 #pagebreak()
 
 #include "main/c08119a4-e46d-4002-ba38-e70520e600ce.typ"
@@ -531,6 +546,9 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #pagebreak()
 
 #include "main/ed9eabff-c6d3-41f5-8434-6d055995b4fd.typ"
+#pagebreak()
+
+#include "main/6b4b5da5-0856-48c6-8df7-caeb7166350a.typ"
 #pagebreak()
 
 #include "main/974bb011-5885-4d13-8fa7-0a5daa151674.typ"
@@ -587,10 +605,103 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "main/965ce893-b3e4-4e63-a76c-12e1f95d9c20.typ"
 #pagebreak()
 
+#include "main/88ba9e31-72b5-4eca-b5de-10a58f199319.typ"
+#pagebreak()
+
+#include "main/cbee120c-1f62-4b3f-bb18-48c44c90c0ed.typ"
+#pagebreak()
+
+#include "main/5ec9d0bb-fe5f-4e4e-b496-87c732e27807.typ"
+#pagebreak()
+
+#include "main/f9b90cb9-0fa0-4ca1-9ba9-138b30702261.typ"
+#pagebreak()
+
+#include "main/bdcff4d2-d8ca-4b1c-b245-6199a9827946.typ"
+#pagebreak()
+
+#include "main/84257ec9-b859-4052-9691-c9a85a23ba45.typ"
+#pagebreak()
+
+#include "main/dd6e4b34-f232-4cbd-b600-609adc7bf9bd.typ"
+#pagebreak()
+
 #include "main/8c49e90a-df9b-4f8e-af1c-d5e4a889fcfb.typ"
 #pagebreak()
 
 #include "main/8c49e90a-df9b-4f8e-af1c-d5e4a889fcfb/subagents/agent-a19f6bc8375131caa.typ"
+#pagebreak()
+
+#include "main/b9fd73fb-0c5b-4ee5-8ec6-af6b4b480082.typ"
+#pagebreak()
+
+#include "main/fe47f908-70bf-4e7f-8e40-3826d00a08a2.typ"
+#pagebreak()
+
+#include "main/c50f4c65-4f9a-4d22-822a-94a10896cbea.typ"
+#pagebreak()
+
+#include "main/b02512b8-bd8b-4304-b783-e9f6fe9752e5.typ"
+#pagebreak()
+
+#include "main/e7ff751d-0e4a-4907-8fbc-0310e1a35306.typ"
+#pagebreak()
+
+#include "main/b0e7e154-836b-463d-a912-1c185f4b01d3.typ"
+#pagebreak()
+
+#include "main/8c681c20-3a56-430b-9c07-998c5968dcc5.typ"
+#pagebreak()
+
+#include "main/5c0b9bca-09ff-49a7-81ea-88434f8c8d48.typ"
+#pagebreak()
+
+#include "main/2f0e7a1f-581a-42ba-b0f8-bdc2f7637439.typ"
+#pagebreak()
+
+#include "main/c95d13ea-665f-4c99-8e48-a9d91283f3c9.typ"
+#pagebreak()
+
+#include "main/fbd36cb9-852f-4575-bca5-0fa22be3deef.typ"
+#pagebreak()
+
+#include "main/1791eea3-543c-4fa2-9eb8-39059b908bc8.typ"
+#pagebreak()
+
+#include "main/f54948ae-314f-46de-be3f-a211322974cc.typ"
+#pagebreak()
+
+#include "main/3f0989fa-8845-42f2-9156-53316276d06c.typ"
+#pagebreak()
+
+#include "main/937191b2-3299-4b78-8175-df8dc6881496.typ"
+#pagebreak()
+
+#include "main/1167a5c6-98ce-4457-bd81-f747262cddcc.typ"
+#pagebreak()
+
+#include "main/1e8e52a1-618f-4e7c-90b4-d65504d19f5d.typ"
+#pagebreak()
+
+#include "main/af843465-66b8-47b7-a065-e8dd960a205f.typ"
+#pagebreak()
+
+#include "main/00a4ccd8-655a-4c67-bf42-3c21bf9991cf.typ"
+#pagebreak()
+
+#include "main/410c8f41-c08a-4ee8-9032-eeb47e6b1ac4.typ"
+#pagebreak()
+
+#include "main/36d9582c-5960-493e-ad57-324b0ca4e602.typ"
+#pagebreak()
+
+#include "main/f1c352aa-11b1-4944-8f92-c24d8645ba43.typ"
+#pagebreak()
+
+#include "main/2fa8403e-ce7d-485e-bee3-546b8c8f8733.typ"
+#pagebreak()
+
+#include "main/5d65ab82-597c-484a-ad9a-df2962759cba.typ"
 
 #pagebreak()
 
@@ -634,19 +745,19 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "worktree-impeccable-colorize-rest/89047a86-80a3-438f-afa1-3b9e9a59340d.typ"
 #pagebreak()
 
+#include "worktree-impeccable-colorize-rest/89047a86-80a3-438f-afa1-3b9e9a59340d/subagents/agent-a0698ebe2e21ac6dd.typ"
+#pagebreak()
+
+#include "worktree-impeccable-colorize-rest/89047a86-80a3-438f-afa1-3b9e9a59340d/subagents/agent-a5c107f6312c959c7.typ"
+#pagebreak()
+
 #include "worktree-impeccable-colorize-rest/89047a86-80a3-438f-afa1-3b9e9a59340d/subagents/agent-a902d16da84f1c972.typ"
 #pagebreak()
 
 #include "worktree-impeccable-colorize-rest/89047a86-80a3-438f-afa1-3b9e9a59340d/subagents/agent-a9ada57d1e9bab254.typ"
 #pagebreak()
 
-#include "worktree-impeccable-colorize-rest/89047a86-80a3-438f-afa1-3b9e9a59340d/subagents/agent-a5c107f6312c959c7.typ"
-#pagebreak()
-
 #include "worktree-impeccable-colorize-rest/89047a86-80a3-438f-afa1-3b9e9a59340d/subagents/agent-ae43974fbf6251f00.typ"
-#pagebreak()
-
-#include "worktree-impeccable-colorize-rest/89047a86-80a3-438f-afa1-3b9e9a59340d/subagents/agent-a0698ebe2e21ac6dd.typ"
 #pagebreak()
 
 #include "worktree-impeccable-colorize-rest/845f705c-75c8-41ec-979e-126fb45ff8db.typ"
@@ -682,19 +793,19 @@ _prompts_ humanos y las respuestas visibles del asistente.
 
 #pagebreak()
 
-#include "worktree-plan-REQ-BE-00032/2a5d4e73-b3e4-43ec-871c-6abb2fbd4551/subagents/agent-a7272a224b9a77749.typ"
+#include "worktree-plan-REQ-BE-00032/2a5d4e73-b3e4-43ec-871c-6abb2fbd4551/subagents/agent-a6eac0025eb0c0c2a.typ"
 #pagebreak()
 
-#include "worktree-plan-REQ-BE-00032/2a5d4e73-b3e4-43ec-871c-6abb2fbd4551/subagents/agent-a6eac0025eb0c0c2a.typ"
+#include "worktree-plan-REQ-BE-00032/2a5d4e73-b3e4-43ec-871c-6abb2fbd4551/subagents/agent-a7272a224b9a77749.typ"
 #pagebreak()
 
 #include "worktree-plan-REQ-BE-00032/dd979be9-d82c-4c34-92e3-284c6f8b136a.typ"
 #pagebreak()
 
-#include "worktree-plan-REQ-BE-00032/dd979be9-d82c-4c34-92e3-284c6f8b136a/subagents/agent-acfab63a27593211d.typ"
+#include "worktree-plan-REQ-BE-00032/dd979be9-d82c-4c34-92e3-284c6f8b136a/subagents/agent-acabd7d82b74e8aad.typ"
 #pagebreak()
 
-#include "worktree-plan-REQ-BE-00032/dd979be9-d82c-4c34-92e3-284c6f8b136a/subagents/agent-acabd7d82b74e8aad.typ"
+#include "worktree-plan-REQ-BE-00032/dd979be9-d82c-4c34-92e3-284c6f8b136a/subagents/agent-acfab63a27593211d.typ"
 #pagebreak()
 
 #include "worktree-plan-REQ-BE-00032/dd979be9-d82c-4c34-92e3-284c6f8b136a/subagents/agent-ae935f6456f387f0e.typ"
@@ -749,10 +860,10 @@ _prompts_ humanos y las respuestas visibles del asistente.
 
 #pagebreak()
 
-#include "worktree-ref-be-00001-plan/896c8c01-1998-4145-9883-17b7ab5ef802.typ"
+#include "worktree-ref-be-00001-plan/57a4f89a-56db-4ba0-a7a6-b584dc208ca3.typ"
 #pagebreak()
 
-#include "worktree-ref-be-00001-plan/57a4f89a-56db-4ba0-a7a6-b584dc208ca3.typ"
+#include "worktree-ref-be-00001-plan/896c8c01-1998-4145-9883-17b7ab5ef802.typ"
 
 #pagebreak()
 
@@ -814,34 +925,34 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48.typ"
 #pagebreak()
 
-#include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-acda4fc73001bb6bb.typ"
-#pagebreak()
-
-#include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-a2c22653f3b901fab.typ"
-#pagebreak()
-
 #include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-a06d510ea529f5a33.typ"
-#pagebreak()
-
-#include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-a5b3ccdc737a79081.typ"
-#pagebreak()
-
-#include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-a10e1140fc7319b1c.typ"
 #pagebreak()
 
 #include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-a0d13a97f3efc538c.typ"
 #pagebreak()
 
+#include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-a10e1140fc7319b1c.typ"
+#pagebreak()
+
 #include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-a1a74fd4c328a5fb3.typ"
 #pagebreak()
 
-#include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-a99ec087d91b93882.typ"
+#include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-a29f7897160186184.typ"
+#pagebreak()
+
+#include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-a2c22653f3b901fab.typ"
+#pagebreak()
+
+#include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-a5b3ccdc737a79081.typ"
 #pagebreak()
 
 #include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-a7a849787b610ed15.typ"
 #pagebreak()
 
-#include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-a29f7897160186184.typ"
+#include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-a99ec087d91b93882.typ"
+#pagebreak()
+
+#include "worktree-rename-quote-cargooffer/295f9572-885d-461b-a63c-8d868957bf48/subagents/agent-acda4fc73001bb6bb.typ"
 #pagebreak()
 
 #include "worktree-rename-quote-cargooffer/12d6f3bd-3f4d-419a-a80f-386526d12d76.typ"
@@ -850,19 +961,19 @@ _prompts_ humanos y las respuestas visibles del asistente.
 #include "worktree-rename-quote-cargooffer/ff093ae4-8c10-4649-97c8-3bb7c52832ca.typ"
 #pagebreak()
 
+#include "worktree-rename-quote-cargooffer/ff093ae4-8c10-4649-97c8-3bb7c52832ca/subagents/agent-a44a90565872a96c1.typ"
+#pagebreak()
+
 #include "worktree-rename-quote-cargooffer/ff093ae4-8c10-4649-97c8-3bb7c52832ca/subagents/agent-a844643be70556f3e.typ"
 #pagebreak()
 
 #include "worktree-rename-quote-cargooffer/ff093ae4-8c10-4649-97c8-3bb7c52832ca/subagents/agent-a8c5479072641c799.typ"
 #pagebreak()
 
-#include "worktree-rename-quote-cargooffer/ff093ae4-8c10-4649-97c8-3bb7c52832ca/subagents/agent-a9afde785aa3818f1.typ"
-#pagebreak()
-
-#include "worktree-rename-quote-cargooffer/ff093ae4-8c10-4649-97c8-3bb7c52832ca/subagents/agent-a44a90565872a96c1.typ"
-#pagebreak()
-
 #include "worktree-rename-quote-cargooffer/ff093ae4-8c10-4649-97c8-3bb7c52832ca/subagents/agent-a95a030a33af86068.typ"
+#pagebreak()
+
+#include "worktree-rename-quote-cargooffer/ff093ae4-8c10-4649-97c8-3bb7c52832ca/subagents/agent-a9afde785aa3818f1.typ"
 #pagebreak()
 
 #include "worktree-rename-quote-cargooffer/82d2ea5d-016c-4a98-a718-390ac714987e.typ"
