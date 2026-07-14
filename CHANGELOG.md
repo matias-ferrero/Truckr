@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.5](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.2.4...v0.2.5) (2026-06-24)
+
+
+### Features
+
+* **backend:** inject GOOGLE_MAPS_API_KEY into staging/production container ([#356](https://github.com/tcorzo/fiuba-gestion-tp/issues/356)) ([00f9d45](https://github.com/tcorzo/fiuba-gestion-tp/commit/00f9d45815c3c095471c1fd30e80c926ac76504b))
+* **frontend:** add Truckr favicon ([#366](https://github.com/tcorzo/fiuba-gestion-tp/issues/366)) ([3b12dad](https://github.com/tcorzo/fiuba-gestion-tp/commit/3b12dad4f7f368a7bf26457c65fa458704904391))
+* **shipper:** cargo matches v2 — price+trust decision grid with curated picks ([#347](https://github.com/tcorzo/fiuba-gestion-tp/issues/347)) ([8137cd9](https://github.com/tcorzo/fiuba-gestion-tp/commit/8137cd90ff7912caed151c6002ab5db2bb2a2d53))
+* **team-performance:** reconstruct per-sprint performance as of a past sprint ([#351](https://github.com/tcorzo/fiuba-gestion-tp/issues/351)) ([5f5437c](https://github.com/tcorzo/fiuba-gestion-tp/commit/5f5437c73ac7121076634d24fe289cc6d91a9fc8))
+
+
+### Bug Fixes
+
+* **backend:** build absolute URLs from APP_HOST in deployed envs ([#364](https://github.com/tcorzo/fiuba-gestion-tp/issues/364)) ([6de3222](https://github.com/tcorzo/fiuba-gestion-tp/commit/6de3222d716c2f247b4d1530ef9abf27f0668df7))
+* **carrier-dashboard:** add home to carrier sidebar and payout section ([#361](https://github.com/tcorzo/fiuba-gestion-tp/issues/361)) ([93b026d](https://github.com/tcorzo/fiuba-gestion-tp/commit/93b026de85dbab8a0c89ac8c11ca729ac83f58bd))
+* schedule ([#371](https://github.com/tcorzo/fiuba-gestion-tp/issues/371)) ([ec0ce66](https://github.com/tcorzo/fiuba-gestion-tp/commit/ec0ce66de4b4e1432e0f1aedda624d5992edc93c))
+
 ## [0.2.4](https://github.com/tcorzo/fiuba-gestion-tp/compare/v0.2.3...v0.2.4) (2026-06-18)
 
 
